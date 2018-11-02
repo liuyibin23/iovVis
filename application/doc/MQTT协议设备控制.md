@@ -12,7 +12,7 @@ typora-root-url: ./
 
 具体接口实现代码在application\src\main\java\org\thingsboard\server\controller\rpccontroller.java中
 
-![](./image/Image 196.png)
+![](./image/Image_196.png)
 
 ```java
 @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
