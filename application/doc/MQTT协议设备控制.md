@@ -6,7 +6,7 @@ typora-root-url: image
 
 首先在设备中添加一个双向通信设备，如Device的开关控制设备。如图所示：
 
-![dev](./dev.png)
+![dev](https://github.com/lvyv/iovVis/blob/master/application/doc/image/Image%20196.png)
 
 在点击控件进行设计时，通过页面分析。可以看到是通过/api/plugins/rpc/oneway进行调用。
 
