@@ -1,18 +1,18 @@
 ---
-typora-root-url: image
+typora-root-url: ./
 ---
 
 # MQTT协议设备控制
 
 首先在设备中添加一个双向通信设备，如Device的开关控制设备。如图所示：
 
-![dev](https://github.com/lvyv/iovVis/blob/master/application/doc/image/Image%20196.png)
+![dev](./image/dev.png)
 
 在点击控件进行设计时，通过页面分析。可以看到是通过/api/plugins/rpc/oneway进行调用。
 
 具体接口实现代码在application\src\main\java\org\thingsboard\server\controller\rpccontroller.java中
 
-![](./Image 196.png)
+![](./image/Image 196.png)
 
 ```java
 @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
@@ -58,3 +58,11 @@ private DeferredResult<ResponseEntity> handleDeviceRPCRequest(boolean oneWay, De
 ```
 
 其中调用handleDeviceRPCRequest，在twoway和oneway都调用handleDeviceRPCRequest进行处理。twoway和oneway在handleDeviceRPCRequest中处理相同，只是回传到异步回调中的rcpRequest中。在handleDeviceRPCRequest中前段主要处理客户端请求中的方法。在系统中处理的方法是method,timeout。方法解析完后异步处理认证问题。
+
+用户认证成功后通过调用
+
+```java
+deviceRpcService.processRestAPIRpcRequestToRuleEngine(rpcRequest, fromDeviceRpcResponse -> reply(new LocalRequestMetaData(rpcRequest, currentUser, result), fromDeviceRpcResponse));
+```
+
+在processRestAPIRpcRequestToRuleEngine中首先将返回后回调数据入队。存入localToRuleEngineRpcRequests本地map中，使用requestId作为KEY。
