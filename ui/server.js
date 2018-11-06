@@ -27,11 +27,11 @@ const config = require('./webpack.config');
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
-const forwardHost = 'localhost';
-const forwardPort = 8080;
+const forwardHost = '39.98.53.229';
+const forwardPort = 8880;
 
-const ruleNodeUiforwardHost = 'localhost';
-const ruleNodeUiforwardPort = 8080;
+const ruleNodeUiforwardHost = '39.98.53.229';
+const ruleNodeUiforwardPort = 8880;
 
 const app = express();
 const server = http.createServer(app);
@@ -95,6 +95,6 @@ server.listen(PORT, '0.0.0.0', (error) => {
     if (error) {
         console.error(error);
     } else {
-        console.info(`==> 🌎  Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
+        console.info(`==> Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
     }
 });

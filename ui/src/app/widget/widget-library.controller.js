@@ -23,11 +23,11 @@ import selectWidgetTypeTemplate from './select-widget-type.tpl.html';
 
 /*@ngInject*/
 export default function WidgetLibraryController($scope, $rootScope, $q, widgetService, userService, importExport,
-                                                $state, $stateParams, $document, $mdDialog, $translate, $filter,
+                                                $state, $stateParams, $document, $mdDialog, $translate, $filter,$log,
                                                 utils, types, entityService) {
 
     var vm = this;
-
+    $log.log('2. Awen-->widget-library.controller begins!');
     var widgetsBundleId = $stateParams.widgetsBundleId;
 
     vm.widgetsBundle;
@@ -144,10 +144,12 @@ export default function WidgetLibraryController($scope, $rootScope, $q, widgetSe
     }
 
     function dashboardInitFailed() {
+        $log.log('Awen-->'+ this.name);
         vm.dashboardInitComplete = true;
     }
 
     function dashboardInited() {
+        $log.log('Awen-->'+ this);
         vm.dashboardInitComplete = true;
     }
 

@@ -21,7 +21,7 @@ import widgetsBundleCard from './widgets-bundle-card.tpl.html';
 /* eslint-enable import/no-unresolved, import/default */
 
 /*@ngInject*/
-export default function WidgetsBundleController(widgetService, userService, importExport, $state, $stateParams, $filter, $translate, types) {
+export default function WidgetsBundleController(widgetService, userService, importExport, $state, $stateParams, $filter, $translate, $log, types) {
 
     var widgetsBundleActionsList = [
         {
@@ -181,6 +181,7 @@ export default function WidgetsBundleController(widgetService, userService, impo
         if ($event) {
             $event.stopPropagation();
         }
+        $log.log('1. Awen-->widgets-bundle.controller ends, goting to widget-library.');
         $state.go('home.widgets-bundles.widget-types', {widgetsBundleId: widgetsBundle.id.id});
     }
 
