@@ -565,9 +565,9 @@
         "toggle-edit-mode": "切换编辑模式"
     },
     "device": {
-        "device": "设备",
+        "device": "数据源",
         "device-required": "设备必填",
-        "devices": "设备",
+        "devices": "数据源",
         "management": "设备管理",
         "view-devices": "查看设备",
         "device-alias": "设备别名",
