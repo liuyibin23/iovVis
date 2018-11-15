@@ -568,8 +568,8 @@
         "device": "数据源",
         "device-required": "设备必填",
         "devices": "数据源",
-        "management": "设备管理",
-        "view-devices": "查看设备",
+        "management": "数据源管理",
+        "view-devices": "查看数据源",
         "device-alias": "设备别名",
         "aliases": "设备别名",
         "no-alias-matching": "'{{alias}}' 没有找到。",
@@ -1066,6 +1066,9 @@
         "menu": "菜单",
         "avatar": "头像",
         "open-user-menu": "打开用户菜单"
+    },
+    "integrated": {
+        "integrated": "数据集成"
     },
     "import": {
         "no-file": "没有选择文件",

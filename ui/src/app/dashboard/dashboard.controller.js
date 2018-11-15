@@ -55,7 +55,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
     vm.isToolbarOpened = false;
 
     vm.thingsboardVersion = THINGSBOARD_VERSION; //eslint-disable-line
-
+    
     vm.currentDashboardId = $stateParams.dashboardId;
     if ($stateParams.customerId) {
         vm.currentCustomerId = $stateParams.customerId;
