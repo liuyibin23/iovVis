@@ -46,7 +46,16 @@ app.use(webpackHotMiddleware(compiler));
 
 const root = path.join(__dirname, '/src');
 
+const Workers = path.join(__dirname, '/Workers');
+const Assets = path.join(__dirname, '/Assets');
+const Widgets = path.join(__dirname, '/Widgets');
+const ThirdParty = path.join(__dirname, '/ThirdParty');
+
 app.use('/static', express.static(root));
+app.use('/Workers', express.static(Workers));
+app.use('/Assets', express.static(Assets));
+app.use('/Widgets', express.static(Widgets));
+app.use('/ThirdParty',express.static(ThirdParty));
 
 const apiProxy = httpProxy.createProxyServer({
     target: {

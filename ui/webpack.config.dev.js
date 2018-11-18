@@ -26,7 +26,8 @@ const dirTree = require('directory-tree');
 const jsonminify = require("jsonminify");
 
 const PUBLIC_RESOURCE_PATH = '/';
-
+const cesiumSource = 'node_modules/cesium/Source';
+const cesiumWorkers = 'node_modules/cesium/Build/Cesium/Workers';
 var langs = [];
 dirTree('./src/app/locale/', {extensions:/\.json$/}, (item) => {
     /* It is expected what the name of a locale file has the following format: */
@@ -47,6 +48,8 @@ module.exports = {
         path: path.resolve(__dirname, 'target/generated-resources/public/static'),
         publicPath: PUBLIC_RESOURCE_PATH,
         filename: 'bundle.js',
+        
+        sourcePrefix: ''
     },
     plugins: [
         new webpack.ProvidePlugin({
@@ -71,11 +74,19 @@ module.exports = {
                 }
             }
         ]),
+        new CopyWebpackPlugin([ { from: path.join(cesiumSource, cesiumWorkers), to: 'Workers' } ]),
+        new CopyWebpackPlugin([ { from: path.join(cesiumSource, 'Assets'), to: 'Assets' } ]),
+        new CopyWebpackPlugin([ { from: path.join(cesiumSource, 'Widgets'), to: 'Widgets' } ]),
+        new webpack.DefinePlugin({
+            // Define relative base path in cesium for loading assets
+            CESIUM_BASE_URL: JSON.stringify('')
+        }),
+
         new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
             template: './src/index.html',
             filename: 'index.html',
-            title: 'ThingsBoard',
+            title: 'BeidouApp',
             inject: 'body',
         }),
         new StyleLintPlugin(),
@@ -93,10 +104,19 @@ module.exports = {
             PUBLIC_PATH: JSON.stringify(PUBLIC_RESOURCE_PATH),
             SUPPORTED_LANGS: JSON.stringify(langs)
         }),
+
     ],
+    amd: {
+        toUrlUndefined: true
+    },
     node: {
         tls: "empty",
         fs: "empty"
+    },
+    resolve: {
+        alias: {
+            cesium: path.resolve(__dirname, cesiumSource)
+        }
     },
     module: {
         loaders: [

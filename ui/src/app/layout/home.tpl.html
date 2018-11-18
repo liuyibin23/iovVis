@@ -67,7 +67,10 @@
 			  </div>
 		      <md-button class="md-icon-button" aria-label="{{ 'action.search' | translate }}" ng-show="searchConfig.searchEnabled" ng-click="vm.openSearch()">
 		      	  <md-icon aria-label="{{ 'action.search' | translate }}" class="material-icons">search</md-icon>
-          	  </md-button>
+			  </md-button>
+			  <md-button class="md-icon-button">
+				  <md-icon class="material-icons">notifications</md-icon>
+			  </md-button>
 		      <md-button ng-show="!vm.displaySearchMode()" hide-xs hide-sm class="md-icon-button" ng-click="vm.toggleFullscreen()" aria-label="{{ 'fullscreen.toggle' | translate }}">
 	    			<ng-md-icon icon="{{vm.Fullscreen.isEnabled() ? 'fullscreen_exit' : 'fullscreen'}}" options='{"easing": "circ-in-out", "duration": 375, "rotation": "none"}'></ng-md-icon>
 		      </md-button>

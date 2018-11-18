@@ -28,8 +28,8 @@ import AliasController from '../api/alias-controller';
 
 /*@ngInject*/
 export default function DashboardController(types, utils, dashboardUtils, widgetService, userService,
-                                            dashboardService, timeService, entityService, itembuffer, importExport, hotkeys, $window, $rootScope,
-                                            $scope, $element, $state, $stateParams, $mdDialog, $mdMedia, $timeout, $document, $q, $translate, $filter) {
+                                            dashboardService, entityService, itembuffer, importExport, $window, $rootScope,
+                                            $scope, $state, $stateParams, $mdDialog, $mdMedia, $timeout, $document, $q, $translate, $filter) {
 
     var vm = this;
 
@@ -57,6 +57,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
     vm.thingsboardVersion = THINGSBOARD_VERSION; //eslint-disable-line
     
     vm.currentDashboardId = $stateParams.dashboardId;
+
     if ($stateParams.customerId) {
         vm.currentCustomerId = $stateParams.customerId;
         vm.currentDashboardScope = 'customer';
