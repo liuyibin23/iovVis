@@ -37,7 +37,7 @@ var scene = viewer.scene;
 
 var tileset = scene.primitives.add(
     new Cesium.Cesium3DTileset({
-        url: Cesium.IonResource.fromAssetId(8564)
+        url: 'http://192.168.1.138:8003/tilesets/TilesetWithDiscreteLOD/tileset.json' // Cesium.IonResource.fromAssetId(8564)
     })
 );
 
