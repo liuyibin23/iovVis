@@ -16,9 +16,10 @@
 import $ from 'jquery';
 
 /* eslint-disable import/no-unresolved, import/default */
-
 import logoSvg from '../../svg/logo_title_white.svg';
-
+import Cesium from 'cesium/Cesium';
+import "cesium/Widgets/widgets.css";
+import "cesium/Widgets/lighter.css";
 /* eslint-enable import/no-unresolved, import/default */
 
 /* eslint-disable angular/angularelement */
@@ -99,6 +100,27 @@ export default function HomeController(types, loginService, userService, deviceS
         }
     });
 
+        // Power Plant design model provided by Bentley Systems
+        var viewer = new Cesium.Viewer('cesiumContainer', {
+            scene3DOnly: true,
+            selectionIndicator: false,
+            baseLayerPicker: false,
+            animation: false,
+            timeline: false
+        });
+        var scene = viewer.scene;
+        var tileset = scene.primitives.add(
+            new Cesium.Cesium3DTileset({
+                url: '/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
+            })
+        );
+       
+        tileset.readyPromise.then(function (tileset) {
+            viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0.5, -0.2, tileset.boundingSphere.radius * 4.0));
+        }).otherwise(function (error) {
+            $log.log(error);
+        });
+    
     function watchEntitySubtype(enableWatch) {
         if ($scope.entitySubtypeWatch) {
             $scope.entitySubtypeWatch();

@@ -46,6 +46,7 @@ app.use(webpackHotMiddleware(compiler));
 
 const root = path.join(__dirname, '/src');
 
+const models = path.join(__dirname, '/3d-tiles-samples');
 const Workers = path.join(__dirname, '/Workers');
 const Assets = path.join(__dirname, '/Assets');
 const Widgets = path.join(__dirname, '/Widgets');
@@ -56,6 +57,7 @@ app.use('/Workers', express.static(Workers));
 app.use('/Assets', express.static(Assets));
 app.use('/Widgets', express.static(Widgets));
 app.use('/ThirdParty',express.static(ThirdParty));
+app.use('/3dtiles', express.static(models));
 
 const apiProxy = httpProxy.createProxyServer({
     target: {

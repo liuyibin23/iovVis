@@ -15,29 +15,13 @@
     limitations under the License.
 
 -->
-<md-sidenav class="md-sidenav-right" md-component-id="R_SIDE" md-disable-backdrop md-whiteframe="4">
-    <md-toolbar class="md-theme-indigo">
-        <h1 class="md-toolbar-tools">工具栏区域</h1>
-    </md-toolbar>
-    <md-content layout-margin>
-        <p>
-            本区域用于显示各种相关联信息。
-        </p>
-        <md-button ng-click="vm.toggleRight('R_SIDE')" class="md-accent">
-            关闭侧边栏
-        </md-button>
-    </md-content>
-</md-sidenav>
-
-<div id="cesiumContainer" ></div>
-<div id="toolbar"></div>
 <div>
 	<div>
     <md-button ng-click="vm.toggleRight('R_SIDE')" class="md-raised">
         右侧边栏
     </md-button>
-	    <md-button  class="md-raised">
-        测试标签A
+	    <md-button ng-click="vm.toggleRight('left')" class="md-raised">
+        左侧边栏
     </md-button>
 	    <md-button  class="md-raised">
         测试标签B
