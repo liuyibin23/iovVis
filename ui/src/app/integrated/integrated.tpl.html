@@ -54,6 +54,7 @@
             ng-keydown="vm.keyDown($event)"
             ng-keyup="vm.keyUp($event)" on-fullscreen-changed="vm.isFullscreen = expanded">
     <section class="tb-rulechain-container" flex layout="column">
+        <!--浮动按钮、表页展开、右键菜单-->
         <div class="tb-rulechain-layout" flex layout="row">
             <!--展开侧边栏按钮-->
             <section layout="row" layout-wrap
@@ -68,6 +69,7 @@
                     <ng-md-icon icon="menu"></ng-md-icon>
                 </md-button>
             </section>
+            <!--左侧表页展开栏-->
             <md-sidenav class="tb-rulechain-library md-sidenav-left md-whiteframe-4dp"
                         md-disable-backdrop
                         md-is-locked-open="vm.isLibraryOpen"
@@ -75,18 +77,21 @@
                         md-component-id="rulechain-library-sidenav" layout="column">
                 <md-toolbar>
                     <div class="md-toolbar-tools">
+                        <!--搜索按钮-->
                         <md-button class="md-icon-button tb-small" aria-label="{{ 'action.search' | translate }}">
                             <md-icon aria-label="{{ 'action.search' | translate }}" class="material-icons">search</md-icon>
                             <md-tooltip md-direction="'bottom'">
                                 {{'rulenode.search' | translate}}
                             </md-tooltip>
                         </md-button>
+                        <!--输入文本框-->
                         <div layout="row" md-theme="tb-dark" flex>
                             <md-input-container flex>
                                 <label>&nbsp;</label>
                                 <input ng-model="vm.ruleNodeSearch" placeholder="{{'rulenode.search' | translate}}"/>
                             </md-input-container>
                         </div>
+                        <!--清除查询按钮-->
                         <md-button class="md-icon-button tb-small" aria-label="Close"
                                    ng-show="vm.ruleNodeSearch"
                                    ng-click="vm.ruleNodeSearch = ''">
@@ -95,6 +100,7 @@
                                 {{ 'action.clear-search' | translate }}
                             </md-tooltip>
                         </md-button>
+                        <!--左关闭按钮-->
                         <md-button class="md-icon-button tb-small" aria-label="Close" ng-click="vm.isLibraryOpen = false">
                             <md-icon aria-label="Close" class="material-icons">chevron_left</md-icon>
                             <md-tooltip md-direction="{{vm.isFullscreen ? 'bottom' : 'top'}}">
@@ -104,7 +110,7 @@
                     </div>
                 </md-toolbar>
                 <md-expansion-panel-group flex
-                                          ng-if="vm.ruleChainLibraryLoaded" class="tb-rulechain-library-panel-group"
+                                          ng-if="true" class="tb-rulechain-library-panel-group"
                                           md-component-id="libraryPanelGroup" auto-expand="true" multiple>
                     <md-expansion-panel md-component-id="{{typeId}}" id="{{typeId}}" ng-repeat="(typeId, typeModel) in vm.ruleNodeTypesModel">
                         <md-expansion-panel-collapsed ng-mouseenter="vm.typeHeaderMouseEnter($event, typeId)"
@@ -175,6 +181,7 @@
                 </md-menu-content>
             </md-menu>
         </div>
+        
         <tb-details-sidenav class="tb-rulenode-details-sidenav"
                             header-title="{{vm.editingRuleNode.name}}"
                             header-subtitle="{{(vm.types.ruleNodeType[vm.editingRuleNode.component.type].name | translate)
@@ -252,7 +259,7 @@
         </tb-details-sidenav>
     </section>
     <!--浮动编辑菜单栏-->
-    <section layout="row" layout-wrap class="tb-footer-buttons md-fab" layout-align="start end">
+    <!-- <section layout="row" layout-wrap class="tb-footer-buttons md-fab" layout-align="start end">
         <md-button ng-disabled="false"
                    class="tb-btn-footer md-accent md-hue-2 md-fab"
                    aria-label="{{ 'action.apply' | translate }}"
@@ -262,5 +269,5 @@
             </md-tooltip>
             <ng-md-icon icon="done"></ng-md-icon>
         </md-button>
-    </section>
+    </section> -->
 </md-content>
