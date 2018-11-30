@@ -52,7 +52,7 @@ import thingsboardEntityView from '../entity-view';
 import thingsboardWidgetLibrary from '../widget';
 import thingsboardDashboard from '../dashboard';
 import thingsboardRuleChain from '../rulechain';
-import thingsboardIntegrated from '../integrated';
+import beidouAppIntegrated from '../integrated';
 
 import thingsboardJsonForm from '../jsonform';
 
@@ -96,7 +96,7 @@ export default angular.module('thingsboard.home', [
     thingsboardKvMap,
     thingsboardJsonObjectEdit,
     thingsboardJsonContent,
-    thingsboardIntegrated
+    beidouAppIntegrated
 ])
     .config(HomeRoutes)
     .controller('HomeController', HomeController)

@@ -602,6 +602,7 @@ export function DashboardsController(userService, dashboardService, customerServ
         if ($event) {
             $event.stopPropagation();
         }
+        // $log.log('dashboard id--->', dashboard.id.id);
         if (vm.dashboardsScope === 'customer') {
             $state.go('home.customers.dashboards.dashboard', {
                 customerId: customerId,

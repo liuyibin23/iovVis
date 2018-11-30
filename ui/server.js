@@ -27,11 +27,11 @@ const config = require('./webpack.config');
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
-const forwardHost = '39.98.53.229';
-const forwardPort = 8880;
+const forwardHost = 'cf.beidouapp.com';
+const forwardPort = 8080;
 
-const ruleNodeUiforwardHost = '39.98.53.229';
-const ruleNodeUiforwardPort = 8880;
+const ruleNodeUiforwardHost = 'cf.beidouapp.com';
+const ruleNodeUiforwardPort = 8080;
 
 const app = express();
 const server = http.createServer(app);
