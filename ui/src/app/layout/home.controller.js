@@ -133,9 +133,9 @@ export default function HomeController(types, loginService, userService, deviceS
                 url : 'https://stamen-tiles.a.ssl.fastly.net/toner/'
              })
             */
-           imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
-               url: 'https://a.tile.openstreetmap.org/'
-           }) 
+        //    imageryProvider: new Cesium.createOpenStreetMapImageryProvider({
+        //        url: 'https://a.tile.openstreetmap.org/'
+        //    }) 
         });
         var scene = viewer.scene;
         var tileset = scene.primitives.add(

@@ -25,13 +25,13 @@ export default function IntegratedController($scope, $rootScope, $mdMedia, $mdSi
     vm.openDashboard = openDashboard;
     // $rootScope.forceFullscreen = !$rootScope.forceFullscreen;
     // $scope.searchConfig.searchEnabled = true;
-    vm.isLibraryOpen = false;
+    vm.isLibraryOpen = true;
 	
     // dashboard id---> d96c1d40-de3e-11e8-90b2-6708b10d2f5b 战略情报
     // dashboard id---> af5dadb0-e5ba-11e8-be95-f3713e6700c3 桥梁数据展示
 
     function openDashboard(dashboardID) {
-        $state.go('home.dashboards.dashboard', {dashboardId: dashboardID});
+        $state.go('home.integrated.dashboard', {dashboardId: dashboardID});
     }
 
     $scope.$watch(function() { return $mdMedia('lg'); }, function() {

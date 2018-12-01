@@ -16,6 +16,7 @@
 /* eslint-disable import/no-unresolved, import/default */
 
 import IntegratedTemplate from './integrated.tpl.html';
+import dashboardTemplate from '../dashboard/dashboard.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
@@ -35,11 +36,30 @@ export default function IntegratedRoutes($stateProvider) {
                 }
             },
             data: {
-                pageTitle: 'home.home'
+                pageTitle: 'home.integrated'
             },
             ncyBreadcrumb: {
-                label: '{"icon": "home", "label": "home.home"}',
+                label: '{"icon": "home", "label": "home.integrated"}',
                 icon: 'home'
+            }
+        })
+        .state('home.integrated.dashboard', {
+            parent: 'home.integrated',
+            url: '/dashboard/:dashboardId?state',
+            reloadOnSearch: false,
+            module: 'private',
+            auth: ['TENANT_ADMIN', 'CUSTOMER_USER'],           
+            views: {
+                'contentDetails@home.integrated': {
+                     templateUrl: dashboardTemplate,
+                     controller: 'DashboardController',
+                     controllerAs: 'vm'
+                 }
+            },
+            data: {
+                widgetEditMode: false,
+                searchEnabled: false,
+                pageTitle: 'dashboard.dashboard'
             }
         });
 }

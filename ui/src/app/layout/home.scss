@@ -94,3 +94,11 @@ md-icon.tb-logo-title {
 .tb-entity-search {
   margin-top: 34px;
 }
+
+#cesiumContainer {
+  height: 400px;
+}
+
+.cesium-viewer .cesium-viewer-bottom {
+  display: none;
+}

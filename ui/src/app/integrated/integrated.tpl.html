@@ -53,8 +53,8 @@
             expand-tooltip-direction="bottom" layout="column" class="tb-rulechain"
             ng-keydown="vm.keyDown($event)"
             ng-keyup="vm.keyUp($event)" on-fullscreen-changed="vm.isFullscreen = expanded">
-    <section class="tb-rulechain-container" flex layout="column">
-        <!--浮动按钮、表页展开、右键菜单-->
+    <section class="tb-rulechain-container" flex layout="row">
+        <!--浮动按钮、表页展开-->
         <div class="tb-rulechain-layout" flex layout="row">
             <!--展开侧边栏按钮-->
             <section layout="row" layout-wrap
@@ -109,154 +109,13 @@
                         </md-button>
                     </div>
                 </md-toolbar>
-                <md-expansion-panel-group flex
-                                          ng-if="true" class="tb-rulechain-library-panel-group"
-                                          md-component-id="libraryPanelGroup" auto-expand="true" multiple>
-                    <md-expansion-panel md-component-id="{{typeId}}" id="{{typeId}}" ng-repeat="(typeId, typeModel) in vm.ruleNodeTypesModel">
-                        <md-expansion-panel-collapsed ng-mouseenter="vm.typeHeaderMouseEnter($event, typeId)"
-                                                      ng-mouseleave="vm.destroyTooltips()">
-                            <md-icon aria-label="node-type-icon"
-                                     class="material-icons" style="margin-right: 8px;">{{vm.types.ruleNodeType[typeId].icon}}</md-icon>
-                            <div class="tb-panel-title" translate>{{vm.types.ruleNodeType[typeId].name}}</div>
-                            <md-expansion-panel-icon></md-expansion-panel-icon>
-                        </md-expansion-panel-collapsed>
-                        <md-expansion-panel-expanded>
-                            <md-expansion-panel-header ng-mouseenter="vm.typeHeaderMouseEnter($event, typeId)"
-                                                       ng-mouseleave="vm.destroyTooltips()"
-                                                       ng-click="vm.$mdExpansionPanel(typeId).collapse()">
-                                <md-icon aria-label="node-type-icon"
-                                         class="material-icons" style="margin-right: 8px;">{{vm.types.ruleNodeType[typeId].icon}}</md-icon>
-                                <div class="tb-panel-title" translate>{{vm.types.ruleNodeType[typeId].name}}</div>
-                                <md-expansion-panel-icon></md-expansion-panel-icon>
-                            </md-expansion-panel-header>
-                            <md-expansion-panel-content>
-                                <fc-canvas id="tb-rulechain-{{typeId}}"
-                                           model="vm.ruleNodeTypesModel[typeId].model" selected-objects="vm.ruleNodeTypesModel[typeId].selectedObjects"
-                                           automatic-resize="false"
-                                           callbacks="vm.nodeLibCallbacks"
-                                           node-width="170"
-                                           node-height="50"
-                                           control="vm.ruleNodeTypesCanvasControl[typeId]"
-                                           drop-target-id="'tb-rulchain-canvas'"></fc-canvas>
-                            </md-expansion-panel-content>
-                        </md-expansion-panel-expanded>
-                    </md-expansion-panel>
-                </md-expansion-panel-group>
+                <md-button ng-click="vm.openDashboard('d96c1d40-de3e-11e8-90b2-6708b10d2f5b')">情报</md-button>
+                <md-button ng-click="vm.openDashboard('af5dadb0-e5ba-11e8-be95-f3713e6700c3')">桥梁</md-button>
             </md-sidenav>
-            <!--右键菜单-->
-            <md-menu flex style="position: relative;" md-position-mode="target target" tb-offset-x="-20" tb-offset-y="-45" tb-mousepoint-menu>
-                <div class="tb-absolute-fill tb-rulechain-graph" ng-click="" tb-contextmenu="vm.openRuleChainContextMenu($event, $mdOpenMousepointMenu)">
-                    <fc-canvas id="tb-rulchain-canvas"
-                               model="vm.ruleChainModel"
-                               selected-objects="vm.selectedObjects"
-                               edge-style="curved"
-                               node-width="170"
-                               node-height="50"
-                               automatic-resize="true"
-                               control="vm.canvasControl"
-                               callbacks="vm.editCallbacks">
-                    </fc-canvas>
-                </div>
-                <md-menu-content id="tb-rule-chain-context-menu" width="4" ng-mouseleave="$mdCloseMousepointMenu()">
-                    <div class="tb-context-menu-header {{vm.contextInfo.headerClass}}">
-                        <md-icon ng-if="!vm.contextInfo.iconUrl" aria-label="node-type-icon"
-                                 class="material-icons">{{vm.contextInfo.icon}}</md-icon>
-                        <md-icon ng-if="vm.contextInfo.iconUrl" aria-label="node-type-icon"
-                                 md-svg-icon="{{vm.contextInfo.iconUrl}}"></md-icon>
-                        <div flex>
-                            <div class="tb-context-menu-title">{{vm.contextInfo.title}}</div>
-                            <div class="tb-context-menu-subtitle">{{vm.contextInfo.subtitle}}</div>
-                        </div>
-                    </div>
-                    <div ng-repeat="item in vm.contextInfo.items">
-                        <md-divider ng-if="item.divider"></md-divider>
-                        <md-menu-item ng-if="!item.divider">
-                            <md-button ng-disabled="!item.enabled" ng-click="item.action(vm.contextMenuEvent)">
-                                <span ng-if="item.shortcut" class="tb-alt-text"> {{ item.shortcut | keyboardShortcut }}</span>
-                                <md-icon ng-if="item.icon" md-menu-align-target aria-label="{{ item.value | translate }}" class="material-icons">{{item.icon}}</md-icon>
-                                <span translate>{{item.value}}</span>
-                            </md-button>
-                        </md-menu-item>
-                    </div>
-                </md-menu-content>
-            </md-menu>
         </div>
-        
-        <tb-details-sidenav class="tb-rulenode-details-sidenav"
-                            header-title="{{vm.editingRuleNode.name}}"
-                            header-subtitle="{{(vm.types.ruleNodeType[vm.editingRuleNode.component.type].name | translate)
-                            + ' - ' + vm.editingRuleNode.component.name}}"
-                            is-read-only="vm.selectedRuleNodeTabIndex > 0"
-                            is-open="vm.isEditingRuleNode"
-                            tb-enable-backdrop
-                            is-always-edit="true"
-                            on-close-details="vm.onEditRuleNodeClosed()"
-                            on-toggle-details-edit-mode="vm.onRevertRuleNodeEdit(vm.ruleNodeForm)"
-                            on-apply-details="vm.saveRuleNode(vm.ruleNodeForm)"
-                            the-form="vm.ruleNodeForm">
-            <details-buttons tb-help="vm.helpLinkIdForRuleNodeType()" help-container-id="help-container">
-                <div id="help-container"></div>
-            </details-buttons>
-            <md-tabs md-selected="vm.selectedRuleNodeTabIndex"
-                     id="ruleNodeTabs" md-border-bottom flex class="tb-absolute-fill" ng-if="vm.isEditingRuleNode">
-                <md-tab label="{{ 'rulenode.details' | translate }}">
-                    <form name="vm.ruleNodeForm">
-                        <tb-rule-node
-                                rule-node="vm.editingRuleNode"
-                                rule-chain-id="vm.ruleChain.id.id"
-                                is-edit="true"
-                                is-read-only="false"
-                                on-delete-rule-node="vm.deleteRuleNode(event, vm.editingRuleNode)"
-                                the-form="vm.ruleNodeForm">
-                        </tb-rule-node>
-                    </form>
-                </md-tab>
-                <md-tab ng-if="vm.isEditingRuleNode && vm.editingRuleNode.ruleNodeId"
-                        md-on-select="vm.triggerResize()" label="{{ 'rulenode.events' | translate }}">
-                    <tb-event-table flex entity-type="vm.types.entityType.rulenode"
-                                    entity-id="vm.editingRuleNode.ruleNodeId.id"
-                                    tenant-id="vm.ruleChain.tenantId.id"
-                                    debug-event-types="{{vm.types.debugEventType.debugRuleNode.value}}"
-                                    default-event-type="{{vm.types.debugEventType.debugRuleNode.value}}">
-                    </tb-event-table>
-                </md-tab>
-                <md-tab label="{{ 'rulenode.help' | translate }}">
-                    <div class="tb-rule-node-help">
-                        <div id="tb-node-content" class="md-padding" layout="column">
-                            <div class="tb-node-title">{{vm.editingRuleNode.component.name}}</div>
-                            <div>&nbsp;</div>
-                            <div class="tb-node-description">{{vm.editingRuleNode.component.configurationDescriptor.nodeDefinition.description}}</div>
-                            <div>&nbsp;</div>
-                            <div class="tb-node-details" ng-bind-html="vm.editingRuleNode.component.configurationDescriptor.nodeDefinition.details"></div>
-                        </div>
-                    </div>
-                </md-tab>
-            </md-tabs>
-        </tb-details-sidenav>
-        <tb-details-sidenav class="tb-rulenode-link-details-sidenav"
-                            header-title="{{vm.editingRuleNodeLink.label}}"
-                            header-subtitle="{{'rulenode.link-details' | translate}}"
-                            is-read-only="false"
-                            is-open="vm.isEditingRuleNodeLink"
-                            tb-enable-backdrop
-                            is-always-edit="true"
-                            on-close-details="vm.onEditRuleNodeLinkClosed()"
-                            on-toggle-details-edit-mode="vm.onRevertRuleNodeLinkEdit(vm.ruleNodeLinkForm)"
-                            on-apply-details="vm.saveRuleNodeLink(vm.ruleNodeLinkForm)"
-                            the-form="vm.ruleNodeLinkForm">
-            <details-buttons tb-help="'ruleEngine'" help-container-id="link-help-container">
-                <div id="link-help-container"></div>
-            </details-buttons>
-            <form name="vm.ruleNodeLinkForm" ng-if="vm.isEditingRuleNodeLink">
-                <tb-rule-node-link
-                        ng-model="vm.editingRuleNodeLink"
-                        allowed-labels="vm.editingRuleNodeLinkLabels"
-                        allow-custom="vm.editingRuleNodeAllowCustomLabels"
-                        is-edit="true"
-                        is-read-only="false">
-                </tb-rule-node-link>
-            </form>
-        </tb-details-sidenav>
+        <div flex layout="column" id="toast-parent" style="position: relative;">
+            <md-content ng-cloak flex layout="column" class="page-content" ui-view name="contentDetails"></md-content>
+        </div>
     </section>
     <!--浮动编辑菜单栏-->
     <!-- <section layout="row" layout-wrap class="tb-footer-buttons md-fab" layout-align="start end">
