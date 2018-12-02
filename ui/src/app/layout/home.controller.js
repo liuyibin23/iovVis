@@ -112,12 +112,16 @@ export default function HomeController(types, loginService, userService, deviceS
         // Power Plant design model provided by Bentley Systems
         var viewer = new Cesium.Viewer("cesiumContainer", {
             animation: false,  //是否显示动画控件
-            baseLayerPicker: false, //是否显示图层选择控件
-            geocoder: true, //是否显示地名查找控件
-            timeline: false, //是否显示时间线控件
-            sceneModePicker: false, //是否显示投影方式控件
+            fullscreenButton:false,
+            vrButton:false,
+            homeButton:false,
+            sceneModePicker: true, //是否显示投影方式控件
+            baseLayerPicker: true, //是否显示图层选择控件
             navigationHelpButton: false, //是否显示帮助信息控件
-            infoBox: false,  //是否显示点击要素之后显示的信息
+            geocoder: true, //是否显示地名查找控件
+            timeline: false, //是否显示时间线控件          
+            infoBox: false,  //是否显示点击要素之后显示的信息           
+            
             /* 天地图 
             imageryProvider : new Cesium.WebMapTileServiceImageryProvider({
                 url: "http://t0.tianditu.com/vec_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=vec&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles",
@@ -143,7 +147,11 @@ export default function HomeController(types, loginService, userService, deviceS
                 url: '/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
             })
         );
-
+        // var tileset2 = scene.primitives.add(
+        //     new Cesium.Cesium3DTileset({
+        //         url: '/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
+        //     })
+        // );
         tileset.readyPromise.then(function (tileset) {
             viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0.5, -0.2, tileset.boundingSphere.radius * 4.0));
         }).otherwise(function (error) {

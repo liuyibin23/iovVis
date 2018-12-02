@@ -113,20 +113,8 @@
                 <md-button ng-click="vm.openDashboard('af5dadb0-e5ba-11e8-be95-f3713e6700c3')">桥梁</md-button>
             </md-sidenav>
         </div>
-        <div flex layout="column" id="toast-parent" style="position: relative;">
+        <div flex layout="column" id="toast-parent" >
             <md-content ng-cloak flex layout="column" class="page-content" ui-view name="contentDetails"></md-content>
         </div>
     </section>
-    <!--浮动编辑菜单栏-->
-    <!-- <section layout="row" layout-wrap class="tb-footer-buttons md-fab" layout-align="start end">
-        <md-button ng-disabled="false"
-                   class="tb-btn-footer md-accent md-hue-2 md-fab"
-                   aria-label="{{ 'action.apply' | translate }}"
-                   ng-click="">
-            <md-tooltip md-direction="top">
-                {{ 'action.apply-changes' | translate }}
-            </md-tooltip>
-            <ng-md-icon icon="done"></ng-md-icon>
-        </md-button>
-    </section> -->
 </md-content>

@@ -60,6 +60,9 @@ export default function IntegratedRoutes($stateProvider) {
                 widgetEditMode: false,
                 searchEnabled: false,
                 pageTitle: 'dashboard.dashboard'
+            },
+            ncyBreadcrumb: {
+                skip: true
             }
         });
 }
