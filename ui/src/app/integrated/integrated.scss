@@ -27,3 +27,45 @@
     }
   }
 }
+
+.et-sensors {
+  z-index: 1;
+  width: 150px;
+  min-width: 150px;
+
+  md-toolbar {
+    height: 50px;
+    min-height: 50px;
+
+    .md-toolbar-tools > .md-button:last-child {
+      margin-right: 0;
+    }
+
+    .md-toolbar-tools {
+      height: 48px;
+      padding: 0 6px;
+      font-size: 14px;
+
+      .md-button.md-icon-button {
+        margin: 0;
+
+        &.tb-small {
+          width: 32px;
+          height: 32px;
+          min-height: 32px;
+          padding: 6px;
+          line-height: 20px;
+
+          md-icon {
+            width: 20px;
+            min-width: 20px;
+            height: 20px;
+            min-height: 20px;
+            font-size: 20px;
+            line-height: 20px;
+          }
+        }
+      }
+    }
+  }
+}
