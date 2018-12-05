@@ -1,0 +1,71 @@
+/**
+ * Copyright © 2016-2018 The BeiDouApp Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/* eslint-disable */
+
+@import "../../scss/constants";
+
+.tb-home-links {
+  .md-headline {
+    font-size: 20px;
+
+    @media (min-width: $layout-breakpoint-xmd) {
+      font-size: 24px;
+    }
+  }
+}
+
+.et-sensors {
+  z-index: 1;
+  width: 150px;
+  min-width: 150px;
+
+  md-toolbar {
+    height: 50px;
+    min-height: 50px;
+
+    .md-toolbar-tools > .md-button:last-child {
+      margin-right: 0;
+    }
+
+    .md-toolbar-tools {
+      height: 48px;
+      padding: 0 6px;
+      font-size: 14px;
+
+      .md-button.md-icon-button {
+        margin: 0;
+
+        &.tb-small {
+          width: 32px;
+          height: 32px;
+          min-height: 32px;
+          padding: 6px;
+          line-height: 20px;
+
+          md-icon {
+            width: 20px;
+            min-width: 20px;
+            height: 20px;
+            min-height: 20px;
+            font-size: 20px;
+            line-height: 20px;
+          }
+        }
+      }
+    }
+  }
+}

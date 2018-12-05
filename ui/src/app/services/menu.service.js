@@ -144,6 +144,13 @@ function Menu(userService, $state, $rootScope) {
                             icon: 'home'
                         },
                         {
+                            name: 'integrated.integrated',
+                            type: 'link',
+                            state: 'home.integrated',
+                            icon: 'extension'
+
+                        },
+                        {
                             name: 'rulechain.rulechains',
                             type: 'link',
                             state: 'home.ruleChains',

@@ -27,11 +27,11 @@ const config = require('./webpack.config');
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
-const forwardHost = '39.98.53.229';
-const forwardPort = 8880;
+const forwardHost = 'cf.beidouapp.com';
+const forwardPort = 8080;
 
-const ruleNodeUiforwardHost = '39.98.53.229';
-const ruleNodeUiforwardPort = 8880;
+const ruleNodeUiforwardHost = 'cf.beidouapp.com';
+const ruleNodeUiforwardPort = 8080;
 
 const app = express();
 const server = http.createServer(app);
@@ -46,7 +46,18 @@ app.use(webpackHotMiddleware(compiler));
 
 const root = path.join(__dirname, '/src');
 
+const models = path.join(__dirname, '/3d-tiles-samples');
+const Workers = path.join(__dirname, '/Workers');
+const Assets = path.join(__dirname, '/Assets');
+const Widgets = path.join(__dirname, '/Widgets');
+const ThirdParty = path.join(__dirname, '/ThirdParty');
+
 app.use('/static', express.static(root));
+app.use('/Workers', express.static(Workers));
+app.use('/Assets', express.static(Assets));
+app.use('/Widgets', express.static(Widgets));
+app.use('/ThirdParty',express.static(ThirdParty));
+app.use('/3dtiles', express.static(models));
 
 const apiProxy = httpProxy.createProxyServer({
     target: {

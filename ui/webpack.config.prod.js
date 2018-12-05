@@ -19,12 +19,16 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
+
 const webpack = require('webpack');
 const path = require('path');
 const dirTree = require('directory-tree');
 const jsonminify = require("jsonminify");
 
 const PUBLIC_RESOURCE_PATH = '/static/';
+// The path to the cesium source code
+const cesiumSource = 'node_modules/cesium/Source';
+const cesiumWorkers = '../Build/Cesium/Workers';
 
 var langs = [];
 dirTree('./src/app/locale/', {extensions:/\.json$/}, (item) => {
@@ -34,7 +38,6 @@ dirTree('./src/app/locale/', {extensions:/\.json$/}, (item) => {
 });
 
 module.exports = {
-    devtool: 'source-map',
     entry: [
         './src/app/app.js',
         'webpack-material-design-icons'
@@ -43,6 +46,8 @@ module.exports = {
         path: path.resolve(__dirname, 'target/generated-resources/public/static'),
         publicPath: PUBLIC_RESOURCE_PATH,
         filename: 'bundle.[hash].js',
+        // Needed by Cesium for multiline strings
+        sourcePrefix: ''
     },
     plugins: [
         new webpack.ProvidePlugin({
@@ -71,6 +76,14 @@ module.exports = {
                 }
             }
         ]),
+        // Copy Cesium Assets, Widgets, and Workers to a static directory
+        new CopyWebpackPlugin([{from: path.join(cesiumSource, cesiumWorkers), to: 'Workers'}]),
+        new CopyWebpackPlugin([{from: path.join(cesiumSource, 'Assets'), to: 'Assets'}]),
+        new CopyWebpackPlugin([{from: path.join(cesiumSource, 'Widgets'), to: 'Widgets'}]),
+        new webpack.DefinePlugin({
+            // Define relative base path in cesium for loading assets
+            CESIUM_BASE_URL: JSON.stringify('')
+        }),
         new HtmlWebpackPlugin({
             template: './src/index.html',
             filename: '../index.html',
@@ -93,6 +106,7 @@ module.exports = {
             PUBLIC_PATH: PUBLIC_RESOURCE_PATH,
             SUPPORTED_LANGS: JSON.stringify(langs)
         }),
+        
         new CompressionPlugin({
             asset: "[path].gz[query]",
             algorithm: "gzip",
@@ -104,6 +118,12 @@ module.exports = {
     node: {
         tls: "empty",
         fs: "empty"
+    },
+    resolve: {
+        alias: {
+            // Cesium module name
+            cesium: path.resolve(__dirname, cesiumSource)
+        }
     },
     module: {
         loaders: [
