@@ -70,7 +70,7 @@ plugins:
 security:
   # JWT Token parameters
   jwt:
-    tokenExpirationTime: "${JWT_TOKEN_EXPIRATION_TIME:900}" # Number of seconds (15 mins)
+    tokenExpirationTime: "${JWT_TOKEN_EXPIRATION_TIME:3600}" # Number of seconds (15 mins)
     refreshTokenExpTime: "${JWT_REFRESH_TOKEN_EXPIRATION_TIME:3600}" # Seconds (1 hour)
     tokenIssuer: "${JWT_TOKEN_ISSUER:thingsboard.io}"
     tokenSigningKey: "${JWT_TOKEN_SIGNING_KEY:thingsboardDefaultSigningKey}"
@@ -167,7 +167,7 @@ database:
   entities:
     type: "${DATABASE_ENTITIES_TYPE:sql}" # cassandra OR sql
   ts:
-    type: "${DATABASE_TS_TYPE:sql}" # cassandra OR sql (for hybrid mode, only this value should be cassandra)
+    type: "${DATABASE_TS_TYPE:cassandra}" # cassandra OR sql (for hybrid mode, only this value should be cassandra)
 
 
 # Cassandra driver configuration parameters
@@ -177,7 +177,7 @@ cassandra:
   # Thingsboard keyspace name
   keyspace_name: "${CASSANDRA_KEYSPACE_NAME:thingsboard}"
   # Specify node list
-  url: "${CASSANDRA_URL:127.0.0.1:9042}"
+  url: "${CASSANDRA_URL:192.168.1.244:9042}"
   # Enable/disable secure connection
   ssl: "${CASSANDRA_USE_SSL:false}"
   # Enable/disable JMX
@@ -192,11 +192,11 @@ cassandra:
   init_retry_interval_ms: "${CASSANDRA_CLUSTER_INIT_RETRY_INTERVAL_MS:3000}"
 
   # Credential parameters #
-  credentials: "${CASSANDRA_USE_CREDENTIALS:false}"
+  credentials: "${CASSANDRA_USE_CREDENTIALS:true}"
   # Specify your username
-  username: "${CASSANDRA_USERNAME:}"
+  username: "${CASSANDRA_USERNAME:shj}"
   # Specify your password
-  password: "${CASSANDRA_PASSWORD:}"
+  password: "${CASSANDRA_PASSWORD:123456}"
 
   # Cassandra cluster connection socket parameters #
   socket:
@@ -323,7 +323,7 @@ redis:
 # Check new version updates parameters
 updates:
   # Enable/disable updates checking.
-  enabled: "${UPDATES_ENABLED:true}"
+  enabled: "${UPDATES_ENABLED:false}"
   
 # spring CORS configuration
 spring.mvc.cors:

@@ -65,6 +65,7 @@ import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
+import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
 import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 import org.thingsboard.server.exception.ThingsboardErrorResponseHandler;
@@ -147,6 +148,9 @@ public abstract class BaseController {
 
     @Autowired
     protected TelemetrySubscriptionService tsSubService;
+
+    @Autowired
+    protected VassetAttrKVService vassetAttrKVService;
 
     @Autowired
     protected AttributesService attributesService;
