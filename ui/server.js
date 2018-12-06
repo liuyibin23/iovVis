@@ -87,6 +87,7 @@ console.info(`Forwarding API requests to http://${forwardHost}:${forwardPort}`);
 console.info(`Forwarding Rule Node UI requests to http://${ruleNodeUiforwardHost}:${ruleNodeUiforwardPort}`);
 
 app.all('/api/*', (req, res) => {
+    // console.info(req);
     apiProxy.web(req, res);
 });
 

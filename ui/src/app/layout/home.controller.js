@@ -58,7 +58,7 @@ export default function HomeController(types, loginService, userService, deviceS
     vm.toggleFullscreen = toggleFullscreen;
     vm.openSearch = openSearch;
     vm.closeSearch = closeSearch;
-    vm.openDashboard = openDashboard;
+    // vm.openDashboard = openDashboard;
 
     $scope.$on('$stateChangeSuccess', function (evt, to, toParams, from) {
         watchEntitySubtype(false);
@@ -103,10 +103,10 @@ export default function HomeController(types, loginService, userService, deviceS
 
     bimPortal();
 
-    function openDashboard(dashboardID) {
-        // $rootScope.forceFullscreen = true;
-        $state.go('home.dashboards.dashboard', {dashboardId: dashboardID});
-    }
+    // function openDashboard(dashboardID) {
+    //     // $rootScope.forceFullscreen = true;
+    //     $state.go('home.dashboards.dashboard', {dashboardId: dashboardID});
+    // }
 
     function bimPortal() {
         // Power Plant design model provided by Bentley Systems
@@ -141,6 +141,14 @@ export default function HomeController(types, loginService, userService, deviceS
         //        url: 'https://a.tile.openstreetmap.org/'
         //    }) 
         });
+
+        // var viewModel = {
+        //     height: 0,
+        //     RotateX:0,
+        //     RotateY:0,
+        //     RotateZ:0
+        // };    
+
         var scene = viewer.scene;
         var tileset = scene.primitives.add(
             new Cesium.Cesium3DTileset({

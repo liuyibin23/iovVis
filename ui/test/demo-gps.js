@@ -22,7 +22,27 @@ const axios = require('axios');
 const fs = require('fs');
 const readline = require('readline');
 
+function postGps(ind) {
+    axios.post('http://cf.beidouapp.com:8080/api/v1/2DQHhOjq2IY1hyNWnWTc/telemetry',
+        // arrPTS_[ind]
+        {"latitude": arrPTS_[ind].latitude, "longitude": arrPTS_[ind].longitude, 
+         "speed": arrPTS_[ind].speed,
+         "energy": arrPTS_[ind].energy,
+         "id":15
+        } 
+    ).then(res => {
+        console.info(res)
+    }).catch(e => {
+        console.info(e)
+    })
+}
 
+var arrPTS_ = new Array();
+let pt = {latitude:250,longitude:0,speed:0,energy:0};
+arrPTS_.push(pt);
+postGps(0);
+
+/*
 var fRead = fs.createReadStream('./taxi/Taxi_175');
 var objReadline = readline.createInterface({
     input: fRead,
@@ -45,20 +65,7 @@ objReadline.on('close', function () {
     // callback(arr);
 });
 
-function postGps(ind) {
-    axios.post('http://localhost:3000/api/v1/3B06sOePQ4RF9C8NUsUm/telemetry',
-        // arrPTS_[ind]
-        {"latitude": arrPTS_[ind].latitude, "longitude": arrPTS_[ind].longitude, 
-         "speed": arrPTS_[ind].speed,
-         "energy": arrPTS_[ind].energy,
-         "subject":"测试数据TEST"+arrPTS_[ind].latitude
-        } 
-    ).then(res => {
-        console.info(res)
-    }).catch(e => {
-        console.info(e)
-    })
-}
+
 
 
 let count_ = 0,
@@ -69,4 +76,5 @@ let count_ = 0,
         //objReadline.resume();
         if (count_ >= num)
             clearInterval(timer_);
-    }, 1000, 'total times', 150);
+    }, 1000, 'total times', 3);
+*/

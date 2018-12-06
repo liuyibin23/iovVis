@@ -94,6 +94,25 @@
 	</md-nav-bar>
 	<!--地图内容显示区-->
 	<div id="cesiumContainer" ng-show="vm.showCesium"></div>
+	
+<!-- <div id="cesium_toolbar">
+    <div>Height-offset</div>
+    <input type="range" min="-100.0" max="100.0" step="1" data-bind="value: height, valueUpdate: 'input'">
+    <input type="text" size="5" data-bind="value: height">
+    
+<div>RotateX</div>
+    <input type="range" min="-100.0" max="100.0" step="1" data-bind="value: RotateX, valueUpdate: 'input'">
+    <input type="text" size="5" data-bind="value: RotateX">
+    
+<div>RotateY</div>
+    <input type="range" min="-100.0" max="100.0" step="1" data-bind="value: RotateY, valueUpdate: 'input'">
+    <input type="text" size="5" data-bind="value: RotateY">
+    
+<div>RotateZ</div>
+    <input type="range" min="-100.0" max="100.0" step="1" data-bind="value: RotateZ, valueUpdate: 'input'">
+    <input type="text" size="5" data-bind="value: RotateZ">
+</div> -->
+
 	<!--基础内容显示区-->
 	<div flex layout="column" id="toast-parent" style="position: relative;">
 		<md-content ng-cloak flex layout="column" class="page-content" ui-view name="content"></md-content>
