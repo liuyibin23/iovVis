@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeidouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,10 +27,10 @@ const config = require('./webpack.config');
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
-const forwardHost = 'cf.beidouapp.com';
+const forwardHost = 'localhost';
 const forwardPort = 8080;
 
-const ruleNodeUiforwardHost = 'cf.beidouapp.com';
+const ruleNodeUiforwardHost = 'localhost';
 const ruleNodeUiforwardPort = 8080;
 
 const app = express();
@@ -46,18 +46,7 @@ app.use(webpackHotMiddleware(compiler));
 
 const root = path.join(__dirname, '/src');
 
-const models = path.join(__dirname, '/3d-tiles-samples');
-const Workers = path.join(__dirname, '/Workers');
-const Assets = path.join(__dirname, '/Assets');
-const Widgets = path.join(__dirname, '/Widgets');
-const ThirdParty = path.join(__dirname, '/ThirdParty');
-
 app.use('/static', express.static(root));
-app.use('/Workers', express.static(Workers));
-app.use('/Assets', express.static(Assets));
-app.use('/Widgets', express.static(Widgets));
-app.use('/ThirdParty',express.static(ThirdParty));
-app.use('/3dtiles', express.static(models));
 
 const apiProxy = httpProxy.createProxyServer({
     target: {
@@ -106,6 +95,6 @@ server.listen(PORT, '0.0.0.0', (error) => {
     if (error) {
         console.error(error);
     } else {
-        console.info(`==> Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
+        console.info(`==> 🌎  Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
     }
 });

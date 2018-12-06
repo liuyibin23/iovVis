@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2016-2018 The BeiDouApp Authors
+    Copyright © 2016-2018 The Thingsboard Authors
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,15 +15,12 @@
     limitations under the License.
 
 -->
-
 <md-content flex layout="column" class="tb-progress-cover" layout-align="center center"
 			ng-style="vm.dashboardStyle"
    ng-show="((vm.loading() || vm.dashboardLoading) && !vm.isEdit) || vm.isResizing">
-   
 	<md-progress-circular md-mode="indeterminate" ng-disabled="(!vm.loading() && !vm.dashboardLoading || vm.isEdit) && !vm.isResizing" class="md-warn" md-diameter="100">
 	</md-progress-circular>
 </md-content>
-
 <md-menu md-position-mode="target target" tb-mousepoint-menu>
 	<md-content id="gridster-parent" class="tb-dashboard-content" flex layout-wrap ng-click="" ng-style="{'overflowY': vm.isAutofillHeight() ? 'hidden' : 'auto'}"
 				tb-contextmenu="vm.openDashboardContextMenu($event, $mdOpenMousepointMenu)">

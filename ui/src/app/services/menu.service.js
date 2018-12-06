@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,13 +142,6 @@ function Menu(userService, $state, $rootScope) {
                             type: 'link',
                             state: 'home.links',
                             icon: 'home'
-                        },
-                        {
-                            name: 'integrated.integrated',
-                            type: 'link',
-                            state: 'home.integrated',
-                            icon: 'extension'
-
                         },
                         {
                             name: 'rulechain.rulechains',

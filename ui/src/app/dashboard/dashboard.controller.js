@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import AliasController from '../api/alias-controller';
 
 /*@ngInject*/
 export default function DashboardController(types, utils, dashboardUtils, widgetService, userService,
-                                            dashboardService, entityService, itembuffer, importExport, $window, $rootScope,
-                                            $scope, $state, $stateParams, $mdDialog, $mdMedia, $timeout, $document, $q, $translate, $filter) {
+                                            dashboardService, timeService, entityService, itembuffer, importExport, hotkeys, $window, $rootScope,
+                                            $scope, $element, $state, $stateParams, $mdDialog, $mdMedia, $timeout, $document, $q, $translate, $filter) {
 
     var vm = this;
 
@@ -55,9 +55,8 @@ export default function DashboardController(types, utils, dashboardUtils, widget
     vm.isToolbarOpened = false;
 
     vm.thingsboardVersion = THINGSBOARD_VERSION; //eslint-disable-line
-    
-    vm.currentDashboardId = $stateParams.dashboardId;
 
+    vm.currentDashboardId = $stateParams.dashboardId;
     if ($stateParams.customerId) {
         vm.currentCustomerId = $stateParams.customerId;
         vm.currentDashboardScope = 'customer';
@@ -464,7 +463,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                 }
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (entityAliases) {
@@ -489,7 +488,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                 gridSettings: gridSettings
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (data) {
@@ -511,7 +510,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                 layouts: angular.copy(vm.dashboard.configuration.states[vm.dashboardCtx.state].layouts)
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (layouts) {
@@ -532,7 +531,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                 states: states
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (states) {
@@ -874,7 +873,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                 templateUrl: selectTargetLayoutTemplate,
                 parent: angular.element($document[0].body),
                 fullscreen: true,
-                skipHide: true,
+                multiple: true,
                 targetEvent: $event
             }).then(
                 function success(layoutId) {
@@ -942,7 +941,7 @@ export default function DashboardController(types, utils, dashboardUtils, widget
                         },
                         parent: angular.element($document[0].body),
                         fullscreen: true,
-                        skipHide: true,
+                        multiple: true,
                         targetEvent: event,
                         onComplete: function () {
                             var w = angular.element($window);

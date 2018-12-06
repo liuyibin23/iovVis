@@ -86,7 +86,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
 
     @Override
     public void createSysAdmin() {
-        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@beidouapp.com", "sysadmin");
+        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@thingsboard.org", "sysadmin");
     }
 
     @Override
@@ -96,12 +96,12 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         ObjectNode node = objectMapper.createObjectNode();
         node.put("baseUrl", "http://localhost:8080");
         generalSettings.setJsonValue(node);
-        adminSettingsService.saveAdminSettings(generalSettings);
+        adminSettingsService.saveAdminSettings(TenantId.SYS_TENANT_ID, generalSettings);
 
         AdminSettings mailSettings = new AdminSettings();
         mailSettings.setKey("mail");
         node = objectMapper.createObjectNode();
-        node.put("mailFrom", "BeiDouApp <sysadmin@localhost.localdomain>");
+        node.put("mailFrom", "ThingsBoard <sysadmin@localhost.localdomain>");
         node.put("smtpProtocol", "smtp");
         node.put("smtpHost", "localhost");
         node.put("smtpPort", "25");
@@ -110,7 +110,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         node.put("username", "");
         node.put("password", ""); //NOSONAR, key used to identify password field (not password value itself)
         mailSettings.setJsonValue(node);
-        adminSettingsService.saveAdminSettings(mailSettings);
+        adminSettingsService.saveAdminSettings(TenantId.SYS_TENANT_ID, mailSettings);
     }
 
     @Override
@@ -120,7 +120,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         demoTenant.setTitle("Tenant");
         demoTenant = tenantService.saveTenant(demoTenant);
         installScripts.createDefaultRuleChains(demoTenant.getId());
-        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@beidouapp.com", "tenant");
+        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@thingsboard.org", "tenant");
 
         Customer customerA = new Customer();
         customerA.setTenantId(demoTenant.getId());
@@ -134,10 +134,10 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         customerC.setTenantId(demoTenant.getId());
         customerC.setTitle("Customer C");
         customerC = customerService.saveCustomer(customerC);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@beidouapp.com", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@beidouapp.com", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@beidouapp.com", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@beidouapp.com", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@thingsboard.org", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@thingsboard.org", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@thingsboard.org", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@thingsboard.org", CUSTOMER_CRED);
 
         createDevice(demoTenant.getId(), customerA.getId(), DEFAULT_DEVICE_TYPE, "Test Device A1", "A1_TEST_TOKEN", null);
         createDevice(demoTenant.getId(), customerA.getId(), DEFAULT_DEVICE_TYPE, "Test Device A2", "A2_TEST_TOKEN", null);
@@ -156,9 +156,9 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
 
     @Override
     public void deleteSystemWidgetBundle(String bundleAlias) throws Exception {
-        WidgetsBundle widgetsBundle = widgetsBundleService.findWidgetsBundleByTenantIdAndAlias(new TenantId(ModelConstants.NULL_UUID), bundleAlias);
+        WidgetsBundle widgetsBundle = widgetsBundleService.findWidgetsBundleByTenantIdAndAlias(TenantId.SYS_TENANT_ID, bundleAlias);
         if (widgetsBundle != null) {
-            widgetsBundleService.deleteWidgetsBundle(widgetsBundle.getId());
+            widgetsBundleService.deleteWidgetsBundle(TenantId.SYS_TENANT_ID, widgetsBundle.getId());
         }
     }
 
@@ -178,11 +178,11 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         user.setTenantId(tenantId);
         user.setCustomerId(customerId);
         user = userService.saveUser(user);
-        UserCredentials userCredentials = userService.findUserCredentialsByUserId(user.getId());
+        UserCredentials userCredentials = userService.findUserCredentialsByUserId(TenantId.SYS_TENANT_ID, user.getId());
         userCredentials.setPassword(passwordEncoder.encode(password));
         userCredentials.setEnabled(true);
         userCredentials.setActivateToken(null);
-        userService.saveUserCredentials(userCredentials);
+        userService.saveUserCredentials(TenantId.SYS_TENANT_ID, userCredentials);
         return user;
     }
 
@@ -203,9 +203,9 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
             device.setAdditionalInfo(additionalInfo);
         }
         device = deviceService.saveDevice(device);
-        DeviceCredentials deviceCredentials = deviceCredentialsService.findDeviceCredentialsByDeviceId(device.getId());
+        DeviceCredentials deviceCredentials = deviceCredentialsService.findDeviceCredentialsByDeviceId(TenantId.SYS_TENANT_ID, device.getId());
         deviceCredentials.setCredentialsId(accessToken);
-        deviceCredentialsService.updateDeviceCredentials(deviceCredentials);
+        deviceCredentialsService.updateDeviceCredentials(TenantId.SYS_TENANT_ID, deviceCredentials);
         return device;
     }
 

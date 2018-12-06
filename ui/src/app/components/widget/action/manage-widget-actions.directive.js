@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -164,7 +164,7 @@ function ManageWidgetActionsController($rootScope, $scope, $document, $mdDialog,
                 .cancel($translate.instant('action.no'))
                 .ok($translate.instant('action.yes'));
 
-            confirm._options.skipHide = true;
+            confirm._options.multiple = true;
             confirm._options.fullscreen = true;
 
             $mdDialog.show(confirm).then(function () {
@@ -212,7 +212,7 @@ function ManageWidgetActionsController($rootScope, $scope, $document, $mdDialog,
             locals: {isAdd: isAdd, fetchDashboardStates: vm.fetchDashboardStates,
                 actionSources: availableActionSources, widgetActions: vm.widgetActions,
                 action: angular.copy(action)},
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (action) {

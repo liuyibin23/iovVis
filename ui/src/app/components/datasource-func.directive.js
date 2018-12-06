@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ function DatasourceFunc($compile, $templateCache, $mdDialog, $window, $document,
                 random: tinycolor.random(),
                 clickOutsideToClose: false,
                 hasBackdrop: false,
-                skipHide: true,
+                multiple: true,
                 preserveScope: false,
 
                 mdColorAlphaChannel: true,
@@ -173,7 +173,7 @@ function DatasourceFunc($compile, $templateCache, $mdDialog, $window, $document,
                 parent: angular.element($document[0].body),
                 fullscreen: true,
                 targetEvent: event,
-                skipHide: true,
+                multiple: true,
                 onComplete: function () {
                     var w = angular.element($window);
                     w.triggerHandler('resize');

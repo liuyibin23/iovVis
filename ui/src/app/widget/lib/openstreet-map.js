@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,7 @@ export default class TbOpenStreetMap {
         onMarkerIconReady(iconInfo);
     }
 
-    createMarker(location, settings, onClickListener, markerArgs) {
+    createMarker(location, dsIndex, settings, onClickListener, markerArgs) {
         var marker = L.marker(location, {});
         var opMap = this;
         this.createMarkerIcon(marker, settings, (iconInfo) => {
@@ -140,7 +140,7 @@ export default class TbOpenStreetMap {
         });
 
         if (settings.displayTooltip) {
-            this.createTooltip(marker, settings.tooltipPattern, settings.tooltipReplaceInfo, settings.autocloseTooltip, markerArgs);
+            this.createTooltip(marker, dsIndex, settings, markerArgs);
         }
 
         if (onClickListener) {
@@ -154,15 +154,15 @@ export default class TbOpenStreetMap {
         this.map.removeLayer(marker);
     }
 
-    createTooltip(marker, pattern, replaceInfo, autoClose, markerArgs) {
+    createTooltip(marker, dsIndex, settings, markerArgs) {
         var popup = L.popup();
         popup.setContent('');
-        marker.bindPopup(popup, {autoClose: autoClose, closeOnClick: false});
+        marker.bindPopup(popup, {autoClose: settings.autocloseTooltip, closeOnClick: false});
         this.tooltips.push( {
             markerArgs: markerArgs,
             popup: popup,
-            pattern: pattern,
-            replaceInfo: replaceInfo
+            locationSettings: settings,
+            dsIndex: dsIndex
         });
     }
 

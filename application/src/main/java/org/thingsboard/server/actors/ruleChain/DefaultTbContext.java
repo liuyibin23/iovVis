@@ -17,6 +17,7 @@ package org.thingsboard.server.actors.ruleChain;
 
 import akka.actor.ActorRef;
 import com.datastax.driver.core.utils.UUIDs;
+import org.springframework.util.StringUtils;
 import org.thingsboard.rule.engine.api.ListeningExecutor;
 import org.thingsboard.rule.engine.api.MailService;
 import org.thingsboard.rule.engine.api.RuleEngineDeviceRpcRequest;
@@ -35,11 +36,14 @@ import org.thingsboard.server.common.data.rpc.ToDeviceRpcRequestBody;
 import org.thingsboard.server.common.data.rule.RuleNode;
 import org.thingsboard.server.common.msg.TbMsg;
 import org.thingsboard.server.common.msg.TbMsgMetaData;
+import org.thingsboard.server.common.msg.cluster.ServerAddress;
+import org.thingsboard.server.common.msg.cluster.ServerType;
 import org.thingsboard.server.common.msg.rpc.ToDeviceRpcRequest;
 import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.attributes.AttributesService;
 import org.thingsboard.server.dao.customer.CustomerService;
+import org.thingsboard.server.dao.dashboard.DashboardService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.relation.RelationService;
@@ -159,6 +163,11 @@ class DefaultTbContext implements TbContext {
     }
 
     @Override
+    public String getNodeId() {
+        return mainCtx.getNodeIdProvider().getNodeId();
+    }
+
+    @Override
     public AttributesService getAttributesService() {
         return mainCtx.getAttributesService();
     }
@@ -186,6 +195,11 @@ class DefaultTbContext implements TbContext {
     @Override
     public DeviceService getDeviceService() {
         return mainCtx.getDeviceService();
+    }
+
+    @Override
+    public DashboardService getDashboardService() {
+        return mainCtx.getDashboardService();
     }
 
     @Override
@@ -232,16 +246,22 @@ class DefaultTbContext implements TbContext {
         return new RuleEngineRpcService() {
             @Override
             public void sendRpcReply(DeviceId deviceId, int requestId, String body) {
-                mainCtx.getDeviceRpcService().sendRpcReplyToDevice(nodeCtx.getTenantId(), deviceId, requestId, body);
+                mainCtx.getDeviceRpcService().sendReplyToRpcCallFromDevice(nodeCtx.getTenantId(), deviceId, requestId, body);
             }
 
             @Override
             public void sendRpcRequest(RuleEngineDeviceRpcRequest src, Consumer<RuleEngineDeviceRpcResponse> consumer) {
                 ToDeviceRpcRequest request = new ToDeviceRpcRequest(src.getRequestUUID(), nodeCtx.getTenantId(), src.getDeviceId(),
                         src.isOneway(), src.getExpirationTime(), new ToDeviceRpcRequestBody(src.getMethod(), src.getBody()));
-                mainCtx.getDeviceRpcService().processRpcRequestToDevice(request, response -> {
+                mainCtx.getDeviceRpcService().forwardServerSideRPCRequestToDeviceActor(request, response -> {
                     if (src.isRestApiCall()) {
-                        mainCtx.getDeviceRpcService().processRestAPIRpcResponseFromRuleEngine(response);
+                        ServerAddress requestOriginAddress;
+                        if (!StringUtils.isEmpty(src.getOriginHost())) {
+                            requestOriginAddress = new ServerAddress(src.getOriginHost(), src.getOriginPort(), ServerType.CORE);
+                        } else {
+                            requestOriginAddress = mainCtx.getRoutingService().getCurrentServer();
+                        }
+                        mainCtx.getDeviceRpcService().processResponseToServerSideRPCRequestFromRuleEngine(requestOriginAddress, response);
                     }
                     consumer.accept(RuleEngineDeviceRpcResponse.builder()
                             .deviceId(src.getDeviceId())

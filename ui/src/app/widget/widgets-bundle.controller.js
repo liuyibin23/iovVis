@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import widgetsBundleCard from './widgets-bundle-card.tpl.html';
 /* eslint-enable import/no-unresolved, import/default */
 
 /*@ngInject*/
-export default function WidgetsBundleController(widgetService, userService, importExport, $state, $stateParams, $filter, $translate, $log, types) {
+export default function WidgetsBundleController(widgetService, userService, importExport, $state, $stateParams, $filter, $translate, types) {
 
     var widgetsBundleActionsList = [
         {
@@ -181,7 +181,6 @@ export default function WidgetsBundleController(widgetService, userService, impo
         if ($event) {
             $event.stopPropagation();
         }
-        $log.log('1. Awen-->widgets-bundle.controller ends, goting to widget-library.');
         $state.go('home.widgets-bundles.widget-types', {widgetsBundleId: widgetsBundle.id.id});
     }
 

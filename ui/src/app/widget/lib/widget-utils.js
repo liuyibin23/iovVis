@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,9 @@ export function toLabelValueMap(data, datasources) {
     var dataMap = {};
     var dsDataMap = [];
     for (var d=0;d<datasources.length;d++) {
-        dsDataMap[d] = {};
+        dsDataMap[d] = {
+            $datasource: datasources[d]
+        };
     }
     for (var i = 0; i < data.length; i++) {
         var dataKey = data[i].dataKey;

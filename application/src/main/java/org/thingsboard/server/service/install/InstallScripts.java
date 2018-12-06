@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.thingsboard.server.common.data.Dashboard;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.rule.RuleChain;
 import org.thingsboard.server.common.data.rule.RuleChainMetaData;
@@ -83,18 +84,9 @@ public class InstallScripts {
 
     public String getDataDir() {
         if (!StringUtils.isEmpty(dataDir)) {
-/*            Path profile = Paths.get(this.dataDir);
-            if (profile.toFile().isDirectory()) {
-                log.error("true at " +this.dataDir);
-            }else
-            {
-                log.error("false at dir check");
-                log.error("dir is:'" +this.dataDir +"'.");
-            }
-
             if (!Paths.get(this.dataDir).toFile().isDirectory()) {
-                throw new RuntimeException("'install.data_dir' property value is not a valid directory!   " + this.dataDir);
-            }*/
+                throw new RuntimeException("'install.data_dir' property value is not a valid directory!");
+            }
             return dataDir;
         } else {
             String workDir = System.getProperty("user.dir");
@@ -125,7 +117,7 @@ public class InstallScripts {
                             ruleChain = ruleChainService.saveRuleChain(ruleChain);
 
                             ruleChainMetaData.setRuleChainId(ruleChain.getId());
-                            ruleChainService.saveRuleChainMetaData(ruleChainMetaData);
+                            ruleChainService.saveRuleChainMetaData(new TenantId(EntityId.NULL_UUID), ruleChainMetaData);
                         } catch (Exception e) {
                             log.error("Unable to load rule chain from json: [{}]", path.toString());
                             throw new RuntimeException("Unable to load rule chain from json", e);
@@ -178,7 +170,7 @@ public class InstallScripts {
                             dashboard.setTenantId(tenantId);
                             Dashboard savedDashboard = dashboardService.saveDashboard(dashboard);
                             if (customerId != null && !customerId.isNullUid()) {
-                                dashboardService.assignDashboardToCustomer(savedDashboard.getId(), customerId);
+                                dashboardService.assignDashboardToCustomer(new TenantId(EntityId.NULL_UUID), savedDashboard.getId(), customerId);
                             }
                         } catch (Exception e) {
                             log.error("Unable to load dashboard from json: [{}]", path.toString());
