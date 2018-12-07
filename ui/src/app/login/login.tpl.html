@@ -16,7 +16,7 @@
 
 -->
 <md-content layout="row" layout-align="center center" style="width: 100%;">
-    <md-card flex="initial" class="tb-login-card" md-theme="tb-dark">
+    <md-card flex="initial" class="tb-login-card" md-theme="bd-dark">
         <md-card-title>
             <img src="{{vm.logoSvg}}" aria-label="logo" class="tb-login-logo"/>
         </md-card-title>
@@ -31,7 +31,7 @@
                         <md-icon aria-label="{{ 'login.username' | translate }}" class="material-icons">
                             email
                         </md-icon>
-                        <input id="username-input" type="email" autofocus ng-model="vm.user.name"/>
+                        <input id="username-input" type="email" ng-model="vm.user.name"/>
                     </md-input-container>
                     <md-input-container class="md-block">
                         <label translate>common.password</label>
@@ -46,7 +46,7 @@
                             </md-button>
                         </div>
                     </div>
-                    <md-button class="md-raised" type="submit">{{ 'login.login' | translate }}</md-button>
+                    <md-button class="md-raised md-accent" type="submit">{{ 'login.login' | translate }}</md-button>
                 </div>
             </form>
         </md-card-content>
