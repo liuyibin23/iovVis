@@ -1,6 +1,6 @@
 <!--
 
-    Copyright © 2016-2018 The Thingsboard Authors
+    Copyright © 2016-2018 The BeiDouApp Authors
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.thingsboard</groupId>
+        <groupId>org.BeiDouApp</groupId>
         <version>2.2.0</version>
-        <artifactId>thingsboard</artifactId>
+        <artifactId>BeiDouApp</artifactId>
     </parent>
-    <groupId>org.thingsboard</groupId>
+    <groupId>org.BeiDouApp</groupId>
     <artifactId>ui</artifactId>
     <packaging>jar</packaging>
 

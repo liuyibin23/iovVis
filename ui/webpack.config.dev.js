@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The Thingsboard Authors
+ * Copyright © 2016-2018 The BeiDouApp Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,8 +59,8 @@ module.exports = {
         }),
         new CopyWebpackPlugin([
             {
-                from: './src/thingsboard.ico',
-                to: 'thingsboard.ico'
+                from: './src/BeiDouApp.ico',
+                to: 'BeiDouApp.ico'
             },
             {
                 from: './src/app/locale',
@@ -75,7 +75,7 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/index.html',
             filename: 'index.html',
-            title: 'ThingsBoard',
+            title: 'BeiDouApp',
             inject: 'body',
         }),
         new StyleLintPlugin(),
