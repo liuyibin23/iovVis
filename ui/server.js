@@ -107,6 +107,6 @@ server.listen(PORT, '0.0.0.0', (error) => {
     if (error) {
         console.error(error);
     } else {
-        console.info(`==> Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
+        console.info(`==> 🌎  Listening on port ${PORT}. Open up http://localhost:${PORT}/ in your browser.`);
     }
 });

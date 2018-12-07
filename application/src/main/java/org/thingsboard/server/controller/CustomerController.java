@@ -37,8 +37,6 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 
-import javax.annotation.security.PermitAll;
-
 @RestController
 @RequestMapping("/api")
 public class CustomerController extends BaseController {
@@ -46,7 +44,7 @@ public class CustomerController extends BaseController {
     public static final String CUSTOMER_ID = "customerId";
     public static final String IS_PUBLIC = "isPublic";
 
-    //@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/customer/{customerId}", method = RequestMethod.GET)
     @ResponseBody
     public Customer getCustomerById(@PathVariable(CUSTOMER_ID) String strCustomerId) throws ThingsboardException {
@@ -121,7 +119,7 @@ public class CustomerController extends BaseController {
         try {
             CustomerId customerId = new CustomerId(toUUID(strCustomerId));
             Customer customer = checkCustomerId(customerId);
-            customerService.deleteCustomer(customerId);
+            customerService.deleteCustomer(getTenantId(), customerId);
 
             logEntityAction(customerId, customer,
                     customer.getId(),
@@ -139,7 +137,6 @@ public class CustomerController extends BaseController {
     }
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
-   // @PermitAll()
     @RequestMapping(value = "/customers", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public TextPageData<Customer> getCustomers(@RequestParam int limit,

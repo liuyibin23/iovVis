@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import 'angular-translate-interpolation-messageformat';
 import 'md-color-picker';
 import mdPickers from 'mdPickers';
 import ngSanitize from 'angular-sanitize';
+import FBAngular from 'angular-fullscreen';
 import vAccordion from 'v-accordion';
 import ngAnimate from 'angular-animate';
 import 'angular-websocket';
@@ -38,6 +39,7 @@ import uiRouter from 'angular-ui-router';
 import angularJwt from 'angular-jwt';
 import 'angular-drag-and-drop-lists';
 import mdDataTable from 'angular-material-data-table';
+import fixedTableHeader from 'angular-fixed-table-header';
 import 'angular-material-expansion-panel';
 import ngTouch from 'angular-touch';
 import 'angular-carousel';
@@ -51,6 +53,21 @@ import react from 'ngreact';
 import '@flowjs/ng-flow/dist/ng-flow-standalone.min';
 import 'ngFlowchart/dist/ngFlowchart';
 
+import 'typeface-roboto';
+import 'font-awesome/css/font-awesome.min.css';
+import 'angular-material/angular-material.min.css';
+import 'angular-material-icons/angular-material-icons.css';
+import 'angular-gridster/dist/angular-gridster.min.css';
+import 'v-accordion/dist/v-accordion.min.css';
+import 'md-color-picker/dist/mdColorPicker.min.css';
+import 'mdPickers/dist/mdPickers.min.css';
+import 'angular-hotkeys/build/hotkeys.min.css';
+import 'angular-carousel/dist/angular-carousel.min.css';
+import 'angular-material-expansion-panel/dist/md-expansion-panel.min.css';
+import 'ngFlowchart/dist/flowchart.css';
+import '../scss/main.scss';
+
+import thingsboardThirdpartyFix from './common/thirdparty-fix';
 import thingsboardTranslateHandler from './locale/translate-handler';
 import thingsboardLogin from './login';
 import thingsboardDialogs from './components/datakey-config-dialog.controller';
@@ -78,25 +95,11 @@ import thingsboardApiAuditLog from './api/audit-log.service';
 import thingsboardApiComponentDescriptor from './api/component-descriptor.service';
 import thingsboardApiRuleChain from './api/rule-chain.service';
 
-import 'typeface-roboto';
-import 'font-awesome/css/font-awesome.min.css';
-import 'angular-material/angular-material.min.css';
-import 'angular-material-icons/angular-material-icons.css';
-import 'angular-gridster/dist/angular-gridster.min.css';
-import 'v-accordion/dist/v-accordion.min.css';
-import 'md-color-picker/dist/mdColorPicker.min.css';
-import 'mdPickers/dist/mdPickers.min.css';
-import 'angular-hotkeys/build/hotkeys.min.css';
-import 'angular-carousel/dist/angular-carousel.min.css';
-import 'angular-material-expansion-panel/dist/md-expansion-panel.min.css';
-import 'ngFlowchart/dist/flowchart.css';
-import '../scss/main.scss';
-
 import AppConfig from './app.config';
 import GlobalInterceptor from './global-interceptor.service';
 import AppRun from './app.run';
 
-angular.module('BeiDouApp', [
+angular.module('thingsboard', [
     ngMaterial,
     ngMdIcons,
     ngCookies,
@@ -105,12 +108,14 @@ angular.module('BeiDouApp', [
     'mdColorPicker',
     mdPickers,
     ngSanitize,
+    FBAngular.name,
     vAccordion,
     ngAnimate,
     'ngWebSocket',
     angularJwt,
     'dndLists',
     mdDataTable,
+    fixedTableHeader,
     'material.components.expansionPanels',
     ngTouch,
     'angular-carousel',
@@ -118,6 +123,7 @@ angular.module('BeiDouApp', [
     react.name,
     'flow',
     'flowchart',
+    thingsboardThirdpartyFix,
     thingsboardTranslateHandler,
     thingsboardLogin,
     thingsboardDialogs,

@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,11 @@ import selectWidgetTypeTemplate from './select-widget-type.tpl.html';
 
 /*@ngInject*/
 export default function WidgetLibraryController($scope, $rootScope, $q, widgetService, userService, importExport,
-                                                $state, $stateParams, $document, $mdDialog, $translate, $filter,$log,
+                                                $state, $stateParams, $document, $mdDialog, $translate, $filter,
                                                 utils, types, entityService) {
 
     var vm = this;
-    $log.log('2. Awen-->widget-library.controller begins!');
+
     var widgetsBundleId = $stateParams.widgetsBundleId;
 
     vm.widgetsBundle;
@@ -144,12 +144,10 @@ export default function WidgetLibraryController($scope, $rootScope, $q, widgetSe
     }
 
     function dashboardInitFailed() {
-        $log.log('Awen-->'+ this.name);
         vm.dashboardInitComplete = true;
     }
 
     function dashboardInited() {
-        $log.log('Awen-->'+ this);
         vm.dashboardInitComplete = true;
     }
 

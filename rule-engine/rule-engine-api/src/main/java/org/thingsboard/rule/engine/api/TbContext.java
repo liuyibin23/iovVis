@@ -25,6 +25,7 @@ import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.attributes.AttributesService;
 import org.thingsboard.server.dao.customer.CustomerService;
+import org.thingsboard.server.dao.dashboard.DashboardService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.relation.RelationService;
@@ -34,6 +35,7 @@ import org.thingsboard.server.dao.timeseries.TimeseriesService;
 import org.thingsboard.server.dao.user.UserService;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Created by ashvayka on 13.01.18.
@@ -72,6 +74,8 @@ public interface TbContext {
 
     DeviceService getDeviceService();
 
+    DashboardService getDashboardService();
+
     AlarmService getAlarmService();
 
     RuleChainService getRuleChainService();
@@ -98,4 +102,5 @@ public interface TbContext {
 
     ScriptEngine createJsScriptEngine(String script, String... argNames);
 
+    String getNodeId();
 }

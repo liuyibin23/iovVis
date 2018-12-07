@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ export default function NodeScriptTest($q, $mdDialog, $document, ruleChainServic
                 onShowingCallback: onShowingCallback
             },
             fullscreen: true,
-            skipHide: true,
+            multiple: true,
             targetEvent: $event,
             onComplete: () => {
                 onShowingCallback.onShowed();

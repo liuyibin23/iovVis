@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ var ruleNodeClazzHelpLinkMap = {
     'org.thingsboard.rule.engine.mail.TbSendEmailNode': 'ruleNodeSendEmail'
 };
 
-var helpBaseUrl = "http://www.beidouapp.com";
+var helpBaseUrl = "https://thingsboard.io";
 
 export default angular.module('thingsboard.help', [])
     .constant('helpLinks',

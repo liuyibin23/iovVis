@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ import './home.scss';
 
 import uiRouter from 'angular-ui-router';
 import ngSanitize from 'angular-sanitize';
-import FBAngular from 'angular-fullscreen';
 import 'angular-breadcrumb';
 
 import thingsboardMenu from '../services/menu.service';
@@ -52,7 +51,6 @@ import thingsboardEntityView from '../entity-view';
 import thingsboardWidgetLibrary from '../widget';
 import thingsboardDashboard from '../dashboard';
 import thingsboardRuleChain from '../rulechain';
-import beidouAppIntegrated from '../integrated';
 
 import thingsboardJsonForm from '../jsonform';
 
@@ -64,7 +62,6 @@ import BreadcrumbIcon from './breadcrumb-icon.filter';
 export default angular.module('thingsboard.home', [
     uiRouter,
     ngSanitize,
-    FBAngular.name,
     'ncy-angular-breadcrumb',
     thingsboardMenu,
     thingsboardHomeLinks,
@@ -95,8 +92,7 @@ export default angular.module('thingsboard.home', [
     thingsboardDashboardAutocomplete,
     thingsboardKvMap,
     thingsboardJsonObjectEdit,
-    thingsboardJsonContent,
-    beidouAppIntegrated
+    thingsboardJsonContent
 ])
     .config(HomeRoutes)
     .controller('HomeController', HomeController)

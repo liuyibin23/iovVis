@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -721,7 +721,7 @@ export default function ImportExport($log, $translate, $q, $mdDialog, $document,
                 }
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (updatedEntityAliases) {
@@ -796,7 +796,7 @@ export default function ImportExport($log, $translate, $q, $mdDialog, $document,
                 importFileLabel: importFileLabel
             },
             parent: angular.element($document[0].body),
-            skipHide: true,
+            multiple: true,
             fullscreen: true,
             targetEvent: $event
         }).then(function (importData) {

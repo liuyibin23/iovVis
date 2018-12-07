@@ -1,5 +1,5 @@
 /*
- * Copyright © 2016-2018 The BeiDouApp Authors
+ * Copyright © 2016-2018 The Thingsboard Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -602,7 +602,6 @@ export function DashboardsController(userService, dashboardService, customerServ
         if ($event) {
             $event.stopPropagation();
         }
-        // $log.log('dashboard id--->', dashboard.id.id);
         if (vm.dashboardsScope === 'customer') {
             $state.go('home.customers.dashboards.dashboard', {
                 customerId: customerId,
