@@ -28,48 +28,48 @@ const HUE3_COLOR = "#a7c1de";
 
 /*@ngInject*/
 export default function AppConfig($provide,
-                                  $urlRouterProvider,
-                                  $locationProvider,
-                                  $mdIconProvider,
-                                  $mdThemingProvider,
-                                  $httpProvider,
-                                  $translateProvider,
-                                  storeProvider) {
+    $urlRouterProvider,
+    $locationProvider,
+    $mdIconProvider,
+    $mdThemingProvider,
+    $httpProvider,
+    $translateProvider,
+    storeProvider) {
 
     injectTapEventPlugin();
     $locationProvider.html5Mode(true);
     $urlRouterProvider.otherwise(UrlHandler);
     storeProvider.setCaching(false);
-    
+
     $translateProvider.useSanitizeValueStrategy(null)
-                      .useMissingTranslationHandler('tbMissingTranslationHandler')
-                      .addInterpolation('$translateMessageFormatInterpolation')
-                      .useStaticFilesLoader({
-                          files: [
-                              {
-                                  prefix: PUBLIC_PATH + 'locale/locale.constant-', //eslint-disable-line
-                                  suffix: '.json'
-                              }
-                          ]
-                      })
-                      .registerAvailableLanguageKeys(SUPPORTED_LANGS, getLanguageAliases(SUPPORTED_LANGS)) //eslint-disable-line
-                      .fallbackLanguage('en_US') // must be before determinePreferredLanguage   
-                      .uniformLanguageTag('java')  // must be before determinePreferredLanguage
-                      .determinePreferredLanguage();                
+        .useMissingTranslationHandler('tbMissingTranslationHandler')
+        .addInterpolation('$translateMessageFormatInterpolation')
+        .useStaticFilesLoader({
+            files: [
+                {
+                    prefix: PUBLIC_PATH + 'locale/locale.constant-', //eslint-disable-line
+                    suffix: '.json'
+                }
+            ]
+        })
+        .registerAvailableLanguageKeys(SUPPORTED_LANGS, getLanguageAliases(SUPPORTED_LANGS)) //eslint-disable-line
+        .fallbackLanguage('en_US') // must be before determinePreferredLanguage   
+        .uniformLanguageTag('java')  // must be before determinePreferredLanguage
+        .determinePreferredLanguage();
 
     $httpProvider.interceptors.push('globalInterceptor');
 
     $provide.decorator("$exceptionHandler", ['$delegate', '$injector', function ($delegate/*, $injector*/) {
         return function (exception, cause) {
-/*            var rootScope = $injector.get("$rootScope");
-            var $window = $injector.get("$window");
-            var utils = $injector.get("utils");
-            if (rootScope.widgetEditMode) {
-                var parentScope = $window.parent.angular.element($window.frameElement).scope();
-                var data = utils.parseException(exception);
-                parentScope.$emit('widgetException', data);
-                parentScope.$apply();
-            }*/
+            /*            var rootScope = $injector.get("$rootScope");
+                        var $window = $injector.get("$window");
+                        var utils = $injector.get("utils");
+                        if (rootScope.widgetEditMode) {
+                            var parentScope = $window.parent.angular.element($window.frameElement).scope();
+                            var data = utils.parseException(exception);
+                            parentScope.$emit('widgetException', data);
+                            parentScope.$apply();
+                        }*/
             $delegate(exception, cause);
         };
     }]);
@@ -131,35 +131,28 @@ export default function AppConfig($provide,
             .backgroundPalette('tb-dark-primary-background')
             .dark();
     }
-    
-    function customerTheme() {
-        // $mdThemingProvider.definePalette('amazingPaletteName', {
-        //     '50': 'ffebee',
-        //     '100': 'ffcdd2',
-        //     '200': 'ef9a9a',
-        //     '300': 'e57373',
-        //     '400': 'ef5350',
-        //     '500': 'f44336',
-        //     '600': 'e53935',
-        //     '700': 'd32f2f',
-        //     '800': 'c62828',
-        //     '900': 'b71c1c',
-        //     'A100': 'ff8a80',
-        //     'A200': 'ff5252',
-        //     'A400': 'ff1744',
-        //     'A700': 'd50000',
-        //     'contrastDefaultColor': 'dark',    // whether, by default, text (contrast)
-        //                                         // on this palette should be dark or light
-        
-        //     'contrastDarkColors': ['50', '100', //hues which contrast should be 'dark' by default
-        //      '200', '300', '400', 'A100'],
-        //     'contrastLightColors': undefined    // could also specify this if default was 'dark'
-        //   });
-        
-        //   $mdThemingProvider.theme('default')
-        //     .primaryPalette('amazingPaletteName')
-         /*引入自定义调色板*/
-         $mdThemingProvider.definePalette('beidouapp_black', {
+
+    function etTheme() {
+        /*引入自定义调色板*/
+        var tbPrimaryPalette = $mdThemingProvider.extendPalette('brown');
+        var tbAccentPalette = $mdThemingProvider.extendPalette('grey');
+        $mdThemingProvider.definePalette('bd-primary', tbPrimaryPalette);
+        $mdThemingProvider.definePalette('bd-accent', tbAccentPalette);
+
+        $mdThemingProvider.theme('default')
+            .primaryPalette('bd-primary')
+            .accentPalette('bd-accent');
+
+        $mdThemingProvider.theme('bd-dark')
+            .primaryPalette('bd-primary')
+            .accentPalette('bd-accent')
+            .backgroundPalette('bd-primary')
+            .dark();
+    }
+
+    function blackWhiteTheme() {
+        /*引入自定义调色板*/
+        $mdThemingProvider.definePalette('beidouapp_black', {
             '50': '000000',
             '100': '000000',
             '200': '000000',
@@ -175,8 +168,8 @@ export default function AppConfig($provide,
             'A400': '000000',
             'A700': '000000',
             'contrastDefaultColor': 'light'
-          });
-          $mdThemingProvider.definePalette('beidouapp_white', {
+        });
+        $mdThemingProvider.definePalette('beidouapp_white', {
             '50': 'ffffff',
             '100': 'ffffff',
             '200': 'ffffff',
@@ -192,12 +185,10 @@ export default function AppConfig($provide,
             'A400': 'ffffff',
             'A700': 'ffffff',
             'contrastDefaultColor': 'dark'
-          });
-        //   var tbAccentPalette = $mdThemingProvider.extendPalette('deep-orange');
-        //   $mdThemingProvider.definePalette('orange', tbAccentPalette);
+        });
         $mdThemingProvider.theme('default')
-        .primaryPalette('beidouapp_black')
-        .accentPalette('beidouapp_white');
+            .primaryPalette('beidouapp_black')
+            .accentPalette('beidouapp_white');
 
         $mdThemingProvider.theme('bd-dark')
             .primaryPalette('beidouapp_black')
@@ -208,7 +199,7 @@ export default function AppConfig($provide,
 
     function configureTheme() {
 
-        var theme = 'customer';
+        var theme = 'etTheme';
         // var theme = 'indigo';
         // var theme = 'blueGray';
 
@@ -216,8 +207,10 @@ export default function AppConfig($provide,
             blueGrayTheme();
         } else if (theme === 'indigo') {
             indigoTheme();
-        } else {
-            customerTheme();
+        } else if (theme === 'etTheme') {
+            etTheme();
+        } else if(theme === 'blackWhite') {
+            blackWhiteTheme();
         }
 
         $mdThemingProvider.setDefaultTheme('default');
@@ -227,8 +220,8 @@ export default function AppConfig($provide,
     function getLanguageAliases(supportedLangs) {
         var aliases = {};
 
-        supportedLangs.sort().forEach(function(item, index, array) {
-            if (item.length === 2) { 
+        supportedLangs.sort().forEach(function (item, index, array) {
+            if (item.length === 2) {
                 aliases[item] = item;
                 aliases[item + '_*'] = item;
             } else {
@@ -241,7 +234,7 @@ export default function AppConfig($provide,
                 }
             }
         });
-        
+
         return aliases;
     }
 }
