@@ -17,22 +17,22 @@ import './dashboard.scss';
 
 import uiRouter from 'angular-ui-router';
 
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiWidget from '../api/widget.service';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiDashboard from '../api/dashboard.service';
-import thingsboardApiCustomer from '../api/customer.service';
-import thingsboardDetailsSidenav from '../components/details-sidenav.directive';
-import thingsboardWidgetConfig from '../components/widget/widget-config.directive';
-import thingsboardDashboardSelect from '../components/dashboard-select.directive';
-import thingsboardRelatedEntityAutocomplete from '../components/related-entity-autocomplete.directive';
-import thingsboardDashboard from '../components/dashboard.directive';
-import thingsboardExpandFullscreen from '../components/expand-fullscreen.directive';
-import thingsboardWidgetsBundleSelect from '../components/widgets-bundle-select.directive';
-import thingsboardSocialsharePanel from '../components/socialshare-panel.directive';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardItemBuffer from '../services/item-buffer.service';
-import thingsboardImportExport from '../import-export';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiWidget from '../api/widget.service';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiDashboard from '../api/dashboard.service';
+import beidouappApiCustomer from '../api/customer.service';
+import beidouappDetailsSidenav from '../components/details-sidenav.directive';
+import beidouappWidgetConfig from '../components/widget/widget-config.directive';
+import beidouappDashboardSelect from '../components/dashboard-select.directive';
+import beidouappRelatedEntityAutocomplete from '../components/related-entity-autocomplete.directive';
+import beidouappDashboard from '../components/dashboard.directive';
+import beidouappExpandFullscreen from '../components/expand-fullscreen.directive';
+import beidouappWidgetsBundleSelect from '../components/widgets-bundle-select.directive';
+import beidouappSocialsharePanel from '../components/socialshare-panel.directive';
+import beidouappTypes from '../common/types.constant';
+import beidouappItemBuffer from '../services/item-buffer.service';
+import beidouappImportExport from '../import-export';
 import dashboardLayouts from './layouts';
 import dashboardStates from './states';
 
@@ -49,22 +49,22 @@ import DashboardToolbar from './dashboard-toolbar.directive';
 
 export default angular.module('beidouapp.dashboard', [
     uiRouter,
-    thingsboardTypes,
-    thingsboardItemBuffer,
-    thingsboardImportExport,
-    thingsboardGrid,
-    thingsboardApiWidget,
-    thingsboardApiUser,
-    thingsboardApiDashboard,
-    thingsboardApiCustomer,
-    thingsboardDetailsSidenav,
-    thingsboardWidgetConfig,
-    thingsboardDashboardSelect,
-    thingsboardRelatedEntityAutocomplete,
-    thingsboardDashboard,
-    thingsboardExpandFullscreen,
-    thingsboardWidgetsBundleSelect,
-    thingsboardSocialsharePanel,
+    beidouappTypes,
+    beidouappItemBuffer,
+    beidouappImportExport,
+    beidouappGrid,
+    beidouappApiWidget,
+    beidouappApiUser,
+    beidouappApiDashboard,
+    beidouappApiCustomer,
+    beidouappDetailsSidenav,
+    beidouappWidgetConfig,
+    beidouappDashboardSelect,
+    beidouappRelatedEntityAutocomplete,
+    beidouappDashboard,
+    beidouappExpandFullscreen,
+    beidouappWidgetsBundleSelect,
+    beidouappSocialsharePanel,
     dashboardLayouts,
     dashboardStates
 ])

@@ -34,7 +34,7 @@
 
 import './manage-widget-actions.scss';
 
-import thingsboardMaterialIconSelect from '../../material-icon-select.directive';
+import beidouappMaterialIconSelect from '../../material-icon-select.directive';
 
 import WidgetActionDialogController from './widget-action-dialog.controller';
 
@@ -45,7 +45,7 @@ import widgetActionDialogTemplate from './widget-action-dialog.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.widgetActions', [thingsboardMaterialIconSelect])
+export default angular.module('beidouapp.directives.widgetActions', [beidouappMaterialIconSelect])
     .controller('WidgetActionDialogController', WidgetActionDialogController)
     .directive('tbManageWidgetActions', ManageWidgetActions)
     .name;

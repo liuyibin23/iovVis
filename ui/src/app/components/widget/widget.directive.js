@@ -15,13 +15,13 @@
  */
 import './widget.scss';
 
-import thingsboardLegend from '../legend.directive';
-import thingsboardTypes from '../../common/types.constant';
-import thingsboardApiDatasource from '../../api/datasource.service';
+import beidouappLegend from '../legend.directive';
+import beidouappTypes from '../../common/types.constant';
+import beidouappApiDatasource from '../../api/datasource.service';
 
 import WidgetController from './widget.controller';
 
-export default angular.module('beidouapp.directives.widget', [thingsboardLegend, thingsboardTypes, thingsboardApiDatasource])
+export default angular.module('beidouapp.directives.widget', [beidouappLegend, beidouappTypes, beidouappApiDatasource])
     .controller('WidgetController', WidgetController)
     .directive('tbWidget', Widget)
     .name;

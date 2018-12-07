@@ -18,9 +18,9 @@ import './js-func.scss';
 import ace from 'brace';
 import 'brace/ext/language_tools';
 import $ from 'jquery';
-import thingsboardToast from '../services/toast';
-import thingsboardUtils from '../common/utils.service';
-import thingsboardExpandFullscreen from './expand-fullscreen.directive';
+import beidouappToast from '../services/toast';
+import beidouappUtils from '../common/utils.service';
+import beidouappExpandFullscreen from './expand-fullscreen.directive';
 
 import fixAceEditor from './ace-editor-fix';
 
@@ -36,7 +36,7 @@ const js_beautify = beautify.js;
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('beidouapp.directives.jsFunc', [thingsboardToast, thingsboardUtils, thingsboardExpandFullscreen])
+export default angular.module('beidouapp.directives.jsFunc', [beidouappToast, beidouappUtils, beidouappExpandFullscreen])
     .directive('tbJsFunc', JsFunc)
     .name;
 

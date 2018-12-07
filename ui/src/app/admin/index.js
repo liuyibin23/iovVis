@@ -16,9 +16,9 @@
 import uiRouter from 'angular-ui-router';
 import ngMaterial from 'angular-material';
 import ngMessages from 'angular-messages';
-import thingsboardApiAdmin from '../api/admin.service';
-import thingsboardConfirmOnExit from '../components/confirm-on-exit.directive';
-import thingsboardToast from '../services/toast';
+import beidouappApiAdmin from '../api/admin.service';
+import beidouappConfirmOnExit from '../components/confirm-on-exit.directive';
+import beidouappToast from '../services/toast';
 
 import AdminRoutes from './admin.routes';
 import AdminController from './admin.controller';
@@ -27,9 +27,9 @@ export default angular.module('beidouapp.admin', [
     uiRouter,
     ngMaterial,
     ngMessages,
-    thingsboardApiAdmin,
-    thingsboardConfirmOnExit,
-    thingsboardToast
+    beidouappApiAdmin,
+    beidouappConfirmOnExit,
+    beidouappToast
 ])
     .config(AdminRoutes)
     .controller('AdminController', AdminController)

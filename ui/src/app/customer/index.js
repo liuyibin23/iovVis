@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardApiCustomer from '../api/customer.service';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardContact from '../components/contact.directive';
-import thingsboardContactShort from '../components/contact-short.filter';
+import beidouappApiCustomer from '../api/customer.service';
+import beidouappGrid from '../components/grid.directive';
+import beidouappContact from '../components/contact.directive';
+import beidouappContactShort from '../components/contact-short.filter';
 
 import CustomerRoutes from './customer.routes';
 import CustomerController from './customer.controller';
@@ -25,10 +25,10 @@ import CustomerDirective from './customer.directive';
 
 export default angular.module('beidouapp.customer', [
     uiRouter,
-    thingsboardApiCustomer,
-    thingsboardGrid,
-    thingsboardContact,
-    thingsboardContactShort
+    beidouappApiCustomer,
+    beidouappGrid,
+    beidouappContact,
+    beidouappContactShort
 ])
     .config(CustomerRoutes)
     .controller('CustomerController', CustomerController)

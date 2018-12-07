@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import thingsboardDatakeyConfig from './datakey-config.directive';
+import beidouappDatakeyConfig from './datakey-config.directive';
 
-export default angular.module('beidouapp.dialogs.datakeyConfigDialog', [thingsboardDatakeyConfig])
+export default angular.module('beidouapp.dialogs.datakeyConfigDialog', [beidouappDatakeyConfig])
     .controller('DatakeyConfigDialogController', DatakeyConfigDialogController)
     .name;
 

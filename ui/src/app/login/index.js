@@ -16,9 +16,9 @@
 import './login.scss';
 
 import uiRouter from 'angular-ui-router';
-import thingsboardApiLogin from '../api/login.service';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardToast from '../services/toast';
+import beidouappApiLogin from '../api/login.service';
+import beidouappApiUser from '../api/user.service';
+import beidouappToast from '../services/toast';
 
 import LoginRoutes from './login.routes';
 import LoginController from './login.controller';
@@ -28,9 +28,9 @@ import CreatePasswordController from './create-password.controller';
 
 export default angular.module('beidouapp.login', [
     uiRouter,
-    thingsboardApiLogin,
-    thingsboardApiUser,
-    thingsboardToast
+    beidouappApiLogin,
+    beidouappApiUser,
+    beidouappToast
 ])
     .config(LoginRoutes)
     .controller('LoginController', LoginController)

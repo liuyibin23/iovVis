@@ -16,7 +16,7 @@
 import './json-form-ace-editor.scss';
 
 import React from 'react';
-import ThingsboardBaseComponent from './json-form-base-component.jsx';
+import beidouappBaseComponent from './json-form-base-component.jsx';
 import reactCSS from 'reactcss';
 import AceEditor from 'react-ace';
 import FlatButton from 'material-ui/FlatButton';
@@ -25,7 +25,7 @@ import 'brace/theme/github';
 
 import fixAceEditor from './../ace-editor-fix';
 
-class ThingsboardAceEditor extends React.Component {
+class beidouappAceEditor extends React.Component {
 
     constructor(props) {
         super(props);
@@ -141,4 +141,4 @@ class ThingsboardAceEditor extends React.Component {
     }
 }
 
-export default ThingsboardBaseComponent(ThingsboardAceEditor);
+export default beidouappBaseComponent(beidouappAceEditor);

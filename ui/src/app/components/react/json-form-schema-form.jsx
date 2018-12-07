@@ -16,49 +16,49 @@
 import React from 'react';
 import { utils } from 'react-schema-form';
 
-import ThingsboardArray from './json-form-array.jsx';
-import ThingsboardJavaScript from './json-form-javascript.jsx';
-import ThingsboardJson from './json-form-json.jsx';
-import ThingsboardHtml from './json-form-html.jsx';
-import ThingsboardCss from './json-form-css.jsx';
-import ThingsboardColor from './json-form-color.jsx'
-import ThingsboardRcSelect from './json-form-rc-select.jsx';
-import ThingsboardNumber from './json-form-number.jsx';
-import ThingsboardText from './json-form-text.jsx';
+import beidouappArray from './json-form-array.jsx';
+import beidouappJavaScript from './json-form-javascript.jsx';
+import beidouappJson from './json-form-json.jsx';
+import beidouappHtml from './json-form-html.jsx';
+import beidouappCss from './json-form-css.jsx';
+import beidouappColor from './json-form-color.jsx'
+import beidouappRcSelect from './json-form-rc-select.jsx';
+import beidouappNumber from './json-form-number.jsx';
+import beidouappText from './json-form-text.jsx';
 import Select from 'react-schema-form/lib/Select';
 import Radios from 'react-schema-form/lib/Radios';
-import ThingsboardDate from './json-form-date.jsx';
-import ThingsboardImage from './json-form-image.jsx';
-import ThingsboardCheckbox from './json-form-checkbox.jsx';
+import beidouappDate from './json-form-date.jsx';
+import beidouappImage from './json-form-image.jsx';
+import beidouappCheckbox from './json-form-checkbox.jsx';
 import Help from 'react-schema-form/lib/Help';
-import ThingsboardFieldSet from './json-form-fieldset.jsx';
+import beidouappFieldSet from './json-form-fieldset.jsx';
 
 import _ from 'lodash';
 
-class ThingsboardSchemaForm extends React.Component {
+class beidouappSchemaForm extends React.Component {
 
     constructor(props) {
         super(props);
 
         this.mapper = {
-            'number': ThingsboardNumber,
-            'text': ThingsboardText,
-            'password': ThingsboardText,
-            'textarea': ThingsboardText,
+            'number': beidouappNumber,
+            'text': beidouappText,
+            'password': beidouappText,
+            'textarea': beidouappText,
             'select': Select,
             'radios': Radios,
-            'date': ThingsboardDate,
-            'image': ThingsboardImage,
-            'checkbox': ThingsboardCheckbox,
+            'date': beidouappDate,
+            'image': beidouappImage,
+            'checkbox': beidouappCheckbox,
             'help': Help,
-            'array': ThingsboardArray,
-            'javascript': ThingsboardJavaScript,
-            'json': ThingsboardJson,
-            'html': ThingsboardHtml,
-            'css': ThingsboardCss,
-            'color': ThingsboardColor,
-            'rc-select': ThingsboardRcSelect,
-            'fieldset': ThingsboardFieldSet
+            'array': beidouappArray,
+            'javascript': beidouappJavaScript,
+            'json': beidouappJson,
+            'html': beidouappHtml,
+            'css': beidouappCss,
+            'color': beidouappColor,
+            'rc-select': beidouappRcSelect,
+            'fieldset': beidouappFieldSet
         };
 
         this.onChange = this.onChange.bind(this);
@@ -109,4 +109,4 @@ class ThingsboardSchemaForm extends React.Component {
         );
     }
 }
-export default ThingsboardSchemaForm;
+export default beidouappSchemaForm;

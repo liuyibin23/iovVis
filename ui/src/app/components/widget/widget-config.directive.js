@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import thingsboardTypes from '../../common/types.constant';
-import thingsboardUtils from '../../common/utils.service';
-import thingsboardEntityAliasSelect from '../entity-alias-select.directive';
-import thingsboardDatasource from '../datasource.directive';
-import thingsboardTimewindow from '../timewindow.directive';
-import thingsboardLegendConfig from '../legend-config.directive';
-import thingsboardJsonForm from '../json-form.directive';
-import thingsboardManageWidgetActions from './action/manage-widget-actions.directive';
+import beidouappTypes from '../../common/types.constant';
+import beidouappUtils from '../../common/utils.service';
+import beidouappEntityAliasSelect from '../entity-alias-select.directive';
+import beidouappDatasource from '../datasource.directive';
+import beidouappTimewindow from '../timewindow.directive';
+import beidouappLegendConfig from '../legend-config.directive';
+import beidouappJsonForm from '../json-form.directive';
+import beidouappManageWidgetActions from './action/manage-widget-actions.directive';
 import 'angular-ui-ace';
 
 import fixAceEditor from './../ace-editor-fix';
@@ -35,14 +35,14 @@ import widgetConfigTemplate from './widget-config.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('beidouapp.directives.widgetConfig', [thingsboardTypes,
-    thingsboardUtils,
-    thingsboardJsonForm,
-    thingsboardEntityAliasSelect,
-    thingsboardDatasource,
-    thingsboardTimewindow,
-    thingsboardLegendConfig,
-    thingsboardManageWidgetActions,
+export default angular.module('beidouapp.directives.widgetConfig', [beidouappTypes,
+    beidouappUtils,
+    beidouappJsonForm,
+    beidouappEntityAliasSelect,
+    beidouappDatasource,
+    beidouappTimewindow,
+    beidouappLegendConfig,
+    beidouappManageWidgetActions,
     'ui.ace'])
     .directive('tbWidgetConfig', WidgetConfig)
     .name;

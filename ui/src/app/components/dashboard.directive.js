@@ -17,13 +17,13 @@ import './dashboard.scss';
 
 import 'javascript-detect-element-resize/detect-element-resize';
 import angularGridster from 'angular-gridster';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardApiWidget from '../api/widget.service';
-import thingsboardWidget from './widget/widget.directive';
-import thingsboardToast from '../services/toast';
-import thingsboardTimewindow from './timewindow.directive';
-import thingsboardEvents from './tb-event-directives';
-import thingsboardMousepointMenu from './mousepoint-menu.directive';
+import beidouappTypes from '../common/types.constant';
+import beidouappApiWidget from '../api/widget.service';
+import beidouappWidget from './widget/widget.directive';
+import beidouappToast from '../services/toast';
+import beidouappTimewindow from './timewindow.directive';
+import beidouappEvents from './tb-event-directives';
+import beidouappMousepointMenu from './mousepoint-menu.directive';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -33,13 +33,13 @@ import dashboardTemplate from './dashboard.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('beidouapp.directives.dashboard', [thingsboardTypes,
-    thingsboardToast,
-    thingsboardApiWidget,
-    thingsboardWidget,
-    thingsboardTimewindow,
-    thingsboardEvents,
-    thingsboardMousepointMenu,
+export default angular.module('beidouapp.directives.dashboard', [beidouappTypes,
+    beidouappToast,
+    beidouappApiWidget,
+    beidouappWidget,
+    beidouappTimewindow,
+    beidouappEvents,
+    beidouappMousepointMenu,
     angularGridster.name])
     .directive('tbDashboard', Dashboard)
     .name;

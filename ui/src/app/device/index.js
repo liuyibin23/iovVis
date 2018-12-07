@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiDevice from '../api/device.service';
-import thingsboardApiCustomer from '../api/customer.service';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiDevice from '../api/device.service';
+import beidouappApiCustomer from '../api/customer.service';
 
 import DeviceRoutes from './device.routes';
 import {DeviceController, DeviceCardController} from './device.controller';
@@ -28,10 +28,10 @@ import DeviceDirective from './device.directive';
 
 export default angular.module('beidouapp.device', [
     uiRouter,
-    thingsboardGrid,
-    thingsboardApiUser,
-    thingsboardApiDevice,
-    thingsboardApiCustomer
+    beidouappGrid,
+    beidouappApiUser,
+    beidouappApiDevice,
+    beidouappApiCustomer
 ])
     .config(DeviceRoutes)
     .controller('DeviceController', DeviceController)

@@ -15,8 +15,8 @@
  */
 import './side-menu.scss';
 
-import thingsboardMenu from '../services/menu.service';
-import thingsboardMenuLink from './menu-link.directive';
+import beidouappMenu from '../services/menu.service';
+import beidouappMenuLink from './menu-link.directive';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -24,7 +24,7 @@ import sidemenuTemplate from './side-menu.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.sideMenu', [thingsboardMenu, thingsboardMenuLink])
+export default angular.module('beidouapp.directives.sideMenu', [beidouappMenu, beidouappMenuLink])
     .directive('tbSideMenu', SideMenu)
     .name;
 

@@ -19,14 +19,14 @@ import 'angular-hotkeys';
 import 'angular-ui-ace';
 
 import uiRouter from 'angular-ui-router';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiWidget from '../api/widget.service';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardToast from '../services/toast';
-import thingsboardConfirmOnExit from '../components/confirm-on-exit.directive';
-import thingsboardDashboard from '../components/dashboard.directive';
-import thingsboardExpandFullscreen from '../components/expand-fullscreen.directive';
-import thingsboardCircularProgress from '../components/circular-progress.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiWidget from '../api/widget.service';
+import beidouappTypes from '../common/types.constant';
+import beidouappToast from '../services/toast';
+import beidouappConfirmOnExit from '../components/confirm-on-exit.directive';
+import beidouappDashboard from '../components/dashboard.directive';
+import beidouappExpandFullscreen from '../components/expand-fullscreen.directive';
+import beidouappCircularProgress from '../components/circular-progress.directive';
 
 import WidgetLibraryRoutes from './widget-library.routes';
 import WidgetLibraryController from './widget-library.controller';
@@ -38,14 +38,14 @@ import SaveWidgetTypeAsController from './save-widget-type-as.controller';
 
 export default angular.module('beidouapp.widget-library', [
     uiRouter,
-    thingsboardApiWidget,
-    thingsboardApiUser,
-    thingsboardTypes,
-    thingsboardToast,
-    thingsboardConfirmOnExit,
-    thingsboardDashboard,
-    thingsboardExpandFullscreen,
-    thingsboardCircularProgress,
+    beidouappApiWidget,
+    beidouappApiUser,
+    beidouappTypes,
+    beidouappToast,
+    beidouappConfirmOnExit,
+    beidouappDashboard,
+    beidouappExpandFullscreen,
+    beidouappCircularProgress,
     'cfp.hotkeys',
     'ui.ace'
 ])

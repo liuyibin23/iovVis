@@ -24,9 +24,9 @@ import jsonSchemaDefaults from 'json-schema-defaults';
 import base64js from 'base64-js';
 import {utf8Encode, utf8Decode} from './utf8-support';
 
-import thingsboardTypes from './types.constant';
+import beidouappTypes from './types.constant';
 
-export default angular.module('beidouapp.utils', [thingsboardTypes])
+export default angular.module('beidouapp.utils', [beidouappTypes])
     .factory('utils', Utils)
     .name;
 

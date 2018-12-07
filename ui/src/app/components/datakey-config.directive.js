@@ -15,9 +15,9 @@
  */
 import './datakey-config.scss';
 
-import thingsboardJsonForm from "./json-form.directive";
-import thingsboardTypes from '../common/types.constant';
-import thingsboardJsFunc from './js-func.directive';
+import beidouappJsonForm from "./json-form.directive";
+import beidouappTypes from '../common/types.constant';
+import beidouappJsFunc from './js-func.directive';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -25,7 +25,7 @@ import datakeyConfigTemplate from './datakey-config.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.datakeyConfig', [thingsboardTypes, thingsboardJsFunc, thingsboardJsonForm])
+export default angular.module('beidouapp.directives.datakeyConfig', [beidouappTypes, beidouappJsFunc, beidouappJsonForm])
     .directive('tbDatakeyConfig', DatakeyConfig)
     .name;
 

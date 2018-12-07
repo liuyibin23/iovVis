@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import 'angular-websocket';
-import thingsboardTypes from '../common/types.constant';
+import beidouappTypes from '../common/types.constant';
 
-export default angular.module('beidouapp.api.telemetryWebsocket', [thingsboardTypes])
+export default angular.module('beidouapp.api.telemetryWebsocket', [beidouappTypes])
     .factory('telemetryWebsocketService', TelemetryWebsocketService)
     .name;
 

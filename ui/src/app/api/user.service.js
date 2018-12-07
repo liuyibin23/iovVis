@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import thingsboardApiLogin  from './login.service';
+import beidouappApiLogin  from './login.service';
 import angularStorage from 'angular-storage';
 
-export default angular.module('beidouapp.api.user', [thingsboardApiLogin,
+export default angular.module('beidouapp.api.user', [beidouappApiLogin,
     angularStorage])
     .factory('userService', UserService)
     .name;

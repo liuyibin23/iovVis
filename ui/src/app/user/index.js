@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardToast from '../services/toast';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappToast from '../services/toast';
 
 import UserRoutes from './user.routes';
 import UserController from './user.controller';
@@ -26,9 +26,9 @@ import UserDirective from './user.directive';
 
 export default angular.module('beidouapp.user', [
     uiRouter,
-    thingsboardGrid,
-    thingsboardApiUser,
-    thingsboardToast
+    beidouappGrid,
+    beidouappApiUser,
+    beidouappToast
 ])
     .config(UserRoutes)
     .controller('UserController', UserController)

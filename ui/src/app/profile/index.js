@@ -16,9 +16,9 @@
 import uiRouter from 'angular-ui-router';
 import ngMaterial from 'angular-material';
 import ngMessages from 'angular-messages';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiLogin from '../api/login.service';
-import thingsboardConfirmOnExit from '../components/confirm-on-exit.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiLogin from '../api/login.service';
+import beidouappConfirmOnExit from '../components/confirm-on-exit.directive';
 
 import ProfileRoutes from './profile.routes';
 import ProfileController from './profile.controller';
@@ -28,9 +28,9 @@ export default angular.module('beidouapp.profile', [
     uiRouter,
     ngMaterial,
     ngMessages,
-    thingsboardApiUser,
-    thingsboardApiLogin,
-    thingsboardConfirmOnExit
+    beidouappApiUser,
+    beidouappApiLogin,
+    beidouappConfirmOnExit
 ])
     .config(ProfileRoutes)
     .controller('ProfileController', ProfileController)

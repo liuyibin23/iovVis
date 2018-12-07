@@ -15,11 +15,11 @@
  */
 import './help.scss';
 
-import thingsboardHelpLinks from './help-links.constant';
+import beidouappHelpLinks from './help-links.constant';
 
 import $ from 'jquery';
 
-export default angular.module('beidouapp.directives.help', [thingsboardHelpLinks])
+export default angular.module('beidouapp.directives.help', [beidouappHelpLinks])
     .directive('tbHelp', Help)
     .name;
 

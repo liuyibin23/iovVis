@@ -14,11 +14,11 @@
  * limitations under the License.
  */
  export default angular.module('beidouapp.locale', [])
-                       .factory('tbMissingTranslationHandler', ThingsboardMissingTranslateHandler)
+                       .factory('tbMissingTranslationHandler', beidouappMissingTranslateHandler)
                        .name;
 
 /*@ngInject*/
-function ThingsboardMissingTranslateHandler($log, types) {
+function beidouappMissingTranslateHandler($log, types) {
 
     return function (translationId) {
         if (translationId && !translationId.startsWith(types.translate.customTranslationsPrefix)) {

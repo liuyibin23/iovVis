@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiEntityView from '../api/entity-view.service';
-import thingsboardApiCustomer from '../api/customer.service';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiEntityView from '../api/entity-view.service';
+import beidouappApiCustomer from '../api/customer.service';
 
 import EntityViewRoutes from './entity-view.routes';
 import {EntityViewController, EntityViewCardController} from './entity-view.controller';
@@ -27,10 +27,10 @@ import EntityViewDirective from './entity-view.directive';
 
 export default angular.module('beidouapp.entityView', [
     uiRouter,
-    thingsboardGrid,
-    thingsboardApiUser,
-    thingsboardApiEntityView,
-    thingsboardApiCustomer
+    beidouappGrid,
+    beidouappApiUser,
+    beidouappApiEntityView,
+    beidouappApiCustomer
 ])
     .config(EntityViewRoutes)
     .controller('EntityViewController', EntityViewController)

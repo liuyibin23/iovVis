@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import React from 'react';
-import ThingsboardBaseComponent from './json-form-base-component.jsx';
+import beidouappBaseComponent from './json-form-base-component.jsx';
 import Checkbox from 'material-ui/Checkbox';
 
-class ThingsboardCheckbox extends React.Component {
+class beidouappCheckbox extends React.Component {
     render() {
         return (
             <Checkbox
@@ -33,4 +33,4 @@ class ThingsboardCheckbox extends React.Component {
     }
 }
 
-export default ThingsboardBaseComponent(ThingsboardCheckbox);
+export default beidouappBaseComponent(beidouappCheckbox);

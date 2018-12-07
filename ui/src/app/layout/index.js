@@ -19,40 +19,40 @@ import uiRouter from 'angular-ui-router';
 import ngSanitize from 'angular-sanitize';
 import 'angular-breadcrumb';
 
-import thingsboardMenu from '../services/menu.service';
-import thingsboardApiDevice from '../api/device.service';
-import thingsboardApiLogin from '../api/login.service';
-import thingsboardApiUser from '../api/user.service';
+import beidouappMenu from '../services/menu.service';
+import beidouappApiDevice from '../api/device.service';
+import beidouappApiLogin from '../api/login.service';
+import beidouappApiUser from '../api/user.service';
 
-import thingsboardNoAnimate from '../components/no-animate.directive';
-import thingsboardOnFinishRender from '../components/finish-render.directive';
-import thingsboardSideMenu from '../components/side-menu.directive';
-import thingsboardDashboardAutocomplete from '../components/dashboard-autocomplete.directive';
-import thingsboardKvMap from '../components/kv-map.directive';
-import thingsboardJsonObjectEdit from '../components/json-object-edit.directive';
-import thingsboardJsonContent from '../components/json-content.directive';
+import beidouappNoAnimate from '../components/no-animate.directive';
+import beidouappOnFinishRender from '../components/finish-render.directive';
+import beidouappSideMenu from '../components/side-menu.directive';
+import beidouappDashboardAutocomplete from '../components/dashboard-autocomplete.directive';
+import beidouappKvMap from '../components/kv-map.directive';
+import beidouappJsonObjectEdit from '../components/json-object-edit.directive';
+import beidouappJsonContent from '../components/json-content.directive';
 
-import thingsboardUserMenu from './user-menu.directive';
+import beidouappUserMenu from './user-menu.directive';
 
-import thingsboardEntity from '../entity';
-import thingsboardEvent from '../event';
-import thingsboardAlarm from '../alarm';
-import thingsboardAuditLog from '../audit';
-import thingsboardExtension from '../extension';
-import thingsboardTenant from '../tenant';
-import thingsboardCustomer from '../customer';
-import thingsboardUser from '../user';
-import thingsboardHomeLinks from '../home';
-import thingsboardAdmin from '../admin';
-import thingsboardProfile from '../profile';
-import thingsboardAsset from '../asset';
-import thingsboardDevice from '../device';
-import thingsboardEntityView from '../entity-view';
-import thingsboardWidgetLibrary from '../widget';
-import thingsboardDashboard from '../dashboard';
-import thingsboardRuleChain from '../rulechain';
+import beidouappEntity from '../entity';
+import beidouappEvent from '../event';
+import beidouappAlarm from '../alarm';
+import beidouappAuditLog from '../audit';
+import beidouappExtension from '../extension';
+import beidouappTenant from '../tenant';
+import beidouappCustomer from '../customer';
+import beidouappUser from '../user';
+import beidouappHomeLinks from '../home';
+import beidouappAdmin from '../admin';
+import beidouappProfile from '../profile';
+import beidouappAsset from '../asset';
+import beidouappDevice from '../device';
+import beidouappEntityView from '../entity-view';
+import beidouappWidgetLibrary from '../widget';
+import beidouappDashboard from '../dashboard';
+import beidouappRuleChain from '../rulechain';
 
-import thingsboardJsonForm from '../jsonform';
+import beidouappJsonForm from '../jsonform';
 
 import HomeRoutes from './home.routes';
 import HomeController from './home.controller';
@@ -63,36 +63,36 @@ export default angular.module('beidouapp.home', [
     uiRouter,
     ngSanitize,
     'ncy-angular-breadcrumb',
-    thingsboardMenu,
-    thingsboardHomeLinks,
-    thingsboardUserMenu,
-    thingsboardEntity,
-    thingsboardEvent,
-    thingsboardAlarm,
-    thingsboardAuditLog,
-    thingsboardExtension,
-    thingsboardTenant,
-    thingsboardCustomer,
-    thingsboardUser,
-    thingsboardAdmin,
-    thingsboardProfile,
-    thingsboardAsset,
-    thingsboardDevice,
-    thingsboardEntityView,
-    thingsboardWidgetLibrary,
-    thingsboardDashboard,
-    thingsboardRuleChain,
-    thingsboardJsonForm,
-    thingsboardApiDevice,
-    thingsboardApiLogin,
-    thingsboardApiUser,
-    thingsboardNoAnimate,
-    thingsboardOnFinishRender,
-    thingsboardSideMenu,
-    thingsboardDashboardAutocomplete,
-    thingsboardKvMap,
-    thingsboardJsonObjectEdit,
-    thingsboardJsonContent
+    beidouappMenu,
+    beidouappHomeLinks,
+    beidouappUserMenu,
+    beidouappEntity,
+    beidouappEvent,
+    beidouappAlarm,
+    beidouappAuditLog,
+    beidouappExtension,
+    beidouappTenant,
+    beidouappCustomer,
+    beidouappUser,
+    beidouappAdmin,
+    beidouappProfile,
+    beidouappAsset,
+    beidouappDevice,
+    beidouappEntityView,
+    beidouappWidgetLibrary,
+    beidouappDashboard,
+    beidouappRuleChain,
+    beidouappJsonForm,
+    beidouappApiDevice,
+    beidouappApiLogin,
+    beidouappApiUser,
+    beidouappNoAnimate,
+    beidouappOnFinishRender,
+    beidouappSideMenu,
+    beidouappDashboardAutocomplete,
+    beidouappKvMap,
+    beidouappJsonObjectEdit,
+    beidouappJsonContent
 ])
     .config(HomeRoutes)
     .controller('HomeController', HomeController)

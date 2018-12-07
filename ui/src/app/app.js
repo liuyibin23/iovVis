@@ -67,33 +67,33 @@ import 'angular-material-expansion-panel/dist/md-expansion-panel.min.css';
 import 'ngFlowchart/dist/flowchart.css';
 import '../scss/main.scss';
 
-import thingsboardThirdpartyFix from './common/thirdparty-fix';
-import thingsboardTranslateHandler from './locale/translate-handler';
-import thingsboardLogin from './login';
-import thingsboardDialogs from './components/datakey-config-dialog.controller';
-import thingsboardMenu from './services/menu.service';
-import thingsboardRaf from './common/raf.provider';
-import thingsboardUtils from './common/utils.service';
-import thingsboardDashboardUtils from './common/dashboard-utils.service';
-import thingsboardTypes from './common/types.constant';
-import thingsboardApiTime from './api/time.service';
-import thingsboardKeyboardShortcut from './components/keyboard-shortcut.filter';
-import thingsboardHelp from './help/help.directive';
-import thingsboardToast from './services/toast';
-import thingsboardClipboard from './services/clipboard.service';
-import thingsboardHome from './layout';
-import thingsboardApiLogin from './api/login.service';
-import thingsboardApiDevice from './api/device.service';
-import thingsboardApiEntityView from './api/entity-view.service';
-import thingsboardApiUser from './api/user.service';
-import thingsboardApiEntityRelation from './api/entity-relation.service';
-import thingsboardApiAsset from './api/asset.service';
-import thingsboardApiAttribute from './api/attribute.service';
-import thingsboardApiEntity from './api/entity.service';
-import thingsboardApiAlarm from './api/alarm.service';
-import thingsboardApiAuditLog from './api/audit-log.service';
-import thingsboardApiComponentDescriptor from './api/component-descriptor.service';
-import thingsboardApiRuleChain from './api/rule-chain.service';
+import beidouappThirdpartyFix from './common/thirdparty-fix';
+import beidouappTranslateHandler from './locale/translate-handler';
+import beidouappLogin from './login';
+import beidouappDialogs from './components/datakey-config-dialog.controller';
+import beidouappMenu from './services/menu.service';
+import beidouappRaf from './common/raf.provider';
+import beidouappUtils from './common/utils.service';
+import beidouappDashboardUtils from './common/dashboard-utils.service';
+import beidouappTypes from './common/types.constant';
+import beidouappApiTime from './api/time.service';
+import beidouappKeyboardShortcut from './components/keyboard-shortcut.filter';
+import beidouappHelp from './help/help.directive';
+import beidouappToast from './services/toast';
+import beidouappClipboard from './services/clipboard.service';
+import beidouappHome from './layout';
+import beidouappApiLogin from './api/login.service';
+import beidouappApiDevice from './api/device.service';
+import beidouappApiEntityView from './api/entity-view.service';
+import beidouappApiUser from './api/user.service';
+import beidouappApiEntityRelation from './api/entity-relation.service';
+import beidouappApiAsset from './api/asset.service';
+import beidouappApiAttribute from './api/attribute.service';
+import beidouappApiEntity from './api/entity.service';
+import beidouappApiAlarm from './api/alarm.service';
+import beidouappApiAuditLog from './api/audit-log.service';
+import beidouappApiComponentDescriptor from './api/component-descriptor.service';
+import beidouappApiRuleChain from './api/rule-chain.service';
 
 import AppConfig from './app.config';
 import GlobalInterceptor from './global-interceptor.service';
@@ -123,33 +123,33 @@ angular.module('BeiDouApp', [
     react.name,
     'flow',
     'flowchart',
-    thingsboardThirdpartyFix,
-    thingsboardTranslateHandler,
-    thingsboardLogin,
-    thingsboardDialogs,
-    thingsboardMenu,
-    thingsboardRaf,
-    thingsboardUtils,
-    thingsboardDashboardUtils,
-    thingsboardTypes,
-    thingsboardApiTime,
-    thingsboardKeyboardShortcut,
-    thingsboardHelp,
-    thingsboardToast,
-    thingsboardClipboard,
-    thingsboardHome,
-    thingsboardApiLogin,
-    thingsboardApiDevice,
-    thingsboardApiEntityView,
-    thingsboardApiUser,
-    thingsboardApiEntityRelation,
-    thingsboardApiAsset,
-    thingsboardApiAttribute,
-    thingsboardApiEntity,
-    thingsboardApiAlarm,
-    thingsboardApiAuditLog,
-    thingsboardApiComponentDescriptor,
-    thingsboardApiRuleChain,
+    beidouappThirdpartyFix,
+    beidouappTranslateHandler,
+    beidouappLogin,
+    beidouappDialogs,
+    beidouappMenu,
+    beidouappRaf,
+    beidouappUtils,
+    beidouappDashboardUtils,
+    beidouappTypes,
+    beidouappApiTime,
+    beidouappKeyboardShortcut,
+    beidouappHelp,
+    beidouappToast,
+    beidouappClipboard,
+    beidouappHome,
+    beidouappApiLogin,
+    beidouappApiDevice,
+    beidouappApiEntityView,
+    beidouappApiUser,
+    beidouappApiEntityRelation,
+    beidouappApiAsset,
+    beidouappApiAttribute,
+    beidouappApiEntity,
+    beidouappApiAlarm,
+    beidouappApiAuditLog,
+    beidouappApiComponentDescriptor,
+    beidouappApiRuleChain,
     uiRouter])
     .config(AppConfig)
     .factory('globalInterceptor', GlobalInterceptor)

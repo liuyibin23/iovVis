@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiTenant from '../api/tenant.service';
-import thingsboardContact from '../components/contact.directive';
-import thingsboardContactShort from '../components/contact-short.filter';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiTenant from '../api/tenant.service';
+import beidouappContact from '../components/contact.directive';
+import beidouappContactShort from '../components/contact-short.filter';
 
 import TenantRoutes from './tenant.routes';
 import TenantController from './tenant.controller';
@@ -25,10 +25,10 @@ import TenantDirective from './tenant.directive';
 
 export default angular.module('beidouapp.tenant', [
     uiRouter,
-    thingsboardGrid,
-    thingsboardApiTenant,
-    thingsboardContact,
-    thingsboardContactShort
+    beidouappGrid,
+    beidouappApiTenant,
+    beidouappContact,
+    beidouappContactShort
 ])
     .config(TenantRoutes)
     .controller('TenantController', TenantController)

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import thingsboardTypes from '../common/types.constant';
+import beidouappTypes from '../common/types.constant';
 
-export default angular.module('beidouapp.api.entityView', [thingsboardTypes])
+export default angular.module('beidouapp.api.entityView', [beidouappTypes])
     .factory('entityViewService', EntityViewService)
     .name;
 

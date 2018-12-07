@@ -15,7 +15,7 @@
  */
 import './menu-link.scss';
 
-import thingsboardMenu from '../services/menu.service';
+import beidouappMenu from '../services/menu.service';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -24,7 +24,7 @@ import menutoggleTemplate from './menu-toggle.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.menuLink', [thingsboardMenu])
+export default angular.module('beidouapp.directives.menuLink', [beidouappMenu])
     .directive('tbMenuLink', MenuLink)
     .filter('nospace', NoSpace)
     .name;

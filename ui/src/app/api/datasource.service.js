@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import thingsboardApiDevice from './device.service';
-import thingsboardApiTelemetryWebsocket from './telemetry-websocket.service';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardUtils from '../common/utils.service';
+import beidouappApiDevice from './device.service';
+import beidouappApiTelemetryWebsocket from './telemetry-websocket.service';
+import beidouappTypes from '../common/types.constant';
+import beidouappUtils from '../common/utils.service';
 import DataAggregator from './data-aggregator';
 
-export default angular.module('beidouapp.api.datasource', [thingsboardApiDevice, thingsboardApiTelemetryWebsocket, thingsboardTypes, thingsboardUtils])
+export default angular.module('beidouapp.api.datasource', [beidouappApiDevice, beidouappApiTelemetryWebsocket, beidouappTypes, beidouappUtils])
     .factory('datasourceService', DatasourceService)
     .name;
 

@@ -15,9 +15,9 @@
  */
 import './datasource.scss';
 
-import thingsboardTypes from '../common/types.constant';
-import thingsboardDatasourceFunc from './datasource-func.directive'
-import thingsboardDatasourceEntity from './datasource-entity.directive';
+import beidouappTypes from '../common/types.constant';
+import beidouappDatasourceFunc from './datasource-func.directive'
+import beidouappDatasourceEntity from './datasource-entity.directive';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -25,7 +25,7 @@ import datasourceTemplate from './datasource.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.datasource', [thingsboardTypes, thingsboardDatasourceFunc, thingsboardDatasourceEntity])
+export default angular.module('beidouapp.directives.datasource', [beidouappTypes, beidouappDatasourceFunc, beidouappDatasourceEntity])
     .directive('tbDatasource', Datasource)
     .name;
 

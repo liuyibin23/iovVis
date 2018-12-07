@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 import React from 'react';
-import ThingsboardAceEditor from './json-form-ace-editor.jsx';
+import beidouappAceEditor from './json-form-ace-editor.jsx';
 import 'brace/mode/json';
 import beautify from 'js-beautify';
 
 const js_beautify = beautify.js;
 
-class ThingsboardJson extends React.Component {
+class beidouappJson extends React.Component {
 
     constructor(props) {
         super(props);
@@ -33,9 +33,9 @@ class ThingsboardJson extends React.Component {
 
     render() {
         return (
-            <ThingsboardAceEditor {...this.props} mode='json' onTidy={this.onTidyJson} {...this.state}></ThingsboardAceEditor>
+            <beidouappAceEditor {...this.props} mode='json' onTidy={this.onTidyJson} {...this.state}></beidouappAceEditor>
         );
     }
 }
 
-export default ThingsboardJson;
+export default beidouappJson;

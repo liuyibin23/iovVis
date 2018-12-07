@@ -15,8 +15,8 @@
  */
 import './grid.scss';
 
-import thingsboardScopeElement from './scope-element.directive';
-import thingsboardDetailsSidenav from './details-sidenav.directive';
+import beidouappScopeElement from './scope-element.directive';
+import beidouappDetailsSidenav from './details-sidenav.directive';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -24,7 +24,7 @@ import gridTemplate from './grid.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('beidouapp.directives.grid', [thingsboardScopeElement, thingsboardDetailsSidenav])
+export default angular.module('beidouapp.directives.grid', [beidouappScopeElement, beidouappDetailsSidenav])
     .directive('tbGrid', Grid)
     .controller('AddItemController', AddItemController)
     .controller('ItemCardController', ItemCardController)

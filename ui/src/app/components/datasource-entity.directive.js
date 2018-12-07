@@ -18,9 +18,9 @@ import './datasource-entity.scss';
 import 'md-color-picker';
 import tinycolor from 'tinycolor2';
 import $ from 'jquery';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardDatakeyConfigDialog from './datakey-config-dialog.controller';
-import thingsboardTruncate from './truncate.filter';
+import beidouappTypes from '../common/types.constant';
+import beidouappDatakeyConfigDialog from './datakey-config-dialog.controller';
+import beidouappTruncate from './truncate.filter';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -31,7 +31,7 @@ import datakeyConfigDialogTemplate from './datakey-config-dialog.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('beidouapp.directives.datasourceEntity', [thingsboardTruncate, thingsboardTypes, thingsboardDatakeyConfigDialog])
+export default angular.module('beidouapp.directives.datasourceEntity', [beidouappTruncate, beidouappTypes, beidouappDatakeyConfigDialog])
     .directive('tbDatasourceEntity', DatasourceEntity)
     .name;
 

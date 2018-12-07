@@ -17,13 +17,13 @@ import $ from 'jquery';
 import moment from 'moment';
 import tinycolor from 'tinycolor2';
 
-import thingsboardLedLight from '../components/led-light.directive';
-import thingsboardTimeseriesTableWidget from '../widget/lib/timeseries-table-widget';
-import thingsboardAlarmsTableWidget from '../widget/lib/alarms-table-widget';
-import thingsboardEntitiesTableWidget from '../widget/lib/entities-table-widget';
-import thingsboardExtensionsTableWidget from '../widget/lib/extensions-table-widget';
+import beidouappLedLight from '../components/led-light.directive';
+import beidouappTimeseriesTableWidget from '../widget/lib/timeseries-table-widget';
+import beidouappAlarmsTableWidget from '../widget/lib/alarms-table-widget';
+import beidouappEntitiesTableWidget from '../widget/lib/entities-table-widget';
+import beidouappExtensionsTableWidget from '../widget/lib/extensions-table-widget';
 
-import thingsboardRpcWidgets from '../widget/lib/rpc';
+import beidouappRpcWidgets from '../widget/lib/rpc';
 
 import TbFlot from '../widget/lib/flot-widget';
 import TbAnalogueLinearGauge from '../widget/lib/analogue-linear-gauge';
@@ -39,11 +39,11 @@ import 'jquery.terminal/css/jquery.terminal.min.css';
 import 'oclazyload';
 import cssjs from '../../vendor/css.js/css';
 
-import thingsboardTypes from '../common/types.constant';
-import thingsboardUtils from '../common/utils.service';
+import beidouappTypes from '../common/types.constant';
+import beidouappUtils from '../common/utils.service';
 
-export default angular.module('beidouapp.api.widget', ['oc.lazyLoad', thingsboardLedLight, thingsboardTimeseriesTableWidget,
-    thingsboardAlarmsTableWidget, thingsboardEntitiesTableWidget, thingsboardExtensionsTableWidget, thingsboardRpcWidgets, thingsboardTypes, thingsboardUtils])
+export default angular.module('beidouapp.api.widget', ['oc.lazyLoad', beidouappLedLight, beidouappTimeseriesTableWidget,
+    beidouappAlarmsTableWidget, beidouappEntitiesTableWidget, beidouappExtensionsTableWidget, beidouappRpcWidgets, beidouappTypes, beidouappUtils])
     .factory('widgetService', WidgetService)
     .name;
 

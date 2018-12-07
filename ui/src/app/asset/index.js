@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import thingsboardGrid from '../components/grid.directive';
-import thingsboardApiUser from '../api/user.service';
-import thingsboardApiAsset from '../api/asset.service';
-import thingsboardApiCustomer from '../api/customer.service';
+import beidouappGrid from '../components/grid.directive';
+import beidouappApiUser from '../api/user.service';
+import beidouappApiAsset from '../api/asset.service';
+import beidouappApiCustomer from '../api/customer.service';
 
 import AssetRoutes from './asset.routes';
 import {AssetController, AssetCardController} from './asset.controller';
@@ -27,10 +27,10 @@ import AssetDirective from './asset.directive';
 
 export default angular.module('beidouapp.asset', [
     uiRouter,
-    thingsboardGrid,
-    thingsboardApiUser,
-    thingsboardApiAsset,
-    thingsboardApiCustomer
+    beidouappGrid,
+    beidouappApiUser,
+    beidouappApiAsset,
+    beidouappApiCustomer
 ])
     .config(AssetRoutes)
     .controller('AssetController', AssetController)

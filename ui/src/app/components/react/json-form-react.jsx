@@ -17,8 +17,8 @@ import './json-form.scss';
 
 import React from 'react';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import thingsboardTheme from './styles/thingsboardTheme';
-import ThingsboardSchemaForm from './json-form-schema-form.jsx';
+import beidouappTheme from './styles/beidouappTheme';
+import beidouappSchemaForm from './json-form-schema-form.jsx';
 
 class ReactSchemaForm extends React.Component {
 
@@ -31,13 +31,13 @@ class ReactSchemaForm extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            muiTheme: getMuiTheme(thingsboardTheme)
+            muiTheme: getMuiTheme(beidouappTheme)
         };
     }
 
     render () {
         if (this.props.form.length > 0) {
-            return <ThingsboardSchemaForm {...this.props} />;
+            return <beidouappSchemaForm {...this.props} />;
         } else {
             return <div></div>;
         }

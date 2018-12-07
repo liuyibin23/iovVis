@@ -18,9 +18,9 @@ import './datasource-func.scss';
 import 'md-color-picker';
 import tinycolor from 'tinycolor2';
 import $ from 'jquery';
-import thingsboardTypes from '../common/types.constant';
-import thingsboardUtils from '../common/utils.service';
-import thingsboardDatakeyConfigDialog from './datakey-config-dialog.controller';
+import beidouappTypes from '../common/types.constant';
+import beidouappUtils from '../common/utils.service';
+import beidouappDatakeyConfigDialog from './datakey-config-dialog.controller';
 
 /* eslint-disable import/no-unresolved, import/default */
 
@@ -31,7 +31,7 @@ import datakeyConfigDialogTemplate from './datakey-config-dialog.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('beidouapp.directives.datasourceFunc', [thingsboardTypes, thingsboardUtils, thingsboardDatakeyConfigDialog])
+export default angular.module('beidouapp.directives.datasourceFunc', [beidouappTypes, beidouappUtils, beidouappDatakeyConfigDialog])
     .directive('tbDatasourceFunc', DatasourceFunc)
     .name;
 
