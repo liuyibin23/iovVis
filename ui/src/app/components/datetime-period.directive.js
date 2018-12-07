@@ -21,7 +21,7 @@ import datetimePeriodTemplate from './datetime-period.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.datetimePeriod', [])
+export default angular.module('beidouapp.directives.datetimePeriod', [])
     .directive('tbDatetimePeriod', DatetimePeriod)
     .name;
 

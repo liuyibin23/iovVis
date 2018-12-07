@@ -23,7 +23,7 @@ import CustomerRoutes from './customer.routes';
 import CustomerController from './customer.controller';
 import CustomerDirective from './customer.directive';
 
-export default angular.module('thingsboard.customer', [
+export default angular.module('beidouapp.customer', [
     uiRouter,
     thingsboardApiCustomer,
     thingsboardGrid,

@@ -29,7 +29,7 @@ import alarmStatusFilterPanelTemplate from './alarm-status-filter-panel.tpl.html
 import tinycolor from 'tinycolor2';
 import cssjs from '../../../vendor/css.js/css';
 
-export default angular.module('thingsboard.widgets.alarmsTableWidget', [])
+export default angular.module('beidouapp.widgets.alarmsTableWidget', [])
     .directive('tbAlarmsTableWidget', AlarmsTableWidget)
     .name;
 

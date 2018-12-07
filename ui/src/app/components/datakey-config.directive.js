@@ -25,7 +25,7 @@ import datakeyConfigTemplate from './datakey-config.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.datakeyConfig', [thingsboardTypes, thingsboardJsFunc, thingsboardJsonForm])
+export default angular.module('beidouapp.directives.datakeyConfig', [thingsboardTypes, thingsboardJsFunc, thingsboardJsonForm])
     .directive('tbDatakeyConfig', DatakeyConfig)
     .name;
 

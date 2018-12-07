@@ -24,7 +24,7 @@ import ProfileRoutes from './profile.routes';
 import ProfileController from './profile.controller';
 import ChangePasswordController from './change-password.controller';
 
-export default angular.module('thingsboard.profile', [
+export default angular.module('beidouapp.profile', [
     uiRouter,
     ngMaterial,
     ngMessages,

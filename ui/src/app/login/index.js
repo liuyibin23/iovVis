@@ -26,7 +26,7 @@ import ResetPasswordRequestController from './reset-password-request.controller'
 import ResetPasswordController from './reset-password.controller';
 import CreatePasswordController from './create-password.controller';
 
-export default angular.module('thingsboard.login', [
+export default angular.module('beidouapp.login', [
     uiRouter,
     thingsboardApiLogin,
     thingsboardApiUser,

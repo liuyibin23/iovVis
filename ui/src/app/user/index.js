@@ -24,7 +24,7 @@ import AddUserController from './add-user.controller';
 import ActivationLinkDialogController from './activation-link.controller';
 import UserDirective from './user.directive';
 
-export default angular.module('thingsboard.user', [
+export default angular.module('beidouapp.user', [
     uiRouter,
     thingsboardGrid,
     thingsboardApiUser,

@@ -24,7 +24,7 @@ import menutoggleTemplate from './menu-toggle.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.menuLink', [thingsboardMenu])
+export default angular.module('beidouapp.directives.menuLink', [thingsboardMenu])
     .directive('tbMenuLink', MenuLink)
     .filter('nospace', NoSpace)
     .name;

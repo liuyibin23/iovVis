@@ -19,7 +19,7 @@ import contactTemplate from './contact.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.contact', [])
+export default angular.module('beidouapp.directives.contact', [])
     .directive('tbContact', Contact)
     .name;
 

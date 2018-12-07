@@ -59,7 +59,7 @@ import HomeController from './home.controller';
 import BreadcrumbLabel from './breadcrumb-label.filter';
 import BreadcrumbIcon from './breadcrumb-icon.filter';
 
-export default angular.module('thingsboard.home', [
+export default angular.module('beidouapp.home', [
     uiRouter,
     ngSanitize,
     'ncy-angular-breadcrumb',

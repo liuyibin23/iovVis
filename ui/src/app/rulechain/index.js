@@ -26,7 +26,7 @@ import LinkDirective from './link.directive';
 import MessageTypeAutocompleteDirective from './message-type-autocomplete.directive';
 import NodeScriptTest from './script/node-script-test.service';
 
-export default angular.module('thingsboard.ruleChain', [])
+export default angular.module('beidouapp.ruleChain', [])
     .config(RuleChainRoutes)
     .controller('RuleChainsController', RuleChainsController)
     .controller('RuleChainController', RuleChainController)

@@ -15,7 +15,7 @@
  */
 import $ from 'jquery';
 
-export default angular.module('thingsboard.directives.circularProgress', [])
+export default angular.module('beidouapp.directives.circularProgress', [])
     .directive('tbCircularProgress', CircularProgress)
     .name;
 

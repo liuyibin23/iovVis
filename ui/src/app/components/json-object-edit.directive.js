@@ -27,7 +27,7 @@ import jsonObjectEditTemplate from './json-object-edit.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.jsonObjectEdit', [])
+export default angular.module('beidouapp.directives.jsonObjectEdit', [])
     .directive('tbJsonObjectEdit', JsonObjectEdit)
     .name;
 

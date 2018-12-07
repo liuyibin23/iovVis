@@ -27,7 +27,7 @@ import displayColumnsPanelTemplate from './display-columns-panel.tpl.html';
 import tinycolor from 'tinycolor2';
 import cssjs from '../../../vendor/css.js/css';
 
-export default angular.module('thingsboard.widgets.entitiesTableWidget', [])
+export default angular.module('beidouapp.widgets.entitiesTableWidget', [])
     .directive('tbEntitiesTableWidget', EntitiesTableWidget)
     .name;
 

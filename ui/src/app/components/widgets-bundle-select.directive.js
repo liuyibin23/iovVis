@@ -24,7 +24,7 @@ import widgetsBundleSelectTemplate from './widgets-bundle-select.tpl.html';
 /* eslint-enable import/no-unresolved, import/default */
 
 
-export default angular.module('thingsboard.directives.widgetsBundleSelect', [thingsboardApiWidget])
+export default angular.module('beidouapp.directives.widgetsBundleSelect', [thingsboardApiWidget])
     .directive('tbWidgetsBundleSelect', WidgetsBundleSelect)
     .name;
 

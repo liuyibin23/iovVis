@@ -24,7 +24,7 @@ import gridTemplate from './grid.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.grid', [thingsboardScopeElement, thingsboardDetailsSidenav])
+export default angular.module('beidouapp.directives.grid', [thingsboardScopeElement, thingsboardDetailsSidenav])
     .directive('tbGrid', Grid)
     .controller('AddItemController', AddItemController)
     .controller('ItemCardController', ItemCardController)

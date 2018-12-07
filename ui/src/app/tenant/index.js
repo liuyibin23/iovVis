@@ -23,7 +23,7 @@ import TenantRoutes from './tenant.routes';
 import TenantController from './tenant.controller';
 import TenantDirective from './tenant.directive';
 
-export default angular.module('thingsboard.tenant', [
+export default angular.module('beidouapp.tenant', [
     uiRouter,
     thingsboardGrid,
     thingsboardApiTenant,

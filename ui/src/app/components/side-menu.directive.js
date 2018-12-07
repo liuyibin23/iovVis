@@ -24,7 +24,7 @@ import sidemenuTemplate from './side-menu.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.sideMenu', [thingsboardMenu, thingsboardMenuLink])
+export default angular.module('beidouapp.directives.sideMenu', [thingsboardMenu, thingsboardMenuLink])
     .directive('tbSideMenu', SideMenu)
     .name;
 

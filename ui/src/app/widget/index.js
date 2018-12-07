@@ -36,7 +36,7 @@ import WidgetsBundleController from './widgets-bundle.controller';
 import WidgetsBundleDirective from './widgets-bundle.directive';
 import SaveWidgetTypeAsController from './save-widget-type-as.controller';
 
-export default angular.module('thingsboard.widget-library', [
+export default angular.module('beidouapp.widget-library', [
     uiRouter,
     thingsboardApiWidget,
     thingsboardApiUser,

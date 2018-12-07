@@ -42,7 +42,7 @@ angular.forEach(
     }
 );
 
-export default angular.module('thingsboard.directives.event', [])
+export default angular.module('beidouapp.directives.event', [])
     .directive(tbEventDirectives)
     .name;
 

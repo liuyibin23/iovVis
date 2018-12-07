@@ -16,7 +16,7 @@
 import thingsboardApiLogin  from './login.service';
 import angularStorage from 'angular-storage';
 
-export default angular.module('thingsboard.api.user', [thingsboardApiLogin,
+export default angular.module('beidouapp.api.user', [thingsboardApiLogin,
     angularStorage])
     .factory('userService', UserService)
     .name;

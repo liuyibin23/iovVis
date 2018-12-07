@@ -25,7 +25,7 @@ import dashboardAutocompleteTemplate from './dashboard-autocomplete.tpl.html';
 /* eslint-enable import/no-unresolved, import/default */
 
 
-export default angular.module('thingsboard.directives.dashboardAutocomplete', [thingsboardApiDashboard, thingsboardApiUser])
+export default angular.module('beidouapp.directives.dashboardAutocomplete', [thingsboardApiDashboard, thingsboardApiUser])
     .directive('tbDashboardAutocomplete', DashboardAutocomplete)
     .name;
 

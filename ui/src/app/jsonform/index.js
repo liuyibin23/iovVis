@@ -21,7 +21,7 @@ import thingsboardJsonForm from "../components/json-form.directive";
 import JsonFormRoutes from './jsonform.routes';
 import JsonFormController from './jsonform.controller';
 
-export default angular.module('thingsboard.jsonform', [
+export default angular.module('beidouapp.jsonform', [
     uiRouter,
     ngMaterial,
     ngMessages,

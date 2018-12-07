@@ -35,7 +35,7 @@ import widgetConfigTemplate from './widget-config.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('thingsboard.directives.widgetConfig', [thingsboardTypes,
+export default angular.module('beidouapp.directives.widgetConfig', [thingsboardTypes,
     thingsboardUtils,
     thingsboardJsonForm,
     thingsboardEntityAliasSelect,

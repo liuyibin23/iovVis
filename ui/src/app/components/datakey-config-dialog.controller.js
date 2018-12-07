@@ -15,7 +15,7 @@
  */
 import thingsboardDatakeyConfig from './datakey-config.directive';
 
-export default angular.module('thingsboard.dialogs.datakeyConfigDialog', [thingsboardDatakeyConfig])
+export default angular.module('beidouapp.dialogs.datakeyConfigDialog', [thingsboardDatakeyConfig])
     .controller('DatakeyConfigDialogController', DatakeyConfigDialogController)
     .name;
 

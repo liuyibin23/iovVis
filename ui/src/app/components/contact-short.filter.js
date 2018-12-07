@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export default angular.module('thingsboard.filters.contactShort', [])
+export default angular.module('beidouapp.filters.contactShort', [])
     .filter('contactShort', ContactShort)
     .name;
 

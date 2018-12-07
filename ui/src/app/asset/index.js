@@ -25,7 +25,7 @@ import AssignAssetToCustomerController from './assign-to-customer.controller';
 import AddAssetsToCustomerController from './add-assets-to-customer.controller';
 import AssetDirective from './asset.directive';
 
-export default angular.module('thingsboard.asset', [
+export default angular.module('beidouapp.asset', [
     uiRouter,
     thingsboardGrid,
     thingsboardApiUser,

@@ -26,7 +26,7 @@ import AddDevicesToCustomerController from './add-devices-to-customer.controller
 import ManageDeviceCredentialsController from './device-credentials.controller';
 import DeviceDirective from './device.directive';
 
-export default angular.module('thingsboard.device', [
+export default angular.module('beidouapp.device', [
     uiRouter,
     thingsboardGrid,
     thingsboardApiUser,

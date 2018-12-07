@@ -16,7 +16,7 @@
 import 'angular-websocket';
 import thingsboardTypes from '../common/types.constant';
 
-export default angular.module('thingsboard.api.telemetryWebsocket', [thingsboardTypes])
+export default angular.module('beidouapp.api.telemetryWebsocket', [thingsboardTypes])
     .factory('telemetryWebsocketService', TelemetryWebsocketService)
     .name;
 

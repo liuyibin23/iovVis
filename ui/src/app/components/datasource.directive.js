@@ -25,7 +25,7 @@ import datasourceTemplate from './datasource.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.datasource', [thingsboardTypes, thingsboardDatasourceFunc, thingsboardDatasourceEntity])
+export default angular.module('beidouapp.directives.datasource', [thingsboardTypes, thingsboardDatasourceFunc, thingsboardDatasourceEntity])
     .directive('tbDatasource', Datasource)
     .name;
 

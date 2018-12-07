@@ -36,7 +36,7 @@ const js_beautify = beautify.js;
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('thingsboard.directives.jsFunc', [thingsboardToast, thingsboardUtils, thingsboardExpandFullscreen])
+export default angular.module('beidouapp.directives.jsFunc', [thingsboardToast, thingsboardUtils, thingsboardExpandFullscreen])
     .directive('tbJsFunc', JsFunc)
     .name;
 

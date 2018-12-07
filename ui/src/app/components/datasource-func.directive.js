@@ -31,7 +31,7 @@ import datakeyConfigDialogTemplate from './datakey-config-dialog.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('thingsboard.directives.datasourceFunc', [thingsboardTypes, thingsboardUtils, thingsboardDatakeyConfigDialog])
+export default angular.module('beidouapp.directives.datasourceFunc', [thingsboardTypes, thingsboardUtils, thingsboardDatakeyConfigDialog])
     .directive('tbDatasourceFunc', DatasourceFunc)
     .name;
 

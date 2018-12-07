@@ -15,7 +15,7 @@
  */
 import thingsboardTypes from '../common/types.constant';
 
-export default angular.module('thingsboard.api.entityView', [thingsboardTypes])
+export default angular.module('beidouapp.api.entityView', [thingsboardTypes])
     .factory('entityViewService', EntityViewService)
     .name;
 

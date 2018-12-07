@@ -19,7 +19,7 @@ import thingsboardHelpLinks from './help-links.constant';
 
 import $ from 'jquery';
 
-export default angular.module('thingsboard.directives.help', [thingsboardHelpLinks])
+export default angular.module('beidouapp.directives.help', [thingsboardHelpLinks])
     .directive('tbHelp', Help)
     .name;
 

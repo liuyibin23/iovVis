@@ -45,7 +45,7 @@ import widgetActionDialogTemplate from './widget-action-dialog.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.widgetActions', [thingsboardMaterialIconSelect])
+export default angular.module('beidouapp.directives.widgetActions', [thingsboardMaterialIconSelect])
     .controller('WidgetActionDialogController', WidgetActionDialogController)
     .directive('tbManageWidgetActions', ManageWidgetActions)
     .name;

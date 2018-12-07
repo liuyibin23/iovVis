@@ -21,7 +21,7 @@ import thingsboardApiDatasource from '../../api/datasource.service';
 
 import WidgetController from './widget.controller';
 
-export default angular.module('thingsboard.directives.widget', [thingsboardLegend, thingsboardTypes, thingsboardApiDatasource])
+export default angular.module('beidouapp.directives.widget', [thingsboardLegend, thingsboardTypes, thingsboardApiDatasource])
     .controller('WidgetController', WidgetController)
     .directive('tbWidget', Widget)
     .name;

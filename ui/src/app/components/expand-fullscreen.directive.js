@@ -17,7 +17,7 @@ import './expand-fullscreen.scss';
 
 import $ from 'jquery';
 
-export default angular.module('thingsboard.directives.expandFullscreen', [])
+export default angular.module('beidouapp.directives.expandFullscreen', [])
     .directive('tbExpandFullscreen', ExpandFullscreen)
     .name;
 

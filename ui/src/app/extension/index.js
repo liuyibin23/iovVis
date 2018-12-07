@@ -21,7 +21,7 @@ import ExtensionFormModbusDirective from './extensions-forms/extension-form-modb
 
 import {ParseToNull} from './extension-dialog.controller';
 
-export default angular.module('thingsboard.extension', [])
+export default angular.module('beidouapp.extension', [])
     .directive('tbExtensionTable', ExtensionTableDirective)
     .directive('tbExtensionFormHttp', ExtensionFormHttpDirective)
     .directive('tbExtensionFormMqtt', ExtensionFormMqttDirective)

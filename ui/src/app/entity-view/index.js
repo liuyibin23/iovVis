@@ -25,7 +25,7 @@ import AssignEntityViewToCustomerController from './assign-to-customer.controlle
 import AddEntityViewsToCustomerController from './add-entity-views-to-customer.controller';
 import EntityViewDirective from './entity-view.directive';
 
-export default angular.module('thingsboard.entityView', [
+export default angular.module('beidouapp.entityView', [
     uiRouter,
     thingsboardGrid,
     thingsboardApiUser,

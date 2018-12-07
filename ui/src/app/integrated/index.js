@@ -18,7 +18,7 @@ import DashboardController from '../dashboard/dashboard.controller';
 import IntegratedRoutes from './integrated.routes';
 import IntegratedController from './integrated.controller';
 
-export default angular.module('thingsboard.integrated', [
+export default angular.module('beidouapp.integrated', [
     uiRouter
 ])
     .config(IntegratedRoutes)

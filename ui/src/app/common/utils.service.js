@@ -26,7 +26,7 @@ import {utf8Encode, utf8Decode} from './utf8-support';
 
 import thingsboardTypes from './types.constant';
 
-export default angular.module('thingsboard.utils', [thingsboardTypes])
+export default angular.module('beidouapp.utils', [thingsboardTypes])
     .factory('utils', Utils)
     .name;
 

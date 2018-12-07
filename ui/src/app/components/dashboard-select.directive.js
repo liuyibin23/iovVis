@@ -28,7 +28,7 @@ import dashboardSelectPanelTemplate from './dashboard-select-panel.tpl.html';
 import DashboardSelectPanelController from './dashboard-select-panel.controller';
 
 
-export default angular.module('thingsboard.directives.dashboardSelect', [thingsboardApiDashboard, thingsboardApiUser])
+export default angular.module('beidouapp.directives.dashboardSelect', [thingsboardApiDashboard, thingsboardApiUser])
     .directive('tbDashboardSelect', DashboardSelect)
     .controller('DashboardSelectPanelController', DashboardSelectPanelController)
     .name;

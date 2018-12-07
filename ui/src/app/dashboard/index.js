@@ -47,7 +47,7 @@ import DashboardDirective from './dashboard.directive';
 import EditWidgetDirective from './edit-widget.directive';
 import DashboardToolbar from './dashboard-toolbar.directive';
 
-export default angular.module('thingsboard.dashboard', [
+export default angular.module('beidouapp.dashboard', [
     uiRouter,
     thingsboardTypes,
     thingsboardItemBuffer,

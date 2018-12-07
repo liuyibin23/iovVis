@@ -19,7 +19,7 @@ import thingsboardTypes from '../common/types.constant';
 import thingsboardUtils from '../common/utils.service';
 import DataAggregator from './data-aggregator';
 
-export default angular.module('thingsboard.api.datasource', [thingsboardApiDevice, thingsboardApiTelemetryWebsocket, thingsboardTypes, thingsboardUtils])
+export default angular.module('beidouapp.api.datasource', [thingsboardApiDevice, thingsboardApiTelemetryWebsocket, thingsboardTypes, thingsboardUtils])
     .factory('datasourceService', DatasourceService)
     .name;
 

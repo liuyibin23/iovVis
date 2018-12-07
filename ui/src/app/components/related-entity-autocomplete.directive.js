@@ -22,7 +22,7 @@ import relatedEntityAutocompleteTemplate from './related-entity-autocomplete.tpl
 /* eslint-enable import/no-unresolved, import/default */
 
 
-export default angular.module('thingsboard.directives.relatedEntityAutocomplete', [])
+export default angular.module('beidouapp.directives.relatedEntityAutocomplete', [])
     .directive('tbRelatedEntityAutocomplete', RelatedEntityAutocomplete)
     .name;
 

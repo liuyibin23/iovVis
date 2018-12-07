@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-export default angular.module('thingsboard.api.time', [])
+export default angular.module('beidouapp.api.time', [])
     .factory('timeService', TimeService)
     .name;
 

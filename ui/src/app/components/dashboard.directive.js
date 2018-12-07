@@ -33,7 +33,7 @@ import dashboardTemplate from './dashboard.tpl.html';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('thingsboard.directives.dashboard', [thingsboardTypes,
+export default angular.module('beidouapp.directives.dashboard', [thingsboardTypes,
     thingsboardToast,
     thingsboardApiWidget,
     thingsboardWidget,

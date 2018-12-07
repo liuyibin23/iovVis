@@ -33,7 +33,7 @@ import beautify from 'js-beautify';
 
 const js_beautify = beautify.js;
 
-export default angular.module('thingsboard.directives.jsonContent', [])
+export default angular.module('beidouapp.directives.jsonContent', [])
     .directive('tbJsonContent', JsonContent)
     .name;
 

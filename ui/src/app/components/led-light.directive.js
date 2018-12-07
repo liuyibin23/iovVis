@@ -19,7 +19,7 @@ import $ from 'jquery';
 
 /* eslint-disable angular/angularelement */
 
-export default angular.module('thingsboard.directives.ledLight', [])
+export default angular.module('beidouapp.directives.ledLight', [])
     .directive('tbLedLight', LedLight).name;
 
 /*@ngInject*/

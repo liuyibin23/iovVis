@@ -15,7 +15,7 @@
  */
 import angularStorage from 'angular-storage';
 
-export default angular.module('thingsboard.itembuffer', [angularStorage])
+export default angular.module('beidouapp.itembuffer', [angularStorage])
     .factory('itembuffer', ItemBuffer)
     .factory('bufferStore', function(store) {
         var newStore = store.getNamespacedStore('tbBufferStore', null, null, false);

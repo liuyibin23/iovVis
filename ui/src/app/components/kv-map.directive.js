@@ -21,7 +21,7 @@ import kvMapTemplate from './kv-map.tpl.html';
 
 /* eslint-enable import/no-unresolved, import/default */
 
-export default angular.module('thingsboard.directives.keyValMap', [])
+export default angular.module('beidouapp.directives.keyValMap', [])
     .directive('tbKeyValMap', KeyValMap)
     .name;
 

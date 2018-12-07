@@ -17,7 +17,7 @@
 import tinycolor from 'tinycolor2';
 import moment from 'moment';
 
-export default angular.module('thingsboard.thirdpartyFix', [])
+export default angular.module('beidouapp.thirdpartyFix', [])
     .factory('Fullscreen', Fullscreen)
     .factory('$mdColorPicker', mdColorPicker)
     .provider('$mdpDatePicker', mdpDatePicker)

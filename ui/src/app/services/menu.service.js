@@ -15,7 +15,7 @@
  */
 import thingsboardApiUser from '../api/user.service';
 
-export default angular.module('thingsboard.menu', [thingsboardApiUser])
+export default angular.module('beidouapp.menu', [thingsboardApiUser])
     .factory('menu', Menu)
     .name;
 

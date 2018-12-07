@@ -20,7 +20,7 @@ import EventHeaderDirective from './event-header.directive';
 import EventRowDirective from './event-row.directive';
 import EventTableDirective from './event-table.directive';
 
-export default angular.module('thingsboard.event', [
+export default angular.module('beidouapp.event', [
     thingsboardApiEvent
 ])
     .controller('EventContentDialogController', EventContentDialogController)
