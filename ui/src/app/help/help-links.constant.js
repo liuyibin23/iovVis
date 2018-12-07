@@ -50,7 +50,7 @@ var ruleNodeClazzHelpLinkMap = {
     'org.thingsboard.rule.engine.mail.TbSendEmailNode': 'ruleNodeSendEmail'
 };
 
-var helpBaseUrl = "https://thingsboard.io";
+var helpBaseUrl = "http://www.beidouapp.com";
 
 export default angular.module('thingsboard.help', [])
     .constant('helpLinks',

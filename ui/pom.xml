@@ -27,8 +27,8 @@
     <artifactId>ui</artifactId>
     <packaging>jar</packaging>
 
-    <name>Thingsboard Server UI</name>
-    <url>https://thingsboard.io</url>
+    <name>BeiDouApp Server UI</name>
+    <url>http://www.beidouapp.com</url>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
