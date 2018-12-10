@@ -24,7 +24,7 @@ const path = require('path');
 const dirTree = require('directory-tree');
 const jsonminify = require("jsonminify");
 
-const PUBLIC_RESOURCE_PATH = '/';
+const PUBLIC_RESOURCE_PATH = '/static/';
 const cesiumSource = 'node_modules/cesium/Source';
 const cesiumWorkers = 'node_modules/cesium/Build/Cesium/Workers';
 var langs = [];

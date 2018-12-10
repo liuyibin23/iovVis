@@ -54,7 +54,7 @@ public class SwaggerConfiguration {
                           String.class);
 
             return new Docket(DocumentationType.SWAGGER_2)
-                    .groupName("thingsboard")
+                    .groupName("BeiDouApp")
                     .apiInfo(apiInfo())
                     .alternateTypeRules(
                         new AlternateTypeRule(
@@ -100,12 +100,12 @@ public class SwaggerConfiguration {
 
       private ApiInfo apiInfo() {
             return new ApiInfoBuilder()
-                .title("Thingsboard REST API")
-                .description("For instructions how to authorize requests please visit <a href='http://thingsboard.io/docs/reference/rest-api/'>REST API documentation page</a>.")
-                .contact(new Contact("Thingsboard team", "http://thingsboard.io", "info@thingsboard.io"))
-                .license("Apache License Version 2.0")
-                .licenseUrl("https://github.com/thingsboard/thingsboard/blob/master/LICENSE")
-                .version("2.0")
+                .title("BeiDouApp REST API")
+                .description("For instructions how to authorize requests please visit <a href='http://www.beidouapp.com/docs/reference/rest-api/'>REST API documentation page</a>.")
+                .contact(new Contact("BeiDouApp team", "http://www.beidouapp.com", "lvyu@beidouapp.com"))
+//                .license("Apache License Version 2.0")
+//                .licenseUrl("https://github.com/thingsboard/thingsboard/blob/master/LICENSE")
+//                .version("2.0")
                 .build();
       }
 
