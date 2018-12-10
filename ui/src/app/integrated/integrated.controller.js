@@ -20,6 +20,7 @@ import Subscription from '../api/subscription';
 import Cesium from 'cesium/Cesium';
 import "cesium/Widgets/widgets.css";
 import "cesium/Widgets/lighter.css";
+
 /*@ngInject*/
 export default function IntegratedController($scope, $filter, $mdMedia, $q, menu, $state) {
 
@@ -30,6 +31,7 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
     // $rootScope.forceFullscreen = !$rootScope.forceFullscreen;
     // $scope.searchConfig.searchEnabled = true;
     vm.isLibraryOpen = true;
+    
     var viewer = new Cesium.Viewer('cesiumContainer');
 	// var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
 	// 	url : '../tilesets/TilesetWithDiscreteLOD/tileset.json'
