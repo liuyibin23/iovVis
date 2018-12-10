@@ -144,6 +144,12 @@ function Menu(userService, $state, $rootScope) {
                             icon: 'home'
                         },
                         {
+                            name: 'integrated.integrated',
+                            type: 'link',
+                            state: 'home.integrated',
+                            icon: 'swap_horiz'
+                        },
+                        {
                             name: 'rulechain.rulechains',
                             type: 'link',
                             state: 'home.ruleChains',

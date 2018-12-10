@@ -49,6 +49,7 @@
     "base64-js": "^1.2.1",
     "brace": "^0.10.0",
     "canvas-gauges": "^2.0.9",
+    "cesium": "^1.51.0",
     "clipboard": "^1.5.15",
     "compass-sass-mixins": "^0.12.7",
     "event-source-polyfill": "0.0.9",

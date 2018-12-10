@@ -36,10 +36,10 @@ export default function IntegratedRoutes($stateProvider) {
                 }
             },
             data: {
-                pageTitle: 'home.integrated'
+                pageTitle: 'integrated.integrated'
             },
             ncyBreadcrumb: {
-                label: '{"icon": "home", "label": "home.integrated"}',
+                label: '{"icon": "home", "label": "integrated.integrated"}',
                 icon: 'home'
             }
         })

@@ -1057,6 +1057,9 @@
         "avatar": "头像",
         "open-user-menu": "打开用户菜单"
     },
+    "integrated": {
+        "integrated": "数据集成"
+    },
     "import": {
         "no-file": "没有选择文件",
         "drop-file": "拖动一个JSON文件或者单击以选择要上传的文件。"

@@ -51,6 +51,7 @@ import beidouappEntityView from '../entity-view';
 import beidouappWidgetLibrary from '../widget';
 import beidouappDashboard from '../dashboard';
 import beidouappRuleChain from '../rulechain';
+import beidouappIntegrated from '../integrated';
 
 import beidouappJsonForm from '../jsonform';
 
@@ -82,6 +83,7 @@ export default angular.module('beidouapp.home', [
     beidouappWidgetLibrary,
     beidouappDashboard,
     beidouappRuleChain,
+    beidouappIntegrated,
     beidouappJsonForm,
     beidouappApiDevice,
     beidouappApiLogin,

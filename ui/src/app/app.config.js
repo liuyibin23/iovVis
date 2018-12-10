@@ -134,8 +134,8 @@ export default function AppConfig($provide,
 
     function etTheme() {
         /*引入自定义调色板*/
-        var tbPrimaryPalette = $mdThemingProvider.extendPalette('brown');
-        var tbAccentPalette = $mdThemingProvider.extendPalette('grey');
+        var tbPrimaryPalette = $mdThemingProvider.extendPalette('brown',{default:'900'});
+        var tbAccentPalette = $mdThemingProvider.extendPalette('grey',{default:'900'});
         $mdThemingProvider.definePalette('bd-primary', tbPrimaryPalette);
         $mdThemingProvider.definePalette('bd-accent', tbAccentPalette);
 
