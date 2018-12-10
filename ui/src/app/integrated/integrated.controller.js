@@ -30,10 +30,29 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
     // $rootScope.forceFullscreen = !$rootScope.forceFullscreen;
     // $scope.searchConfig.searchEnabled = true;
     vm.isLibraryOpen = true;
-    var viewer = new Cesium.Viewer('cesiumContainer');
-	// var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-	// 	url : '../tilesets/TilesetWithDiscreteLOD/tileset.json'
-    // }));
+    var viewer = new Cesium.Viewer('cesiumContainer',{
+        animation: false,
+        timeline: false
+    });
+	var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
+		url : 'http://localhost:3000/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
+    }));
+    viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0, -0.5, 0));
+    tileset.readyPromise.then(function (argument) {
+        var x = tileset._root._initialTransform[12];
+        var y = tileset._root._initialTransform[13];
+        var z = tileset._root._initialTransform[14];
+        var position = new Cesium.Cartesian3(x,y,z);
+        //The x axis points in the local east direction.
+        //The y axis points in the local north direction.
+        //The z axis points in the direction of the ellipsoid surface normal which passes through the position.
+        var mat = Cesium.Transforms.eastNorthUpToFixedFrame(position);//旋转模型，使其在给定点，x轴指向正东，y轴指向正北，z轴指向通过该位置的椭球面法线方向
+        // var heading = 90;//绕z轴旋转90度，只是示例可以旋转，无其他用意
+        // var rotationX = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(Cesium.Math.toRadians(heading)));
+        // Cesium.Matrix4.multiply(mat,rotationX,mat);
+        tileset._root.transform = mat;
+        cartographic = Cesium.Cartographic.fromCartesian(tileset.boundingSphere.center);
+    });
     
     $scope.$watch(function() { return $mdMedia('lg'); }, function() {
         updateColumnCount();
