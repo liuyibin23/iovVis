@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<md-sidenav class="tb-site-sidenav md-sidenav-left md-whiteframe-z2" ng-show="!forceFullscreen" hide-print=""
+<!-- <md-sidenav class="tb-site-sidenav md-sidenav-left md-whiteframe-z2" ng-show="!forceFullscreen" hide-print=""
  md-component-id="left" aria-label="Toggle Nav" ng-click="vm.sidenavClicked()" md-is-open="vm.isShowSidenav"
  md-is-locked-open="vm.isLockSidenav" layout="column">
 	<header class="tb-nav-header">
@@ -28,7 +28,7 @@
 	<md-toolbar flex class="tb-side-menu-toolbar" role="navigation">
 		<tb-side-menu></tb-side-menu>
 	</md-toolbar>
-</md-sidenav>
+</md-sidenav> -->
 
 <div flex layout="column" tabIndex="-1" role="main">
 	<md-toolbar class="md-whiteframe-z1 tb-primary-toolbar">
@@ -74,7 +74,7 @@
 					<md-tooltip>巡检&养护</md-tooltip>
 					<md-icon class="material-icons">perm_contact_calendar</md-icon>
 			</md-button>
-			<md-button class="md-icon-button">
+			<md-button class="md-icon-button" ng-click="vm.gotoIOTPanel()">
 					<md-tooltip>安全监测</md-tooltip>
 					<md-icon class="material-icons">photo_library</md-icon>
 			</md-button>
