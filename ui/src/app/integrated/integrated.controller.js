@@ -35,7 +35,8 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
         timeline: false
     });
 	var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
-		url : 'http://localhost:3000/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
+        // url : 'http://localhost:3000/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
+        url : '3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
     }));
     viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0, -0.5, 0));
     tileset.readyPromise.then(function (argument) {
