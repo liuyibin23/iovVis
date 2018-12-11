@@ -38,7 +38,10 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
         // url : 'http://localhost:3000/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
         url : '3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
     }));
+
     viewer.zoomTo(tileset, new Cesium.HeadingPitchRange(0, -0.5, 0));
+
+    var homeCameraView;
     tileset.readyPromise.then(function (argument) {
         var x = tileset._root._initialTransform[12];
         var y = tileset._root._initialTransform[13];
@@ -52,9 +55,17 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
         // var rotationX = Cesium.Matrix4.fromRotationTranslation(Cesium.Matrix3.fromRotationZ(Cesium.Math.toRadians(heading)));
         // Cesium.Matrix4.multiply(mat,rotationX,mat);
         tileset._root.transform = mat;
-        cartographic = Cesium.Cartographic.fromCartesian(tileset.boundingSphere.center);
+
+        viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(e){
+            e.cancel = true;
+            viewer.camera.flyToBoundingSphere(tileset.boundingSphere);
+        });
     });
+
     
+
+    
+
     $scope.$watch(function() { return $mdMedia('lg'); }, function() {
         updateColumnCount();
     });
