@@ -31,9 +31,19 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
     // $scope.searchConfig.searchEnabled = true;
     vm.isLibraryOpen = true;
     var viewer = new Cesium.Viewer('cesiumContainer',{
+        imageryProvider:new Cesium.createOpenStreetMapImageryProvider({
+            url : 'https://a.tile.openstreetmap.org/'
+        }),
         animation: false,
         timeline: false
     });
+
+    // viewer.imageryLayers.remove(viewer.imageryLayers.get(0));
+    // var osm = Cesium.createOpenStreetMapImageryProvider({
+    //     url : 'https://a.tile.openstreetmap.org/'
+    // });
+    // viewer.imageryLayer.addImageryProvider(osm);
+
 	var tileset = viewer.scene.primitives.add(new Cesium.Cesium3DTileset({
         // url : 'http://localhost:3000/3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
         url : '3dtiles/tilesets/TilesetWithDiscreteLOD/tileset.json'
@@ -72,7 +82,12 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
         var rectangle = Cesium.Rectangle.fromDegrees(west, south, east, north);
 
         viewer.camera.flyTo({
-            destination : rectangle
+            destination : rectangle,
+            // orientation:{
+            //     heading:Cesium.Math.toRadians(175.0),
+            //     pitch:Cesium.Math.toRadians(-35.0),
+            //     roll:0.0
+            // }
         });
 
         // 显示区域矩形
