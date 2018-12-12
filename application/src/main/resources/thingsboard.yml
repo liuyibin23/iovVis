@@ -124,7 +124,7 @@ cassandra:
   # Thingsboard keyspace name
   keyspace_name: "${CASSANDRA_KEYSPACE_NAME:thingsboard}"
   # Specify node list
-  url: "${CASSANDRA_URL:192.168.1.196:9042}"
+  url: "${CASSANDRA_URL:192.168.1.233:9042}"
   # Enable/disable secure connection
   ssl: "${CASSANDRA_USE_SSL:false}"
   # Enable/disable JMX
@@ -321,7 +321,7 @@ spring:
     database-platform: "${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}"
   datasource:
     driverClassName: "${SPRING_DRIVER_CLASS_NAME:org.postgresql.Driver}"
-    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.196:5432/thingsboard}"
+    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.233:5432/thingsboard}"
     username: "${SPRING_DATASOURCE_USERNAME:shj}"
     password: "${SPRING_DATASOURCE_PASSWORD:123456}"
 

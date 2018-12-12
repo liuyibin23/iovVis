@@ -17,23 +17,23 @@
 /** SYSTEM **/
 
 /** System admin **/
-INSERT INTO tb_user ( id, tenant_id, customer_id, email, search_text, authority )
-VALUES ( '1e746125a797660a91992ebcb67fe33', '1b21dd2138140008080808080808080', '1b21dd2138140008080808080808080', 'sysadmin@beidouapp.com',
-         'sysadmin@beidouapp.com', 'SYS_ADMIN' );
+INSERT INTO thingsboard.user ( id, tenant_id, customer_id, email, search_text, authority )
+VALUES ( minTimeuuid ( '2016-11-01 01:01:01+0000' ), minTimeuuid ( 0 ), minTimeuuid ( 0 ), 'sysadmin@beidouapp.com',
+'sysadmin@beidouapp.com', 'SYS_ADMIN' );
 
-INSERT INTO user_credentials ( id, user_id, enabled, password )
-VALUES ( '1e7461261441950a91992ebcb67fe33', '1e746125a797660a91992ebcb67fe33', true,
-         '$2a$10$5JTB8/hxWc9WAy62nCGSxeefl3KWmipA9nFpVdDa0/xfIseeBB4Bu' );
+INSERT INTO thingsboard.user_credentials ( id, user_id, enabled, password )
+VALUES ( now ( ), minTimeuuid ( '2016-11-01 01:01:01+0000' ), true,
+'$2a$10$5JTB8/hxWc9WAy62nCGSxeefl3KWmipA9nFpVdDa0/xfIseeBB4Bu' );
 
 /** System settings **/
-INSERT INTO admin_settings ( id, key, json_value )
-VALUES ( '1e746126a2266e4a91992ebcb67fe33', 'general', '{
+INSERT INTO thingsboard.admin_settings ( id, key, json_value )
+VALUES ( now ( ), 'general', '{
 	"baseUrl": "http://localhost:8080"
 }' );
 
-INSERT INTO admin_settings ( id, key, json_value )
-VALUES ( '1e746126eaaefa6a91992ebcb67fe33', 'mail', '{
-	"mailFrom": "BeiDouApp <sysadmin@beidouapp.com>",
+INSERT INTO thingsboard.admin_settings ( id, key, json_value )
+VALUES ( now ( ), 'mail', '{
+	"mailFrom": "Thingsboard <sysadmin@localhost.localdomain>",
 	"smtpProtocol": "smtp",
 	"smtpHost": "localhost",
 	"smtpPort": "25",
