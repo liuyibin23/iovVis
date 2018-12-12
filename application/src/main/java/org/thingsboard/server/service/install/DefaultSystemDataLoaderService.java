@@ -86,7 +86,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
 
     @Override
     public void createSysAdmin() {
-        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@thingsboard.org", "sysadmin");
+        createUser(Authority.SYS_ADMIN, null, null, "sysadmin@beidouapp.com", "sysadmin");
     }
 
     @Override
@@ -101,7 +101,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         AdminSettings mailSettings = new AdminSettings();
         mailSettings.setKey("mail");
         node = objectMapper.createObjectNode();
-        node.put("mailFrom", "ThingsBoard <sysadmin@localhost.localdomain>");
+        node.put("mailFrom", "BeiDouApp <sysadmin@localhost.localdomain>");
         node.put("smtpProtocol", "smtp");
         node.put("smtpHost", "localhost");
         node.put("smtpPort", "25");
@@ -120,7 +120,7 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         demoTenant.setTitle("Tenant");
         demoTenant = tenantService.saveTenant(demoTenant);
         installScripts.createDefaultRuleChains(demoTenant.getId());
-        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@thingsboard.org", "tenant");
+        createUser(Authority.TENANT_ADMIN, demoTenant.getId(), null, "tenant@beidouapp.com", "tenant");
 
         Customer customerA = new Customer();
         customerA.setTenantId(demoTenant.getId());
@@ -134,10 +134,10 @@ public class DefaultSystemDataLoaderService implements SystemDataLoaderService {
         customerC.setTenantId(demoTenant.getId());
         customerC.setTitle("Customer C");
         customerC = customerService.saveCustomer(customerC);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@thingsboard.org", CUSTOMER_CRED);
-        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@thingsboard.org", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customer@beidouapp.com", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerA.getId(), "customerA@beidouapp.com", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerB.getId(), "customerB@beidouapp.com", CUSTOMER_CRED);
+        createUser(Authority.CUSTOMER_USER, demoTenant.getId(), customerC.getId(), "customerC@beidouapp.com", CUSTOMER_CRED);
 
         createDevice(demoTenant.getId(), customerA.getId(), DEFAULT_DEVICE_TYPE, "Test Device A1", "A1_TEST_TOKEN", null);
         createDevice(demoTenant.getId(), customerA.getId(), DEFAULT_DEVICE_TYPE, "Test Device A2", "A2_TEST_TOKEN", null);

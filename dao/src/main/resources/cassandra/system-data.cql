@@ -18,8 +18,8 @@
 
 /** System admin **/
 INSERT INTO thingsboard.user ( id, tenant_id, customer_id, email, search_text, authority )
-VALUES ( minTimeuuid ( '2016-11-01 01:01:01+0000' ), minTimeuuid ( 0 ), minTimeuuid ( 0 ), 'sysadmin@thingsboard.org',
-'sysadmin@thingsboard.org', 'SYS_ADMIN' );
+VALUES ( minTimeuuid ( '2016-11-01 01:01:01+0000' ), minTimeuuid ( 0 ), minTimeuuid ( 0 ), 'sysadmin@beidouapp.com',
+'sysadmin@beidouapp.com', 'SYS_ADMIN' );
 
 INSERT INTO thingsboard.user_credentials ( id, user_id, enabled, password )
 VALUES ( now ( ), minTimeuuid ( '2016-11-01 01:01:01+0000' ), true,
@@ -33,7 +33,7 @@ VALUES ( now ( ), 'general', '{
 
 INSERT INTO thingsboard.admin_settings ( id, key, json_value )
 VALUES ( now ( ), 'mail', '{
-	"mailFrom": "Thingsboard <sysadmin@localhost.localdomain>",
+	"mailFrom": "BeiDouApp <sysadmin@localhost.localdomain>",
 	"smtpProtocol": "smtp",
 	"smtpHost": "localhost",
 	"smtpPort": "25",
