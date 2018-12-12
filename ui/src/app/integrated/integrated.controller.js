@@ -56,13 +56,35 @@ export default function IntegratedController($scope, $filter, $mdMedia, $q, menu
         // Cesium.Matrix4.multiply(mat,rotationX,mat);
         tileset._root.transform = mat;
 
-        viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(e){
-            e.cancel = true;
-            viewer.camera.flyToBoundingSphere(tileset.boundingSphere);
-        });
+        // viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(e){
+        //     e.cancel = true;
+        //     viewer.camera.flyToBoundingSphere(tileset.boundingSphere);
+        // });
     });
 
-    
+    viewer.homeButton.viewModel.command.beforeExecute.addEventListener(function(e){
+        e.cancel = true;
+        var west = 103.83698065617835;
+        var south = 30.549742872263604;
+        var east = 104.25786771989854;
+        var north = 30.829369938500545;
+
+        var rectangle = Cesium.Rectangle.fromDegrees(west, south, east, north);
+
+        viewer.camera.flyTo({
+            destination : rectangle
+        });
+
+        // 显示区域矩形
+        viewer.entities.add({
+            rectangle : {
+                coordinates : rectangle,
+                fill : false,
+                outline : true,
+                outlineColor : Cesium.Color.RED
+            }
+        });
+    });
 
     
 
