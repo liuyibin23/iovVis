@@ -105,10 +105,6 @@ export default function IntegratedController(
         });
     });
 
-    
-        updateColumnCount();
-    });
-
     $scope.$watch(function () { return $mdMedia('gt-lg'); }, function () {
         updateColumnCount();
     });
