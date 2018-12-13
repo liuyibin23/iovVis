@@ -58,6 +58,7 @@ export default function HomeController(types, loginService, userService, deviceS
     vm.openSearch = openSearch;
     vm.closeSearch = closeSearch;
     vm.gotoIOTPanel = gotoIOTPanel;
+    vm.goHome = goHome;
 
     $scope.$on('$stateChangeSuccess', function (evt, to, toParams, from) {
         watchEntitySubtype(false);
@@ -99,6 +100,10 @@ export default function HomeController(types, loginService, userService, deviceS
             $animate.enabled(siteSideNav, false);
         }
     });
+
+    function goHome() {
+        $state.go('home');
+    }
 
     function gotoIOTPanel() {
         $state.go('home.integrated');

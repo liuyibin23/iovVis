@@ -168,7 +168,7 @@ function TelemetryWebsocketService($rootScope, $websocket, $timeout, $window, $m
 
     function onMessage (message) {
         if (message.data) {
-            $log.info('AWEN-->', 'message.data');
+            // $log.info('AWEN-->', 'message.data');
             var data = angular.fromJson(message.data);
             if (data.errorCode) {
                 showWsError(data.errorCode, data.errorMsg);

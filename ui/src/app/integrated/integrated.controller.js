@@ -54,112 +54,78 @@ export default function IntegratedController(
     vm.model = menu.getHomeSections();
 
     /*订阅开始*/
-    var integratedCtx = {
-        subscriptions: {},
-        subscriptionApi: {
-            createSubscription: function (options, subscribe) {
-                return createSubscription(options, subscribe);
-            },
-            removeSubscription: function (id) {
-                var subscription = integratedCtx.subscriptions[id];
-                if (subscription) {
-                    subscription.destroy();
-                    delete integratedCtx.subscriptions[id];
-                }
-            }
-        }
-    };
-    var deferred = $q.defer();
-
-    var subscriptionContext = {
-        $scope: $scope,
-        $q: $q,
-        $filter: $filter,
-        $timeout: $timeout,
-        tbRaf: tbRaf,
-        timeService: timeService,
-        deviceService: deviceService,
-        datasourceService: datasourceService,
-        alarmService: alarmService,
-        utils: utils,
-        // widgetUtils: widgetContext.utils,
-        // dashboardTimewindowApi: dashboardTimewindowApi,
-        types: types,
-        getStDiff: dashboardService.getServerTimeDiff,
-        // aliasController: aliasController
-    };
-    var subscriptionOptions = {
-        datasources: [],
-        callbacks: {
-            onDataUpdated: onDataUpdated,
-            onDataUpdateError: onDataUpdateError
-        }
-    };
-
-    createSubscription(subscriptionOptions, true).then(
-        function success(subscription) {
-            integratedCtx.defaultSubscription = subscription;
-            $log.info('AWEN-->subscription is created in integratedCtx.defaultSubscription');
-            deferred.resolve();
+    var timeWindowConfig = {
+        fixedWindow: null,
+        realtimeWindowMs: null,
+        aggregation: {
+            interval: 10000,
+            limit: 2000,
+            type: types.aggregation.avg.value
         },
-        function fail() {
-            deferred.reject();
+        realtime: {
+            interval: 10000,         //间隔
+            timewindowMs: 10000,    //持续
         }
-    );
-
-    function createSubscription(options, subscribe) {
-        var deferred = $q.defer();
-        // options.dashboardTimewindow = vm.dashboardTimewindow;
-        new Subscription(subscriptionContext, options).then(
-            function success(subscription) {
-                integratedCtx.subscriptions[subscription.id] = subscription;
-                if (subscribe) {
-                    subscription.subscribe();
-                }
-                deferred.resolve(subscription);
-            },
-            function fail() {
-                deferred.reject();
+    };
+    var stDiff = 10;
+    var timeWindow = timeService.createSubscriptionTimewindow(timeWindowConfig, stDiff);
+    var datasourceDemo = {
+        "type":"entity",
+        "dataKeys":[
+            {
+                "name":"temperature",
+                "type":"timeseries",
+                "label":"temperature",
+                "color":"#2196f3",
+                "settings":{},
+                "_hash":0.39904519210542744,
+                "pattern":"temperature",
+                "hidden":false
             }
-        );
-        return deferred.promise;
-    }
+        ],
+        "entityAliasId":"dbe3b0de-69d8-5f93-80c3-cd513a89209d",
+        "aliasName":"A桥巡检",
+        "entity":{
+            "id":{"entityType":"DEVICE","id":"056a2f60-e31a-11e8-be95-f3713e6700c3"},
+            "createdTime":1541656153430,
+            "additionalInfo":null,
+            "tenantId":{"entityType":"TENANT","id":"5d92c2e0-dd0e-11e8-be4d-9104f478b9f9"},
+            "customerId":{"entityType":"CUSTOMER","id":"13814000-1dd2-11b2-8080-808080808080"},
+            "name":"A桥巡检员","type":"巡检员"
+        },
+        "entityId":"056a2f60-e31a-11e8-be95-f3713e6700c3",
+        "entityType":"DEVICE",
+        "entityName":"A桥巡检员",
+        "name":"A桥巡检员",
+        "entityDescription":""
+    };
 
-    function onDataUpdated(subscription, apply) {
-        // var value = false;
-        var data = subscription.data;
-        if (data.length) {
-            $log.log('AWEN-->DATA');
-            // var keyData = data[0];
-            // if (keyData && keyData.data && keyData.data[0]) {
-            //     var attrValue = keyData.data[0][1];
-            //     if (attrValue) {
-            //         var parsed = null;
-            //         try {
-            //             parsed = vm.parseValueFunction(angular.fromJson(attrValue));
-            //         } catch (e){/**/}
-            //         value = parsed ? true : false;
-            //     }
-            // }
+    var listener = {
+        subscriptionType: 'timeseries',     //types.widgetType.timeseries.value, 订阅者（widget）的类型
+        subscriptionTimewindow: timeWindow, //时间查询窗口
+        entityType: 'DEVICE',               //设备
+        entityId: '056a2f60-e31a-11e8-be95-f3713e6700c3', //A桥巡检员
+        datasource: datasourceDemo,
+        datasourceIndex: 0,
+        dataUpdated: function (data, datasourceIndex, dataKeyIndex, apply) {
+            $log.log('AWEN-->')
+            onDataUpdated(data, datasourceIndex, dataKeyIndex, apply);
         }
         /*
-        setValue(value);
-        if (apply) {
-            $scope.$digest();
+        updateRealtimeSubscription: function () {
+            this.subscriptionTimewindow = subscription.updateRealtimeSubscription();
+            return this.subscriptionTimewindow;
+        },
+        setRealtimeSubscription: function (subscriptionTimewindow) {
+            subscription.updateRealtimeSubscription(angular.copy(subscriptionTimewindow));
         }
         */
+    };
+    datasourceService.subscribeToDatasource(listener);
+    
+    function onDataUpdated(sourceData, datasourceIndex, dataKeyIndex, apply) {
+        // $log.info("AWEN-->websocket data callback",sourceData,datasourceIndex,dataKeyIndex);
     }
-
-    function onDataUpdateError(subscription, e) {
-        $log.error('AWEN-->ERR');
-        // var exceptionData = utils.parseException(e);
-        // var errorText = exceptionData.name;
-        // if (exceptionData.message) {
-        //     errorText += ': ' + exceptionData.message;
-        // }
-        // onError(errorText);
-    }
-
     /*订阅结束*/
 
     // dashboard id---> d96c1d40-de3e-11e8-90b2-6708b10d2f5b 战略情报
