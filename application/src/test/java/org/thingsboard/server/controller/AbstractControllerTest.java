@@ -100,13 +100,13 @@ public abstract class AbstractControllerTest {
 
     protected static final String TEST_TENANT_NAME = "TEST TENANT";
 
-    protected static final String SYS_ADMIN_EMAIL = "sysadmin@thingsboard.org";
+    protected static final String SYS_ADMIN_EMAIL = "sysadmin@beidouapp.com";
     private static final String SYS_ADMIN_PASSWORD = "sysadmin";
 
-    protected static final String TENANT_ADMIN_EMAIL = "testtenant@thingsboard.org";
+    protected static final String TENANT_ADMIN_EMAIL = "testtenant@beidouapp.com";
     private static final String TENANT_ADMIN_PASSWORD = "tenant";
 
-    protected static final String CUSTOMER_USER_EMAIL = "testcustomer@thingsboard.org";
+    protected static final String CUSTOMER_USER_EMAIL = "testcustomer@beidouapp.com";
     private static final String CUSTOMER_USER_PASSWORD = "customer";
 
     /** See {@link org.springframework.test.web.servlet.DefaultMvcResult#getAsyncResult(long)}

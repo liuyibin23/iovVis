@@ -33,7 +33,7 @@ VALUES ( '1e746126a2266e4a91992ebcb67fe33', 'general', '{
 
 INSERT INTO admin_settings ( id, key, json_value )
 VALUES ( '1e746126eaaefa6a91992ebcb67fe33', 'mail', '{
-	"mailFrom": "BeiDouApp <sysadmin@beidouapp.com>",
+	"mailFrom": "BeiDouApp <sysadmin@localhost.localdomain>",
 	"smtpProtocol": "smtp",
 	"smtpHost": "localhost",
 	"smtpPort": "25",

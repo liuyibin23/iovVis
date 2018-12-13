@@ -23,12 +23,12 @@ const fs = require('fs');
 const readline = require('readline');
 
 function postGps(ind) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/2DQHhOjq2IY1hyNWnWTc/telemetry',
+    axios.post('http://127.0.0.1:8080/api/v1/A7dygfPe3Hrlcjc7siER/telemetry',
         // arrPTS_[ind]
         {"latitude": arrPTS_[ind].latitude, "longitude": arrPTS_[ind].longitude, 
          "speed": arrPTS_[ind].speed,
          "energy": arrPTS_[ind].energy,
-         "id":15
+         "id":14
         } 
     ).then(res => {
         console.info(res)
