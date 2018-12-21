@@ -23,9 +23,9 @@ const axios = require('axios');
 function postCrackWidth(point) {
     axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/telemetry', //A监测点 
         point).then(res => {
-            console.info(res)
+            console.log(res.status);
         }).catch(e => {
-            console.info(e)
+            // console.info(e);
         })
 }
 
@@ -38,7 +38,7 @@ function postCrackDeepth(pt) {
         })
 }
 
-let pt = { "裂缝宽度": 0.15, idType: "CRACK", alarmCnt: 1 };
+let pt = { "裂缝宽度-----": 0.16, idType: "CRACK-ID", alarmCnt: 10.79 };
 postCrackWidth(pt);
 
 let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
