@@ -51,8 +51,9 @@
 
 <md-content flex tb-expand-fullscreen tb-confirm-on-exit is-dirty="vm.isConfirmOnExit"
             expand-tooltip-direction="bottom" layout="column" on-fullscreen-changed="vm.isFullscreen = expanded">
-    <div id='cesiumContainer'></div>        
-    <section class="tb-rulechain-container" flex layout="row">
+    <div id='cesiumContainer'></div>     
+    
+    <section flex layout="row">
 
         <!--展开侧边栏按钮-->
         <!-- <div flex layout="row">
@@ -109,12 +110,13 @@
                     </md-button>
                 </div>
             </md-toolbar>
-            <md-button ng-click="vm.openDashboard('d96c1d40-de3e-11e8-90b2-6708b10d2f5b')">情报</md-button>
-            <md-button ng-click="vm.openDashboard('af5dadb0-e5ba-11e8-be95-f3713e6700c3')">桥梁</md-button>
+            <md-button ng-click="vm.openDashboard('68f9bd30-035d-11e9-bed7-fbd3b8868602')">实时数据</md-button>
+            <md-button ng-click="vm.openDashboard('d96c1d40-de3e-11e8-90b2-6708b10d2f5b')">告警情报</md-button>
+            <md-button ng-click="vm.openDashboard('af5dadb0-e5ba-11e8-be95-f3713e6700c3')">任务巡检</md-button>
         </md-sidenav>
  
         <div flex layout="column" id="toast-parent" >
-            <md-content ng-cloak flex layout="column" ui-view name="contentDetails"></md-content>
+            <md-content class="float-Chart " ng-cloak flex layout="column" ui-view name="contentDetails"></md-content>
         </div>
     </section>
 </md-content>

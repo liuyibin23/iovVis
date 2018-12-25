@@ -24,7 +24,7 @@
 
 const mqtt = require('mqtt');
 const token = 'GbGuHQkbgeQcAoFd3GLF';   //A监测点
-var client = mqtt.connect('mqtt://test.mosquitto.org');
+var client = mqtt.connect('mqtt://iot.eclipse.org');
 
 client.on('connect', function () {
 	console.log('connected');
