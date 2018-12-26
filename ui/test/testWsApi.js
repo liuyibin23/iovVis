@@ -109,7 +109,7 @@ async function tsTest() {
     };
 
     setTimeout(timerfun, 1000, cmd_sub);
-    setTimeout(timerfun, 10000, cmd2);
+    setTimeout(timerfun, 10000, cmd_2);
     setTimeout(timerfun, 50000, cmd_unsub);
     function timerfun(object) {
         var data = JSON.stringify(object);
