@@ -38,7 +38,7 @@ function postCrackDeepth(pt) {
         })
 }
 
-function postCliAttrValue(pt) {
+function postCliAttrValue(ptJson) {
     axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/attributes', //A监测点               
         ptJson).then(res => {
             console.info(res)
@@ -53,5 +53,5 @@ postCrackWidth(pt);
 let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
 //postCrackDeepth(pt2);
 
-let attr = {"AMonitorPosX":1233.3,"AMonitorPosY":1233.3};
+let attr = {"AMonitorPosX":1233.3555};
 postCliAttrValue(attr);

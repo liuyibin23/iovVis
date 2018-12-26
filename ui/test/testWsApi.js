@@ -23,7 +23,7 @@
 
 // const path = require('path');
 const axios = require('axios');
-// tsTest();
+tsTest();
 // hsTest();
 // attrTest();
 async function postSync(url, data) {
@@ -61,7 +61,7 @@ async function tsTest() {
         console.log('webSocket closed!');
     };
 
-    var cmd1 = {
+    var cmd_sub = {
         tsSubCmds: [
             {
                 "entityType": "DEVICE",
@@ -78,7 +78,7 @@ async function tsTest() {
         historyCmds: [],
         attrSubCmds: []
     };
-    var cmd2 = {
+    var cmd_2 = {
         tsSubCmds: [
             {
                 "entityType": "DEVICE",
@@ -95,7 +95,7 @@ async function tsTest() {
         historyCmds: [],
         attrSubCmds: []
     };
-    var cmd3 = {
+    var cmd_unsub = {
         tsSubCmds: [
             {
                 "entityType": "DEVICE",
@@ -108,9 +108,9 @@ async function tsTest() {
         attrSubCmds: []
     };
 
-    setTimeout(timerfun, 1000, cmd1);
+    setTimeout(timerfun, 1000, cmd_sub);
     setTimeout(timerfun, 10000, cmd2);
-    setTimeout(timerfun, 50000, cmd3);
+    setTimeout(timerfun, 50000, cmd_unsub);
     function timerfun(object) {
         var data = JSON.stringify(object);
         webSocket.send(data);
@@ -138,7 +138,7 @@ async function hsTest() {
         console.log('webSocket closed!');
     };
 
-    var cmd1 = {
+    var cmd_sub = {
         tsSubCmds: [],
         historyCmds: [
             {
@@ -155,7 +155,7 @@ async function hsTest() {
         ],
         attrSubCmds: []
     };
-    setTimeout(timerfun, 1000, cmd1);
+    setTimeout(timerfun, 1000, cmd_sub);
     function timerfun(object) {
         var data = JSON.stringify(object);
         webSocket.send(data);
@@ -183,24 +183,30 @@ async function attrTest() {
         console.log('webSocket closed!');
     };
 
-    var cmd1 = {
+    var cmd_sub = {
         tsSubCmds: [],
-        historyCmds: [
+        historyCmds: [],
+        attrSubCmds: [
             {
-            "entityType": "DEVICE",
-            "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
-            "keys": "crackWidth,crackDeepth",
-            "startTs": 1545268250243,  //距离1970年1月1日零点的毫秒数
-            "endTs": 1545700250243,
-            "interval": 2000000,			//分组间隔1000毫秒
-            "limit": 500,
-            "cmdId": 13,
-            "agg": "AVG"
+                "entityType": "DEVICE",
+                "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
+                "keys": "AMonitorPosX,AMonitorPosY",
+                cmdId: 17
             }
-        ],
-        attrSubCmds: []
+        ]
     };
-    setTimeout(timerfun, 1000, cmd1);
+    var cmd_unsub = {
+        tsSubCmds: [],
+        historyCmds: [],
+        attrSubCmds: [
+            {
+                cmdId: 17,
+                unsubscribe: true
+            }
+        ]
+    };
+    setTimeout(timerfun, 1000, cmd_sub);
+    setTimeout(timerfun, 20000, cmd_unsub);
     function timerfun(object) {
         var data = JSON.stringify(object);
         webSocket.send(data);
