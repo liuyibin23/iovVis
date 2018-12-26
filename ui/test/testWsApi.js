@@ -23,9 +23,9 @@
 
 // const path = require('path');
 const axios = require('axios');
-// wsTest();
-hsTest();
-
+// tsTest();
+// hsTest();
+// attrTest();
 async function postSync(url, data) {
     try {
         let res = await axios.post(url, (data));
@@ -42,27 +42,7 @@ async function postSync(url, data) {
     }
 }
 
-// let pt = { "裂缝宽度": 0.15, idType: "CRACK", alarmCnt: 1 };
-function postCrackWidth(point) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/telemetry', //A监测点 
-        point).then(res => {
-            console.info(res)
-        }).catch(e => {
-            console.info(e)
-        })
-}
-
-// let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
-function postCrackDeepth(pt) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/mvjPD7zvq7CqkzmyPOSi/telemetry', //A巡视员 
-        ptJson).then(res => {
-            console.info(res)
-        }).catch(e => {
-            console.info(e)
-        })
-}
-
-async function wsTest() {
+async function tsTest() {
     var loginRes = await postSync('http://cf.beidouapp.com:8080/api/auth/login',
         { "username": "lvyu@beidouapp.com", "password": "12345" });
     var token = loginRes.token;
@@ -88,8 +68,8 @@ async function wsTest() {
                 "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
                 "keys": "crackWidth,crackDeepth",
                 // "startTs":1545240944508,  //距离1970年1月1日零点的毫秒数
-                // "timeWindow": 60000,		//时间窗口为1分钟，60000毫秒
-                // "interval": 6000,			//分组间隔1000毫秒
+                // "timeWindow": 60000,		 //时间窗口为1分钟，60000毫秒
+                // "interval": 6000,		 //分组间隔1000毫秒
                 // "limit": 60,
                 // "cmdId": 10,
                 // "agg": "AVG"
@@ -139,6 +119,51 @@ async function wsTest() {
 }
 
 async function hsTest() {
+    var loginRes = await postSync('http://cf.beidouapp.com:8080/api/auth/login',
+        { "username": "lvyu@beidouapp.com", "password": "12345" });
+    var token = loginRes.token;
+    /* begin websocket test session */
+    const WebSocket = require('ws');
+    const webSocket = new WebSocket('ws://cf.beidouapp.com:8080/api/ws/plugins/telemetry?token=' + token);
+
+    webSocket.onopen = function open() {
+        console.log('webSocket connected!');
+    };
+    webSocket.onmessage = function incoming(event) {
+        var obj = JSON.parse(event.data);
+        console.log(event.data);
+        // console.log('cmdChannel: %d',obj.subscriptionId, obj.data);
+    };
+    webSocket.onclose = function close(){
+        console.log('webSocket closed!');
+    };
+
+    var cmd1 = {
+        tsSubCmds: [],
+        historyCmds: [
+            {
+            "entityType": "DEVICE",
+            "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
+            "keys": "crackWidth,crackDeepth",
+            "startTs": 1545268250243,  //距离1970年1月1日零点的毫秒数
+            "endTs": 1545700250243,
+            "interval": 2000000,			//分组间隔1000毫秒
+            "limit": 500,
+            "cmdId": 13,
+            "agg": "AVG"
+            }
+        ],
+        attrSubCmds: []
+    };
+    setTimeout(timerfun, 1000, cmd1);
+    function timerfun(object) {
+        var data = JSON.stringify(object);
+        webSocket.send(data);
+        console.log('>>>>>Message is sent: ' + data);
+    }
+}
+
+async function attrTest() {
     var loginRes = await postSync('http://cf.beidouapp.com:8080/api/auth/login',
         { "username": "lvyu@beidouapp.com", "password": "12345" });
     var token = loginRes.token;
