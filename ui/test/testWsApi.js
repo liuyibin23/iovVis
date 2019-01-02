@@ -99,8 +99,8 @@ async function tsTest() {
         tsSubCmds: [
             {
                 "entityType": "DEVICE",
-                "entityId": "056a2f60-e31a-11e8-be95-f3713e6700c3", //A巡检员
-                cmdId: 10,
+                "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
+                cmdId: 0,
                 unsubscribe: true
             }
         ],
@@ -110,7 +110,7 @@ async function tsTest() {
 
     setTimeout(timerfun, 1000, cmd_sub);
     setTimeout(timerfun, 10000, cmd_2);
-    setTimeout(timerfun, 50000, cmd_unsub);
+    setTimeout(timerfun, 20000, cmd_unsub);
     function timerfun(object) {
         var data = JSON.stringify(object);
         webSocket.send(data);

@@ -29,29 +29,29 @@ function postCrackWidth(point) {
         })
 }
 
-function postCrackDeepth(pt) {
+function postCrackDeepth(ptJson) {
     axios.post('http://cf.beidouapp.com:8080/api/v1/mvjPD7zvq7CqkzmyPOSi/telemetry', //A巡视员 
         ptJson).then(res => {
-            console.info(res)
+            console.info(res.status);
         }).catch(e => {
-            console.info(e)
+            // console.info(e);
         })
 }
 
 function postCliAttrValue(ptJson) {
     axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/attributes', //A监测点               
         ptJson).then(res => {
-            console.info(res)
+            console.info(res.status);
         }).catch(e => {
-            console.info(e)
+            // console.info(e);
         })
 }
 
-let pt = { "裂缝宽度-----": 0.16, idType: "CRACK-ID", alarmCnt: 10.79 };
+let pt = { "裂缝宽度": 0.16, idType: "CRACK-ID", alarmCnt: 10.79 };
 postCrackWidth(pt);
 
 let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
-//postCrackDeepth(pt2);
+postCrackDeepth(pt2);
 
 let attr = {"AMonitorPosX":1233.3555};
 postCliAttrValue(attr);

@@ -24,13 +24,16 @@
 
 const mqtt = require('mqtt');
 const token = 'GbGuHQkbgeQcAoFd3GLF';   //A监测点
-var client = mqtt.connect('mqtt://iot.eclipse.org');
+var client = mqtt.connect('mqtt://cf.beidouapp.com:9008');
 
 client.on('connect', function () {
 	console.log('connected');
-	client.subscribe('v1/devices/me/telemetry/+')
+	// client.subscribe('v1/devices/me/telemetry/+');
+	client.subscribe('v1/devices/me/telemetry/5074b200-e31a-11e8-be95-f3713e6700c3');
+	client.subscribe('v1/devices/me/telemetry/056a2f60-e31a-11e8-be95-f3713e6700c3');
 });
 
+var cnt_ = 0;
 client.on('message', function (topic, message) {
 	console.log('request.topic: ' + topic);
 	console.log('request.body: ' + message.toString());
