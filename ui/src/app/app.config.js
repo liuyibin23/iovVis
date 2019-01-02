@@ -199,7 +199,7 @@ export default function AppConfig($provide,
 
     function configureTheme() {
 
-        var theme = 'etTheme';
+        var theme = 'indigo';
         // var theme = 'indigo';
         // var theme = 'blueGray';
 

@@ -22,7 +22,7 @@ export default angular.module('beidouapp.api.user', [beidouappApiLogin,
     .name;
 
 /*@ngInject*/
-function UserService($http, $q, $rootScope, adminService, dashboardService, timeService, loginService, toast, store, jwtHelper, $translate, $state, $location) {
+function UserService($log, $http, $q, $rootScope, adminService, dashboardService, timeService, loginService, toast, store, jwtHelper, $translate, $state, $location) {
     var currentUser = null,
         currentUserDetails = null,
         lastPublicDashboardId = null,
@@ -133,6 +133,7 @@ function UserService($http, $q, $rootScope, adminService, dashboardService, time
     }
 
     function isAuthenticated() {
+        // $log.log('AWEN-->', jwtHelper.decodeToken(store.get('jwt_token')));
         return store.get('jwt_token');
     }
 
@@ -300,6 +301,7 @@ function UserService($http, $q, $rootScope, adminService, dashboardService, time
             validateJwtToken(doTokenRefresh).then(function success() {
                 var jwtToken = store.get('jwt_token');
                 currentUser = jwtHelper.decodeToken(jwtToken);
+
                 if (currentUser && currentUser.scopes && currentUser.scopes.length > 0) {
                     currentUser.authority = currentUser.scopes[0];
                 } else if (currentUser) {

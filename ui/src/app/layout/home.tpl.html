@@ -15,7 +15,7 @@
     limitations under the License.
 
 -->
-<!-- <md-sidenav class="tb-site-sidenav md-sidenav-left md-whiteframe-z2" ng-show="!forceFullscreen" hide-print=""
+<md-sidenav class="tb-site-sidenav md-sidenav-left md-whiteframe-z2" ng-show="!forceFullscreen" hide-print=""
  md-component-id="left" aria-label="Toggle Nav" ng-click="vm.sidenavClicked()" md-is-open="vm.isShowSidenav"
  md-is-locked-open="vm.isLockSidenav" layout="column">
 	<header class="tb-nav-header">
@@ -28,7 +28,7 @@
 	<md-toolbar flex class="tb-side-menu-toolbar" role="navigation">
 		<tb-side-menu></tb-side-menu>
 	</md-toolbar>
-</md-sidenav> -->
+</md-sidenav> 
 
 <div flex layout="column" tabIndex="-1" role="main">
 	<md-toolbar class="md-whiteframe-z1 tb-primary-toolbar">
@@ -47,7 +47,7 @@
 			<div flex layout="row" ng-show="!vm.displaySearchMode()" tb-no-animate class="md-toolbar-tools">
 				<span ng-cloak ncy-breadcrumb></span>
 			</div>
-			<div layout="row" ng-show="vm.displaySearchMode()" md-theme="tb-dark" flex>
+			<div layout="row" ng-show="vm.displaySearchMode()" md-theme="bd-dark" flex>
 				<div class="tb-entity-subtype-search" layout="row" layout-align="start center" ng-if="vm.displayEntitySubtypeSearch()">
 					<tb-entity-subtype-select entity-type="searchConfig.searchEntityType" ng-model="searchConfig.searchEntitySubtype">
 					</tb-entity-subtype-select>
@@ -62,6 +62,11 @@
 				<md-icon aria-label="{{ 'action.search' | translate }}" class="material-icons">search</md-icon>
 			</md-button>
 			<!--功能菜单-->
+			<md-button class="md-icon-button" ng-click="vm.goHome()">
+				<md-tooltip>首页</md-tooltip>
+				<md-icon class="material-icons">home</md-icon>
+			</md-button>
+			<div>|</div>
 			<md-button class="md-icon-button">
 				<md-tooltip>可视化大屏</md-tooltip>
 				<md-icon class="material-icons">view_comfy</md-icon>

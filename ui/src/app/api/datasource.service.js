@@ -39,9 +39,9 @@ function DatasourceService($timeout, $filter, $log, telemetryWebsocketService, t
 
     function subscribeToDatasource(listener) {
         var datasource = listener.datasource;
-
+        // $log.log('AWEN-->',angular.toJson(datasource));
         if (datasource.type === types.datasourceType.entity && (!listener.entityId || !listener.entityType)) {
-            return;
+            return; //listener doesn't have its own entityId & entityType and already has a datasource with entity type.
         }
 
         var subscriptionDataKeys = [];
@@ -196,6 +196,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
         var key;
         var dataKey;
         if (datasourceType === types.datasourceType.entity || datasourceSubscription.type === types.widgetType.timeseries.value) {
+            $log.log('AWEN-->syncListener datasourceType, dataKeys:d%', dataKeys.length);  
             for (key in dataKeys) {
                 var dataKeysList = dataKeys[key];
                 for (var i = 0; i < dataKeysList.length; i++) {
@@ -207,6 +208,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                 }
             }
         } else {
+            $log.log('AWEN-->syncListener datasourceType else, dataKeys:d%', dataKeys.length);  
             for (key in dataKeys) {
                 dataKey = dataKeys[key];
                 listener.dataUpdated(datasourceData[key],
@@ -249,11 +251,11 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
             }
 
             if (tsKeys.length > 0) {
-
+                $log.log('AWEN-->tsKeys.length:d%',tsKeys.length);
                 var subscriber;
 
                 if (history) {
-
+                    $log.log('AWEN-->history:',history);
                     var historyCommand = {
                         entityType: datasourceSubscription.entityType,
                         entityId: datasourceSubscription.entityId,
@@ -324,11 +326,11 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                         subscriptionCommands: [subscriptionCommand],
                         type: types.dataKeyType.timeseries
                     };
-
+                    $log.log('AWEN-->datasourceSubscription.type:', datasourceSubscription.type);
                     if (datasourceSubscription.type === types.widgetType.timeseries.value) {
                         subscriber.subsTw = subsTw;
                         updateRealtimeSubscriptionCommand(subscriptionCommand, subsTw);
-
+                        $log.log('AWEN-->updateRealtimeSubscriptionCommand:', subscriptionCommand);
                         if (subsTw.aggregation.stateData) {
                             subscriber.firstStateSubscriptionCommand = createFirstStateHistoryCommand(subsTw.startTs, tsKeys);
                             subscriber.historyCommands = [subscriber.firstStateSubscriptionCommand];
@@ -337,7 +339,10 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                         subscriber.onData = function(data, subscriptionId) {
                             if (this.subsTw.aggregation.stateData &&
                                 this.firstStateSubscriptionCommand && this.firstStateSubscriptionCommand.cmdId == subscriptionId) {
+                                $log.log('AWEN-->onData subsTw');
+    
                                 if (this.data) {
+                                    $log.log('AWEN-->onData subsTw this.data');
                                     onStateHistoryData(data, this.data, this.subsTw.aggregation.limit,
                                         this.subsTw.startTs, this.subsTw.startTs + this.subsTw.aggregation.timeWindow,
                                         (data) => {
@@ -345,11 +350,16 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                                         });
                                     this.stateDataReceived = true;
                                 } else {
+                                    $log.log('AWEN-->onData subsTw this.data else');
                                     this.firstStateData = data;
                                 }
                             } else {
+                                // $log.log('AWEN-->onData subsTw else');
+
                                 if (this.subsTw.aggregation.stateData && !this.stateDataReceived) {
+                                    $log.log('AWEN-->onData subsTw else stateData');
                                     if (this.firstStateData) {
+                                        $log.log('AWEN-->onData subsTw else stateData this.firstStateData', this.firstStateData);
                                         onStateHistoryData(this.firstStateData, data, this.subsTw.aggregation.limit,
                                             this.subsTw.startTs, this.subsTw.startTs + this.subsTw.aggregation.timeWindow,
                                             (data) => {
@@ -357,9 +367,11 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                                             });
                                         this.stateDataReceived = true;
                                     } else {
+                                        $log.log('AWEN-->onData subsTw else stateData this.firstStateData else');
                                         this.data = data;
                                     }
                                 } else {
+                                    $log.log('AWEN-->onData subsTw else stateData else',data);
                                     dataAggregator.onData(data, false, false, true);
                                 }
                             }
@@ -385,6 +397,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                             dataAggregator.reset(newSubsTw.startTs,  newSubsTw.aggregation.timeWindow, newSubsTw.aggregation.interval);
                         }
                     } else {
+                        $log.log('AWEN-->datasourceSubscription.type: else');
                         subscriber.onReconnected = function() {}
                         subscriber.onData = function(data) {
                             if (data.data) {
@@ -420,7 +433,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
 
                 telemetryWebsocketService.subscribe(subscriber);
                 subscribers.push(subscriber);
-
+                $log.log('AWEN-->subscribers.push',subscriber);
             }
 
         } else if (datasourceType === types.datasourceType.function) {
@@ -577,6 +590,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
         var value = dataKey.func(time, prevSeries[1]);
         series.push(value);
         datasourceData[dataKey.key].data = [series];
+        $log.log('AWEN-->generateLatest listeners.length:d%', listeners.length);  
         for (var i = 0; i < listeners.length; i++) {
             var listener = listeners[i];
             listener.dataUpdated(datasourceData[dataKey.key],
@@ -670,6 +684,7 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
     }
 
     function onData(sourceData, type, apply) {
+        $log.log('AWEN--> onData is fired',sourceData);
         for (var keyName in sourceData) {
             var keyData = sourceData[keyName];
             var key = keyName + '_' + type;
@@ -735,6 +750,8 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
                             var listener = listeners[i2];
                             if (angular.isFunction(listener))
                               continue;
+                            // $log.log('AWEN-->ready to call listener.dataUpdated at onData function',this);
+                            // printCallStack();
                             listener.dataUpdated(datasourceData[datasourceKey],
                                 listener.datasourceIndex,
                                 dataKey.index, apply);
@@ -744,4 +761,14 @@ function DatasourceSubscription(datasourceSubscription, telemetryWebsocketServic
             }
         }
     }
+/*
+    function printCallStack() {
+        var i = 0;
+        var fun = arguments.callee;
+        do {
+            fun = fun.arguments.callee.caller;
+            $log.log(++i + ': ' + fun);
+        } while (fun);
+    }
+*/
 }
