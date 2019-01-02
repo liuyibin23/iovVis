@@ -242,3 +242,25 @@ CREATE TABLE IF NOT EXISTS entity_view (
     search_text varchar(255),
     additional_info varchar
 );
+CREATE OR REPLACE VIEW vassetattrkv AS
+ SELECT attribute_kv.entity_type,
+    attribute_kv.entity_id,
+    attribute_kv.attribute_type,
+    attribute_kv.attribute_key,
+    attribute_kv.bool_v,
+    attribute_kv.str_v,
+    attribute_kv.long_v,
+    attribute_kv.dbl_v,
+    attribute_kv.last_update_ts,
+    asset.id,
+    asset.additional_info,
+    asset.customer_id,
+    asset.name,
+    asset.search_text,
+    asset.tenant_id,
+    asset.type
+   FROM attribute_kv,
+    asset
+  WHERE attribute_kv.entity_id::text = asset.id::text;
+
+

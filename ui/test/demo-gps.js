@@ -22,28 +22,8 @@ const axios = require('axios');
 const fs = require('fs');
 const readline = require('readline');
 
-function postGps(ind) {
-    axios.post('http://127.0.0.1:8080/api/v1/A7dygfPe3Hrlcjc7siER/telemetry',
-        // arrPTS_[ind]
-        {"latitude": arrPTS_[ind].latitude, "longitude": arrPTS_[ind].longitude, 
-         "speed": arrPTS_[ind].speed,
-         "energy": arrPTS_[ind].energy,
-         "id":14
-        } 
-    ).then(res => {
-        console.info(res)
-    }).catch(e => {
-        console.info(e)
-    })
-}
 
-var arrPTS_ = new Array();
-let pt = {latitude:250,longitude:0,speed:0,energy:0};
-arrPTS_.push(pt);
-postGps(0);
-
-/*
-var fRead = fs.createReadStream('./taxi/Taxi_175');
+var fRead = fs.createReadStream('./taxi/Taxi_874');
 var objReadline = readline.createInterface({
     input: fRead,
     crlfDelay: Infinity
@@ -65,7 +45,19 @@ objReadline.on('close', function () {
     // callback(arr);
 });
 
-
+function postGps(ind) {
+    axios.post('http://localhost:3000/api/v1/Baldevc8rX67KethdyLl/telemetry',
+        // arrPTS_[ind]
+        {"latitude": arrPTS_[ind].latitude, "longitude": arrPTS_[ind].longitude, 
+         "speed": arrPTS_[ind].speed,
+         "energy": arrPTS_[ind].energy
+        } 
+    ).then(res => {
+        console.info(res)
+    }).catch(e => {
+        console.info(e)
+    })
+}
 
 
 let count_ = 0,
@@ -76,5 +68,4 @@ let count_ = 0,
         //objReadline.resume();
         if (count_ >= num)
             clearInterval(timer_);
-    }, 1000, 'total times', 3);
-*/
+    }, 1000, 'total times', 150);

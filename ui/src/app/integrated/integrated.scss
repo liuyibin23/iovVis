@@ -19,7 +19,7 @@
 @import "../../scss/constants";
 
 #cesiumContainer {
-  height: 60%;
+  height: 80%;
 }
 
 .tb-home-links {
@@ -73,3 +73,17 @@
     }
   }
 }
+
+.cesium-viewer{
+  .cesium-viewer-bottom  {
+    .cesium-widget-credits {
+      display: none;
+    }
+  }
+}
+
+.float-Chart{
+  background-color: rgba(0, 0, 0, .5);
+  opacity: 1;
+}
+

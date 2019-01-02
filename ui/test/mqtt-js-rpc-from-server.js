@@ -1,8 +1,9 @@
 var mqtt = require('mqtt');
-console.log("env:" + process.env.TOKEN);
+// console.log("env:" + process.env.TOKEN);
 // var client  = mqtt.connect('mqtt://yd.kfchain.com',{
-var client = mqtt.connect('mqtt://192.168.1.76', {
-    username: process.env.TOKEN
+var client = mqtt.connect('mqtt://cf.beidouapp.com', {
+    username: 'GbGuHQkbgeQcAoFd3GLF'    //A监测点
+    // username: 'mvjPD7zvq7CqkzmyPOSi'    //A巡检员
 });
 
 client.on('connect', function () {

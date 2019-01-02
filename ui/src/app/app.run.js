@@ -26,7 +26,6 @@ export default function AppRun($rootScope, $window, $injector, $location, $log, 
     } catch(e) {
         // ie11 fix
     }
-
     var forbiddenDialog = null;
 
     $rootScope.iframeMode = false;
