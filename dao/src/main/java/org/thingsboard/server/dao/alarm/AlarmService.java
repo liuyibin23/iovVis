@@ -24,6 +24,9 @@ import org.thingsboard.server.common.data.alarm.AlarmQuery;
 import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageData;
@@ -49,5 +52,18 @@ public interface AlarmService {
                                            AlarmStatus alarmStatus);
 
     ListenableFuture<Alarm> findLatestByOriginatorAndType(TenantId tenantId, EntityId originator, String type);
+
+    /**
+     * 查询当前登录用户在一段时间内的仪表盘告警统计信息。
+     * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    AlarmCountInfo findAlarmStatisticsCounts(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+
+
+
 
 }
