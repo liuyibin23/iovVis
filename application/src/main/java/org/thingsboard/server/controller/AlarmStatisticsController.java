@@ -1,19 +1,13 @@
 package org.thingsboard.server.controller;
 
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.server.common.data.BasePayload;
-import org.thingsboard.server.common.data.ErrorCode;
 import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
 import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.common.data.security.Authority;
-
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
