@@ -66,7 +66,7 @@ async function getSync(url, data, tok) {
  * 4. generate js template
  */
 var devABC_ids = ['5074b200-e31a-11e8-be95-f3713e6700c3','056a2f60-e31a-11e8-be95-f3713e6700c3'];
-var virtual_name = 'demoVirtualDev6';
+var virtual_name = 'demoVirtualDev0';
 var virtual_dev_id = '';
 var virtual_dev_tok = '';
 var alarm_rule = 'msg.alarmThreshold > 10';
@@ -138,7 +138,7 @@ async function main() {
     );
     var index = ruleMeta.nodes[2].configuration.jsScript.indexOf('/*device ids array*/');
     eval(ruleMeta.nodes[2].configuration.jsScript.substr(0, index));
-    if(devids) {
+    if(devids) {    //var devids = [];
         for(var iii=0; iii<devABC_ids.length; iii++) {
             var iItem = devids.filter(function(item){return item === devABC_ids[iii]});
             if(iItem.length > 0) {

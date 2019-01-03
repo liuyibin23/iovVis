@@ -28,9 +28,9 @@ var client = mqtt.connect('mqtt://cf.beidouapp.com:9008');
 
 client.on('connect', function () {
 	console.log('connected');
-	// client.subscribe('v1/devices/me/telemetry/+');
-	client.subscribe('v1/devices/me/telemetry/5074b200-e31a-11e8-be95-f3713e6700c3');
-	client.subscribe('v1/devices/me/telemetry/056a2f60-e31a-11e8-be95-f3713e6700c3');
+	client.subscribe('v1/devices/me/telemetry/+');
+	// client.subscribe('v1/devices/me/telemetry/5074b200-e31a-11e8-be95-f3713e6700c3');
+	// client.subscribe('v1/devices/me/telemetry/056a2f60-e31a-11e8-be95-f3713e6700c3');
 });
 
 var cnt_ = 0;
