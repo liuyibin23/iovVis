@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,13 @@ import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.joda.time.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.thingsboard.server.common.data.Device;
+import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmId;
@@ -32,8 +36,17 @@ import org.thingsboard.server.common.data.alarm.AlarmQuery;
 import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmCount;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmHighestSeverity;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
+import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UUIDBased;
+import org.thingsboard.server.common.data.page.TextPageData;
+import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -41,15 +54,25 @@ import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
+import org.thingsboard.server.dao.DateAndTimeUtils;
+import org.thingsboard.server.dao.asset.AssetDao;
+import org.thingsboard.server.dao.customer.CustomerDao;
+import org.thingsboard.server.dao.device.DeviceDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entity.EntityService;
 import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.dao.model.sql.TenantEntity;
+import org.thingsboard.server.dao.relation.RelationDao;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -71,6 +94,18 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     @Autowired
     private TenantDao tenantDao;
+
+    @Autowired
+    private CustomerDao customerDao;
+
+    @Autowired
+    private RelationDao relationDao;
+
+    @Autowired
+    private AssetDao assetDao;
+
+    @Autowired
+    private DeviceDao deviceDao;
 
     @Autowired
     private EntityService entityService;
@@ -301,6 +336,129 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         }
         return highestSeverity;
     }
+
+
+    @Override
+    public AlarmCountInfo findAlarmStatisticsCounts(@Nonnull TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+        // TODO: 2018/12/27
+        //1. 找到所有asset、device
+        //2. 根据asset和device找到所有alarm
+        //3. 统计alarm信息
+
+        AlarmHighestSeverity alarmHighestSeverity = new AlarmHighestSeverity();
+        AlarmCount projectCount;
+        AlarmCount bridgeCount;
+        AlarmCount tunnelCount;
+        AlarmCount roadCount;
+        AlarmCount slopeCount;
+        AlarmCount deviceCount;
+
+        //find project
+        {
+            projectCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.PROJECT, alarmHighestSeverity);
+            bridgeCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.BRIDGE, alarmHighestSeverity);
+            tunnelCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.TUNNEL, alarmHighestSeverity);
+            roadCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.ROAD, alarmHighestSeverity);
+            slopeCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.SLOPE, alarmHighestSeverity);
+            deviceCount = findAllDeviceAlarmCountByType(tenantId, customerId, alarmHighestSeverity);
+        }
+
+        return AlarmCountInfo.builder().highestAlarmSeverity(alarmHighestSeverity).bridgeAlarmCount(bridgeCount)
+                .projectAlarmCount(projectCount).tunnelAlarmCount(tunnelCount).roadAlarmCount(roadCount)
+                .slopeAlarmCount(slopeCount).deviceAlarmCount(deviceCount).build();
+    }
+
+    private AlarmCount findAllAssetAlarmCountByType(TenantId tenantId, CustomerId customerId, EntityType assetType, AlarmHighestSeverity highestSeverity) {
+        AlarmCount alarmCount = new AlarmCount();
+
+        TextPageLink nextPageLink = new TextPageLink(100);
+        boolean hasNext = true;
+        while (hasNext) {
+            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), assetType.toString(), nextPageLink);
+            TextPageData pageData = new TextPageData(assets, nextPageLink);
+            hasNext = pageData.hasNext();
+            nextPageLink = pageData.getNextPageLink();
+
+            alarmCount.entityTotalCountPlus(assets.size());
+
+            //根据asset查询所有alarm
+            assets.stream().forEach(asset -> {
+                AlarmQuery query = new AlarmQuery(asset.getId(), new TimePageLink(100), null, null, false);
+
+                highestSeverity.setEntityId(asset.getId().toString());
+                highestSeverity.setEntityName(asset.getName());
+                highestSeverity.setEntityType(assetType);
+                calculateEntityAlarmCount(alarmCount, highestSeverity, tenantId, query);
+            });
+        }
+
+        return alarmCount;
+    }
+
+    private AlarmCount findAllDeviceAlarmCountByType(TenantId tenantId, CustomerId customerId, AlarmHighestSeverity highestSeverity) {
+        AlarmCount alarmCount = new AlarmCount();
+
+        TextPageLink nextPageLink = new TextPageLink(100);
+        boolean hasNext = true;
+        while (hasNext) {
+            List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tenantId.getId(), customerId.getId(), nextPageLink);
+            TextPageData pageData = new TextPageData(devices, nextPageLink);
+            hasNext = pageData.hasNext();
+            nextPageLink = pageData.getNextPageLink();
+
+            alarmCount.entityTotalCountPlus(devices.size());
+
+            //根据asset查询所有alarm
+            devices.stream().forEach(device -> {
+                AlarmQuery query = new AlarmQuery(device.getId(), new TimePageLink(100), null, null, false);
+
+                highestSeverity.setEntityId(device.getId().toString());
+                highestSeverity.setEntityName(device.getName());
+                highestSeverity.setEntityType(EntityType.DEVICE);
+                calculateEntityAlarmCount(alarmCount, highestSeverity, tenantId, query);
+            });
+        }
+
+        return alarmCount;
+    }
+
+    private void calculateEntityAlarmCount(AlarmCount alarmCount, AlarmHighestSeverity highestSeverity, TenantId tenantId, AlarmQuery query) {
+        try {
+            List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, query).get();
+            alarmCount.entityAlarmCountPlus(alarms.size());
+
+            alarms.stream().forEach(alarm -> {
+                if (alarm.getStatus() == AlarmStatus.ACTIVE_ACK) {
+                    alarmCount.ackPlus(1);
+                } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
+                    alarmCount.unackPlus(1);
+                } else {
+                    alarmCount.clearPlus(1);
+                }
+
+                if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
+                    alarmCount.createdOfToadyPlus(1);
+                }
+
+                if (DateAndTimeUtils.isInThisMonth(alarm.getStartTs())) {
+                    alarmCount.createdOfMonthPlus(1);
+                }
+
+                if (!alarm.getStatus().isCleared()) {
+                    if (highestSeverity.getSeverity() == null) {
+                        highestSeverity.setSeverity(alarm.getSeverity());
+                    } else if (highestSeverity.getSeverity().compareTo(alarm.getSeverity()) > 0) {
+                        highestSeverity.setSeverity(alarm.getSeverity());
+                    }
+                }
+            });
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private AlarmSeverity detectHighestSeverity(List<AlarmInfo> alarms) {
         if (!alarms.isEmpty()) {
