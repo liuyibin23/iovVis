@@ -1,9 +1,9 @@
 {
-  "name": "example-browserify",
+  "name": "docx-reporter",
   "private": true,
   "version": "2.7.0",
   "description": "Template-based docx report creation",
-  "author": "Guillermo Grau Panea",
+  "author": "Awen",
   "license": "MIT",
   "keywords": [
     "docx",
@@ -13,13 +13,13 @@
     "report",
     "template"
   ],
-  "homepage": "https://github.com/guigrpa/docx-templates#readme",
+  "homepage": "https://github.com/lvyv/iovVis#readme",
   "bugs": {
-    "url": "https://github.com/guigrpa/docx-templates/issues"
+    "url": "https://github.com/lvyv/iovVis/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/guigrpa/docx-templates.git"
+    "url": "git+https://github.com/lvyv/iovVis.git"
   },
   "scripts": {
     "start": "node server"
