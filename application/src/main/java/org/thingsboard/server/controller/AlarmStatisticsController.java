@@ -72,5 +72,9 @@ public class AlarmStatisticsController extends BaseController {
     }
 
 
+    public void get(){
+
+    }
+
 
 }
