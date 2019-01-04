@@ -13,6 +13,6 @@ visualization subsystem - reporter.
 
 二、系统概览图
 
-![](https://github.com/lvyv/iovVis/blob/master/ui/report/doc/oom.png)
+![](https://github.com/lvyv/iovVis/blob/master/ui/reporter/doc/oom.png)
 
-![](https://github.com/lvyv/iovVis/blob/master/ui/report/doc/ui.png)
+![](https://github.com/lvyv/iovVis/blob/master/ui/reporter/doc/ui.png)
