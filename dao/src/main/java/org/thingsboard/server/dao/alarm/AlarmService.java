@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,6 +17,8 @@ package org.thingsboard.server.dao.alarm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.thingsboard.server.common.data.Customer;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.alarm.AlarmInfo;
@@ -25,6 +27,7 @@ import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
+import org.thingsboard.server.common.data.alarmstatistics.AlarmEntityCountInfo;
 import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
@@ -56,6 +59,7 @@ public interface AlarmService {
     /**
      * 查询当前登录用户在一段时间内的仪表盘告警统计信息。
      * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
+     *
      * @param tenantId
      * @param customerId
      * @param query
@@ -64,6 +68,25 @@ public interface AlarmService {
     AlarmCountInfo findAlarmStatisticsCounts(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
 
+    /**
+     * 查询当前登录用户下，所有的项目、基础设施的告警统计信息。
+     * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
+     *
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    TimePageData<AlarmEntityCountInfo> findAllAlarmStatisticsEntities(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
-
+    /**
+     * 查询当前登录用户下，制定类型的项目、基础设施的告警统计信息。
+     * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
+     *
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    TimePageData<AlarmEntityCountInfo> findAlarmStatisticEntitiesByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 }
