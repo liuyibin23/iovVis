@@ -31,6 +31,7 @@
     "docx-templates": "^2.9.0",
     "express": "^4.16.3",
     "isomorphic-fetch": "2.2.1",
+    "node-echarts": "^1.1.4",
     "prettier": "^1.14.2",
     "yaqrcode": "^0.2.1"
   }

@@ -48,9 +48,11 @@ async function onTemplateChosen(event) {
         console.log('--- try to axios ---', type, tsw);
         let data = [];
         await axios.post('/swapi', {
-          query: ' {allFilms { films { title, releaseDate } } }',
+          // query: ' {allFilms { films { title, releaseDate } } }',
           chartType: type,
-          chartTsw: tsw
+          chartTsw: tsw,
+          chartW: w_cm,
+          chartH: h_cm
         })
           .then(function (response) {
             console.log(response);
