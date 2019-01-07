@@ -62,7 +62,7 @@ public class FsService {
 
             String fileName = dfsClient.getBase64FileName(base64);
 
-            responseData.setFileName(fileName);
+//            responseData.setFileName(fileName);
             responseData.setFileId(fileId);
             responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(fileName));
 
