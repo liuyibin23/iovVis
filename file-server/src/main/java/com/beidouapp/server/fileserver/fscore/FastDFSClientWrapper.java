@@ -75,6 +75,7 @@ public class FastDFSClientWrapper {
             path = upload(file.getInputStream(), file.getOriginalFilename());
         } catch (IOException e) {
             e.printStackTrace();
+            log.warn(ErrorCode.FILE_ISNULL.MESSAGE,e);
             throw new FastDFSException(ErrorCode.FILE_ISNULL.CODE, ErrorCode.FILE_ISNULL.MESSAGE);
         }
         return path;
@@ -94,7 +95,6 @@ public class FastDFSClientWrapper {
         if(base64.split(",").length != 2){
             throw new FastDFSException(ErrorCode.FILE_TYPE_ERROR_BASE64.CODE, ErrorCode.FILE_TYPE_ERROR_BASE64.MESSAGE);
         }
-
         //data:image/png;base64,xxxxxxxxxxxxxxxxxx
         String [] base64Array = base64.split(",");
         String base64Head = base64Array[0];
@@ -125,6 +125,7 @@ public class FastDFSClientWrapper {
             }
         } catch (IOException e) {
             e.printStackTrace();
+            log.error("文件上传异常",e);
         }
 
         filename = toLocal(filename);

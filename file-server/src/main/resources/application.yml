@@ -10,3 +10,7 @@ fdfs:
   pool:
     max-total: 153 #从池中借出的对象的最大数目
     max-wait-millis: 102 #获取连接时的最大等待毫秒数100
+server:
+  port: 8081
+logging:
+  config: classpath:logback.xml

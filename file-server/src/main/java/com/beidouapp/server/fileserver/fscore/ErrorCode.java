@@ -4,7 +4,7 @@ public enum ErrorCode {
 
     FILE_PATH_ISNULL("error.fastdfs.file_path_isnull", "文件路径为空"),
 
-    FILE_ISNULL("error.fastdfs.file_isnull", "文件为空"),
+    FILE_ISNULL("error.fastdfs.file_isnull", "上传文件为空"),
 
     FILE_UPLOAD_FAILED("error.fastdfs.file_upload_failed", "文件上传失败"),
 
