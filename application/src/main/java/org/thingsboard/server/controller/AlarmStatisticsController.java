@@ -10,13 +10,8 @@ import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
-import javax.swing.text.html.parser.Entity;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
@@ -52,7 +47,7 @@ public class AlarmStatisticsController extends BaseController {
         try {
             if (entityType != EntityType.ALL && entityType != EntityType.PROJECT && entityType != EntityType.ROAD &&
                     entityType != EntityType.TUNNEL && entityType != EntityType.SLOPE && entityType != EntityType.BRIDGE) {
-                throw new ThingsboardException(String.format("EntityType %s not supported, should be %s",entityType,
+                throw new ThingsboardException(String.format("EntityType %s not supported, should be %s", entityType,
                         EntityType.PROJECT + "," + EntityType.ROAD + "," + EntityType.BRIDGE + "," + EntityType.TUNNEL + "," + EntityType.SLOPE),
                         ThingsboardErrorCode.BAD_REQUEST_PARAMS);
             }
@@ -75,4 +70,7 @@ public class AlarmStatisticsController extends BaseController {
             throw handleException(e);
         }
     }
+
+
+
 }

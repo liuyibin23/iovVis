@@ -395,7 +395,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         //1. 找到所有类型的的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
-        return null;
+        throw new RuntimeException("this function is not implements");
     }
 
     private AlarmCount findAllAssetAlarmCountByType(TenantId tenantId, CustomerId customerId, EntityType assetType, AlarmHighestSeverity highestSeverity) {

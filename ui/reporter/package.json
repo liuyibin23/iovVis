@@ -1,0 +1,38 @@
+{
+  "name": "docx-reporter",
+  "private": true,
+  "version": "2.7.0",
+  "description": "Template-based docx report creation",
+  "author": "Awen",
+  "license": "MIT",
+  "keywords": [
+    "docx",
+    "office",
+    "word",
+    "ms-word",
+    "report",
+    "template"
+  ],
+  "homepage": "https://github.com/lvyv/iovVis#readme",
+  "bugs": {
+    "url": "https://github.com/lvyv/iovVis/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lvyv/iovVis.git"
+  },
+  "scripts": {
+    "start": "node server"
+  },
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "browserify": "^15.0.0",
+    "docx-templates": "^2.9.0",
+    "express": "^4.16.3",
+    "isomorphic-fetch": "2.2.1",
+    "node-echarts": "^1.1.4",
+    "prettier": "^1.14.2",
+    "yaqrcode": "^0.2.1"
+  }
+}
