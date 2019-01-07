@@ -52,14 +52,15 @@ public class FsService {
     /**
      * 上传base64文件
      * @param base64
-     * @param fileName
      * @param request
      * @return
      */
-    public FileResponseData uploadFile(String base64,String fileName, HttpServletRequest request){
+    public FileResponseData uploadFile(String base64, HttpServletRequest request){
         FileResponseData responseData = new FileResponseData();
         try{
-            String fileId = dfsClient.uploadFileWithBase64(base64,fileName);
+            String fileId = dfsClient.uploadFileWithBase64(base64);
+
+            String fileName = dfsClient.getBase64FileName(base64);
 
             responseData.setFileName(fileName);
             responseData.setFileId(fileId);
@@ -67,6 +68,19 @@ public class FsService {
 
             responseData.setHttpUrl(fileServerAddr+"/"+ fileId);
         } catch (FastDFSException e){
+            e.printStackTrace();
+            responseData.setSuccess(false);
+            responseData.setCode(e.getCode());
+            responseData.setMessage(e.getMessage());
+        }
+        return responseData;
+    }
+
+    public FileResponseData deleteFile(String fileId,HttpServletRequest request){
+        FileResponseData responseData = new FileResponseData();
+        try {
+            dfsClient.deleteFile(fileId);
+        } catch (FastDFSException e) {
             e.printStackTrace();
             responseData.setSuccess(false);
             responseData.setCode(e.getCode());

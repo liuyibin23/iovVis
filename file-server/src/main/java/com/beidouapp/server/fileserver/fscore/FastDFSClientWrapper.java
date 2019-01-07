@@ -15,6 +15,8 @@ import javax.servlet.MultipartConfigElement;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Component
 @Slf4j
@@ -48,8 +50,14 @@ public class FastDFSClientWrapper {
         return upload(file);
     }
 
-    public String uploadFileWithBase64(String base64,String filename) throws FastDFSException {
-        return upload(base64,filename);
+    /**
+     * Base64 上传文件
+     * @param base64
+     * @return 返回上传成功后的文件id
+     * @throws FastDFSException
+     */
+    public String uploadFileWithBase64(String base64) throws FastDFSException {
+        return upload(base64);
     }
 
     /**
@@ -75,15 +83,28 @@ public class FastDFSClientWrapper {
     /**
      * 上传base64文件
      * @param base64
-     * @param filename 文件名
      * @return 文件的fileid
      * @throws FastDFSException
      */
-    private String upload(String base64,String filename) throws FastDFSException {
+    private String upload(String base64) throws FastDFSException {
         if(org.apache.commons.lang3.StringUtils.isBlank(base64)){
             throw new FastDFSException(ErrorCode.FILE_ISNULL.CODE, ErrorCode.FILE_ISNULL.MESSAGE);
         }
-        return upload(new ByteArrayInputStream(Base64.decodeBase64(base64)), filename);
+
+        if(base64.split(",").length != 2){
+            throw new FastDFSException(ErrorCode.FILE_TYPE_ERROR_BASE64.CODE, ErrorCode.FILE_TYPE_ERROR_BASE64.MESSAGE);
+        }
+
+        //data:image/png;base64,xxxxxxxxxxxxxxxxxx
+        String [] base64Array = base64.split(",");
+        String base64Head = base64Array[0];
+        String suffix = getBase64FileSuffix(base64Head);
+        if(suffix == null){
+            throw new FastDFSException(ErrorCode.FILE_TYPE_ERROR_BASE64.CODE, ErrorCode.FILE_TYPE_ERROR_BASE64.MESSAGE);
+        }
+        String base64Body = base64Array[1];
+        String fileName = "image."+suffix;
+        return upload(new ByteArrayInputStream(Base64.decodeBase64(base64Body)), fileName);
     }
 
     /**
@@ -202,6 +223,28 @@ public class FastDFSClientWrapper {
             }
         }
         return path;
+    }
+
+    private String getBase64FileSuffix(String base64Head){
+        String pattern = "(?<=/).*?(?=;)";
+//        Pattern.matches(pattern,base64Head);
+        Pattern r = Pattern.compile(pattern);
+        Matcher m  = r.matcher(base64Head);
+        if( m.find()){
+            return  m.group();
+        } else {
+            return null;
+        }
+    }
+
+    public String getBase64FileName(String base64) throws FastDFSException{
+        String [] base64Array = base64.split(",");
+        String base64Head = base64Array[0];
+        String suffix = getBase64FileSuffix(base64Head);
+        if(suffix == null){
+            throw new FastDFSException(ErrorCode.FILE_TYPE_ERROR_BASE64.CODE, ErrorCode.FILE_TYPE_ERROR_BASE64.MESSAGE);
+        }
+        return "image."+suffix;
     }
 
 }

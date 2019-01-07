@@ -23,7 +23,12 @@ public class FsController {
     }
 
     @RequestMapping(value = "/upload/base64",method = RequestMethod.POST)
-    public FileResponseData uplaodBase64v2(String file, String filename, HttpServletRequest request){
-        return fsService.uploadFile(file,filename,request);
+    public FileResponseData uplaodBase64v2(String file, HttpServletRequest request){
+        return fsService.uploadFile(file,request);
+    }
+
+    @RequestMapping(value = "/delete",method = RequestMethod.POST)
+    public FileResponseData deleteFile(String fileId,HttpServletRequest request){
+        return fsService.deleteFile(fileId,request);
     }
 }
