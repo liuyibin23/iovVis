@@ -1,0 +1,42 @@
+<html class="no-js">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>word模板报表生成器</title>
+  <link rel="shortcut icon" href="BeiDouApp.ico" />
+  <link rel="icon" href="BeiDouApp.ico" />
+  <!--整体背景-->
+  <link rel="stylesheet" href="css/style.css" />
+  <!--上传控件和进度条-->
+  <link rel="stylesheet" href="css/component.css" />
+  <script>(function (e, t, n) { var r = e.querySelectorAll("html")[0]; r.className = r.className.replace(/(^|\s)no-js(\s|$)/, "$1js$2") })(document, window, 0);</script>
+</head>
+
+<body>
+  <div class="container">
+    <header class="codrops-header">
+      <h1>选择模板文件</h1>
+    </header>
+    <div class="content">
+      <div class="box">
+        <input type="file" name="file-1[]" id="inputSwapi" class="inputfile inputfile-1" data-multiple-caption="{count} files selected"
+          multiple />
+        <label for="inputSwapi"><svg width="20" height="17" viewBox="0 0 20 17">
+            <path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z" /></svg>
+          <span>选择一个模板&hellip;</span></label>
+      </div>
+    </div>
+    <div class="html5-progressbar">
+      <progress id="progressbar" value="0" max="100"></progress>
+      <span class="progress_value">0%</span>
+    </div>
+  </div><!-- /container -->
+  <!--ui-->
+  <script src="js/jquery.min.js"></script>
+  <script src="js/custom-file-input.js"></script>
+  <!--docx-->
+  <script src="js/axios.min.js"></script>
+  <script type="text/javascript" src="js/docx-templates.js"></script>
+  <script type="text/javascript" src="js/controller.js"></script>
+</body>
+</html>

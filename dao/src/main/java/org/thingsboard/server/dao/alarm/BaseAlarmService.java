@@ -20,8 +20,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.joda.time.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,6 +39,7 @@ import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -60,13 +63,13 @@ import org.thingsboard.server.dao.relation.RelationDao;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -330,8 +333,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
 
     @Override
-    public AlarmCountInfo findAlarmStatisticsCounts(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
-        log.trace("Executing findAlarmStatisticsCounts TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+    public AlarmCountInfo findAlarmStatisticsSummary(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+        log.trace("Executing findAlarmStatisticsSummary TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
         //1. 找到所有asset、device
         //2. 根据asset和device找到所有alarm
         //3. 统计alarm信息
@@ -358,8 +361,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public TimePageData<AlarmEntityCountInfo> findAlarmStatisticEntitiesByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
-        log.trace("Executing findAlarmStatisticEntitiesByType TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+    public TimePageData<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+        log.trace("Executing findAlarmStatisticSeverityCountByType TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
         //1. 找到指定类型的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
@@ -368,20 +371,20 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), statisticsQuery.getEntityType().toString(), tempPageLink);
         boolean hasNext = new TextPageData<>(assets, tempPageLink).hasNext();
 
-        List<AlarmEntityCountInfo> data = new ArrayList<>();
+        List<AlarmSeverityCountInfo> data = new ArrayList<>();
         //根据asset查询所有alarm
         assets.stream().forEach(asset -> {
             AlarmQuery alarmQuery = new AlarmQuery(asset.getId(), new TimePageLink(100), null, null, false);
-            AlarmEntityCount alarmEntityCount = new AlarmEntityCount();
-            calculateAlarmEntityCount(alarmEntityCount, tenantId, alarmQuery);
+            AlarmSeverityCount alarmSeverityCount = new AlarmSeverityCount();
+            calculateAlarmSeverityCount(alarmSeverityCount, tenantId, alarmQuery);
 
-            AlarmEntityCountInfo alarmEntityCountInfo = AlarmEntityCountInfo.builder()
-                    .alarmCount(alarmEntityCount)
+            AlarmSeverityCountInfo alarmSeverityCountInfo = AlarmSeverityCountInfo.builder()
+                    .alarmCount(alarmSeverityCount)
                     .entityId(asset.getId().toString())
                     .entityName(asset.getName())
                     .entityType(statisticsQuery.getEntityType())
                     .build();
-            data.add(alarmEntityCountInfo);
+            data.add(alarmSeverityCountInfo);
         });
 
         TimePageLink resPageLink = new TimePageData<>(assets, reqPageLink).getNextPageLink();
@@ -390,12 +393,71 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public TimePageData<AlarmEntityCountInfo> findAllAlarmStatisticsEntities(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
-        log.trace("Executing findAllAlarmStatisticsEntities TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+    public TimePageData<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+        log.trace("Executing findAllAlarmStatisticsSeverityCount TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
         //1. 找到所有类型的的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
-        return null;
+        throw new RuntimeException("this function is not implements");
+    }
+
+    @Override
+    public AlarmHandledCountInfo findAlarmStatisticsHandledCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+        log.trace("Executing findAlarmStatisticsHandledCount TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+        EntityId entityId = AssetId.fromString(statisticsQuery.getEntityId());
+        Asset asset = assetDao.findById(tenantId, entityId.getId());
+        Long startTime = statisticsQuery.getPageLink().getStartTime();
+        Long endTime = statisticsQuery.getPageLink().getEndTime();
+
+        try {
+            AlarmHandledCount alarmHandledCount = new AlarmHandledCount();
+
+            TimePageLink nextPageLink = new TimePageLink(100);
+            boolean hasNext = true;
+            AlarmQuery nextQuery;
+
+            while (hasNext) {
+                nextQuery = new AlarmQuery(entityId, nextPageLink, null, null, false);
+                List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
+
+                alarms.forEach(alarm -> {
+                    if (DateAndTimeUtils.isAtToday(alarm.getCreatedTime())) {
+                        alarmHandledCount.createdOfTodayPlus(1);
+                    }
+                    alarmHandledCount.totalAlarmCountPlus(1);
+
+                    if (DateAndTimeUtils.isBetween(alarm.getCreatedTime(), startTime, endTime)) {
+                        if (alarm.getStatus().isCleared()) {
+                            alarmHandledCount.clearedWithinDuePlus(1);
+                        } else if (alarm.getStatus().isAck()) {
+                            alarmHandledCount.ackedWithinDuePlus(1);
+                        } else {
+                            alarmHandledCount.unackedWithinDuePlus(1);
+                        }
+                    } else {
+                        if (alarm.getStatus().isCleared()) {
+                            alarmHandledCount.clearedOverduePlus(1);
+                        } else if (alarm.getStatus().isAck()) {
+                            alarmHandledCount.ackedOverduePlus(1);
+                        } else {
+                            alarmHandledCount.unackedOverduePlus(1);
+                        }
+                    }
+                });
+
+                TimePageData tempPageData = new TimePageData<>(alarms, nextPageLink);
+                hasNext = tempPageData.hasNext();
+                nextPageLink = tempPageData.getNextPageLink();
+            }
+
+            return AlarmHandledCountInfo.builder().alarmCount(alarmHandledCount).endTime(statisticsQuery.getPageLink().getEndTime())
+                    .startTime(statisticsQuery.getPageLink().getStartTime()).entityId(statisticsQuery.getEntityId())
+                    .entityName(asset.getName()).entityType(statisticsQuery.getEntityType()).build();
+        } catch (InterruptedException | ExecutionException e) {
+            log.warn("Failed to statistics alarm count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
+                    tenantId, entityId, ExceptionUtils.getStackTrace(e));
+            throw new RuntimeException(e);
+        }
     }
 
     private AlarmCount findAllAssetAlarmCountByType(TenantId tenantId, CustomerId customerId, EntityType assetType, AlarmHighestSeverity highestSeverity) {
@@ -405,10 +467,6 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         boolean hasNext = true;
         while (hasNext) {
             List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), assetType.toString(), nextPageLink);
-            TextPageData pageData = new TextPageData<>(assets, nextPageLink);
-            hasNext = pageData.hasNext();
-            nextPageLink = pageData.getNextPageLink();
-
             alarmCount.entityTotalCountPlus(assets.size());
 
             //根据asset查询所有alarm
@@ -420,6 +478,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 highestSeverity.setEntityType(assetType);
                 calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
             });
+
+            TextPageData pageData = new TextPageData<>(assets, nextPageLink);
+            hasNext = pageData.hasNext();
+            nextPageLink = pageData.getNextPageLink();
         }
 
         return alarmCount;
@@ -432,10 +494,6 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         boolean hasNext = true;
         while (hasNext) {
             List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tenantId.getId(), customerId.getId(), nextPageLink);
-            TextPageData pageData = new TextPageData<>(devices, nextPageLink);
-            hasNext = pageData.hasNext();
-            nextPageLink = pageData.getNextPageLink();
-
             alarmCount.entityTotalCountPlus(devices.size());
 
             //根据asset查询所有alarm
@@ -447,6 +505,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 highestSeverity.setEntityType(EntityType.DEVICE);
                 calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
             });
+
+            TextPageData pageData = new TextPageData<>(devices, nextPageLink);
+            hasNext = pageData.hasNext();
+            nextPageLink = pageData.getNextPageLink();
         }
 
         return alarmCount;
@@ -454,34 +516,44 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     private void calculateAlarmCount(AlarmCount alarmCount, AlarmHighestSeverity highestSeverity, TenantId tenantId, AlarmQuery query) {
         try {
-            List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, query).get();
-            alarmCount.entityAlarmCountPlus(alarms.size());
+            AlarmQuery nextQuery = new AlarmQuery(query);
+            TimePageLink nextPageLink = query.getPageLink();
+            boolean hasNext = true;
+            while (hasNext) {
+                List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
+                alarmCount.entityAlarmCountPlus(alarms.size());
 
-            alarms.stream().forEach(alarm -> {
-                if (alarm.getStatus() == AlarmStatus.ACTIVE_ACK) {
-                    alarmCount.ackPlus(1);
-                } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
-                    alarmCount.unackPlus(1);
-                } else {
-                    alarmCount.clearPlus(1);
-                }
-
-                if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
-                    alarmCount.createdOfToadyPlus(1);
-                }
-
-                if (DateAndTimeUtils.isInThisMonth(alarm.getStartTs())) {
-                    alarmCount.createdOfMonthPlus(1);
-                }
-
-                if (!alarm.getStatus().isCleared()) {
-                    if (highestSeverity.getSeverity() == null) {
-                        highestSeverity.setSeverity(alarm.getSeverity());
-                    } else if (highestSeverity.getSeverity().compareTo(alarm.getSeverity()) > 0) {
-                        highestSeverity.setSeverity(alarm.getSeverity());
+                alarms.stream().forEach(alarm -> {
+                    if (alarm.getStatus() == AlarmStatus.ACTIVE_ACK) {
+                        alarmCount.ackPlus(1);
+                    } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
+                        alarmCount.unackPlus(1);
+                    } else {
+                        alarmCount.clearPlus(1);
                     }
-                }
-            });
+
+                    if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
+                        alarmCount.createdOfToadyPlus(1);
+                    }
+
+                    if (DateAndTimeUtils.isInThisMonth(alarm.getStartTs())) {
+                        alarmCount.createdOfMonthPlus(1);
+                    }
+
+                    if (!alarm.getStatus().isCleared()) {
+                        if (highestSeverity.getSeverity() == null) {
+                            highestSeverity.setSeverity(alarm.getSeverity());
+                        } else if (highestSeverity.getSeverity().compareTo(alarm.getSeverity()) > 0) {
+                            highestSeverity.setSeverity(alarm.getSeverity());
+                        }
+                    }
+                });
+
+                TimePageData timePageData = new TimePageData<>(alarms, nextPageLink);
+                hasNext = timePageData.hasNext();
+                nextPageLink = timePageData.getNextPageLink();
+                nextQuery.setPageLink(nextPageLink);
+            }
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to statistics alarm count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
                     tenantId, query.getAffectedEntityId(), ExceptionUtils.getStackTrace(e));
@@ -489,23 +561,32 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         }
     }
 
-    private void calculateAlarmEntityCount(AlarmEntityCount alarmEntityCount, TenantId tenantId, AlarmQuery query) {
+    private void calculateAlarmSeverityCount(AlarmSeverityCount alarmSeverityCount, TenantId tenantId, AlarmQuery query) {
         try {
-            List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, query).get();
+            AlarmQuery nextQuery = new AlarmQuery(query);
+            TimePageLink nextPageLink = query.getPageLink();
+            boolean hasNext = true;
+            while (hasNext) {
+                List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
+                alarms.stream().forEach(alarm -> {
+                    if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                        alarmSeverityCount.criticalCountPlus(1);
+                    } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                        alarmSeverityCount.majorCountPlus(1);
+                    } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
+                        alarmSeverityCount.minorCountPlus(1);
+                    } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
+                        alarmSeverityCount.warningCountPlus(1);
+                    } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                        alarmSeverityCount.indeterminateCountPlus(1);
+                    }
+                });
 
-            alarms.stream().forEach(alarm -> {
-                if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
-                    alarmEntityCount.criticalCountPlus(1);
-                } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
-                    alarmEntityCount.majorCountPlus(1);
-                } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
-                    alarmEntityCount.minorCountPlus(1);
-                } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
-                    alarmEntityCount.warningCountPlus(1);
-                } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
-                    alarmEntityCount.indeterminateCountPlus(1);
-                }
-            });
+                TimePageData timePageData = new TimePageData<>(alarms, nextPageLink);
+                hasNext = timePageData.hasNext();
+                nextPageLink = timePageData.getNextPageLink();
+                nextQuery.setPageLink(nextPageLink);
+            }
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to statistics alarm entity count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
                     tenantId, query.getAffectedEntityId(), ExceptionUtils.getStackTrace(e));

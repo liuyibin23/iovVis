@@ -35,4 +35,16 @@ public class DateAndTimeUtils {
         return time.isAfter(startTime) && time.isBefore(endTime);
     }
 
+    public static boolean isBetween(long time, long startTime, long endTime) {
+        return isBetween(timestampToDateTime(time), timestampToDateTime(startTime), timestampToDateTime(endTime));
+    }
+
+    public static boolean isBefore(long timestamp, long targetTime) {
+        return timestampToDateTime(timestamp).isBefore(timestampToDateTime(targetTime));
+    }
+
+    public static boolean isAfter(long timestamp, long targetTime) {
+        return timestampToDateTime(timestamp).isAfter(timestampToDateTime(targetTime));
+    }
+
 }
