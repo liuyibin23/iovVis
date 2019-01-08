@@ -1,11 +1,12 @@
 package org.thingsboard.server.controller;
 
 
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.SensorDataInfo;
 import org.thingsboard.server.common.data.User;
 
+import java.util.List;
 
 @RestController
 public class HelloWorldController {
@@ -22,4 +23,13 @@ public class HelloWorldController {
         user.setLastName("申");
         return user;
     }
+    @RequestMapping(value = "/api/noauth/test",method = RequestMethod.POST)
+    @ResponseStatus(value = HttpStatus.OK)
+    public void test(@RequestBody List<SensorDataInfo> sensorData)
+    {
+        System.out.println(sensorData);
+        return ;
+    }
+
+
 }

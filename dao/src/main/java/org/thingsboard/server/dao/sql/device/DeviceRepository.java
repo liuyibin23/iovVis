@@ -29,7 +29,21 @@ import java.util.List;
  */
 @SqlDao
 public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
+    @Query("SELECT d FROM DeviceEntity d WHERE " +
+            "LOWER(d.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
+            "AND d.id > :idOffset ORDER BY d.id")
+    List<DeviceEntity> findAllPage(   @Param("textSearch") String textSearch,
+                                      @Param("idOffset") String idOffset,
+                                      Pageable pageable);
 
+    @Query("SELECT d FROM DeviceEntity d WHERE " +
+            "d.type = :type " +
+            "AND LOWER(d.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
+            "AND d.id > :idOffset ORDER BY d.id")
+    List<DeviceEntity> findByType(@Param("type") String type,
+                                             @Param("textSearch") String textSearch,
+                                             @Param("idOffset") String idOffset,
+                                             Pageable pageable);
 
     @Query("SELECT d FROM DeviceEntity d WHERE d.tenantId = :tenantId " +
             "AND d.customerId = :customerId " +

@@ -63,6 +63,25 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
     }
 
     @Override
+    public List<Asset> findAssets(TextPageLink pageLink) {
+        return DaoUtil.convertDataList(assetRepository
+                .findAllBy(
+                        Objects.toString(pageLink.getTextSearch(), ""),
+                        pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                        new PageRequest(0, pageLink.getLimit())));
+    }
+
+    @Override
+    public List<Asset> findAssetsType(String type, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(assetRepository
+                .findByType(
+                        type,
+                        Objects.toString(pageLink.getTextSearch(), ""),
+                        pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                        new PageRequest(0, pageLink.getLimit())));
+    }
+
+    @Override
     public List<Asset> findAssetsByTenantId(UUID tenantId, TextPageLink pageLink) {
         return DaoUtil.convertDataList(assetRepository
                 .findByTenantId(

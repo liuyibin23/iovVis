@@ -28,7 +28,11 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import java.util.List;
 
 public interface DeviceService {
-    
+
+    TextPageData<Device> findDevices(TextPageLink pageLink);
+
+    TextPageData<Device> findDevicesByType(String type, TextPageLink pageLink);
+
     Device findDeviceById(TenantId tenantId, DeviceId deviceId);
 
     ListenableFuture<Device> findDeviceByIdAsync(TenantId tenantId, DeviceId deviceId);

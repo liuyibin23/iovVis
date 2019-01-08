@@ -95,6 +95,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     @Autowired
     private CacheManager cacheManager;
 
+
     @Override
     public Device findDeviceById(TenantId tenantId, DeviceId deviceId) {
         log.trace("Executing findDeviceById [{}]", deviceId);
@@ -177,6 +178,21 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         cache.evict(list);
 
         deviceDao.removeById(tenantId, deviceId.getId());
+    }
+    @Override
+    public TextPageData<Device> findDevices(TextPageLink pageLink) {
+        validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+        List<Device> devices = deviceDao.findDevices(pageLink);
+        return new TextPageData<>(devices, pageLink);
+    }
+
+    @Override
+    public TextPageData<Device> findDevicesByType(String type, TextPageLink pageLink) {
+        log.trace("Executing findDevicesByTenantIdAndType, type [{}], pageLink [{}]", type, pageLink);
+        validateString(type, "Incorrect type " + type);
+        validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+        List<Device> devices = deviceDao.findDevicesByType(type, pageLink);
+        return new TextPageData<>(devices, pageLink);
     }
 
     @Override

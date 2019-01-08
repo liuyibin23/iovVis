@@ -263,4 +263,22 @@ CREATE OR REPLACE VIEW vassetattrkv AS
     asset
   WHERE attribute_kv.entity_id::text = asset.id::text;
 
-
+CREATE OR REPLACE VIEW deviceattrkv AS
+ SELECT attribute_kv.entity_type,
+    attribute_kv.entity_id,
+    attribute_kv.attribute_type,
+    attribute_kv.attribute_key,
+    attribute_kv.bool_v,
+    attribute_kv.str_v,
+    attribute_kv.long_v,
+    attribute_kv.dbl_v,
+    attribute_kv.last_update_ts,
+    device.additional_info,
+    device.customer_id,
+    device.type,
+    device.name,
+    device.search_text,
+    device.tenant_id
+   FROM attribute_kv,
+    device
+  WHERE attribute_kv.entity_id::text = device.id::text;

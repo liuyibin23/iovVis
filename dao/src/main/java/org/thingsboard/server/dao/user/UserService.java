@@ -25,7 +25,8 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.UserCredentials;
 
 public interface UserService {
-	
+	TextPageData<User> findUsers(TextPageLink pageLink);
+
 	User findUserById(TenantId tenantId, UserId userId);
 
 	ListenableFuture<User> findUserByIdAsync(TenantId tenantId, UserId userId);
@@ -55,5 +56,9 @@ public interface UserService {
 	TextPageData<User> findCustomerUsers(TenantId tenantId, CustomerId customerId, TextPageLink pageLink);
 	    
 	void deleteCustomerUsers(TenantId tenantId, CustomerId customerId);
+
+	int countByTenantId(String tenantId);
+
+	int countByTenantIdAndCustomerId(String tenantId,String customerId);
 	
 }

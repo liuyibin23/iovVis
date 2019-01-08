@@ -81,6 +81,8 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         }
     }
 
+
+
     @Override
     public User findUserById(TenantId tenantId, UserId userId) {
         log.trace("Executing findUserById [{}]", userId);
@@ -186,7 +188,13 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         deleteEntityRelations(tenantId, userId);
         userDao.removeById(tenantId, userId.getId());
     }
-
+    @Override
+    public TextPageData<User> findUsers(TextPageLink pageLink) {
+        log.trace("Executing findUsers, pageLink [{}]",  pageLink);
+        validatePageLink(pageLink, "Incorrect page link " + pageLink);
+        List<User> users = userDao.findUsers(pageLink);
+        return new TextPageData<>(users, pageLink);
+    }
     @Override
     public TextPageData<User> findTenantAdmins(TenantId tenantId, TextPageLink pageLink) {
         log.trace("Executing findTenantAdmins, tenantId [{}], pageLink [{}]", tenantId, pageLink);
@@ -219,6 +227,16 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         validateId(customerId, "Incorrect customerId " + customerId);
         customerUsersRemover.removeEntities(tenantId, customerId);
+    }
+
+    @Override
+    public int countByTenantId(String tenantId) {
+        return userDao.countTenantAdmins(tenantId);
+    }
+
+    @Override
+    public int countByTenantIdAndCustomerId(String tenantId, String customerId) {
+        return userDao.countCustomerUsers(tenantId,customerId);
     }
 
     private DataValidator<User> userValidator =

@@ -255,7 +255,26 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
-
+    @PreAuthorize("hasAuthority('SYS_ADMIN')")
+    @RequestMapping(value = "/admin/devices", params = {"limit"}, method = RequestMethod.GET)
+    @ResponseBody
+    public TextPageData<Device> getDevices(
+            @RequestParam int limit,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String textSearch,
+            @RequestParam(required = false) String idOffset,
+            @RequestParam(required = false) String textOffset) throws ThingsboardException {
+        try {
+            TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+            if (type != null && type.trim().length() > 0) {
+                return checkNotNull(deviceService.findDevicesByType(type, pageLink));
+            } else {
+                return checkNotNull(deviceService.findDevices(pageLink));
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/tenant/devices", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody

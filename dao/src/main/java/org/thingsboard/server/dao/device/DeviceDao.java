@@ -41,6 +41,25 @@ public interface DeviceDao extends Dao<Device> {
     Device save(TenantId tenantId, Device device);
 
     /**
+     * Find devices by page link.
+     *
+     *
+     * @param pageLink the page link
+     * @return the list of device objects
+     */
+    List<Device> findDevices(TextPageLink pageLink);
+
+    /**
+     * Find devices type and page link.
+     *
+     *
+     * @param type the type
+     * @param pageLink the page link
+     * @return the list of device objects
+     */
+    List<Device> findDevicesByType(String type, TextPageLink pageLink);
+
+    /**
      * Find devices by tenantId and page link.
      *
      * @param tenantId the tenantId

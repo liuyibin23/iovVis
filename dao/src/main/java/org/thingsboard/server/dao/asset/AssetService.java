@@ -44,6 +44,10 @@ public interface AssetService {
 
     void deleteAsset(TenantId tenantId, AssetId assetId);
 
+    TextPageData<Asset> findAssets(TextPageLink pageLink);
+
+    TextPageData<Asset> findAssetsByType(String type,TextPageLink pageLink);
+
     TextPageData<Asset> findAssetsByTenantId(TenantId tenantId, TextPageLink pageLink);
 
     TextPageData<Asset> findAssetsByTenantIdAndType(TenantId tenantId, String type, TextPageLink pageLink);
