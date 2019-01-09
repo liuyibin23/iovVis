@@ -70,6 +70,7 @@ import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
+import org.thingsboard.server.dao.vdeviceattrkv.DeviceAttrKVService;
 import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 import org.thingsboard.server.exception.ThingsboardErrorResponseHandler;
@@ -160,6 +161,9 @@ public abstract class BaseController {
 
     @Autowired
     protected VassetAttrKVService vassetAttrKVService;
+
+    @Autowired
+    protected DeviceAttrKVService deviceAttrKVService;
 
     @Value("${server.log_controller_error_stack_trace}")
     @Getter

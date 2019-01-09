@@ -26,10 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Device;
-import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -43,6 +40,8 @@ import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
+import org.thingsboard.server.dao.model.sql.DeviceAttrKV;
+import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
@@ -275,6 +274,24 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/device/deviceattr", method = RequestMethod.GET)
+	@ResponseBody
+	public List<DeviceAttrKV> getDeviceAttr(@RequestParam(required = false) int limit,
+											@RequestParam(required = false) String attrKey,
+											@RequestParam(required = false) String attrValue) throws ThingsboardException {
+
+		CustomerId cId = getCurrentUser().getCustomerId();
+		if (attrKey != null && attrValue != null)
+			return deviceAttrKVService.findbyAttributeKeyAndValueLike(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+		if (attrKey != null && attrValue == null)
+			return deviceAttrKVService.findbyAttributeKey(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()));
+		if (attrKey == null && attrValue != null)
+			return deviceAttrKVService.findbyAttributeValueLike(UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+		return deviceAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
+
+	}
+
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/tenant/devices", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
