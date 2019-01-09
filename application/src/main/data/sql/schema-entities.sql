@@ -278,7 +278,8 @@ CREATE OR REPLACE VIEW deviceattrkv AS
     device.type,
     device.name,
     device.search_text,
-    device.tenant_id
+    device.tenant_id,
+    device.id
    FROM attribute_kv,
     device
   WHERE attribute_kv.entity_id::text = device.id::text;
