@@ -36,7 +36,14 @@ public interface CustomerDao extends Dao<Customer> {
 	 * @return saved customer object
 	 */
 	Customer save(TenantId tenantId, Customer customer);
-
+	/**
+	 * Find customers by page link.
+	 *
+	 *
+	 * @param pageLink the page link
+	 * @return the list of customer objects
+	 */
+	List<Customer> findCustomers(TextPageLink pageLink);
 	/**
 	 * Find customers by tenant id and page link.
 	 *

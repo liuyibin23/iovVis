@@ -160,6 +160,20 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 	}
 
 	@Override
+	public TextPageData<Customer> findCustomers(TextPageLink pageLink) {
+		log.trace("Executing findCustomersByTenantId, pageLink [{}]",  pageLink);
+
+		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+		List<Customer> customers = customerDao.findCustomers(pageLink);
+		customers.stream().forEach(customer -> {
+
+			customer.setAdminCount(userService.countByTenantIdAndCustomerId(fromTimeUUID(customer.getTenantId().getId()), fromTimeUUID(customer.getUuidId())));
+			customer.setUserCount(0);
+		});
+		return new TextPageData<>(customers, pageLink);
+	}
+
+	@Override
 	public void deleteCustomersByTenantId(TenantId tenantId) {
 		log.trace("Executing deleteCustomersByTenantId, tenantId [{}]", tenantId);
 		Validator.validateId(tenantId, "Incorrect tenantId " + tenantId);

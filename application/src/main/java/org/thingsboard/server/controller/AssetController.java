@@ -313,12 +313,32 @@ public class AssetController extends BaseController {
 
 		CustomerId cId = getCurrentUser().getCustomerId();
 		if (attrKey != null && attrValue != null)
-			return vassetAttrKVService.findbyAttributeKeyAndValueLike(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+			if (getTenantId().isNullUid()){
+				return vassetAttrKVService.findbyAttributeKeyAndValueLike(attrKey,attrValue);
+			}else{
+				return vassetAttrKVService.findbyAttributeKeyAndValueLike(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+			}
+
+
 		if (attrKey != null && attrValue == null)
-			return vassetAttrKVService.findbyAttributeKey(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()));
+			if (getTenantId().isNullUid()){
+				return vassetAttrKVService.findbyAttributeKey(attrKey);
+			}else {
+				return vassetAttrKVService.findbyAttributeKey(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()));
+			}
+
 		if (attrKey == null && attrValue != null)
-			return vassetAttrKVService.findbyAttributeValueLike(UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
-		return vassetAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
+			if (getTenantId().isNullUid()){
+				return vassetAttrKVService.findbyAttributeValueLike(attrValue);
+			}else {
+				return vassetAttrKVService.findbyAttributeValueLike(UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+			}
+		if (getTenantId().isNullUid()){
+			return vassetAttrKVService.findAll();
+		}else {
+			return vassetAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
+		}
+
 
 	}
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")

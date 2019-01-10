@@ -140,17 +140,23 @@ public class CustomerController extends BaseController {
 	@RequestMapping(value = "/admin/customers", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<Customer> getCustomers(@RequestParam int limit,
-											   @RequestParam String tenantIdStr,
+											   @RequestParam(required = false) String tenantIdStr,
 											   @RequestParam(required = false) String textSearch,
 											   @RequestParam(required = false) String idOffset,
 											   @RequestParam(required = false) String textOffset) throws ThingsboardException {
 		try {
 			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
-			checkTenantId(tenantIdTmp);
-			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			if (tenantIdStr != null){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-			return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+				return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+			}
+			else {
+				return checkNotNull(customerService.findCustomers(pageLink));
+			}
+
 		} catch (Exception e) {
 			throw handleException(e);
 		}

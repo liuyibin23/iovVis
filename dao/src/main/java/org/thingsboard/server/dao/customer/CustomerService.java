@@ -40,6 +40,8 @@ public interface CustomerService {
 
     TextPageData<Customer> findCustomersByTenantId(TenantId tenantId, TextPageLink pageLink);
 
+    TextPageData<Customer> findCustomers(TextPageLink pageLink);
+
     void deleteCustomersByTenantId(TenantId tenantId);
 
 }

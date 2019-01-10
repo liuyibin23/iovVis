@@ -54,6 +54,12 @@ public class CassandraCustomerDao extends CassandraAbstractSearchTextDao<Custome
     }
 
     @Override
+    public List<Customer> findCustomers(TextPageLink pageLink) {
+        //todo cassandra findCustomers
+        return null;
+    }
+
+    @Override
     public List<Customer> findCustomersByTenantId(UUID tenantId, TextPageLink pageLink) {
         log.debug("Try to find customers by tenantId [{}] and pageLink [{}]", tenantId, pageLink);
         List<CustomerEntity> customerEntities = findPageWithTextSearch(new TenantId(tenantId), ModelConstants.CUSTOMER_BY_TENANT_AND_SEARCH_TEXT_COLUMN_FAMILY_NAME,

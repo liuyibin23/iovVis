@@ -17,13 +17,22 @@ public interface VassetAttrKVJpaRepository extends CrudRepository<VassetAttrKV,S
 	@Query("select rc from VassetAttrKV rc where rc.tenantId = :tenantId")
 	public List<VassetAttrKV> findbyTenantId(@Param("tenantId") String tenantId);
 
+	@Query("select rc from VassetAttrKV rc where rc.attributeKey = :attributeKey")
+	List<VassetAttrKV> findbyAttributeKey(@Param("attributeKey") String attributeKey);
+
 	@Query("select rc from VassetAttrKV rc where rc.tenantId = :tenantId AND rc.attributeKey = :attributeKey")
 	List<VassetAttrKV> findbyAttributeKey(@Param("attributeKey") String attributeKey,
 										  @Param("tenantId") String tenantId);
 	@Query("select DISTINCT rc.strV from VassetAttrKV rc where rc.tenantId = :tenantId AND rc.attributeKey = :attributeKey AND strV LIKE :strV% ")
+	List<VassetAttrKV> findbyAttributeKeyAndValueLink(@Param("attributeKey") String attributeKey,
+													  @Param("strV") String strV);
+	@Query("select DISTINCT rc.strV from VassetAttrKV rc where rc.tenantId = :tenantId AND rc.attributeKey = :attributeKey AND strV LIKE :strV% ")
 	List<VassetAttrKV> findbyAttributeKeyAndValueLinkWithTenantId(@Param("attributeKey") String attributeKey,
 																  @Param("tenantId") String tenantId,
 																  @Param("strV") String strV);
+	@Query("select rc from VassetAttrKV rc where strV LIKE :strV%")
+	List<VassetAttrKV> findbyAttributeValueLink(@Param("strV") String strV);
+
 	@Query("select rc from VassetAttrKV rc where rc.tenantId = :tenantId AND strV LIKE :strV%")
 	List<VassetAttrKV> findbyAttributeValueLink(@Param("tenantId") String tenantId,@Param("strV") String strV);
 }
