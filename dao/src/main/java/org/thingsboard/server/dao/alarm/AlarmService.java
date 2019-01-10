@@ -25,10 +25,7 @@ import org.thingsboard.server.common.data.alarm.AlarmQuery;
 import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmHandledCountInfo;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmSeverityCountInfo;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
+import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -102,4 +99,13 @@ public interface AlarmService {
      */
     AlarmHandledCountInfo findAlarmStatisticsHandledCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
+
+    /**
+     * 查询当前登录用户下，一定周期内，指定类型基础设施的报警信息。
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    TimePageData<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId,CustomerId customerId,AlarmStatisticsQuery query);
 }
