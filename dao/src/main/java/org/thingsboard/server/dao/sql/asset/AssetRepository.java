@@ -62,6 +62,11 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
                                                   @Param("idOffset") String idOffset,
                                                   Pageable pageable);
 
+	@Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
+			"AND a.customerId = :customerId ORDER BY a.id")
+	List<AssetEntity> findByTenantIdAndCustomerId(@Param("tenantId") String tenantId,
+												  @Param("customerId") String customerId);
+
     List<AssetEntity> findByTenantIdAndIdIn(String tenantId, List<String> assetIds);
 
     List<AssetEntity> findByTenantIdAndCustomerIdAndIdIn(String tenantId, String customerId, List<String> assetIds);

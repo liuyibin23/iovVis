@@ -97,6 +97,16 @@ public interface AssetDao extends Dao<Asset> {
     List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink);
 
     /**
+     * Find assets by tenantId, customerId
+     *
+     * @param tenantId the tenantId
+     * @param customerId the customerId
+     *
+     * @return the list of asset objects
+     */
+    List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId);
+
+    /**
      * Find assets by tenantId, customerId, type and page link.
      *
      * @param tenantId the tenantId

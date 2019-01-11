@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.server.common.data.Customer;
+import org.thingsboard.server.common.data.CustomerAndAssets;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -36,6 +37,9 @@ import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -156,6 +160,37 @@ public class CustomerController extends BaseController {
 			else {
 				return checkNotNull(customerService.findCustomers(pageLink));
 			}
+
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
+	@RequestMapping(value = "/admin/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
+	@ResponseBody
+	public List<CustomerAndAssets> getCustomersAndAssets(@RequestParam int limit,
+														 @RequestParam(required = false) String tenantIdStr,
+														 @RequestParam(required = false) String textSearch,
+														 @RequestParam(required = false) String idOffset,
+														 @RequestParam(required = false) String textOffset) throws ThingsboardException {
+		try {
+			List<CustomerAndAssets> retObj = new ArrayList<>();
+			TextPageData<Customer> customerTextPageData;
+			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+			if (tenantIdStr != null){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+				customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+			}
+			else {
+				customerTextPageData = checkNotNull(customerService.findCustomers(pageLink));
+			}
+			customerTextPageData.getData().forEach(customer -> {
+				retObj.add(new CustomerAndAssets(customer,assetService.findAssetByTenantAndCustomer(customer.getTenantId(),customer.getId())));
+			});
+			return retObj;
 
 		} catch (Exception e) {
 			throw handleException(e);
