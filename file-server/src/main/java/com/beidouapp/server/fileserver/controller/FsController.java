@@ -1,7 +1,7 @@
 package com.beidouapp.server.fileserver.controller;
 
 import com.beidouapp.server.fileserver.fscore.FileResponseData;
-import com.beidouapp.server.fileserver.service.FsService;
+import com.beidouapp.server.fileserver.service.IFsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 public class FsController {
 
     @Autowired
-    private FsService fsService;
+    private IFsService fsService;
 
     @RequestMapping(value = "/upload",method = RequestMethod.POST)
     public FileResponseData uploadv2(MultipartFile file, HttpServletRequest request){

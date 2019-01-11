@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 
 @Service
-public class FsService {
+public class FsServiceImpl implements IFsService{
 
     @Autowired
     private FastDFSClientWrapper dfsClient;
@@ -76,6 +76,12 @@ public class FsService {
         return responseData;
     }
 
+    /**
+     * 删除文件
+     * @param fileId
+     * @param request
+     * @return
+     */
     public FileResponseData deleteFile(String fileId,HttpServletRequest request){
         FileResponseData responseData = new FileResponseData();
         try {
