@@ -67,6 +67,7 @@ import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
+import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
@@ -117,6 +118,8 @@ public abstract class BaseController {
     @Autowired
     protected AssetService assetService;
 
+    @Autowired
+	protected TaskService taskService;
     @Autowired
     protected AlarmService alarmService;
 

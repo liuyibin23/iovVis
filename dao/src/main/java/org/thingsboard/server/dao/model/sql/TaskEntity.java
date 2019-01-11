@@ -55,6 +55,7 @@ public class TaskEntity extends BaseSqlEntity<Task> implements SearchTextEntity<
 	@Column(name = TASK_ORIGINATOR_ID_PROPERTY)
 	private String originatorId;
 
+	@Enumerated(EnumType.STRING)
 	@Column(name = TASK_ORIGINATOR_TYPE_PROPERTY)
 	private EntityType originatorType;
 

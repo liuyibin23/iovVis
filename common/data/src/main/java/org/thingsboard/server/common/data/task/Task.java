@@ -1,18 +1,18 @@
 package org.thingsboard.server.common.data.task;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.thingsboard.server.common.data.HasCustomerId;
-import org.thingsboard.server.common.data.HasName;
-import org.thingsboard.server.common.data.HasTenantId;
-import org.thingsboard.server.common.data.SearchTextBasedWithAdditionalInfo;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.id.*;
 
 @Data
-@EqualsAndHashCode(callSuper = true)
-public class Task extends SearchTextBasedWithAdditionalInfo<TaskId> implements HasName, HasTenantId, HasCustomerId {
-	private static final long serialVersionUID = 2807343040519543363L;
+@Builder
+@AllArgsConstructor
+public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasCustomerId {
 
 	private TenantId tenantId;
 	private CustomerId customerId;
@@ -20,8 +20,9 @@ public class Task extends SearchTextBasedWithAdditionalInfo<TaskId> implements H
 	private EntityId originator;
 	private TaskKind taskKind;
 	private TaskStatus taskStatus;
+	private String taskName;
 	private String name;
-
+	private JsonNode additionalInfo;
 
 	private long startTs;
 	private long endTs;
@@ -37,11 +38,11 @@ public class Task extends SearchTextBasedWithAdditionalInfo<TaskId> implements H
 	}
 
 	public Task(Task task) {
-		super(task);
+		super(task.getId());
 		this.tenantId = task.getTenantId();
 		this.customerId = task.getCustomerId();
 		this.userId = task.getUserId();
-		this.name = task.getName();
+		this.taskName = task.getTaskName();
 
 		this.startTs = task.getStartTs();
 		this.endTs = task.getEndTs();
@@ -58,10 +59,6 @@ public class Task extends SearchTextBasedWithAdditionalInfo<TaskId> implements H
 		return name;
 	}
 
-	@Override
-	public String getSearchText() {
-		return getName();
-	}
 
 	@Override
 	public String toString() {
@@ -70,10 +67,7 @@ public class Task extends SearchTextBasedWithAdditionalInfo<TaskId> implements H
 		builder.append(tenantId);
 		builder.append(", customerId=");
 		builder.append(customerId);
-		builder.append(", name=");
-		builder.append(name);
 		builder.append(", additionalInfo=");
-		builder.append(getAdditionalInfo());
 		builder.append(", createdTime=");
 		builder.append(createdTime);
 		builder.append(", id=");
