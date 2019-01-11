@@ -93,6 +93,11 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	}
 
 	@Override
+	public List<Asset> findAssetByTenant(TenantId tenantId) {
+		return assetDao.find(tenantId);
+	}
+
+	@Override
 	public ListenableFuture<Asset> findAssetByIdAsync(TenantId tenantId, AssetId assetId) {
 		log.trace("Executing findAssetById [{}]", assetId);
 		validateId(assetId, INCORRECT_ASSET_ID + assetId);

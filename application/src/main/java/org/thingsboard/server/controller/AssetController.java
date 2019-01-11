@@ -310,7 +310,7 @@ public class AssetController extends BaseController {
 	public List<VassetAttrKV> getAssetAttr(@RequestParam(required = false) int limit,
 										   @RequestParam(required = false) String attrKey,
 										   @RequestParam(required = false) String attrValue) throws ThingsboardException {
-
+//todo attrValue return error
 		CustomerId cId = getCurrentUser().getCustomerId();
 		if (attrKey != null && attrValue != null)
 			if (getTenantId().isNullUid()){

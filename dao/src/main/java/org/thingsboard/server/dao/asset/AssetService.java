@@ -17,6 +17,7 @@ package org.thingsboard.server.dao.asset;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntitySubtype;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.AssetId;
@@ -31,6 +32,8 @@ import java.util.Optional;
 public interface AssetService {
 
     Asset findAssetById(TenantId tenantId, AssetId assetId);
+
+    List<Asset> findAssetByTenant(TenantId tenantId);
 
     ListenableFuture<Asset> findAssetByIdAsync(TenantId tenantId, AssetId assetId);
 
