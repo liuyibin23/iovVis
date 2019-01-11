@@ -67,12 +67,20 @@ public class DeviceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/device", method = RequestMethod.POST)
     @ResponseBody
-    public Device saveDevice(@RequestBody Device device) throws ThingsboardException {
+    public Device saveDevice(@RequestBody Device device,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
         try {
-            device.setTenantId(getCurrentUser().getTenantId());
+			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+				device.setTenantId(tenantId);
+			} else {
+				device.setTenantId(getCurrentUser().getTenantId());
+			}
+
             if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
                 if (device.getId() == null || device.getId().isNullUid() ||
                         device.getCustomerId() == null || device.getCustomerId().isNullUid()) {
@@ -82,6 +90,7 @@ public class DeviceController extends BaseController {
                     checkCustomerId(device.getCustomerId());
                 }
             }
+
             Device savedDevice = checkNotNull(deviceService.saveDevice(device));
 
             actorService
@@ -108,15 +117,23 @@ public class DeviceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
     @RequestMapping(value = "/device/{deviceId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
-    public void deleteDevice(@PathVariable(DEVICE_ID) String strDeviceId) throws ThingsboardException {
+    public void deleteDevice(@PathVariable(DEVICE_ID) String strDeviceId,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
+		TenantId tenantId;
         checkParameter(DEVICE_ID, strDeviceId);
         try {
+			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			} else {
+				tenantId = getCurrentUser().getTenantId();
+			}
             DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
-            Device device = checkDeviceId(deviceId);
-            deviceService.deleteDevice(getCurrentUser().getTenantId(), deviceId);
+            Device device = checkDeviceId(tenantId,deviceId);
+            deviceService.deleteDevice(tenantId, deviceId);
 
             logEntityAction(deviceId, device,
                     device.getCustomerId(),

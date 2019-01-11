@@ -81,15 +81,7 @@ public class AssetController extends BaseController {
 			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
 			asset.setTenantId(tenantId);
-//			if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
-//				if (asset.getId() == null || asset.getId().isNullUid() ||
-//						asset.getCustomerId() == null || asset.getCustomerId().isNullUid()) {
-//					throw new ThingsboardException("You don't have permission to perform this operation!",
-//							ThingsboardErrorCode.PERMISSION_DENIED);
-//				} else {
-//					checkCustomerId(asset.getCustomerId());
-//				}
-//			}
+
 			Asset savedAsset = checkNotNull(assetService.saveAsset(asset));
 
 			logEntityAction(savedAsset.getId(), savedAsset,
@@ -103,12 +95,20 @@ public class AssetController extends BaseController {
 			throw handleException(e);
 		}
 	}
-	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/asset", method = RequestMethod.POST)
 	@ResponseBody
-	public Asset saveAsset(@RequestBody Asset asset) throws ThingsboardException {
+	public Asset saveAsset(@RequestBody Asset asset,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 		try {
-			asset.setTenantId(getCurrentUser().getTenantId());
+			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+				asset.setTenantId(tenantId);
+			} else {
+				asset.setTenantId(getCurrentUser().getTenantId());
+			}
+
 			if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
 				if (asset.getId() == null || asset.getId().isNullUid() ||
 						asset.getCustomerId() == null || asset.getCustomerId().isNullUid()) {
@@ -132,15 +132,24 @@ public class AssetController extends BaseController {
 		}
 	}
 
-	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
 	@RequestMapping(value = "/asset/{assetId}", method = RequestMethod.DELETE)
 	@ResponseStatus(value = HttpStatus.OK)
-	public void deleteAsset(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
+	public void deleteAsset(@PathVariable(ASSET_ID) String strAssetId ,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 		checkParameter(ASSET_ID, strAssetId);
 		try {
+			TenantId tenantId;
+			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			} else {
+				tenantId = getTenantId();
+			}
 			AssetId assetId = new AssetId(toUUID(strAssetId));
-			Asset asset = checkAssetId(assetId);
-			assetService.deleteAsset(getTenantId(), assetId);
+
+			Asset asset = checkAssetId(tenantId,assetId);
+			assetService.deleteAsset(tenantId, assetId);
 
 			logEntityAction(assetId, asset,
 					asset.getCustomerId(),

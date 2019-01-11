@@ -359,6 +359,19 @@ public abstract class BaseController {
         }
     }
 
+	Device checkDeviceId(TenantId tenantId,DeviceId deviceId) throws ThingsboardException {
+		try {
+			validateId(deviceId, "Incorrect deviceId " + deviceId);
+			Device device = deviceService.findDeviceById(tenantId, deviceId);
+			checkNotNull(device);
+			//todo check SYS_ADMIN
+//			checkDevice(device);
+			return device;
+		} catch (Exception e) {
+			throw handleException(e, false);
+		}
+	}
+
     Device checkDeviceId(DeviceId deviceId) throws ThingsboardException {
         try {
             validateId(deviceId, "Incorrect deviceId " + deviceId);
@@ -393,6 +406,18 @@ public abstract class BaseController {
         checkCustomerId(entityView.getCustomerId());
     }
 
+    Asset checkAssetId(TenantId tenantId,AssetId assetId) throws ThingsboardException {
+        try {
+            validateId(assetId, "Incorrect assetId " + assetId);
+            Asset asset = assetService.findAssetById(tenantId, assetId);
+			checkNotNull(asset);
+			//todo SYS_ADMIN check
+            //checkAsset(asset);
+            return asset;
+        } catch (Exception e) {
+            throw handleException(e, false);
+        }
+    }
     Asset checkAssetId(AssetId assetId) throws ThingsboardException {
         try {
             validateId(assetId, "Incorrect assetId " + assetId);
