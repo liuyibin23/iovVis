@@ -200,4 +200,10 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
         });
     }
 
+    @Override
+    public List<Device> findByIdLike(String deviceId) {
+        //todo cassandra find device like
+        return null;
+    }
+
 }

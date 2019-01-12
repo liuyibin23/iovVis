@@ -60,6 +60,7 @@ import org.thingsboard.server.dao.attributes.AttributesService;
 import org.thingsboard.server.dao.audit.AuditLogService;
 import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
+import org.thingsboard.server.dao.device.DeviceAttributesService;
 import org.thingsboard.server.dao.device.DeviceCredentialsService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -164,6 +165,9 @@ public abstract class BaseController {
 
     @Autowired
     protected DeviceAttrKVService deviceAttrKVService;
+
+    @Autowired
+	protected DeviceAttributesService deviceAttributesService;
 
     @Value("${server.log_controller_error_stack_trace}")
     @Getter
@@ -276,6 +280,20 @@ public abstract class BaseController {
         return getCurrentUser().getTenantId();
     }
 
+	Customer checkCustomerIdAdmin(TenantId tenantId,CustomerId customerId) throws ThingsboardException {
+		try {
+
+			if (customerId != null && !customerId.isNullUid()) {
+				Customer customer = customerService.findCustomerById(tenantId, customerId);
+				checkCustomer(customer);
+				return customer;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			throw handleException(e, false);
+		}
+	}
     Customer checkCustomerId(CustomerId customerId) throws ThingsboardException {
         try {
             SecurityUser authUser = getCurrentUser();

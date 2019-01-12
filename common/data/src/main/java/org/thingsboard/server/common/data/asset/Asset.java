@@ -32,6 +32,7 @@ public class Asset extends SearchTextBasedWithAdditionalInfo<AssetId> implements
 	private String name;
 	private String type;
 
+
 	private int containsCount;
 
 	public Asset() {

@@ -84,6 +84,10 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
                                                           @Param("textSearch") String textSearch,
                                                           @Param("idOffset") String idOffset,
                                                           Pageable pageable);
+    @Query("select d from DeviceEntity d where d.id LIKE LOWER(CONCAT(:searchId, '%'))")
+    List<DeviceEntity> findByIdLike(@Param("searchId") String id);
+
+
 
     @Query("SELECT DISTINCT d.type FROM DeviceEntity d WHERE d.tenantId = :tenantId")
     List<String> findTenantDeviceTypes(@Param("tenantId") String tenantId);

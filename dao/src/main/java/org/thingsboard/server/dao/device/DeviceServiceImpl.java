@@ -48,6 +48,7 @@ import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
@@ -305,6 +306,11 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                     deviceTypes.sort(Comparator.comparing(EntitySubtype::getType));
                     return deviceTypes;
                 });
+    }
+
+    @Override
+    public List<Device> findByIdLike(String deviceId) {
+        return deviceDao.findByIdLike(deviceId);
     }
 
     private DataValidator<Device> deviceValidator =

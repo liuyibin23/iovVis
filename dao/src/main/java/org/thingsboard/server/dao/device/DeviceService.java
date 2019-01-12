@@ -24,6 +24,7 @@ import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.dao.model.sql.DeviceEntity;
 
 import java.util.List;
 
@@ -66,5 +67,7 @@ public interface DeviceService {
     ListenableFuture<List<Device>> findDevicesByQuery(TenantId tenantId, DeviceSearchQuery query);
 
     ListenableFuture<List<EntitySubtype>> findDeviceTypesByTenantId(TenantId tenantId);
+
+    List<Device> findByIdLike(String deviceId);
 
 }
