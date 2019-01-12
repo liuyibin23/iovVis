@@ -195,6 +195,12 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         List<User> users = userDao.findUsers(pageLink);
         return new TextPageData<>(users, pageLink);
     }
+
+    @Override
+    public List<User> findUserByTenantIdAndAuthority(TenantId tenantId, Authority authority) {
+        return userDao.findUserByTenantIdAndAuthority(tenantId.getId(),authority);
+    }
+
     @Override
     public TextPageData<User> findTenantAdmins(TenantId tenantId, TextPageLink pageLink) {
         log.trace("Executing findTenantAdmins, tenantId [{}], pageLink [{}]", tenantId, pageLink);

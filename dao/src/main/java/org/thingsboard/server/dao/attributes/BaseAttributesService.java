@@ -71,6 +71,15 @@ public class BaseAttributesService implements AttributesService {
     }
 
     @Override
+    public void saveAttributes(TenantId tenantId, EntityId entityId, String scope, List<AttributeKvEntry> attributes) {
+        validate(entityId, scope);
+        attributes.forEach(attribute -> validate(attribute));
+        for (AttributeKvEntry attribute : attributes) {
+            attributesDao.save(tenantId, entityId, scope, attribute);
+        }
+    }
+
+    @Override
     public ListenableFuture<List<Void>> removeAll(TenantId tenantId, EntityId entityId, String scope, List<String> keys) {
         validate(entityId, scope);
         return attributesDao.removeAll(tenantId, entityId, scope, keys);

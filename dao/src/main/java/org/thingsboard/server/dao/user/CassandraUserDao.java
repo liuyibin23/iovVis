@@ -102,4 +102,10 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
         return 0;
     }
 
+    @Override
+    public List<User> findUserByTenantIdAndAuthority(UUID tenantId, Authority authority) {
+        //todo add cassandra User find
+        return null;
+    }
+
 }

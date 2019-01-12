@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.model.sql.UserEntity;
 import org.thingsboard.server.dao.util.SqlDao;
@@ -55,4 +56,6 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 	List<UserEntity> findUsers( @Param("idOffset") String idOffset,
 							  @Param("searchText") String searchText,
 							  Pageable pageable);
+
+	List<UserEntity> findAllByTenantIdAndAuthority(String tenantId,Authority authority);
 }
