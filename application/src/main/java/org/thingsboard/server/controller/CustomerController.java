@@ -93,12 +93,16 @@ public class CustomerController extends BaseController {
 		}
 	}
 
-	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
 	@RequestMapping(value = "/customer", method = RequestMethod.POST)
 	@ResponseBody
-	public Customer saveCustomer(@RequestBody Customer customer) throws ThingsboardException {
+	public Customer saveCustomer(@RequestBody Customer customer,@RequestParam(required = true) String tenantIdStr) throws ThingsboardException {
 		try {
-			customer.setTenantId(getCurrentUser().getTenantId());
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+			customer.setTenantId(tenantId);
 			Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
 
 			logEntityAction(savedCustomer.getId(), savedCustomer,
@@ -114,7 +118,34 @@ public class CustomerController extends BaseController {
 			throw handleException(e);
 		}
 	}
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
+	@RequestMapping(value = "/customer/admin/{customerId}", method = RequestMethod.DELETE)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void deleteCustomerAdmin(@PathVariable(CUSTOMER_ID) String strCustomerId,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
+		checkParameter(CUSTOMER_ID, strCustomerId);
+		try {
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
+			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
+			Customer customer = checkCustomerIdAdmin(tenantId,customerId);
+			customerService.deleteCustomer(tenantId, customer.getId());
+
+			logEntityAction(customerId, customer,
+					customer.getId(),
+					ActionType.DELETED, null, strCustomerId);
+
+		} catch (Exception e) {
+
+			logEntityAction(emptyId(EntityType.CUSTOMER),
+					null,
+					null,
+					ActionType.DELETED, e, strCustomerId);
+
+			throw handleException(e);
+		}
+	}
 	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
 	@RequestMapping(value = "/customer/{customerId}", method = RequestMethod.DELETE)
 	@ResponseStatus(value = HttpStatus.OK)

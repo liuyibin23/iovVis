@@ -32,6 +32,7 @@ public class Customer extends ContactBased<CustomerId> implements HasName, HasTe
 
 	private int adminCount;
 	private int userCount;
+	private long infrastructureCount;
 
 	public Customer() {
 		super();
@@ -45,6 +46,14 @@ public class Customer extends ContactBased<CustomerId> implements HasName, HasTe
 		super(customer);
 		this.tenantId = customer.getTenantId();
 		this.title = customer.getTitle();
+	}
+
+	public long getInfrastructureCount() {
+		return infrastructureCount;
+	}
+
+	public void setInfrastructureCount(long infrastructureCount) {
+		this.infrastructureCount = infrastructureCount;
 	}
 
 	public TenantId getTenantId() {

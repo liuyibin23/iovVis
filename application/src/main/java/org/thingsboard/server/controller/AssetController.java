@@ -164,21 +164,41 @@ public class AssetController extends BaseController {
 		}
 	}
 
-	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
 	@RequestMapping(value = "/customer/{customerId}/asset/{assetId}", method = RequestMethod.POST)
 	@ResponseBody
 	public Asset assignAssetToCustomer(@PathVariable("customerId") String strCustomerId,
-									   @PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
+									   @PathVariable(ASSET_ID) String strAssetId,
+									   @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 		checkParameter("customerId", strCustomerId);
 		checkParameter(ASSET_ID, strAssetId);
+		CustomerId customerId;
+		Customer customer;
+		AssetId assetId;
+		Asset savedAsset;
 		try {
-			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
-			Customer customer = checkCustomerId(customerId);
+			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-			AssetId assetId = new AssetId(toUUID(strAssetId));
-			checkAssetId(assetId);
+				customerId = new CustomerId(toUUID(strCustomerId));
+				customer = checkCustomerIdAdmin(tenantId,customerId);
 
-			Asset savedAsset = checkNotNull(assetService.assignAssetToCustomer(getTenantId(), assetId, customerId));
+				assetId = new AssetId(toUUID(strAssetId));
+				checkAssetId(tenantId,assetId);
+				savedAsset = checkNotNull(assetService.assignAssetToCustomer(getTenantId(), assetId, customerId));
+			} else {
+				customerId = new CustomerId(toUUID(strCustomerId));
+				customer = checkCustomerId(customerId);
+
+				assetId = new AssetId(toUUID(strAssetId));
+				checkAssetId(assetId);
+				savedAsset = checkNotNull(assetService.assignAssetToCustomer(getTenantId(), assetId, customerId));
+			}
+
+
+
 
 			logEntityAction(assetId, savedAsset,
 					savedAsset.getCustomerId(),

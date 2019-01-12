@@ -48,6 +48,7 @@ import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
+import org.thingsboard.server.dao.sql.asset.AssetRepository;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
 import java.util.ArrayList;
@@ -209,7 +210,11 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 
 		assets.stream().forEach(asset -> {
 			asset.setContainsCount(relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON).size());
-
+			relationService.findByToAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON).forEach(entityRelation -> {
+				if (entityRelation.getTo().getEntityType() == EntityType.ASSET){
+					asset.setAffiliation(assetDao.findById(tenantId,entityRelation.getTo().getId()).getName());
+				}
+			});
 		});
 		return new TextPageData<>(assets, pageLink);
 	}

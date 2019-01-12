@@ -31,6 +31,7 @@ public class Asset extends SearchTextBasedWithAdditionalInfo<AssetId> implements
 	private CustomerId customerId;
 	private String name;
 	private String type;
+	private String affiliation;
 
 
 	private int containsCount;
@@ -49,6 +50,14 @@ public class Asset extends SearchTextBasedWithAdditionalInfo<AssetId> implements
 		this.customerId = asset.getCustomerId();
 		this.name = asset.getName();
 		this.type = asset.getType();
+	}
+
+	public String getAffiliation() {
+		return affiliation;
+	}
+
+	public void setAffiliation(String affiliation) {
+		this.affiliation = affiliation;
 	}
 
 	public int getContainsCount() {
