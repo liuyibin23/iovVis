@@ -36,11 +36,16 @@
     </properties>
 
     <build>
+
         <resources>
             <resource>
                 <directory>${project.build.directory}/generated-resources</directory>
             </resource>
+<!--            <resource>
+                <directory>${basedir}/build</directory>
+            </resource>-->
         </resources>
+
         <plugins>
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -73,6 +78,7 @@
                 </executions>
             </plugin>
         </plugins>
+
     </build>
     <profiles>
         <profile>

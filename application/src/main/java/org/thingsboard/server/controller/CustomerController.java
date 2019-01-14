@@ -37,6 +37,7 @@ import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,20 +97,33 @@ public class CustomerController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
 	@RequestMapping(value = "/customer", method = RequestMethod.POST)
 	@ResponseBody
-	public Customer saveCustomer(@RequestBody Customer customer,@RequestParam(required = true) String tenantIdStr) throws ThingsboardException {
+	public Customer saveCustomer(@RequestBody Customer customer,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 		try {
-			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
-			checkTenantId(tenantIdTmp);
-			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			if(getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-			customer.setTenantId(tenantId);
-			Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
+				customer.setTenantId(tenantId);
+				Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
 
-			logEntityAction(savedCustomer.getId(), savedCustomer,
-					savedCustomer.getId(),
-					customer.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
+				logEntityAction(savedCustomer.getId(), savedCustomer,
+						savedCustomer.getId(),
+						customer.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
 
-			return savedCustomer;
+				return savedCustomer;
+			} else {
+				customer.setTenantId(getTenantId());
+				Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
+
+				logEntityAction(savedCustomer.getId(), savedCustomer,
+						savedCustomer.getId(),
+						customer.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
+				return savedCustomer;
+			}
+
+
+
 		} catch (Exception e) {
 
 			logEntityAction(emptyId(EntityType.CUSTOMER), customer,
