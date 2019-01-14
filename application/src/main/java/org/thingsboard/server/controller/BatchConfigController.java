@@ -44,12 +44,16 @@ public class BatchConfigController extends BaseController {
 
 	private static ObjectMapper MAPPER = new ObjectMapper();
 
-	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/api/batchconfig/devices/{assetId}", method = RequestMethod.GET)
 	@ResponseBody
-	public List<DeviceAutoLogon> getDevices(@PathVariable("assetId") String assetId) {
+	public List<DeviceAutoLogon> getDevices(@PathVariable("assetId") String assetId,@RequestParam String tenantIdStr) {
 		try {
-			TenantId tenantId = getCurrentUser().getTenantId();
+
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
 			AssetId aid = new AssetId(UUID.fromString(assetId));
 			Asset a = checkNotNull(assetService.findAssetById(tenantId, aid));
 
@@ -125,14 +129,18 @@ public class BatchConfigController extends BaseController {
 	 * @Param: [assetId, devicesSaveRequest]
 	 * @return: org.springframework.web.context.request.async.DeferredResult<org.springframework.http.ResponseEntity>
 	 */
-	@PreAuthorize("hasAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/api/batchconfig/devices/{assetId}", method = RequestMethod.POST)
 	@ResponseStatus(value = HttpStatus.OK)
 	@ResponseBody
 	public DeferredResult<ResponseEntity> saveDevices(@PathVariable("assetId") String assetId,
+													  @RequestParam String tenantIdStr,
 													  @RequestBody List<DeviceAutoLogon> devicesSaveRequest) {
 		try {
-			TenantId tenantId = getCurrentUser().getTenantId();
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
 			AssetId aid = new AssetId(UUID.fromString(assetId));
 			Asset a = assetService.findAssetById(tenantId, aid);
 			if (a == null) {

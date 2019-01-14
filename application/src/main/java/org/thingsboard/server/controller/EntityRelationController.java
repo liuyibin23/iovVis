@@ -30,11 +30,13 @@ import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.EntityIdFactory;
+import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.id.UUIDBased;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntityRelationInfo;
 import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.List;
 
@@ -52,15 +54,28 @@ public class EntityRelationController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/relation", method = RequestMethod.POST)
     @ResponseStatus(value = HttpStatus.OK)
-    public void saveRelation(@RequestBody EntityRelation relation) throws ThingsboardException {
+    public void saveRelation(@RequestBody EntityRelation relation,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
         try {
             checkNotNull(relation);
-            checkEntityId(relation.getFrom());
-            checkEntityId(relation.getTo());
-            if (relation.getTypeGroup() == null) {
-                relation.setTypeGroup(RelationTypeGroup.COMMON);
+            if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+                TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+                checkTenantId(tenantIdTmp);
+                TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+                if (relation.getTypeGroup() == null) {
+                    relation.setTypeGroup(RelationTypeGroup.COMMON);
+                }
+                relationService.saveRelation(tenantId, relation);
+            } else {
+                checkEntityId(relation.getFrom());
+                checkEntityId(relation.getTo());
+                if (relation.getTypeGroup() == null) {
+                    relation.setTypeGroup(RelationTypeGroup.COMMON);
+                }
+                relationService.saveRelation(getTenantId(), relation);
             }
-            relationService.saveRelation(getTenantId(), relation);
+
+
+
             logEntityAction(relation.getFrom(), null, getCurrentUser().getCustomerId(),
                     ActionType.RELATION_ADD_OR_UPDATE, null, relation);
             logEntityAction(relation.getTo(), null, getCurrentUser().getCustomerId(),

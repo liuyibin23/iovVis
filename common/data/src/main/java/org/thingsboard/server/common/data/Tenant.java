@@ -29,6 +29,9 @@ public class Tenant extends ContactBased<TenantId> implements HasName {
     private String title;
     private String region;
 
+    private int adminCount;
+    private int userCount;
+
     public Tenant() {
         super();
     }
@@ -70,7 +73,23 @@ public class Tenant extends ContactBased<TenantId> implements HasName {
         return getTitle();
     }
 
-    @Override
+	public int getAdminCount() {
+		return adminCount;
+	}
+
+	public void setAdminCount(int adminCount) {
+		this.adminCount = adminCount;
+	}
+
+	public int getUserCount() {
+		return userCount;
+	}
+
+	public void setUserCount(int userCount) {
+		this.userCount = userCount;
+	}
+
+	@Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("Tenant [title=");

@@ -26,25 +26,28 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Device;
-import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.kv.BaseAttributeKvEntry;
+import org.thingsboard.server.common.data.kv.StringDataEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
+import org.thingsboard.server.dao.model.sql.DeviceAttrKV;
+import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
+import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
+import javax.management.relation.RelationType;
+import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,12 +71,20 @@ public class DeviceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/device", method = RequestMethod.POST)
     @ResponseBody
-    public Device saveDevice(@RequestBody Device device) throws ThingsboardException {
+    public Device saveDevice(@RequestBody Device device,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
         try {
-            device.setTenantId(getCurrentUser().getTenantId());
+			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+				device.setTenantId(tenantId);
+			} else {
+				device.setTenantId(getCurrentUser().getTenantId());
+			}
+
             if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
                 if (device.getId() == null || device.getId().isNullUid() ||
                         device.getCustomerId() == null || device.getCustomerId().isNullUid()) {
@@ -83,6 +94,7 @@ public class DeviceController extends BaseController {
                     checkCustomerId(device.getCustomerId());
                 }
             }
+
             Device savedDevice = checkNotNull(deviceService.saveDevice(device));
 
             actorService
@@ -109,15 +121,23 @@ public class DeviceController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
     @RequestMapping(value = "/device/{deviceId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
-    public void deleteDevice(@PathVariable(DEVICE_ID) String strDeviceId) throws ThingsboardException {
+    public void deleteDevice(@PathVariable(DEVICE_ID) String strDeviceId,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
+		TenantId tenantId;
         checkParameter(DEVICE_ID, strDeviceId);
         try {
+			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			} else {
+				tenantId = getCurrentUser().getTenantId();
+			}
             DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
-            Device device = checkDeviceId(deviceId);
-            deviceService.deleteDevice(getCurrentUser().getTenantId(), deviceId);
+            Device device = checkDeviceId(tenantId,deviceId);
+            deviceService.deleteDevice(tenantId, deviceId);
 
             logEntityAction(deviceId, device,
                     device.getCustomerId(),
@@ -133,11 +153,48 @@ public class DeviceController extends BaseController {
         }
     }
 
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
+	@RequestMapping(value = "/admin/customer/{customerId}/device/{deviceId}", method = RequestMethod.POST)
+	@ResponseBody
+	public Device adminAssignDeviceToCustomer(@PathVariable("customerId") String strCustomerId,
+										 @PathVariable(DEVICE_ID) String strDeviceId,
+										 @RequestParam(required = true) String tenantIdStr
+										 ) throws ThingsboardException {
+		checkParameter("customerId", strCustomerId);
+		checkParameter(DEVICE_ID, strDeviceId);
+		try {
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+			CustomerId customerIdTmp = new CustomerId(toUUID(strCustomerId));
+			Customer customer = checkCustomerIdAdmin(tenantId,customerIdTmp);
+
+
+			DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
+			checkDeviceId(tenantId,deviceId);
+
+			Device savedDevice = checkNotNull(deviceService.assignDeviceToCustomer(tenantId, deviceId, customer.getId()));
+
+			logEntityAction(deviceId, savedDevice,
+					savedDevice.getCustomerId(),
+					ActionType.ASSIGNED_TO_CUSTOMER, null, strDeviceId, strCustomerId, customer.getName());
+
+			return savedDevice;
+		} catch (Exception e) {
+			logEntityAction(emptyId(EntityType.DEVICE), null,
+					null,
+					ActionType.ASSIGNED_TO_CUSTOMER, e, strDeviceId, strCustomerId);
+			throw handleException(e);
+		}
+	}
+
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/customer/{customerId}/device/{deviceId}", method = RequestMethod.POST)
     @ResponseBody
     public Device assignDeviceToCustomer(@PathVariable("customerId") String strCustomerId,
-                                         @PathVariable(DEVICE_ID) String strDeviceId) throws ThingsboardException {
+                                         @PathVariable(DEVICE_ID) String strDeviceId
+										 ) throws ThingsboardException {
         checkParameter("customerId", strCustomerId);
         checkParameter(DEVICE_ID, strDeviceId);
         try {
@@ -255,6 +312,137 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
+    @PreAuthorize("hasAuthority('SYS_ADMIN')")
+    @RequestMapping(value = "/admin/devices", params = {"limit"}, method = RequestMethod.GET)
+    @ResponseBody
+    public TextPageData<Device> getDevices(
+            @RequestParam int limit,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String textSearch,
+            @RequestParam(required = false) String idOffset,
+            @RequestParam(required = false) String textOffset) throws ThingsboardException {
+        try {
+            TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+            if (type != null && type.trim().length() > 0) {
+                return checkNotNull(deviceService.findDevicesByType(type, pageLink));
+            } else {
+                return checkNotNull(deviceService.findDevices(pageLink));
+            }
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+	@PreAuthorize("hasAuthority('SYS_ADMIN')")
+	@RequestMapping(value = "/admin/devicesAndInfo", params = {"limit"}, method = RequestMethod.GET)
+	@ResponseBody
+	public List<DeviceForDisplay> getDevicesAndInfo(
+			@RequestParam int limit,
+			@RequestParam(required = false) String type,
+			@RequestParam(required = false) String tenantIdStr,
+			@RequestParam(required = false) String customerIdStr,
+			@RequestParam(required = false) String searchId,
+			@RequestParam(required = false) String textSearch,
+			@RequestParam(required = false) String idOffset,
+			@RequestParam(required = false) String textOffset) throws ThingsboardException {
+
+
+		List<Device> deviceList = null;
+		TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+		TenantId tenantIdTmp,tenantId;
+		CustomerId customerIdTmp,customerId;
+
+
+		try {
+			if (searchId != null && searchId.trim().length() > 0){
+				deviceList = checkNotNull(deviceService.findByIdLike(searchId));
+				//todo id search
+			} else
+			if (customerIdStr != null && customerIdStr.trim().length() > 0){
+				tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+				customerIdTmp = new CustomerId(toUUID(customerIdStr));
+				checkTenantId(tenantIdTmp);
+				customerId = customerService.findCustomerById(tenantId,customerIdTmp).getId();
+
+				if (type != null && type.trim().length() > 0){
+					deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerIdAndType(tenantId,customerId,type, pageLink)).getData();
+				} else {
+					deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId, pageLink)).getData();
+				}
+			} else
+			if (tenantIdStr != null && tenantIdStr.trim().length() > 0){
+				tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantIdTmp);
+				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+				if (type != null && type.trim().length() > 0){
+					deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+				} else {
+					deviceList = checkNotNull(deviceService.findDevicesByTenantId(tenantId, pageLink)).getData();
+				}
+			} else
+			if (type != null && type.trim().length() > 0){
+				deviceList = checkNotNull(deviceService.findDevicesByType(type, pageLink)).getData();
+			} else {
+				deviceList = checkNotNull(deviceService.findDevices(pageLink)).getData();
+			}
+
+			return devicesSearchInfo(deviceList);
+
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
+	private List<DeviceForDisplay> devicesSearchInfo(List<Device> deviceList){
+		List<DeviceForDisplay> retObj = new ArrayList<>();
+		deviceList.forEach(device -> {
+
+			DeviceForDisplay tmp = new DeviceForDisplay();
+			tmp.setDevice(device);
+			tmp.setTenantName(tenantService.findTenantById(device.getTenantId()).getName());
+			tmp.setCustomerName(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()).getName());
+			relationService.findByToAndType(device.getTenantId(),device.getId(),"Contains",RelationTypeGroup.COMMON)
+					.forEach(entityRelation -> {
+						EntityId entityId = entityRelation.getFrom();
+						if (entityId.getEntityType().equals(EntityType.ASSET)){
+							AssetId assetId = new AssetId(entityId.getId());
+							tmp.setAssetName(assetService.findAssetById(device.getTenantId(),assetId).getName());
+						}
+					});
+			DeviceAttributesEntity deviceAttributesEntity = (deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId())));
+			if (deviceAttributesEntity != null){
+				tmp.setChannel(deviceAttributesEntity.getChannel());
+				tmp.setIp(deviceAttributesEntity.getIp());
+				tmp.setMeasureid(deviceAttributesEntity.getMeasureid());
+				tmp.setMoniteritem(deviceAttributesEntity.getMoniteritem());
+				tmp.setDeviceName(deviceAttributesEntity.getDeviceName());
+				tmp.setDescription(deviceAttributesEntity.getDescription());
+			}
+
+
+			retObj.add(tmp);
+		});
+		return retObj;
+	}
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/device/deviceattr", method = RequestMethod.GET)
+	@ResponseBody
+	public List<DeviceAttrKV> getDeviceAttr(@RequestParam(required = false) int limit,
+											@RequestParam(required = false) String attrKey,
+											@RequestParam(required = false) String attrValue) throws ThingsboardException {
+
+		CustomerId cId = getCurrentUser().getCustomerId();
+		if (attrKey != null && attrValue != null)
+			return deviceAttrKVService.findbyAttributeKeyAndValueLike(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+		if (attrKey != null && attrValue == null)
+			return deviceAttrKVService.findbyAttributeKey(attrKey, UUIDConverter.fromTimeUUID(getTenantId().getId()));
+		if (attrKey == null && attrValue != null)
+			return deviceAttrKVService.findbyAttributeValueLike(UUIDConverter.fromTimeUUID(getTenantId().getId()), attrValue);
+		return deviceAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
+
+	}
 
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/tenant/devices", params = {"limit"}, method = RequestMethod.GET)

@@ -88,6 +88,18 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
     }
 
     @Override
+    public List<Device> findDevices(TextPageLink pageLink) {
+        //todo add cassandra findDevices
+        return null;
+    }
+
+    @Override
+    public List<Device> findDevicesByType(String type, TextPageLink pageLink) {
+        //todo add cassandra findDevicesByType
+        return null;
+    }
+
+    @Override
     public List<Device> findDevicesByTenantId(UUID tenantId, TextPageLink pageLink) {
         log.debug("Try to find devices by tenantId [{}] and pageLink [{}]", tenantId, pageLink);
         List<DeviceEntity> deviceEntities = findPageWithTextSearch(new TenantId(tenantId), DEVICE_BY_TENANT_AND_SEARCH_TEXT_COLUMN_FAMILY_NAME,
@@ -186,6 +198,12 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
                 }
             }
         });
+    }
+
+    @Override
+    public List<Device> findByIdLike(String deviceId) {
+        //todo cassandra find device like
+        return null;
     }
 
 }

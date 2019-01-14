@@ -48,6 +48,7 @@ import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
@@ -94,6 +95,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Autowired
     private CacheManager cacheManager;
+
 
     @Override
     public Device findDeviceById(TenantId tenantId, DeviceId deviceId) {
@@ -177,6 +179,21 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         cache.evict(list);
 
         deviceDao.removeById(tenantId, deviceId.getId());
+    }
+    @Override
+    public TextPageData<Device> findDevices(TextPageLink pageLink) {
+        validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+        List<Device> devices = deviceDao.findDevices(pageLink);
+        return new TextPageData<>(devices, pageLink);
+    }
+
+    @Override
+    public TextPageData<Device> findDevicesByType(String type, TextPageLink pageLink) {
+        log.trace("Executing findDevicesByTenantIdAndType, type [{}], pageLink [{}]", type, pageLink);
+        validateString(type, "Incorrect type " + type);
+        validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+        List<Device> devices = deviceDao.findDevicesByType(type, pageLink);
+        return new TextPageData<>(devices, pageLink);
     }
 
     @Override
@@ -289,6 +306,11 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                     deviceTypes.sort(Comparator.comparing(EntitySubtype::getType));
                     return deviceTypes;
                 });
+    }
+
+    @Override
+    public List<Device> findByIdLike(String deviceId) {
+        return deviceDao.findByIdLike(deviceId);
     }
 
     private DataValidator<Device> deviceValidator =

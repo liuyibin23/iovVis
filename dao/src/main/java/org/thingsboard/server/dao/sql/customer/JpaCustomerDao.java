@@ -56,6 +56,14 @@ public class JpaCustomerDao extends JpaAbstractSearchTextDao<CustomerEntity, Cus
     }
 
     @Override
+    public List<Customer> findCustomers(TextPageLink pageLink) {
+        return DaoUtil.convertDataList(customerRepository.findBy(
+                Objects.toString(pageLink.getTextSearch(), ""),
+                pageLink.getIdOffset() == null ? NULL_UUID_STR : UUIDConverter.fromTimeUUID(pageLink.getIdOffset()),
+                new PageRequest(0, pageLink.getLimit())));
+    }
+
+    @Override
     public List<Customer> findCustomersByTenantId(UUID tenantId, TextPageLink pageLink) {
         return DaoUtil.convertDataList(customerRepository.findByTenantId(
                 UUIDConverter.fromTimeUUID(tenantId),

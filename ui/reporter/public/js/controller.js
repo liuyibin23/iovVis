@@ -44,11 +44,12 @@ async function onTemplateChosen(event) {
   const doc = await createReport({
     template: content, data: { name: 'Awen', createTime: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') },
     additionalJsContext: {
-      genIMG: async (type, tsw, w_cm, h_cm) => {
+      genIMG: async (devid, type, tsw, w_cm, h_cm) => {
         console.log('--- try to axios ---', type, tsw);
         let data = [];
         await axios.post('/swapi', {
           // query: ' {allFilms { films { title, releaseDate } } }',
+          deviceId: devid,
           chartType: type,
           chartTsw: tsw,
           chartW: w_cm,

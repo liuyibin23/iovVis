@@ -61,6 +61,12 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
+    public List<User> findUsers(TextPageLink pageLink) {
+        //todo cassandra find all users
+        return null;
+    }
+
+    @Override
     public List<User> findTenantAdmins(UUID tenantId, TextPageLink pageLink) {
         log.debug("Try to find tenant admin users by tenantId [{}] and pageLink [{}]", tenantId, pageLink);
         List<UserEntity> userEntities = findPageWithTextSearch(new TenantId(tenantId),
@@ -84,6 +90,22 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
                 pageLink); 
         log.trace("Found customer users [{}] by tenantId [{}], customerId [{}] and pageLink [{}]", userEntities, tenantId, customerId, pageLink);
         return DaoUtil.convertDataList(userEntities);
+    }
+
+    @Override
+    public int countTenantAdmins(String tenantId) {
+        return 0;
+    }
+
+    @Override
+    public int countCustomerUsers(String tenantId, String customerId) {
+        return 0;
+    }
+
+    @Override
+    public List<User> findUserByTenantIdAndAuthority(UUID tenantId, Authority authority) {
+        //todo add cassandra User find
+        return null;
     }
 
 }

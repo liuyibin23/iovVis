@@ -27,7 +27,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.TenantAndAsset;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -35,6 +38,10 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.plugin.ComponentLifecycleEvent;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.service.install.InstallScripts;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
@@ -102,6 +109,27 @@ public class TenantController extends BaseController {
         try {
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
             return checkNotNull(tenantService.findTenants(pageLink));
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+    @PreAuthorize("hasAuthority('SYS_ADMIN')")
+    @RequestMapping(value = "/tenantsAndAsset", params = {"limit"}, method = RequestMethod.GET)
+    @ResponseBody
+    public List<TenantAndAsset> getTenantsAndAsset(@RequestParam int limit,
+                                                   @RequestParam(required = false) String textSearch,
+                                                   @RequestParam(required = false) String idOffset,
+                                                   @RequestParam(required = false) String textOffset) throws ThingsboardException {
+        try {
+            List<TenantAndAsset> retObj = new ArrayList<>();
+            TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+            TextPageData<Tenant> tmpTenant = checkNotNull(tenantService.findTenants(pageLink));
+            tmpTenant.getData().forEach(tenant -> {
+                retObj.add(new TenantAndAsset(tenant,assetService.findAssetByTenant(tenant.getId())));
+            });
+
+
+            return retObj;
         } catch (Exception e) {
             throw handleException(e);
         }

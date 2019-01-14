@@ -17,6 +17,7 @@ package org.thingsboard.server.dao.asset;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntitySubtype;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.AssetId;
@@ -32,6 +33,10 @@ public interface AssetService {
 
     Asset findAssetById(TenantId tenantId, AssetId assetId);
 
+    List<Asset> findAssetByTenant(TenantId tenantId);
+
+    List<Asset> findAssetByTenantAndCustomer(TenantId tenantId,CustomerId customerId);
+
     ListenableFuture<Asset> findAssetByIdAsync(TenantId tenantId, AssetId assetId);
 
     Asset findAssetByTenantIdAndName(TenantId tenantId, String name);
@@ -43,6 +48,10 @@ public interface AssetService {
     Asset unassignAssetFromCustomer(TenantId tenantId, AssetId assetId);
 
     void deleteAsset(TenantId tenantId, AssetId assetId);
+
+    TextPageData<Asset> findAssets(TextPageLink pageLink);
+
+    TextPageData<Asset> findAssetsByType(String type,TextPageLink pageLink);
 
     TextPageData<Asset> findAssetsByTenantId(TenantId tenantId, TextPageLink pageLink);
 

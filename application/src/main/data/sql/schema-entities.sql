@@ -263,4 +263,59 @@ CREATE OR REPLACE VIEW vassetattrkv AS
     asset
   WHERE attribute_kv.entity_id::text = asset.id::text;
 
+CREATE OR REPLACE VIEW device_attributes AS
+ SELECT attribute_kv.entity_id,
+    max(
+        CASE attribute_kv.attribute_key
+            WHEN 'IP'::text THEN attribute_kv.str_v
+            ELSE NULL::character varying
+        END::text) AS IP,
+    max(
+        CASE attribute_kv.attribute_key
+            WHEN 'channel'::text THEN attribute_kv.str_v
+            ELSE NULL::character varying
+        END::text) AS channel,
+    max(
+        CASE attribute_kv.attribute_key
+            WHEN 'measureid'::text THEN attribute_kv.str_v
+            ELSE NULL::character varying
+        END::text) AS measureid,
+    max(
+        CASE attribute_kv.attribute_key
+            WHEN 'moniteritem'::text THEN attribute_kv.str_v
+            ELSE NULL::character varying
+        END::text) AS moniteritem,
+	max(
+	CASE attribute_kv.attribute_key
+		WHEN 'devicename'::text THEN attribute_kv.str_v
+		ELSE NULL::character varying
+	END::text) AS devicename,
+	max(
+	CASE attribute_kv.attribute_key
+		WHEN 'description'::text THEN attribute_kv.str_v
+		ELSE NULL::character varying
+	END::text) AS description
+   FROM attribute_kv
+  WHERE attribute_kv.entity_type::text = 'DEVICE'::text
+  GROUP BY attribute_kv.entity_id;
 
+CREATE OR REPLACE VIEW deviceattrkv AS
+ SELECT attribute_kv.entity_type,
+    attribute_kv.entity_id,
+    attribute_kv.attribute_type,
+    attribute_kv.attribute_key,
+    attribute_kv.bool_v,
+    attribute_kv.str_v,
+    attribute_kv.long_v,
+    attribute_kv.dbl_v,
+    attribute_kv.last_update_ts,
+    device.additional_info,
+    device.customer_id,
+    device.type,
+    device.name,
+    device.search_text,
+    device.tenant_id,
+    device.id
+   FROM attribute_kv,
+    device
+  WHERE attribute_kv.entity_id::text = device.id::text;

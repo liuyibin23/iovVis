@@ -62,6 +62,7 @@ import org.thingsboard.server.common.data.kv.LongDataEntry;
 import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
 import org.thingsboard.server.common.data.kv.StringDataEntry;
 import org.thingsboard.server.common.data.kv.TsKvEntry;
+import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.msg.cluster.SendToClusterMsg;
 import org.thingsboard.server.common.transport.adaptor.JsonConverter;
 import org.thingsboard.server.dao.timeseries.TimeseriesService;
@@ -217,9 +218,33 @@ public class TelemetryController extends BaseController {
     @ResponseBody
     public DeferredResult<ResponseEntity> saveEntityAttributesV1(@PathVariable("entityType") String entityType, @PathVariable("entityId") String entityIdStr,
                                                                  @PathVariable("scope") String scope,
+																 @RequestParam String tenantIdStr,
                                                                  @RequestBody JsonNode request) throws ThingsboardException {
         EntityId entityId = EntityIdFactory.getByTypeAndId(entityType, entityIdStr);
-        return saveAttributes(getTenantId(), entityId, scope, request);
+        if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+			DeferredResult<ResponseEntity> response = new DeferredResult<>();
+        	if (tenantIdStr == null){
+				response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
+				return response;
+			}
+			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+			checkTenantId(tenantIdTmp);
+			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+
+			if (request.isObject()) {
+				List<AttributeKvEntry> attributes = extractRequestAttributes(request);
+				if (attributes.isEmpty()) {
+					return getImmediateDeferredResult("No attributes data found in request body!", HttpStatus.BAD_REQUEST);
+				}
+				attributesService.saveAttributes(getTenantId(),entityId,scope,attributes);
+				response.setResult(new ResponseEntity(HttpStatus.OK));
+				return response;
+			}
+			response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
+			return response;
+		}
+		else
+        	return saveAttributes(getTenantId(), entityId, scope, request);
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
