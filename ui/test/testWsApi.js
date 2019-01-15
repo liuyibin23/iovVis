@@ -65,8 +65,8 @@ async function tsTest() {
         tsSubCmds: [
             {
                 "entityType": "DEVICE",
-                "entityId": "5074b200-e31a-11e8-be95-f3713e6700c3", //A监测点
-                "keys": "crackWidth,crackDeepth",
+                "entityId": "280f1810-1104-11e9-bae8-7562662cc4ee", //devA
+                "keys": "crackWidth",
                 // "startTs":1545240944508,  //距离1970年1月1日零点的毫秒数
                 // "timeWindow": 60000,		 //时间窗口为1分钟，60000毫秒
                 // "interval": 6000,		 //分组间隔1000毫秒
@@ -109,8 +109,8 @@ async function tsTest() {
     };
 
     setTimeout(timerfun, 1000, cmd_sub);
-    setTimeout(timerfun, 10000, cmd_2);
-    setTimeout(timerfun, 20000, cmd_unsub);
+    // setTimeout(timerfun, 10000, cmd_2);
+    // setTimeout(timerfun, 20000, cmd_unsub);
     function timerfun(object) {
         var data = JSON.stringify(object);
         webSocket.send(data);
