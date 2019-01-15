@@ -16,11 +16,13 @@
 package org.thingsboard.server.dao.device;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.springframework.data.repository.query.Param;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.dao.Dao;
+import org.thingsboard.server.dao.model.sql.DeviceEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -39,6 +41,25 @@ public interface DeviceDao extends Dao<Device> {
      * @return saved device object
      */
     Device save(TenantId tenantId, Device device);
+
+    /**
+     * Find devices by page link.
+     *
+     *
+     * @param pageLink the page link
+     * @return the list of device objects
+     */
+    List<Device> findDevices(TextPageLink pageLink);
+
+    /**
+     * Find devices type and page link.
+     *
+     *
+     * @param type the type
+     * @param pageLink the page link
+     * @return the list of device objects
+     */
+    List<Device> findDevicesByType(String type, TextPageLink pageLink);
 
     /**
      * Find devices by tenantId and page link.
@@ -115,4 +136,13 @@ public interface DeviceDao extends Dao<Device> {
      * @return the list of tenant device type objects
      */
     ListenableFuture<List<EntitySubtype>> findTenantDeviceTypesAsync(UUID tenantId);
+
+    /**
+     * Find devices by deviceId link.
+     *
+     * @param deviceId the id
+     *
+     * @return the optional device object
+     */
+    List<Device> findByIdLike(@Param("searchId") String deviceId);
 }

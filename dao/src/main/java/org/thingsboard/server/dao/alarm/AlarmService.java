@@ -17,7 +17,6 @@ package org.thingsboard.server.dao.alarm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ListenableFuture;
-import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmId;
@@ -26,9 +25,7 @@ import org.thingsboard.server.common.data.alarm.AlarmQuery;
 import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmCountInfo;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmEntityCountInfo;
-import org.thingsboard.server.common.data.alarmstatistics.AlarmStatisticsQuery;
+import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -65,11 +62,11 @@ public interface AlarmService {
      * @param query
      * @return
      */
-    AlarmCountInfo findAlarmStatisticsCounts(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+    AlarmCountInfo findAlarmStatisticsSummary(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
 
     /**
-     * 查询当前登录用户下，所有的项目、基础设施的告警统计信息。
+     * 根据告警级别，查询当前登录用户下，所有项目、基础设施的告警统计。
      * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
      *
      * @param tenantId
@@ -77,10 +74,10 @@ public interface AlarmService {
      * @param query
      * @return
      */
-    TimePageData<AlarmEntityCountInfo> findAllAlarmStatisticsEntities(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+    TimePageData<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
     /**
-     * 查询当前登录用户下，制定类型的项目、基础设施的告警统计信息。
+     * 根据告警级别，查询当前登录用户下，指定类型的项目、基础设施的告警统计。
      * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
      *
      * @param tenantId
@@ -88,5 +85,27 @@ public interface AlarmService {
      * @param query
      * @return
      */
-    TimePageData<AlarmEntityCountInfo> findAlarmStatisticEntitiesByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+    TimePageData<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+
+
+    /**
+     * 查询当前登录用户一定周期内的观测点告警处理情况统计信息。
+     * 当前用户组可以是：TENANT_ADMIN, CUSTOMER_USER
+     *
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    AlarmHandledCountInfo findAlarmStatisticsHandledCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+
+
+    /**
+     * 查询当前登录用户下，一定周期内，指定类型基础设施的报警信息。
+     * @param tenantId
+     * @param customerId
+     * @param query
+     * @return
+     */
+    TimePageData<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId,CustomerId customerId,AlarmStatisticsQuery query);
 }

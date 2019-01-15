@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -59,6 +60,7 @@ import org.thingsboard.server.dao.attributes.AttributesService;
 import org.thingsboard.server.dao.audit.AuditLogService;
 import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
+import org.thingsboard.server.dao.device.DeviceAttributesService;
 import org.thingsboard.server.dao.device.DeviceCredentialsService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -70,6 +72,7 @@ import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
+import org.thingsboard.server.dao.vdeviceattrkv.DeviceAttrKVService;
 import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 import org.thingsboard.server.exception.ThingsboardErrorResponseHandler;
@@ -97,7 +100,6 @@ public abstract class BaseController {
     private static final ObjectMapper json = new ObjectMapper();
 
 
-
     @Autowired
     private ThingsboardErrorResponseHandler errorResponseHandler;
 
@@ -116,7 +118,7 @@ public abstract class BaseController {
     @Autowired
     protected AssetService assetService;
 
-    @Autowired
+    @Autowired()
     protected AlarmService alarmService;
 
     @Autowired
@@ -160,6 +162,12 @@ public abstract class BaseController {
 
     @Autowired
     protected VassetAttrKVService vassetAttrKVService;
+
+    @Autowired
+    protected DeviceAttrKVService deviceAttrKVService;
+
+    @Autowired
+	protected DeviceAttributesService deviceAttributesService;
 
     @Value("${server.log_controller_error_stack_trace}")
     @Getter
@@ -272,6 +280,20 @@ public abstract class BaseController {
         return getCurrentUser().getTenantId();
     }
 
+	Customer checkCustomerIdAdmin(TenantId tenantId,CustomerId customerId) throws ThingsboardException {
+		try {
+
+			if (customerId != null && !customerId.isNullUid()) {
+				Customer customer = customerService.findCustomerById(tenantId, customerId);
+				checkCustomer(customer);
+				return customer;
+			} else {
+				return null;
+			}
+		} catch (Exception e) {
+			throw handleException(e, false);
+		}
+	}
     Customer checkCustomerId(CustomerId customerId) throws ThingsboardException {
         try {
             SecurityUser authUser = getCurrentUser();
@@ -355,6 +377,19 @@ public abstract class BaseController {
         }
     }
 
+	Device checkDeviceId(TenantId tenantId,DeviceId deviceId) throws ThingsboardException {
+		try {
+			validateId(deviceId, "Incorrect deviceId " + deviceId);
+			Device device = deviceService.findDeviceById(tenantId, deviceId);
+			checkNotNull(device);
+			//todo check SYS_ADMIN
+//			checkDevice(device);
+			return device;
+		} catch (Exception e) {
+			throw handleException(e, false);
+		}
+	}
+
     Device checkDeviceId(DeviceId deviceId) throws ThingsboardException {
         try {
             validateId(deviceId, "Incorrect deviceId " + deviceId);
@@ -389,6 +424,18 @@ public abstract class BaseController {
         checkCustomerId(entityView.getCustomerId());
     }
 
+    Asset checkAssetId(TenantId tenantId,AssetId assetId) throws ThingsboardException {
+        try {
+            validateId(assetId, "Incorrect assetId " + assetId);
+            Asset asset = assetService.findAssetById(tenantId, assetId);
+			checkNotNull(asset);
+			//todo SYS_ADMIN check
+            //checkAsset(asset);
+            return asset;
+        } catch (Exception e) {
+            throw handleException(e, false);
+        }
+    }
     Asset checkAssetId(AssetId assetId) throws ThingsboardException {
         try {
             validateId(assetId, "Incorrect assetId " + assetId);

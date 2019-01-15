@@ -20,8 +20,6 @@ import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 @EqualsAndHashCode(callSuper = true)
 public class Device extends SearchTextBasedWithAdditionalInfo<DeviceId> implements HasName, HasTenantId, HasCustomerId {
 

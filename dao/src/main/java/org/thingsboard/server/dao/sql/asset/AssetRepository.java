@@ -30,6 +30,20 @@ import java.util.List;
 @SqlDao
 public interface AssetRepository extends CrudRepository<AssetEntity, String> {
 
+    @Query("SELECT a FROM AssetEntity a WHERE " +
+            "LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
+            "AND a.id > :idOffset ORDER BY a.id")
+    List<AssetEntity> findAllBy(     @Param("textSearch") String textSearch,
+                                     @Param("idOffset") String idOffset,
+                                     Pageable pageable);
+	@Query("SELECT a FROM AssetEntity a WHERE a.type = :type " +
+			"AND LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
+			"AND a.id > :idOffset ORDER BY a.id")
+	List<AssetEntity> findByType(@Param("type") String type,
+									 @Param("textSearch") String textSearch,
+									 @Param("idOffset") String idOffset,
+									 Pageable pageable);
+
     @Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
             "AND LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
             "AND a.id > :idOffset ORDER BY a.id")
@@ -47,6 +61,11 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
                                                   @Param("textSearch") String textSearch,
                                                   @Param("idOffset") String idOffset,
                                                   Pageable pageable);
+
+	@Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
+			"AND a.customerId = :customerId ORDER BY a.id")
+	List<AssetEntity> findByTenantIdAndCustomerId(@Param("tenantId") String tenantId,
+												  @Param("customerId") String customerId);
 
     List<AssetEntity> findByTenantIdAndIdIn(String tenantId, List<String> assetIds);
 

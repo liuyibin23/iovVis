@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,86 +25,106 @@ import org.thingsboard.server.common.data.id.TenantId;
 @EqualsAndHashCode(callSuper = true)
 public class Asset extends SearchTextBasedWithAdditionalInfo<AssetId> implements HasName, HasTenantId, HasCustomerId {
 
-    private static final long serialVersionUID = 2807343040519543363L;
+	private static final long serialVersionUID = 2807343040519543363L;
 
-    private TenantId tenantId;
-    private CustomerId customerId;
-    private String name;
-    private String type;
+	private TenantId tenantId;
+	private CustomerId customerId;
+	private String name;
+	private String type;
+	private String affiliation;
 
-    public Asset() {
-        super();
-    }
 
-    public Asset(AssetId id) {
-        super(id);
-    }
+	private int containsCount;
 
-    public Asset(Asset asset) {
-        super(asset);
-        this.tenantId = asset.getTenantId();
-        this.customerId = asset.getCustomerId();
-        this.name = asset.getName();
-        this.type = asset.getType();
-    }
+	public Asset() {
+		super();
+	}
 
-    public TenantId getTenantId() {
-        return tenantId;
-    }
+	public Asset(AssetId id) {
+		super(id);
+	}
 
-    public void setTenantId(TenantId tenantId) {
-        this.tenantId = tenantId;
-    }
+	public Asset(Asset asset) {
+		super(asset);
+		this.tenantId = asset.getTenantId();
+		this.customerId = asset.getCustomerId();
+		this.name = asset.getName();
+		this.type = asset.getType();
+	}
 
-    public CustomerId getCustomerId() {
-        return customerId;
-    }
+	public String getAffiliation() {
+		return affiliation;
+	}
 
-    public void setCustomerId(CustomerId customerId) {
-        this.customerId = customerId;
-    }
+	public void setAffiliation(String affiliation) {
+		this.affiliation = affiliation;
+	}
 
-    @Override
-    public String getName() {
-        return name;
-    }
+	public int getContainsCount() {
+		return containsCount;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setContainsCount(int containsCount) {
+		this.containsCount = containsCount;
+	}
 
-    public String getType() {
-        return type;
-    }
+	public TenantId getTenantId() {
+		return tenantId;
+	}
 
-    public void setType(String type) {
-        this.type = type;
-    }
+	public void setTenantId(TenantId tenantId) {
+		this.tenantId = tenantId;
+	}
 
-    @Override
-    public String getSearchText() {
-        return getName();
-    }
+	public CustomerId getCustomerId() {
+		return customerId;
+	}
 
-    @Override
-    public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Asset [tenantId=");
-        builder.append(tenantId);
-        builder.append(", customerId=");
-        builder.append(customerId);
-        builder.append(", name=");
-        builder.append(name);
-        builder.append(", type=");
-        builder.append(type);
-        builder.append(", additionalInfo=");
-        builder.append(getAdditionalInfo());
-        builder.append(", createdTime=");
-        builder.append(createdTime);
-        builder.append(", id=");
-        builder.append(id);
-        builder.append("]");
-        return builder.toString();
-    }
+	public void setCustomerId(CustomerId customerId) {
+		this.customerId = customerId;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	@Override
+	public String getSearchText() {
+		return getName();
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Asset [tenantId=");
+		builder.append(tenantId);
+		builder.append(", customerId=");
+		builder.append(customerId);
+		builder.append(", name=");
+		builder.append(name);
+		builder.append(", type=");
+		builder.append(type);
+		builder.append(", additionalInfo=");
+		builder.append(getAdditionalInfo());
+		builder.append(", createdTime=");
+		builder.append(createdTime);
+		builder.append(", id=");
+		builder.append(id);
+		builder.append("]");
+		return builder.toString();
+	}
 
 }

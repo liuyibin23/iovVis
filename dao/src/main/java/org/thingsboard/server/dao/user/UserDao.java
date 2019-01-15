@@ -18,6 +18,7 @@ package org.thingsboard.server.dao.user;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.Dao;
 
 import java.util.List;
@@ -40,7 +41,16 @@ public interface UserDao extends Dao<User> {
      * @return the user entity
      */
     User findByEmail(TenantId tenantId, String email);
-    
+
+    /**
+     * Find users by page link.
+     *
+     *
+     * @param pageLink the page link
+     * @return the list of user entities
+     */
+    List<User> findUsers(TextPageLink pageLink);
+
     /**
      * Find tenant admin users by tenantId and page link.
      *
@@ -59,5 +69,29 @@ public interface UserDao extends Dao<User> {
      * @return the list of user entities
      */
     List<User> findCustomerUsers(UUID tenantId, UUID customerId, TextPageLink pageLink);
-    
+
+    /**
+    * @Description: Count Tenant Admin
+    * @Author: ShenJi
+    * @Date: 2019/1/5
+    * @Param: [tenantId]
+    * @return: java.lang.Long
+    */
+    int countTenantAdmins(String tenantId);
+    /**
+    * @Description: Count customers
+    * @Author: ShenJi
+    * @Date: 2019/1/5
+    * @Param: [tenantId, customerId]
+    * @return: java.lang.Long
+    */
+    int countCustomerUsers(String tenantId, String customerId);
+    /**
+     * @Description: return first tenant
+     * @Author: ShenJi
+     * @Date: 2019/1/5
+     * @Param: [tenantId, customerId]
+     * @return: java.lang.Long
+     */
+    List<User> findUserByTenantIdAndAuthority(UUID tenantId,Authority authority);
 }

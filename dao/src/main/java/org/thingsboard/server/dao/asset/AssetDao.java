@@ -41,6 +41,24 @@ public interface AssetDao extends Dao<Asset> {
     Asset save(TenantId tenantId, Asset asset);
 
     /**
+     * Find assets  page link.
+     *
+     *
+     * @param pageLink the page link
+     * @return the list of asset objects
+     */
+    List<Asset> findAssets(TextPageLink pageLink);
+    /**
+     * Find assets by type and page link.
+     *
+     *
+     * @param type the type
+     * @param pageLink the page link
+     * @return the list of asset objects
+     */
+    List<Asset> findAssetsType(String type, TextPageLink pageLink);
+
+    /**
      * Find assets by tenantId and page link.
      *
      * @param tenantId the tenantId
@@ -77,6 +95,16 @@ public interface AssetDao extends Dao<Asset> {
      * @return the list of asset objects
      */
     List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink);
+
+    /**
+     * Find assets by tenantId, customerId
+     *
+     * @param tenantId the tenantId
+     * @param customerId the customerId
+     *
+     * @return the list of asset objects
+     */
+    List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId);
 
     /**
      * Find assets by tenantId, customerId, type and page link.

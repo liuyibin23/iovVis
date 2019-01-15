@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AlarmEntityCount {
+public class AlarmSeverityCount {
     private int minorCount = 0;
     private int majorCount = 0;
     private int criticalCount = 0;
