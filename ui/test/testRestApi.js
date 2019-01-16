@@ -20,9 +20,11 @@
 // const path = require('path');
 const axios = require('axios');
 
-function postCrackWidth(point) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/RPY9wgslUsoUEIoDADrc/telemetry', //devA 
-        point).then(res => {
+//devA 
+function post_devA() {
+    let point = { "crackWidth": Math.random() * 10, idType: "CRACK-ID", alarmCnt: 10.79 };
+    axios.post('http://cf.beidouapp.com:8080/api/v1/RPY9wgslUsoUEIoDADrc/telemetry', point)
+        .then(res => {
             console.log(res.status);
         }).catch(e => {
             // console.info(e);
@@ -47,10 +49,10 @@ function postCliAttrValue(ptJson) {
         })
 }
 
-let pt = { "crackWidth": 82, idType: "CRACK-ID", alarmCnt: 10.79 };
-postCrackWidth(pt);
+// let pt = { "crackWidth": 12.1, idType: "CRACK-ID", alarmCnt: 10.79 };
+// postCrackWidth(pt);
 
-setInterval(postCrackWidth, 5000, pt);
+setInterval(post_devA, 5000);
 
 // let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
 // postCrackDeepth(pt2);
