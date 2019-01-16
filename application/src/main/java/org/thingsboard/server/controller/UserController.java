@@ -301,5 +301,47 @@ public class UserController extends BaseController {
             throw handleException(e);
         }
     }
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+	@RequestMapping(value = "/user/activationUser", method = RequestMethod.DELETE)
+	User unAceivationUser(@RequestParam String strUserId) throws ThingsboardException {
+
+		try {
+			UserId userId = new UserId(toUUID(strUserId));
+			User user = checkUserId(userId);
+			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
+
+			userCredentials.setEnabled(false);
+
+			userService.saveUserCredentials(getTenantId(),userCredentials);
+
+
+		} catch (ThingsboardException e) {
+			throw handleException(e);
+		}
+
+		return null;
+	}
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+	@RequestMapping(value = "/user/activationUser", method = RequestMethod.POST)
+	User aceivationUser(@RequestParam String strUserId) throws ThingsboardException {
+
+		try {
+			UserId userId = new UserId(toUUID(strUserId));
+			User user = checkUserId(userId);
+			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
+
+			userCredentials.setEnabled(true);
+
+			userService.saveUserCredentials(getTenantId(),userCredentials);
+
+
+		} catch (ThingsboardException e) {
+			throw handleException(e);
+		}
+
+		return null;
+	}
     
 }
