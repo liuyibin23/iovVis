@@ -297,7 +297,7 @@ public abstract class BaseController {
     Customer checkCustomerId(CustomerId customerId) throws ThingsboardException {
         try {
             SecurityUser authUser = getCurrentUser();
-            if (authUser.getAuthority() == Authority.SYS_ADMIN ||
+            if (//authUser.getAuthority() == Authority.SYS_ADMIN ||
                     (authUser.getAuthority() != Authority.TENANT_ADMIN &&
                             (authUser.getCustomerId() == null || !authUser.getCustomerId().equals(customerId)))) {
                 throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
