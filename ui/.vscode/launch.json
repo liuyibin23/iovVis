@@ -8,8 +8,8 @@
             "type": "node",
             "request": "launch",
             "name": "启动程序",
-            "program": "${workspaceFolder}\\test\\demoRuleEngine.js"
-            // "program": "${workspaceFolder}\\test\\complexAnalysis.js"
+            // "program": "${workspaceFolder}\\test\\demoRuleEngine.js"
+            "program": "${workspaceFolder}\\reporter\\server.js"
         }
     ]
 }

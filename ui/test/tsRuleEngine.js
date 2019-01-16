@@ -65,17 +65,16 @@ async function getSync(url, data, tok) {
  * 3. create rule nodes 1)from a to mqtt 2)create alarm
  * 4. generate js template
  */
-var devABC_ids = ['5074b200-e31a-11e8-be95-f3713e6700c3','056a2f60-e31a-11e8-be95-f3713e6700c3'];
+var devABC_ids = ['280f1810-1104-11e9-bae8-7562662cc4ee','b566b7e0-1104-11e9-bae8-7562662cc4ee'];
 var virtual_name = 'demoVirtualDev0';
 var virtual_dev_id = '';
 var virtual_dev_tok = '';
-var alarm_rule = 'msg.alarmThreshold > 10';
-var alarm_severity = 'MAJOR';
+
 
 
 async function main() {
     var loginRes = await postSync('http://cf.beidouapp.com:8080/api/auth/login',
-        { "username": "lvyu@beidouapp.com", "password": "12345" },
+        { "username": "26896225@qq.com", "password": "12345" },
         "");
     if (!loginRes) return;
     var token = loginRes.token;
