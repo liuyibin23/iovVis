@@ -218,7 +218,7 @@ public class TelemetryController extends BaseController {
     @ResponseBody
     public DeferredResult<ResponseEntity> saveEntityAttributesV1(@PathVariable("entityType") String entityType, @PathVariable("entityId") String entityIdStr,
                                                                  @PathVariable("scope") String scope,
-																 @RequestParam String tenantIdStr,
+																 @RequestParam(required = false) String tenantIdStr,
                                                                  @RequestBody JsonNode request) throws ThingsboardException {
         EntityId entityId = EntityIdFactory.getByTypeAndId(entityType, entityIdStr);
         if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){

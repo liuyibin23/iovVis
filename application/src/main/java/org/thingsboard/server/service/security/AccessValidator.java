@@ -175,14 +175,17 @@ public class AccessValidator {
     }
 
     private void validateDevice(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
-        if (currentUser.isSystemAdmin()) {
+      /*  if (currentUser.isSystemAdmin()) {
             callback.onSuccess(ValidationResult.accessDenied(SYSTEM_ADMINISTRATOR_IS_NOT_ALLOWED_TO_PERFORM_THIS_OPERATION));
-        } else {
+        } else {*/
             ListenableFuture<Device> deviceFuture = deviceService.findDeviceByIdAsync(currentUser.getTenantId(), new DeviceId(entityId.getId()));
             Futures.addCallback(deviceFuture, getCallback(callback, device -> {
                 if (device == null) {
                     return ValidationResult.entityNotFound(DEVICE_WITH_REQUESTED_ID_NOT_FOUND);
                 } else {
+                    if(currentUser.isSystemAdmin()){
+                        return ValidationResult.ok(device);
+                    }
                     if (!device.getTenantId().equals(currentUser.getTenantId())) {
                         return ValidationResult.accessDenied("Device doesn't belong to the current Tenant!");
                     } else if (currentUser.isCustomerUser() && !device.getCustomerId().equals(currentUser.getCustomerId())) {
@@ -192,18 +195,21 @@ public class AccessValidator {
                     }
                 }
             }), executor);
-        }
+//        }
     }
 
     private void validateAsset(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
-        if (currentUser.isSystemAdmin()) {
+       /* if (currentUser.isSystemAdmin()) {
             callback.onSuccess(ValidationResult.accessDenied(SYSTEM_ADMINISTRATOR_IS_NOT_ALLOWED_TO_PERFORM_THIS_OPERATION));
-        } else {
+        } else {*/
             ListenableFuture<Asset> assetFuture = assetService.findAssetByIdAsync(currentUser.getTenantId(), new AssetId(entityId.getId()));
             Futures.addCallback(assetFuture, getCallback(callback, asset -> {
                 if (asset == null) {
                     return ValidationResult.entityNotFound("Asset with requested id wasn't found!");
                 } else {
+                    if (currentUser.isSystemAdmin()){
+                        return ValidationResult.ok(asset);
+                    }
                     if (!asset.getTenantId().equals(currentUser.getTenantId())) {
                         return ValidationResult.accessDenied("Asset doesn't belong to the current Tenant!");
                     } else if (currentUser.isCustomerUser() && !asset.getCustomerId().equals(currentUser.getCustomerId())) {
@@ -213,7 +219,7 @@ public class AccessValidator {
                     }
                 }
             }), executor);
-        }
+//        }
     }
 
     private void validateRuleChain(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
@@ -264,9 +270,9 @@ public class AccessValidator {
     }
 
     private void validateCustomer(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
-        if (currentUser.isSystemAdmin()) {
+      /*  if (currentUser.isSystemAdmin()) {
             callback.onSuccess(ValidationResult.accessDenied(SYSTEM_ADMINISTRATOR_IS_NOT_ALLOWED_TO_PERFORM_THIS_OPERATION));
-        } else {
+        } else {*/
             ListenableFuture<Customer> customerFuture = customerService.findCustomerByIdAsync(currentUser.getTenantId(), new CustomerId(entityId.getId()));
             Futures.addCallback(customerFuture, getCallback(callback, customer -> {
                 if (customer == null) {
@@ -281,7 +287,7 @@ public class AccessValidator {
                     }
                 }
             }), executor);
-        }
+//        }
     }
 
     private void validateTenant(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
@@ -304,9 +310,9 @@ public class AccessValidator {
     }
 
     private void validateEntityView(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
-        if (currentUser.isSystemAdmin()) {
+       /* if (currentUser.isSystemAdmin()) {
             callback.onSuccess(ValidationResult.accessDenied(SYSTEM_ADMINISTRATOR_IS_NOT_ALLOWED_TO_PERFORM_THIS_OPERATION));
-        } else {
+        } else {*/
             ListenableFuture<EntityView> entityViewFuture = entityViewService.findEntityViewByIdAsync(currentUser.getTenantId(), new EntityViewId(entityId.getId()));
             Futures.addCallback(entityViewFuture, getCallback(callback, entityView -> {
                 if (entityView == null) {
@@ -321,7 +327,7 @@ public class AccessValidator {
                     }
                 }
             }), executor);
-        }
+//        }
     }
 
     private <T, V> FutureCallback<T> getCallback(FutureCallback<ValidationResult> callback, Function<T, ValidationResult<V>> transformer) {

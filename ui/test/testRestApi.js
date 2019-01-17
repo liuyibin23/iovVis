@@ -20,9 +20,11 @@
 // const path = require('path');
 const axios = require('axios');
 
-function postCrackWidth(point) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/telemetry', //A监测点 
-        point).then(res => {
+//devA 
+function post_devA() {
+    let point = { "crackWidth": Math.random() * 10, idType: "CRACK-ID", alarmCnt: 10.79 };
+    axios.post('http://cf.beidouapp.com:8080/api/v1/RPY9wgslUsoUEIoDADrc/telemetry', point)
+        .then(res => {
             console.log(res.status);
         }).catch(e => {
             // console.info(e);
@@ -30,7 +32,7 @@ function postCrackWidth(point) {
 }
 
 function postCrackDeepth(ptJson) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/mvjPD7zvq7CqkzmyPOSi/telemetry', //A巡视员 
+    axios.post('http://cf.beidouapp.com:8080/api/v1/ieE9pWSpcX7fKkj9G9q0/telemetry', //devB 
         ptJson).then(res => {
             console.info(res.status);
         }).catch(e => {
@@ -39,7 +41,7 @@ function postCrackDeepth(ptJson) {
 }
 
 function postCliAttrValue(ptJson) {
-    axios.post('http://cf.beidouapp.com:8080/api/v1/GbGuHQkbgeQcAoFd3GLF/attributes', //A监测点               
+    axios.post('http://cf.beidouapp.com:8080/api/v1/ieE9pWSpcX7fKkj9G9q0/attributes', //devB               
         ptJson).then(res => {
             console.info(res.status);
         }).catch(e => {
@@ -47,11 +49,13 @@ function postCliAttrValue(ptJson) {
         })
 }
 
-let pt = { "裂缝宽度": 0.16, idType: "CRACK-ID", alarmCnt: 10.79 };
-postCrackWidth(pt);
+// let pt = { "crackWidth": 12.1, idType: "CRACK-ID", alarmCnt: 10.79 };
+// postCrackWidth(pt);
 
-let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
-postCrackDeepth(pt2);
+setInterval(post_devA, 5000);
 
-let attr = {"AMonitorPosX":1233.3555};
-postCliAttrValue(attr);
+// let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
+// postCrackDeepth(pt2);
+
+// let attr = {"AMonitorPosX":1233.3555};
+// postCliAttrValue(attr);

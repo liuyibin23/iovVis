@@ -32,38 +32,35 @@ async function onTemplateChosen(event) {
   console.log('Template chosen');
   // read the file in an ArrayBuffer
   const content = await readFile(this.files[0]);
-  // select the right data source, depending on selected input
-  // let data = null;
-  // if (event.target.id === 'inputSwapi') {
-  //   data = query => postQuery('/swapi', query); // query to swapi webservice
-  // } else if (event.target.id === 'inputQuill') {
-  //   data = { html: `<body>${window.quill.root.innerHTML}</body>` };
-  // }
-  // fill the template
+  debugger
   console.log('Creating report (can take some time) ...');
   const doc = await createReport({
     template: content, data: { name: 'Awen', createTime: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') },
     additionalJsContext: {
-      genIMG: async (devid, type, tsw, w_cm, h_cm) => {
+      genIMG: async (devid, tsw, type, w_cm, h_cm) => {
+        /* please replace it with a pre-stored token */
+        var loginRes = await axios.post('http://cf.beidouapp.com:8080/api/auth/login',
+          { "username": "lvyu@beidouapp.com", "password": "12345" });
+        var tok = loginRes.data.token;
+       
         console.log('--- try to axios ---', type, tsw);
         let data = [];
-        await axios.post('/swapi', {
-          // query: ' {allFilms { films { title, releaseDate } } }',
+        await axios.post('/api/v1/report', {
           deviceId: devid,
-          chartType: type,
           chartTsw: tsw,
+          chartType: type,
           chartW: w_cm,
           chartH: h_cm
-        })
+        },{ headers: { "X-Authorization": "Bearer " + tok } })
           .then(function (response) {
-            console.log(response);
             const dataUrl = response.data;
             data = dataUrl.slice('data:image/png;base64,'.length);
+            flag = true;
           })
           .catch(function (error) {
             console.log(error);
+            flag = false;
           });
-        flag = true;
         return { width: w_cm, height: h_cm, data, extension: '.png' };
       }
     }
