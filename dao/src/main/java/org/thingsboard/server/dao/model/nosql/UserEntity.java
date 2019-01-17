@@ -31,6 +31,7 @@ import org.thingsboard.server.dao.model.SearchTextEntity;
 import org.thingsboard.server.dao.model.type.AuthorityCodec;
 import org.thingsboard.server.dao.model.type.JsonCodec;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.thingsboard.server.dao.model.ModelConstants.ID_PROPERTY;
@@ -167,7 +168,8 @@ public final class UserEntity implements SearchTextEntity<User> {
 	
     @Override
     public String getSearchTextSource() {
-        return getEmail();
+        return Optional.ofNullable(firstName).orElse(email);
+//        return getEmail();
     }
 
     @Override

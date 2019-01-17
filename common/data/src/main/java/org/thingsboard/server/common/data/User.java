@@ -17,6 +17,7 @@ package org.thingsboard.server.common.data;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sun.javafx.binding.StringFormatter;
 import lombok.EqualsAndHashCode;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
@@ -25,6 +26,8 @@ import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.security.Authority;
 
 import com.fasterxml.jackson.databind.JsonNode;
+
+import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 public class User extends SearchTextBasedWithAdditionalInfo<UserId> implements HasName, HasTenantId, HasCustomerId {
@@ -112,7 +115,9 @@ public class User extends SearchTextBasedWithAdditionalInfo<UserId> implements H
 
     @Override
     public String getSearchText() {
-        return getEmail();
+
+        return Optional.ofNullable(firstName).orElse(email);
+//        return getEmail();
     }
 
     @Override
