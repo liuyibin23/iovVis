@@ -8,11 +8,11 @@ router.use(function timeLog (req, res, next) {
 })
 // define the home page route
 router.get('/', function (req, res) {
-  res.send('Files Api home page')
+  res.status(200).json({result: 'Templates Api home page'});
 })
 // define the about route
 router.get('/about', function (req, res) {
-  res.send('About files')
+  res.send('About templates')
 })
 
 module.exports = router

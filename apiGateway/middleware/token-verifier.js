@@ -25,7 +25,7 @@ function tokenVerify() {
             // res.status(200).send('ok');
             next();
         } else
-            res.status(401).send('unauthorized token').end();
+            res.status(401).send('ERROR: 401 unauthorized token').end();
         }
 }
 module.exports = tokenVerify;
