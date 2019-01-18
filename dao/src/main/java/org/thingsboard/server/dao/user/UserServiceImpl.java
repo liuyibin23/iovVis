@@ -237,12 +237,22 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public int countByTenantId(String tenantId) {
-        return userDao.countTenantAdmins(tenantId);
+        return userDao.countTenant(tenantId);
     }
 
     @Override
     public int countByTenantIdAndCustomerId(String tenantId, String customerId) {
         return userDao.countCustomerUsers(tenantId,customerId);
+    }
+
+    @Override
+    public int countTenantAdminByTenantId(String tenantId) {
+        return userDao.countTenantAdmin(tenantId);
+    }
+
+    @Override
+    public int countTenantUserByTenantId(String tenantId) {
+        return userDao.countTenantUser(tenantId);
     }
 
     private DataValidator<User> userValidator =

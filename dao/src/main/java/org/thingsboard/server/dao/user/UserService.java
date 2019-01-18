@@ -65,5 +65,18 @@ public interface UserService {
 	int countByTenantId(String tenantId);
 
 	int countByTenantIdAndCustomerId(String tenantId,String customerId);
-	
+
+	/**
+	 * 获取业主管理员用户数量
+	 * @param tenantId
+	 * @return
+	 */
+	int countTenantAdminByTenantId(String tenantId);
+
+	/**
+	 * 获取业主普通用户数量
+	 * @param tenantId
+	 * @return
+	 */
+	int countTenantUserByTenantId(String tenantId);
 }

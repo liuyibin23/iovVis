@@ -40,6 +40,12 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 
     int countByTenantIdAndCustomerIdAndAuthority(String tenantId,String customerId,Authority authority);
 
+    @Query("SELECT COUNT(u.additionalInfo) FROM UserEntity u WHERE u.tenantId = :tenantId AND u.authority = :authority " +
+			"AND u.additionalInfo LIKE CONCAT('%power%',:likeStr,'%') ")
+    int countByTenantIdAndAuthorityAndAdditionalInfoLike(@Param("tenantId")String tenantId,@Param("authority") Authority authority,@Param("likeStr")String likeStr);
+
+//	int countByAdditionalInfoLike(String likeStr);
+
     @Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId " +
             "AND u.customerId = :customerId AND u.authority = :authority " +
             "AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))" +

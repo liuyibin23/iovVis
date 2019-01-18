@@ -336,7 +336,7 @@ public class AssetController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
 	@RequestMapping(value = "/assets/assetattr", method = RequestMethod.GET)
 	@ResponseBody
-	public List<VassetAttrKV> getAssetAttr(@RequestParam(required = false) int limit,
+	public List<VassetAttrKV> getAssetAttr(@RequestParam int limit,
 										   @RequestParam(required = false) String attrKey,
 										   @RequestParam(required = false) String attrValue) throws ThingsboardException {
 //todo attrValue return error
@@ -370,6 +370,8 @@ public class AssetController extends BaseController {
 
 
 	}
+
+
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/assets", method = RequestMethod.GET)
 	@ResponseBody

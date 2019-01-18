@@ -93,7 +93,7 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
-    public int countTenantAdmins(String tenantId) {
+    public int countTenant(String tenantId) {
         return 0;
     }
 
@@ -106,6 +106,16 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     public List<User> findUserByTenantIdAndAuthority(UUID tenantId, Authority authority) {
         //todo add cassandra User find
         return null;
+    }
+
+    @Override
+    public int countTenantAdmin(String tenantId) {
+        return 0;
+    }
+
+    @Override
+    public int countTenantUser(String tenantId) {
+        return 0;
     }
 
 }

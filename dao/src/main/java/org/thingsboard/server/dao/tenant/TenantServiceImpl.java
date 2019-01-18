@@ -125,8 +125,10 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 
 		tenants.stream().forEach(
 				tenant -> {
-					tenant.setAdminCount(userService.countByTenantId(fromTimeUUID(tenant.getUuidId())));
-					tenant.setUserCount(0);
+//					tenant.setAdminCount(userService.countByTenantId(fromTimeUUID(tenant.getUuidId())));
+//					tenant.setUserCount(0);
+					tenant.setAdminCount(userService.countTenantAdminByTenantId(fromTimeUUID(tenant.getUuidId())));
+					tenant.setUserCount(userService.countTenantUserByTenantId(fromTimeUUID(tenant.getUuidId())));
 				}
 		);
 

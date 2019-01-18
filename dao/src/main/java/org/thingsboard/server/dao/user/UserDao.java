@@ -77,7 +77,7 @@ public interface UserDao extends Dao<User> {
     * @Param: [tenantId]
     * @return: java.lang.Long
     */
-    int countTenantAdmins(String tenantId);
+    int countTenant(String tenantId);
     /**
     * @Description: Count customers
     * @Author: ShenJi
@@ -94,4 +94,18 @@ public interface UserDao extends Dao<User> {
      * @return: java.lang.Long
      */
     List<User> findUserByTenantIdAndAuthority(UUID tenantId,Authority authority);
+
+    /**
+     * 获取业主管理员用户数量
+     * @param tenantId
+     * @return
+     */
+    int countTenantAdmin(String tenantId);
+
+    /**
+     * 获取业主普通用户数量
+     * @param tenantId
+     * @return
+     */
+    int countTenantUser(String tenantId);
 }
