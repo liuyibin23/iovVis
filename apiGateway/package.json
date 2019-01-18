@@ -1,0 +1,25 @@
+{
+  "name": "api-microgateway",
+  "version": "1.0.0",
+  "description": "Simple API Gateway using Express JS",
+  "main": "server.js",
+  "scripts": {
+    "help": "echo \"npm start\" && exit 0",
+    "start": "node server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "github.com/lvyv/iovVis"
+  },
+  "keywords": [
+    "micro service, api gateway, swagger"
+  ],
+  "author": "lvyv",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "winston": "^3.1.0"
+  }
+}

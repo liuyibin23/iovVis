@@ -9,7 +9,8 @@
             "request": "launch",
             "name": "启动程序",
             // "program": "${workspaceFolder}\\test\\demoRuleEngine.js"
-            "program": "${workspaceFolder}\\reporter\\server.js"
+            // "program": "${workspaceFolder}\\reporter\\server.js"
+            "program": "${workspaceFolder}\\test\\tsReport.js"
         }
     ]
 }
