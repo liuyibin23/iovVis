@@ -3,7 +3,9 @@ package org.thingsboard.server.dao.vassetattrkv;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
+import org.thingsboard.server.dao.sql.vassetattrkv.ComposeAssetAttrKVJpaRepository;
 import org.thingsboard.server.dao.sql.vassetattrkv.VassetAttrKVRepository;
 
 import java.util.List;
@@ -13,6 +15,8 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 
 	@Autowired
 	private VassetAttrKVRepository vassetAttrKVRepository;
+	@Autowired
+	private ComposeAssetAttrKVJpaRepository composeAssetAttrKVJpaRepository;
 	@Override
 	public List<VassetAttrKV> getVassetAttrKV() {
 		return vassetAttrKVRepository.findAll();
@@ -46,7 +50,9 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 
 	@Override
 	public List<VassetAttrKV> findbyAttributeKey(String attributeKey) {
-		return vassetAttrKVRepository.findbyAttributeKey(attributeKey);
+        List<ComposeAssetAttrKV> composeAssetAttrKVs = composeAssetAttrKVJpaRepository.findByComposekey("areaDivide","basicInfo");
+		composeAssetAttrKVs = composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey("1e918a07edf05d0893415428c622f6e","areaDivide","basicInfo");
+        return vassetAttrKVRepository.findbyAttributeKey(attributeKey);
 	}
 
 	@Override
@@ -57,5 +63,13 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 	@Override
 	public List<VassetAttrKV> findbyAttributeValueLike(String strV) {
 		return vassetAttrKVRepository.findbyAttributeValueLink(strV);
+	}
+
+	public List<ComposeAssetAttrKV> findByComposekey(String attrKey1,String attrKey2){
+		return composeAssetAttrKVJpaRepository.findByComposekey(attrKey1,attrKey2);
+	}
+
+	public List<ComposeAssetAttrKV> findByTenantIdAndComposekey(String tenantId, String attrKey1, String attrKey2){
+		return composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey(tenantId,attrKey1,attrKey2);
 	}
 }
