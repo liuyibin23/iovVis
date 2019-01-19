@@ -37,6 +37,8 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
+import java.util.Optional;
+
 import static org.thingsboard.server.common.data.UUIDConverter.fromString;
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
 
@@ -98,7 +100,8 @@ public class UserEntity extends BaseSqlEntity<User> implements SearchTextEntity<
 
     @Override
     public String getSearchTextSource() {
-        return email;
+        return Optional.ofNullable(firstName).orElse(email);
+//        return email;
     }
 
     @Override

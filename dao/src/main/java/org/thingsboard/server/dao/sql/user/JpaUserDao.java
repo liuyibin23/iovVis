@@ -43,6 +43,9 @@ import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID_STR;
 @SqlDao
 public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> implements UserDao {
 
+	private String TENANTADMINFILTERSTR = "common";//"%power%\"common\"%";
+	private String TENANTUSERFILTERSTR = "\"\"";//"%power%\"\"%";
+
 	@Autowired
 	private UserRepository userRepository;
 
@@ -99,7 +102,7 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	}
 
 	@Override
-	public int countTenantAdmins(String tenantId) {
+	public int countTenant(String tenantId) {
 		return userRepository.countByTenantIdAndAuthority(tenantId, Authority.TENANT_ADMIN);
 	}
 
@@ -112,6 +115,16 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	@Override
 	public List<User> findUserByTenantIdAndAuthority(UUID tenantId,Authority authority) {
 		return DaoUtil.convertDataList(userRepository.findAllByTenantIdAndAuthority(fromTimeUUID(tenantId),authority));
+	}
+
+	@Override
+	public int countTenantAdmin(String tenantId) {
+		return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN,TENANTADMINFILTERSTR);
+	}
+
+	@Override
+	public int countTenantUser(String tenantId) {
+		return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN,TENANTUSERFILTERSTR);
 	}
 
 }

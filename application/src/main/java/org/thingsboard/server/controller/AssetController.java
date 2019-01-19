@@ -43,6 +43,7 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
+import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
@@ -336,7 +337,7 @@ public class AssetController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
 	@RequestMapping(value = "/assets/assetattr", method = RequestMethod.GET)
 	@ResponseBody
-	public List<VassetAttrKV> getAssetAttr(@RequestParam(required = false) int limit,
+	public List<VassetAttrKV> getAssetAttr(@RequestParam int limit,
 										   @RequestParam(required = false) String attrKey,
 										   @RequestParam(required = false) String attrValue) throws ThingsboardException {
 //todo attrValue return error
@@ -370,6 +371,27 @@ public class AssetController extends BaseController {
 
 
 	}
+
+	/**
+	 * 将根据key1和key1查找得出的两张表join后得出结果，用于ASSET属性复合查找
+	 * @param attrKey1
+	 * @param attrKey2
+	 * @return
+	 * @throws ThingsboardException
+	 */
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/assets/assetcomposeattr", method = RequestMethod.GET)
+	@ResponseBody
+	public List<ComposeAssetAttrKV> getComposeAttrKV(@RequestParam String attrKey1,
+													 @RequestParam String attrKey2) throws ThingsboardException {
+		if (getTenantId().isNullUid()){
+			return vassetAttrKVService.findByComposekey(attrKey1,attrKey2);
+		} else{
+			return vassetAttrKVService.findByTenantIdAndComposekey(UUIDConverter.fromTimeUUID(getTenantId().getId()),attrKey1,attrKey2);
+		}
+	}
+
+
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/assets", method = RequestMethod.GET)
 	@ResponseBody
