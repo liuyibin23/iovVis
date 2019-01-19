@@ -15,7 +15,7 @@
  * 
  * usage:
  * > npm install axios ws
- * > node demoRuleEngine.js
+ * > node tsRuleEngine.js
  */
 /* eslint-disable import/no-commonjs */
 /* eslint-disable global-require */

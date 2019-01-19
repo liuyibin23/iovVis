@@ -1,0 +1,109 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "2.0.0",
+    "title": "BeidouApp Portal API",
+    "description": "易通星云物联网平台后端API，支持工业物联网、专用车联网深度业务定制。应用重型机械数字化工地、公路基础设施工程结构安全监测等多种不同场景。"
+  },
+  "basePath": "/api/v1",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "security": [
+    {
+      "APIKeyHeader": []
+    }
+  ],
+  "paths": {
+    "/templates/{assetId}": {
+      "get": {
+        "summary": "获取资产关联的报表模板",
+        "description": "返回与资产关联的报表模板的URL列表。",
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "description": "资产编号（assetId）。",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回报表模板名称及URL的列表。",
+            "schema": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "定期监测报告": {
+                    "type": "string"
+                  },
+                  "系统自检报告": {
+                    "type": "string"
+                  },
+                  "自动监测报表": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "创建资产关联的报表模板",
+        "description": "添加模板文件到指定资产。",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "关联报表模板的资产编号（assetId）。"
+          },
+          {
+            "name": "upfileA",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "报表模板文件A。"
+          },
+          {
+            "name": "upfileB",
+            "in": "formData",
+            "type": "file",
+            "description": "报表模板文件B。"
+          },
+          {
+            "name": "upfileC",
+            "in": "formData",
+            "type": "file",
+            "description": "报表模板文件C。"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "成功创建报表模板并关联到资产。"
+          },
+          "400": {
+            "description": "报表模板上传失败。"
+          },
+          "401": {
+            "description": "报表模板关联资产失败。"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "APIKeyHeader": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "x-authorization"
+    }
+  }
+}

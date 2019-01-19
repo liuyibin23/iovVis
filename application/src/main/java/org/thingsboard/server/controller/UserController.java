@@ -305,10 +305,10 @@ public class UserController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
 	@RequestMapping(value = "/user/activationUser", method = RequestMethod.DELETE)
 	User unAceivationUser(@RequestParam String strUserId) throws ThingsboardException {
-
+		User user = null;
 		try {
 			UserId userId = new UserId(toUUID(strUserId));
-			User user = checkUserId(userId);
+			user = checkUserId(userId);
 			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
 
 			userCredentials.setEnabled(false);
@@ -320,16 +320,16 @@ public class UserController extends BaseController {
 			throw handleException(e);
 		}
 
-		return null;
+		return user;
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
 	@RequestMapping(value = "/user/activationUser", method = RequestMethod.POST)
 	User aceivationUser(@RequestParam String strUserId) throws ThingsboardException {
-
+		User user = null;
 		try {
 			UserId userId = new UserId(toUUID(strUserId));
-			User user = checkUserId(userId);
+			user = checkUserId(userId);
 			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
 
 			userCredentials.setEnabled(true);
@@ -341,7 +341,7 @@ public class UserController extends BaseController {
 			throw handleException(e);
 		}
 
-		return null;
+		return user;
 	}
     
 }
