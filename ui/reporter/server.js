@@ -18,17 +18,17 @@ app.get('/', (req, res) => {
   res.sendFile('index.html');
 });
 
-app.post('/api/v1/report', (req, res, next) => {
+app.post('/api/v1/report', async (req, res, next) => {
   let option = {};
   let params = req.body;
   let tok = req.headers['x-authorization'];
   axios.get('http://cf.beidouapp.com:8080/api/user/tokenAccessEnabled', { headers: { "X-Authorization": tok } })
-    .then(ret => {
+    .then(async ret => {
       if (ret.data) {
         switch (params.chartType) {
           case 'area':
             chart_data = require('./echarts/area');
-            option = chart_data.fillData(params.deviceId, params.chartTsw, tok);
+            option = await chart_data.fillData(params.deviceId, params.chartTsw, tok);
             break;
           case 'pie':
             option = require('./echarts/pie');
@@ -54,7 +54,7 @@ app.post('/api/v1/report', (req, res, next) => {
       }
     })
     .catch(err => {
-      err.statusCode = err.response.status;
+      // err.statusCode = err.response.status;
       next(err);
     });
 });

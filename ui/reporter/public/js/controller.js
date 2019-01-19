@@ -32,6 +32,7 @@ async function onTemplateChosen(event) {
   console.log('Template chosen');
   // read the file in an ArrayBuffer
   const content = await readFile(this.files[0]);
+  debugger
   console.log('Creating report (can take some time) ...');
   const doc = await createReport({
     template: content, data: { name: 'Awen', createTime: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') },

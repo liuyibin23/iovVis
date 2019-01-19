@@ -50,6 +50,7 @@ import javax.management.relation.RelationType;
 import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -402,7 +403,12 @@ public class DeviceController extends BaseController {
 			DeviceForDisplay tmp = new DeviceForDisplay();
 			tmp.setDevice(device);
 			tmp.setTenantName(tenantService.findTenantById(device.getTenantId()).getName());
-			tmp.setCustomerName(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()).getName());
+            Optional<Customer> customer = Optional.ofNullable(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()));
+			if(!customer.isPresent()){
+			    return;
+            }
+//			tmp.setCustomerName(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()).getName());
+			tmp.setCustomerName(customer.get().getName());
 			relationService.findByToAndType(device.getTenantId(),device.getId(),"Contains",RelationTypeGroup.COMMON)
 					.forEach(entityRelation -> {
 						EntityId entityId = entityRelation.getFrom();
