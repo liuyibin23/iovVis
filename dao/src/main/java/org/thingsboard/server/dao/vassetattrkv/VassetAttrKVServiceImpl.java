@@ -63,10 +63,12 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 		return vassetAttrKVRepository.findbyAttributeValueLink(strV);
 	}
 
+    @Override
 	public List<ComposeAssetAttrKV> findByComposekey(String attrKey1,String attrKey2){
 		return composeAssetAttrKVJpaRepository.findByComposekey(attrKey1,attrKey2);
 	}
 
+    @Override
 	public List<ComposeAssetAttrKV> findByTenantIdAndComposekey(String tenantId, String attrKey1, String attrKey2){
 		return composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey(tenantId,attrKey1,attrKey2);
 	}

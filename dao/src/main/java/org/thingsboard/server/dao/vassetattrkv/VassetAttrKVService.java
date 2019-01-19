@@ -2,6 +2,7 @@ package org.thingsboard.server.dao.vassetattrkv;
 
 
 
+import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 
 import java.util.List;
@@ -24,4 +25,8 @@ public interface VassetAttrKVService {
 	List<VassetAttrKV> findbyAttributeKeyAndValueLike(String attributeKey,String strV);
 
 	List<VassetAttrKV> findbyAttributeValueLike(String strV);
+
+	List<ComposeAssetAttrKV> findByComposekey(String attrKey1, String attrKey2);
+
+	List<ComposeAssetAttrKV> findByTenantIdAndComposekey(String tenantId, String attrKey1, String attrKey2);
 }
