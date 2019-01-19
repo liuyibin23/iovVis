@@ -15,45 +15,81 @@
       "APIKeyHeader": []
     }
   ],
+  "tags": [
+    {
+      "name": "模板",
+      "description": "模板API集"
+    },
+    {
+      "name": "报表",
+      "description": "报告API集"
+    },
+    {
+      "name": "文件内容",
+      "description": "文件内容API集"
+    }
+  ],
   "paths": {
     "/templates/{assetId}": {
       "get": {
+        "tags": [
+          "模板"
+        ],
         "summary": "获取资产关联的报表模板",
-        "description": "返回与资产关联的报表模板的URL列表。",
+        "description": "返回与资产关联的报表模板的URL列表。实际返回的是资产的共享属性TEMPLATES的值。该值为一个JSON对象，value中包含所有模板的url列表。",
         "parameters": [
           {
-            "name": "assetId",
-            "in": "path",
-            "required": true,
-            "description": "资产编号（assetId）。",
-            "type": "string"
+            "$ref": "#/parameters/assetId"
           }
         ],
         "responses": {
           "200": {
-            "description": "返回报表模板名称及URL的列表。",
+            "description": "返回报表模板名称、URL、最近更新时间。最近更新时间是为解决多人操作，更新冲突问题，对复杂属性数据更新时，提示用户需要解决类似版本冲突的问题（前端利用实现）。",
             "schema": {
-              "type": "array",
-              "items": {
-                "properties": {
-                  "定期监测报告": {
-                    "type": "string"
-                  },
-                  "系统自检报告": {
-                    "type": "string"
-                  },
-                  "自动监测报表": {
-                    "type": "string"
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "TEMPLATES"
+                  ]
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "template_name": {
+                        "type": "string"
+                      },
+                      "template_url": {
+                        "type": "string"
+                      }
+                    }
                   }
+                },
+                "lastUpdateTs": {
+                  "type": "integer"
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
           }
         }
       },
       "post": {
+        "tags": [
+          "模板"
+        ],
         "summary": "创建资产关联的报表模板",
-        "description": "添加模板文件到指定资产。",
+        "description": "添加模板文件到指定资产。只会影响到资产的TEMPLATES属性的value值中的kv项的一项。如果资产的TEMPLATES属性不存在，增加该属性，并增加value中的kv项；如果TEMPLATES属性存在，而value的template_name不存在，则添加一个新的kv项；否则说明模板已经存在，不能添加（需要先删除再添加）。",
         "consumes": [
           "multipart/form-data"
         ],
@@ -66,34 +102,323 @@
             "description": "关联报表模板的资产编号（assetId）。"
           },
           {
-            "name": "upfileA",
+            "name": "template_name",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "报表模板文件名称。"
+          },
+          {
+            "name": "template_file",
             "in": "formData",
             "type": "file",
             "required": true,
-            "description": "报表模板文件A。"
-          },
-          {
-            "name": "upfileB",
-            "in": "formData",
-            "type": "file",
-            "description": "报表模板文件B。"
-          },
-          {
-            "name": "upfileC",
-            "in": "formData",
-            "type": "file",
-            "description": "报表模板文件C。"
+            "description": "报表模板文件。"
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "成功创建报表模板并关联到资产。"
           },
-          "400": {
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          },
+          "501": {
             "description": "报表模板上传失败。"
           },
+          "502": {
+            "description": "报表模板更新冲突。"
+          },
+          "503": {
+            "description": "报表模板名称已经存在。"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "模板"
+        ],
+        "summary": "删除资产关联的报表模板",
+        "description": "删除指定资产的某个关联的模板文件，包含关系和文件本身。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          },
+          {
+            "$ref": "#/parameters/templateName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功删除资产的模板。"
+          },
           "401": {
-            "description": "报表模板关联资产失败。"
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          },
+          "502": {
+            "description": "报表模板更新冲突。"
+          }
+        }
+      }
+    },
+    "/reports/{assetId}": {
+      "get": {
+        "tags": [
+          "报表"
+        ],
+        "summary": "获取资产关联的报表",
+        "description": "返回与资产关联的报表的URL列表。实际返回的是资产的共享属性REPORTS的值。该值为一个JSON对象，value中包含所有报表的url列表。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回报表名称、URL、最近更新时间。最近更新时间是为解决多人操作，更新冲突问题，对复杂属性数据更新时，提示用户需要解决类似版本冲突的问题（前端利用实现）。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "REPORTS"
+                  ]
+                },
+                "value": {
+                  "type": "array",
+                  "items": {
+                    "properties": {
+                      "report_name": {
+                        "type": "string"
+                      },
+                      "report_url": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "lastUpdateTs": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "报表"
+        ],
+        "summary": "创建资产关联的报表",
+        "description": "添加报表文件到指定资产。只会影响到资产的REPORTS属性的value值中的kv项的一项。如果资产的REPORTS属性不存在，增加该属性，并增加value中的kv项；如果REPORTS属性存在，而value的report_name不存在，则添加一个新的kv项；否则说明报表已经存在，不能添加（需要先删除再添加）。",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "关联报表的资产编号（assetId）。"
+          },
+          {
+            "name": "report_name",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "报表文件名称。"
+          },
+          {
+            "name": "report_file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "报表文件。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功创建报表并关联到资产。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          },
+          "501": {
+            "description": "报表上传失败。"
+          },
+          "502": {
+            "description": "报表更新冲突。"
+          },
+          "503": {
+            "description": "报表名称已经存在。"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "报表"
+        ],
+        "summary": "删除资产关联的报表",
+        "description": "删除指定资产的某个关联的报表文件，包含关系和文件本身。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          },
+          {
+            "$ref": "#/parameters/reportName"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功删除资产的报表。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          },
+          "502": {
+            "description": "报表更新冲突。"
+          }
+        }
+      }
+    },
+    "/echarts/{type}": {
+      "get": {
+        "tags": [
+          "文件内容"
+        ],
+        "summary": "产生png格式图表的base64数据",
+        "description": "根据类型、设备号、时间段、尺寸生成并返回图表。",
+        "parameters": [
+          {
+            "name": "type",
+            "in": "path",
+            "required": true,
+            "description": "图标类型。",
+            "enum": [
+              "area",
+              "pie"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "devid",
+            "type": "string",
+            "in": "query",
+            "required": true,
+            "description": "设备编号。"
+          },
+          {
+            "name": "startTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "description": "开始时间。"
+          },
+          {
+            "name": "endTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "description": "结束时间。"
+          },
+          {
+            "name": "chartWidth",
+            "type": "integer",
+            "in": "query",
+            "description": "图表宽度（cm）。"
+          },
+          {
+            "name": "chartHeight",
+            "type": "integer",
+            "in": "query",
+            "description": "图表高度（cm）。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回图表成功。",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/content/{fileId}": {
+      "get": {
+        "tags": [
+          "文件内容"
+        ],
+        "summary": "获取文件内容",
+        "description": "根据文件编号从文件服务器获取文件的内容。",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "description": "文件编号。",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回文件。",
+            "schema": {
+              "type": "file"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
           }
         }
       }
@@ -104,6 +429,66 @@
       "type": "apiKey",
       "in": "header",
       "name": "x-authorization"
+    }
+  },
+  "definitions": {
+    "Error": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "assetId": {
+      "name": "assetId",
+      "in": "path",
+      "required": true,
+      "description": "资产编号（assetId）。",
+      "type": "string"
+    },
+    "templateName": {
+      "name": "templateName",
+      "description": "资产对应的模板名称。",
+      "in": "query",
+      "type": "string",
+      "required": true
+    },
+    "reportName": {
+      "name": "reportemplateName",
+      "description": "资产对应的报表名称。",
+      "in": "query",
+      "type": "string",
+      "required": true
+    }
+  },
+  "responses": {
+    "Standard500ErrorResponse": {
+      "description": "服务器内部错误。",
+      "schema": {
+        "$ref": "#/definitions/Error"
+      }
+    },
+    "Standard401ErrorResponse": {
+      "description": "无授权访问。",
+      "schema": {
+        "$ref": "#/definitions/Error"
+      }
+    },
+    "Standard404ErrorResponse": {
+      "description": "访问资源不存在。",
+      "schema": {
+        "$ref": "#/definitions/Error"
+      }
     }
   }
 }
