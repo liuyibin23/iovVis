@@ -50,8 +50,6 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 
 	@Override
 	public List<VassetAttrKV> findbyAttributeKey(String attributeKey) {
-        List<ComposeAssetAttrKV> composeAssetAttrKVs = composeAssetAttrKVJpaRepository.findByComposekey("areaDivide","basicInfo");
-		composeAssetAttrKVs = composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey("1e918a07edf05d0893415428c622f6e","areaDivide","basicInfo");
         return vassetAttrKVRepository.findbyAttributeKey(attributeKey);
 	}
 
