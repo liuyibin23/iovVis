@@ -23,6 +23,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.dao.DaoUtil;
@@ -51,6 +52,9 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
 
     @Autowired
     private AssetRepository assetRepository;
+
+    @Autowired
+    private AssetExInfoRepository assetExInfoRepository;
 
     @Override
     protected Class<AssetEntity> getEntityClass() {
@@ -154,6 +158,11 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
     @Override
     public ListenableFuture<List<EntitySubtype>> findTenantAssetTypesAsync(UUID tenantId) {
         return service.submit(() -> convertTenantAssetTypesToDto(tenantId, assetRepository.findTenantAssetTypes(fromTimeUUID(tenantId))));
+    }
+
+    @Override
+    public List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId) {
+        return DaoUtil.convertDataList(assetExInfoRepository.findAssetExInfoByTenantId(fromTimeUUID(tenantId)));
     }
 
     private List<EntitySubtype> convertTenantAssetTypesToDto(UUID tenantId, List<String> types) {

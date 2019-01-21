@@ -32,6 +32,7 @@ import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.EntityView;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -48,7 +49,6 @@ import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
-import org.thingsboard.server.dao.sql.asset.AssetRepository;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
 import java.util.ArrayList;
@@ -94,8 +94,10 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	}
 
 	@Override
-	public List<Asset> findAssetByTenant(TenantId tenantId) {
-		return assetDao.find(tenantId);
+	public List<AssetExInfo> findAssetByTenant(TenantId tenantId) {
+//		List<AssetExInfoEntity> assetExInfos = assetDao.findAssetExInfoByTenantId(tenantId.getId());
+//		return assetDao.find(tenantId);
+		return assetDao.findAssetExInfoByTenantId(tenantId.getId());
 	}
 
 	@Override

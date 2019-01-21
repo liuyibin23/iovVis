@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -33,7 +34,8 @@ public interface AssetService {
 
     Asset findAssetById(TenantId tenantId, AssetId assetId);
 
-    List<Asset> findAssetByTenant(TenantId tenantId);
+//    List<Asset> findAssetByTenant(TenantId tenantId);
+    List<AssetExInfo> findAssetByTenant(TenantId tenantId);
 
     List<Asset> findAssetByTenantAndCustomer(TenantId tenantId,CustomerId customerId);
 

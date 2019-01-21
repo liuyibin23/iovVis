@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.dao.DaoUtil;
@@ -202,6 +203,11 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
                 }
             }
         });
+    }
+
+    @Override
+    public List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId) {
+        return null;
     }
 
 }
