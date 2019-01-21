@@ -37,7 +37,7 @@ public interface AssetService {
 //    List<Asset> findAssetByTenant(TenantId tenantId);
     List<AssetExInfo> findAssetByTenant(TenantId tenantId);
 
-    List<Asset> findAssetByTenantAndCustomer(TenantId tenantId,CustomerId customerId);
+    List<AssetExInfo> findAssetByTenantAndCustomer(TenantId tenantId,CustomerId customerId);
 
     ListenableFuture<Asset> findAssetByIdAsync(TenantId tenantId, AssetId assetId);
 

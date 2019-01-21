@@ -140,7 +140,7 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
     }
 
     @Override
-    public List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
+    public List<AssetExInfo> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
         //todo cassandra findAssetsByTenantIdAndCustomerId
         return null;
     }

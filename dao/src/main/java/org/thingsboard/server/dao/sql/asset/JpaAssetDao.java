@@ -113,11 +113,15 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
     }
 
     @Override
-    public List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
-        return DaoUtil.convertDataList(assetRepository
-                .findByTenantIdAndCustomerId(
-                        fromTimeUUID(tenantId),
-                        fromTimeUUID(customerId)));
+    public List<AssetExInfo> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
+//        return DaoUtil.convertDataList(assetRepository
+//                .findByTenantIdAndCustomerId(
+//                        fromTimeUUID(tenantId),
+//                        fromTimeUUID(customerId)));
+
+        return DaoUtil.convertDataList(assetExInfoRepository.
+                findAssetExInfoByTenantIdAndCustomerId(fromTimeUUID(tenantId),
+                fromTimeUUID(customerId)));
     }
 
     @Override
