@@ -18,6 +18,21 @@ app.get('/', (req, res) => {
   res.sendFile('index.html');
 });
 
+app.post('/api/v1/report/data', (req, res, next) => {
+  axios.post('http://swapi.apis.guru', req.body,
+  {
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  }
+  })
+    .then(data => {
+      console.log(data.data);
+      res.send(data.data)
+    })
+    .catch(err => {console.log(err);});
+});
+
 app.post('/api/v1/report', async (req, res, next) => {
   let option = {};
   let params = req.body;
