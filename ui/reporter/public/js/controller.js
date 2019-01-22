@@ -32,10 +32,36 @@ async function onTemplateChosen(event) {
   console.log('Template chosen');
   // read the file in an ArrayBuffer
   const content = await readFile(this.files[0]);
-  debugger
+  // debugger
+
+  let data = async function(query) {
+    console.log(query);
+    postQuery('/api/v1/report/data', query);
+  }
+
   console.log('Creating report (can take some time) ...');
   const doc = await createReport({
-    template: content, data: { name: 'Awen', createTime: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') },
+    template: content, 
+    //data: { name: 'Awen', createTime: new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') },
+    // data: {
+    //   allFilms: {
+    //     films: [
+    //       {title: "A New Hope", releaseDate: "1977-05-25"},
+    //       {title: "The Empire Strikes Back", releaseDate: "1980-05-17"},
+    //       {title: "Return of the Jedi", releaseDate: "1983-05-25"},
+    //       {title: "The Phantom Menace", releaseDate: "1999-05-19"}
+    //     ]
+    // }}, 
+    data: async function(query) {
+      let result = await axios.post('/api/v1/report/data', 
+        {
+          query
+        },
+        {
+          headers: {'Content-type': 'application/json'}
+        });
+        return result.data.data;
+    },
     additionalJsContext: {
       genIMG: async (devid, tsw, type, w_cm, h_cm) => {
         /* please replace it with a pre-stored token */
@@ -103,6 +129,7 @@ async function postQuery(url, query) {
     xhr.onreadystatechange = () => {
       if (xhr.readyState === 4 && xhr.status === 200) {
         const json = JSON.parse(xhr.responseText);
+        console.log(json);
         resolve(json);
       }
     };
