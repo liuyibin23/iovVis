@@ -31,6 +31,7 @@ import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -50,8 +51,6 @@ import org.thingsboard.server.service.security.model.SecurityUser;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.thingsboard.server.common.data.exception.ThingsboardErrorCode.INVALID_ARGUMENTS;
 
 @RestController
 @RequestMapping("/api")
@@ -437,6 +436,28 @@ public class AssetController extends BaseController {
 		} catch (Exception e) {
 			throw handleException(e);
 		}
+	}
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
+	@ResponseBody
+	public List<AssetExInfo> getCurrentUserAssets() throws ThingsboardException {
+		try {
+			SecurityUser user = getCurrentUser();
+			TenantId tenantId = user.getTenantId();
+			CustomerId customerId = user.getCustomerId();
+
+			if(customerId != null && !customerId.isNullUid()){ //customer
+				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId));
+			} else if(tenantId != null && !tenantId.isNullUid()){ //tenant
+				return checkNotNull(assetService.findAssetExInfoByTenant(tenantId));
+			} else { //admin
+				return checkNotNull(assetService.findAllAssetExInfo());
+			}
+		} catch (ThingsboardException e) {
+			throw handleException(e);
+		}
+
 	}
 
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")

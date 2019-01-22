@@ -16,4 +16,8 @@ public interface AssetExInfoRepository extends CrudRepository<AssetExInfoEntity,
             "AND (a.customer_id = ?2 or ?2 is null)"
             ,nativeQuery = true)
     List<AssetExInfoEntity> findAssetExInfoByTenantIdAndCustomerId(String tenantId,String customerId);
+
+    @Query(value = "SELECT a.*,b.basicinfo FROM asset a,asset_attributes b where a.id = b.entity_id "
+            ,nativeQuery = true)
+    List<AssetExInfoEntity> findAllAssetExInfo();
 }

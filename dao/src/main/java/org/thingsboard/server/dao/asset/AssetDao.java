@@ -146,4 +146,6 @@ public interface AssetDao extends Dao<Asset> {
     ListenableFuture<List<EntitySubtype>> findTenantAssetTypesAsync(UUID tenantId);
 
     List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId);
+
+    List<AssetExInfo> findAllAssetExInfo();
 }

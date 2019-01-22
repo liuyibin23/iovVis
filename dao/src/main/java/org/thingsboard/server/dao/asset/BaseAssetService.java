@@ -94,14 +94,19 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	}
 
 	@Override
-	public List<AssetExInfo> findAssetByTenant(TenantId tenantId) {
+	public List<AssetExInfo> findAllAssetExInfo(){
+		return assetDao.findAllAssetExInfo();
+	}
+
+	@Override
+	public List<AssetExInfo> findAssetExInfoByTenant(TenantId tenantId) {
 //		List<AssetExInfoEntity> assetExInfos = assetDao.findAssetExInfoByTenantId(tenantId.getId());
 //		return assetDao.find(tenantId);
 		return assetDao.findAssetExInfoByTenantId(tenantId.getId());
 	}
 
 	@Override
-	public List<AssetExInfo> findAssetByTenantAndCustomer(TenantId tenantId, CustomerId customerId) {
+	public List<AssetExInfo> findAssetExInfoByTenantAndCustomer(TenantId tenantId, CustomerId customerId) {
 		return assetDao.findAssetsByTenantIdAndCustomerId(tenantId.getId(),customerId.getId());
 	}
 

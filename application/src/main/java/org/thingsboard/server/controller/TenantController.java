@@ -27,10 +27,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.TenantAndAsset;
-import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -41,7 +39,6 @@ import org.thingsboard.server.service.install.InstallScripts;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
@@ -125,7 +122,7 @@ public class TenantController extends BaseController {
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
             TextPageData<Tenant> tmpTenant = checkNotNull(tenantService.findTenants(pageLink));
             tmpTenant.getData().forEach(tenant -> {
-                retObj.add(new TenantAndAsset(tenant,assetService.findAssetByTenant(tenant.getId())));
+                retObj.add(new TenantAndAsset(tenant,assetService.findAssetExInfoByTenant(tenant.getId())));
             });
 
 

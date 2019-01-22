@@ -210,4 +210,9 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
         return null;
     }
 
+    @Override
+    public List<AssetExInfo> findAllAssetExInfo() {
+        return null;
+    }
+
 }

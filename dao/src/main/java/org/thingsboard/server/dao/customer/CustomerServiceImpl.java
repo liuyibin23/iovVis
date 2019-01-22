@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.Tenant;
-import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -156,7 +155,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 			customer.setAdminCount(userService.countByTenantIdAndCustomerId(fromTimeUUID(tenantId.getId()), fromTimeUUID(customer.getUuidId())));
 			customer.setUserCount(0);
 			customer.setInfrastructureCount(
-					assetService.findAssetByTenantAndCustomer(tenantId,customer.getId())
+					assetService.findAssetExInfoByTenantAndCustomer(tenantId,customer.getId())
 					.stream().filter(asset -> "BRIDGE".equals(asset.getType()) || "TUNNEL".equals(asset.getType()) || "SLOPE".equals(asset.getType()) || "ROAD".equals(asset.getType())).count());
 		});
 		return new TextPageData<>(customers, pageLink);
@@ -173,7 +172,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 			customer.setAdminCount(userService.countByTenantIdAndCustomerId(fromTimeUUID(customer.getTenantId().getId()), fromTimeUUID(customer.getUuidId())));
 			customer.setUserCount(0);
 			customer.setInfrastructureCount(
-					assetService.findAssetByTenantAndCustomer(customer.getTenantId(),customer.getId())
+					assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId())
 							.stream().filter(asset -> "BRIDGE".equals(asset.getType()) || "TUNNEL".equals(asset.getType()) || "SLOPE".equals(asset.getType()) || "ROAD".equals(asset.getType())).count());
 		});
 		return new TextPageData<>(customers, pageLink);

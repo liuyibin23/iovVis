@@ -169,6 +169,11 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
         return DaoUtil.convertDataList(assetExInfoRepository.findAssetExInfoByTenantId(fromTimeUUID(tenantId)));
     }
 
+    @Override
+    public List<AssetExInfo> findAllAssetExInfo() {
+        return DaoUtil.convertDataList(assetExInfoRepository.findAllAssetExInfo());
+    }
+
     private List<EntitySubtype> convertTenantAssetTypesToDto(UUID tenantId, List<String> types) {
         List<EntitySubtype> list = Collections.emptyList();
         if (types != null && !types.isEmpty()) {
