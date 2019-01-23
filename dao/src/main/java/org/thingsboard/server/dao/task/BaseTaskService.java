@@ -11,7 +11,9 @@ import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskStatus;
@@ -23,11 +25,13 @@ import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserDao;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
-public class BaseTaskService extends AbstractEntityService implements TaskService{
+public class BaseTaskService extends AbstractEntityService implements TaskService {
 	@Autowired
 	private TenantDao tenantDao;
 
@@ -42,75 +46,54 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
 
 	@Override
 	public Task createOrUpdateTask(Task task) {
-		taskDataValidator.validate(task,Task::getTenantId);
-
 		if (task.getStartTs() == 0L) {
 			task.setStartTs(System.currentTimeMillis());
 		}
-		if (task.getEndTs() == 0L) {
-			task.setEndTs(task.getStartTs());
-		}
-
 		try {
 			if (task.getId() == null) {
-				Task existing = taskDao.findLatestByOriginatorAndType(task.getTenantId(), task.getOriginator(),task.getTaskKind()).get();
-				if (existing == null ) {
-					return createTask(task);
-				} else {
-					return updateTask(existing, task);
-				}
+				return createTask(task);
 			} else {
-				return task;
-				//return updateTask(task).get();
+				return updateTask(task);
 			}
-		}
-		catch (ExecutionException | InterruptedException e){
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Task updateTask(Task oldTask, Task newTask) {
-		TaskStatus oldStatus = oldTask.getTaskStatus();
-		TaskStatus newStatus = newTask.getTaskStatus();
-/*
-		boolean oldPropagate = oldTask.isPropagate();
-		boolean newPropagate = newTask.isPropagate();
-		Alarm result = taskDao.save(newTask.getTenantId(), merge(oldTask, newTask));
-		if (!oldPropagate && newPropagate) {
-			try {
-				createAlarmRelations(result);
-			} catch (InterruptedException | ExecutionException e) {
-				log.warn("Failed to update alarm relations [{}]", result, e);
-				throw new RuntimeException(e);
-			}
-		} else if (oldStatus != newStatus) {
-			updateRelations(oldAlarm, oldStatus, newStatus);
-		}
-		return result;*/
-		return newTask;
+	@Override
+	public List<Task> checkTasks(TenantId tenantId, CustomerId customerId) {
+		return taskDao.checkTasks(tenantId, customerId);
 	}
 
-	private ListenableFuture<Task> updateTask(Task update) {
-/*		alarmDataValidator.validate(update, Alarm::getTenantId);
-		return getAndUpdate(update.getTenantId(), update.getId(), new Function<Alarm, Alarm>() {
-			@Nullable
-			@Override
-			public Alarm apply(@Nullable Alarm alarm) {
-				if (alarm == null) {
-					return null;
-				} else {
-					return updateAlarm(alarm, update);
-				}
-			}
-		});*/
-		return null;
+	@Override
+	public List<Task> checkTasks(TenantId tenantId) {
+		return taskDao.checkTasks(tenantId);
+	}
 
+	@Override
+	public List<Task> checkTasks() {
+		return taskDao.checkTasks();
+	}
+
+	private Task updateTask(Task update) throws ThingsboardException {
+		Task old = taskDao.findTaskById(update.getId().getId());
+		if (old == null) {
+			throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
+		}
+		return taskDao.save(update.getTenantId(), merage(old, update));
 	}
 
 	private Task createTask(Task task) {
+		taskDataValidator.validate(task, Task::getTenantId);
 		log.debug("New Task : {}", task);
 		Task saved = taskDao.save(task.getTenantId(), task);
 		return saved;
+	}
+
+	private Task merage(Task old, Task newTask) {
+		old.setTaskStatus(newTask.getTaskStatus());
+
+		return old;
 	}
 
 	private DataValidator<Task> taskDataValidator =
@@ -148,8 +131,15 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
 					} else {
 						User user = userDao.findById(task.getTenantId(), task.getUserId().getId());
 						if (user == null) {
-							throw new DataValidationException("Task is referencing to non-existent customer!");
+							throw new DataValidationException("Task is referencing to non-existent User Id!");
 						}
+					}
+					if (task.getId() != null) {
+						Task t = taskDao.findTaskById(task.getId().getId());
+						if (t == null) {
+							throw new DataValidationException("Task is non-existent Task Id!");
+						}
+
 					}
 				}
 			};

@@ -21,7 +21,7 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	private TaskKind taskKind;
 	private TaskStatus taskStatus;
 	private String taskName;
-	private String name;
+//	private String name;
 	private JsonNode additionalInfo;
 
 	private long startTs;
@@ -56,7 +56,7 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	@Override
 	@JsonProperty(access = JsonProperty.Access.READ_ONLY)
 	public String getName() {
-		return name;
+		return taskName;
 	}
 
 

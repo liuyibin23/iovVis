@@ -259,7 +259,14 @@ CREATE TABLE IF NOT EXISTS task (
 	search_text varchar(255),
     additional_info varchar
 );
-
+CREATE TABLE IF NOT EXISTS patrol_record (
+    id varchar(31) NOT NULL PRIMARY KEY,
+	tenant_id varchar(31),
+	customer_id varchar(31),
+	originator_id varchar(31),
+    originator_type varchar(255),
+    info varchar
+);
 CREATE OR REPLACE VIEW vassetattrkv AS
  SELECT attribute_kv.entity_type,
     attribute_kv.entity_id,

@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.dao.model.sql.TaskEntity;
 import org.thingsboard.server.dao.util.SqlDao;
@@ -20,4 +22,10 @@ public interface TaskRepository extends CrudRepository<TaskEntity, String> {
 													@Param("entityType") EntityType entityType,
 													@Param("taskType") TaskKind taskType,
 													Pageable pageable);
+	@Query("SELECT a FROM TaskEntity a ")
+	List<TaskEntity> findAll();
+
+	List<TaskEntity> findAllByTenantId(TenantId tenantId);
+
+	List<TaskEntity> findAllByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId);
 }

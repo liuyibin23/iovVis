@@ -8,10 +8,7 @@ import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.EntityIdFactory;
-import org.thingsboard.server.common.data.id.TaskId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.common.data.task.TaskStatus;
@@ -135,7 +132,10 @@ public class TaskEntity extends BaseSqlEntity<Task> implements SearchTextEntity<
 		if (customerId != null) {
 			task.setCustomerId(new CustomerId(UUIDConverter.fromString(customerId)));
 		}
-		task.setName(name);
+		if (userId != null) {
+			task.setUserId(new UserId(UUIDConverter.fromString(userId)));
+		}
+		task.setTaskName(name);
 		task.setAdditionalInfo(additionalInfo);
 		task.setAckTs(ackTs);
 		task.setClearTs(clearTs);

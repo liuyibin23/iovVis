@@ -12,6 +12,7 @@ import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.dao.task.TaskService;
 
@@ -25,7 +26,7 @@ public class TaskController  extends BaseController{
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/task", method = RequestMethod.POST)
 	@ResponseBody
-	public Task SaveTask( @RequestBody Task taskSaveRequest) throws ThingsboardException {
+	public Task saveTask(@RequestBody Task taskSaveRequest) throws ThingsboardException {
 		try {
 			log.info(taskSaveRequest.toString());
 			Task savedTask = checkNotNull(taskService.createOrUpdateTask(taskSaveRequest));
@@ -36,6 +37,23 @@ public class TaskController  extends BaseController{
 		} catch (Exception e) {
 			logEntityAction(emptyId(EntityType.TASK), taskSaveRequest,
 					null, taskSaveRequest.getId() == null ? ActionType.ADDED : ActionType.UPDATED, e);
+			throw handleException(e);
+		}
+	}
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/tasks", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Task> checkTasks() throws ThingsboardException {
+		try {
+			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
+				return checkNotNull(taskService.checkTasks());
+			}
+			if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)){
+				return checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId()));
+			}
+			else
+				return checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId(),getCurrentUser().getCustomerId()));
+		} catch (Exception e) {
 			throw handleException(e);
 		}
 	}
