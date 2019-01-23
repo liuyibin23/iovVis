@@ -85,8 +85,6 @@ router.get('/:assetId', async function (req, res) {
   console.log('assetId=' + assetID);
 
   let token = req.headers['x-authorization'];
-  //let data = getAttributes(assetID, token);
-
   let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
 
   axios.get(get_attributes_api, {
@@ -107,62 +105,13 @@ router.get('/:assetId', async function (req, res) {
     });
 })
 
-// function to encode file data to base64 encoded string
-function base64_encode(file) {
-  // read binary data
-  var bitmap = fs.readFileSync(file);
-  // convert binary data to base64 encoded string
-  return new Buffer(bitmap).toString('base64');
-}
-
-// function to create file from base64 encoded string
-function base64_decode(base64str, file) {
-  // create buffer object from base64 encoded string, it is important to tell the constructor that the string is base64 encoded
-  var bitmap = new Buffer(base64str, 'base64');
-  // write buffer to file
-  fs.writeFileSync(file, bitmap);
-  console.log('******** File created from base64 encoded string ********');
-}
-
-/*
- * 上传报表模版，关联报表模板url到基础设施
- */
-async function addDocx2asset(assetId, docx, tk) {
-  let docxRes;
-  try {
-    let sBase64 = 'data:doc/docx;base64,' + base64_encode(docx);
-    let file64 = 'file=' + encodeURIComponent(sBase64);
-    let host = 'http://sm.schdri.com';
-    docxRes = await axios.post(host + '/api/file/upload/base64',
-      file64,
-      {
-        headers: {
-          "Content-Type": 'application/x-www-form-urlencoded'
-        }
-      });
-    let fileUrl = host + '/' + docxRes.data.fileId;
-    let apiUrl = `${host}/api/plugins/telemetry/ASSET/${assetId}/attributes/SERVER_SCOPE`;
-    let assetRes = await axios.post(apiUrl, { rpt_docx: fileUrl },
-      {
-        headers: {
-          "X-Authorization": tk
-        }
-      });
-
-    return assetRes;
-  } catch (err) {
-    throw new Error("Add docx to asset failed!");
-  }
-}
-
 router.post('/abc', multipartMiddleware, async function (req, res) {
   let msg = 'Post ID:' + req.params.id + 'template_name:' + req.body.template_name;
 })
 
-//POST
-router.post('/:id', multipartMiddleware, async function (req, res) {
-  let msg = 'Post ID:' + req.params.id + 'template_name:' + req.body.template_name;
 
+function postTemplates(resp, req, res)
+{
   let fileInfo = req.files.template_file;
 
   let info = {
@@ -173,8 +122,6 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
   }
 
   let token = req.headers['x-authorization'];
-  //上传到服务器
-  //addDocx2asset(req.params.id, fileInfo.path, token);
 
   var formData = {
     file: fs.createReadStream(fileInfo.path),
@@ -194,7 +141,19 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     let str = [{
       "template_name": req.body.template_name,
       "template_url": host + bodyData.fileId
-    }];
+    }
+  ];
+  
+
+    resp.data.forEach(info => {
+    if (info.key === 'TEMPLATES') {
+      let data = JSON.parse(info.value);
+      data.forEach(_dt => {
+        str.push(_dt);
+      })      
+    }
+  });
+
     let val = JSON.stringify(str);
 
     let data = {
@@ -210,8 +169,33 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
         res.end();
       });
   });
+}
 
-  // 返回url地址
+//POST
+router.post('/:id', multipartMiddleware, async function (req, res) {
+  let msg = 'Post ID:' + req.params.id + 'template_name:' + req.body.template_name;
+
+  let assetID = req.params.id;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
+
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      // resp.data.forEach(info => {
+      //   if (info.key === 'TEMPLATES') {
+      //     info.value = JSON.parse(info.value);
+      //     res.status(200).json(info);
+      //   }
+      // });
+      postTemplates(resp, req, res);
+    })
+    .catch((err) => {
+      res.status(500).json('');
+    });
 })
 
 
