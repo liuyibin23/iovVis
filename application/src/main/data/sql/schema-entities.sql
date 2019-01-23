@@ -319,3 +319,29 @@ CREATE OR REPLACE VIEW deviceattrkv AS
    FROM attribute_kv,
     device
   WHERE attribute_kv.entity_id::text = device.id::text;
+
+CREATE OR REPLACE VIEW asset_atrributes AS
+  SELECT attribute_kv.entity_id,
+    max(
+        CASE attribute_kv.attribute_key
+            WHEN 'areaDivide'::text THEN attribute_kv.str_v
+            ELSE NULL::character varying
+        END::text) AS areadivide,
+	max(
+	  CASE attribute_kv.attribute_key
+		  WHEN 'basicInfo'::text THEN attribute_kv.str_v
+		  ELSE NULL::character varying
+	  END::text) AS basicInfo,
+	max(
+	  CASE attribute_kv.attribute_key
+		  WHEN 'cardInfo'::text THEN attribute_kv.str_v
+		  ELSE NULL::character varying
+	  END::text) AS cardInfo,
+	max(
+	  CASE attribute_kv.attribute_key
+		  WHEN 'structureInfo'::text THEN attribute_kv.str_v
+		  ELSE NULL::character varying
+	  END::text) AS structureInfo
+  FROM attribute_kv
+  WHERE attribute_kv.entity_type::text = 'ASSET'::text
+  GROUP BY attribute_kv.entity_id;

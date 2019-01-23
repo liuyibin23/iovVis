@@ -34,10 +34,12 @@ public interface AssetService {
 
     Asset findAssetById(TenantId tenantId, AssetId assetId);
 
-//    List<Asset> findAssetByTenant(TenantId tenantId);
-    List<AssetExInfo> findAssetByTenant(TenantId tenantId);
+    List<AssetExInfo> findAllAssetExInfo();
 
-    List<Asset> findAssetByTenantAndCustomer(TenantId tenantId,CustomerId customerId);
+//    List<Asset> findAssetExInfoByTenant(TenantId tenantId);
+    List<AssetExInfo> findAssetExInfoByTenant(TenantId tenantId);
+
+    List<AssetExInfo> findAssetExInfoByTenantAndCustomer(TenantId tenantId, CustomerId customerId);
 
     ListenableFuture<Asset> findAssetByIdAsync(TenantId tenantId, AssetId assetId);
 

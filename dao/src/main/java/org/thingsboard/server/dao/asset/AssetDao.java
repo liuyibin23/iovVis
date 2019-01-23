@@ -106,7 +106,7 @@ public interface AssetDao extends Dao<Asset> {
      *
      * @return the list of asset objects
      */
-    List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId);
+    List<AssetExInfo> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId);
 
     /**
      * Find assets by tenantId, customerId, type and page link.
@@ -146,4 +146,6 @@ public interface AssetDao extends Dao<Asset> {
     ListenableFuture<List<EntitySubtype>> findTenantAssetTypesAsync(UUID tenantId);
 
     List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId);
+
+    List<AssetExInfo> findAllAssetExInfo();
 }

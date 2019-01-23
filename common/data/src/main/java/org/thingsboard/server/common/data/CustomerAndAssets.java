@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.asset.AssetExInfo;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,5 +14,5 @@ import java.util.List;
 
 public class CustomerAndAssets {
 	Customer customer = new Customer();
-	List<Asset> assetList = new ArrayList<>();
+	List<AssetExInfo> assetList = new ArrayList<>();
 }

@@ -233,7 +233,7 @@ public class CustomerController extends BaseController {
 				customerTextPageData = checkNotNull(customerService.findCustomers(pageLink));
 			}
 			customerTextPageData.getData().forEach(customer -> {
-				retObj.add(new CustomerAndAssets(customer,assetService.findAssetByTenantAndCustomer(customer.getTenantId(),customer.getId())));
+				retObj.add(new CustomerAndAssets(customer,assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId())));
 			});
 			return retObj;
 
