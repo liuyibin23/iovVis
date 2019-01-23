@@ -3,12 +3,14 @@ package org.thingsboard.server.dao.vassetattrkv;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.dao.sql.vassetattrkv.ComposeAssetAttrKVJpaRepository;
 import org.thingsboard.server.dao.sql.vassetattrkv.VassetAttrKVRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service()
 public class VassetAttrKVServiceImpl implements VassetAttrKVService {
@@ -65,11 +67,20 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 
     @Override
 	public List<ComposeAssetAttrKV> findByComposekey(String attrKey1,String attrKey2){
-		return composeAssetAttrKVJpaRepository.findByComposekey(attrKey1,attrKey2);
+		List<ComposeAssetAttrKV> kvs = composeAssetAttrKVJpaRepository.findByComposekey(attrKey1,attrKey2);
+		kvs = kvs.stream().peek(
+				item-> item.setEntityId(UUIDConverter.fromString(item.getEntityId()).toString())
+		).collect(Collectors.toList());
+		return kvs;
 	}
 
     @Override
 	public List<ComposeAssetAttrKV> findByTenantIdAndComposekey(String tenantId, String attrKey1, String attrKey2){
-		return composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey(tenantId,attrKey1,attrKey2);
+//		return composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey(tenantId,attrKey1,attrKey2);
+		List<ComposeAssetAttrKV> kvs =  composeAssetAttrKVJpaRepository.findByTenantIdAndComposekey(tenantId,attrKey1,attrKey2);
+		kvs = kvs.stream().peek(
+				item-> item.setEntityId(UUIDConverter.fromString(item.getEntityId()).toString())
+		).collect(Collectors.toList());
+		return kvs;
 	}
 }
