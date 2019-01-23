@@ -134,40 +134,45 @@ function postTemplates(resp, req, res)
     }
     console.log('Upload successful!  Server responded with:', body);
 
-    // 保存到属性表
-    // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
-    let url = util.getAPI() + 'plugins/telemetry/ASSET/' + req.params.id + '/SERVER_SCOPE';
-    let bodyData = JSON.parse(body)
-    let str = [{
-      "template_name": req.body.template_name,
-      "template_url": host + bodyData.fileId
-    }
-  ];
-  
-
-    resp.data.forEach(info => {
-    if (info.key === 'TEMPLATES') {
-      let data = JSON.parse(info.value);
-      data.forEach(_dt => {
-        str.push(_dt);
-      })      
-    }
-  });
-
-    let val = JSON.stringify(str);
-
-    let data = {
-      "TEMPLATES": `${val}`
-    }
-
-    axios.post(url, (data), { headers: { "X-Authorization":token } })
-      .then(response => {
-        res.status(response.status).json('成功创建报表模板并关联到资产。');
-      })
-      .catch(err => {
-        console.log(err);
-        res.end();
+    if (JSON.parse(body).success)
+    {
+      // 保存到属性表
+      // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
+      let url = util.getAPI() + 'plugins/telemetry/ASSET/' + req.params.id + '/SERVER_SCOPE';
+      let bodyData = JSON.parse(body)
+      let str = [{
+          "template_name": req.body.template_name,
+          "template_url": host + bodyData.fileId
+        }
+      ];
+      
+      resp.data.forEach(info => {
+        if (info.key === 'TEMPLATES') {
+          let data = JSON.parse(info.value);
+          data.forEach(_dt => {
+            str.push(_dt);
+          })      
+        }
       });
+
+      let val = JSON.stringify(str);
+
+      let data = {
+        "TEMPLATES": `${val}`
+      }
+
+      axios.post(url, (data), { headers: { "X-Authorization":token } })
+        .then(response => {
+          res.status(response.status).json('成功创建报表模板并关联到资产。');
+        })
+        .catch(err => {
+          res.status(502).json('报表模板更新冲突。');
+        });
+    }
+    else
+    {
+      res.status(501).json('报表模板上传失败。');
+    }
   });
 }
 
@@ -185,12 +190,6 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     }
   })
     .then((resp) => {
-      // resp.data.forEach(info => {
-      //   if (info.key === 'TEMPLATES') {
-      //     info.value = JSON.parse(info.value);
-      //     res.status(200).json(info);
-      //   }
-      // });
       postTemplates(resp, req, res);
     })
     .catch((err) => {
