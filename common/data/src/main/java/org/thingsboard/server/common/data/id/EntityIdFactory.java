@@ -51,6 +51,8 @@ public class EntityIdFactory {
                 return new DeviceId(uuid);
             case ASSET:
                 return new AssetId(uuid);
+            case TASK:
+                return new TaskId(uuid);
             case ALARM:
                 return new AlarmId(uuid);
             case RULE_CHAIN:

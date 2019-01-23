@@ -98,15 +98,6 @@ public interface AssetDao extends Dao<Asset> {
      */
     List<Asset> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink);
 
-    /**
-     * Find assets by tenantId, customerId
-     *
-     * @param tenantId the tenantId
-     * @param customerId the customerId
-     *
-     * @return the list of asset objects
-     */
-    List<AssetExInfo> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId);
 
     /**
      * Find assets by tenantId, customerId, type and page link.
@@ -145,7 +136,17 @@ public interface AssetDao extends Dao<Asset> {
      */
     ListenableFuture<List<EntitySubtype>> findTenantAssetTypesAsync(UUID tenantId);
 
-    List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId);
+    /**
+     * Find assets by tenantId, customerId
+     *
+     * @param tenantId the tenantId
+     * @param customerId the customerId
+     *
+     * @return the list of asset objects
+     */
+    List<AssetExInfo> findAssetExInfosByTenantIdAndCustomerId(UUID tenantId, UUID customerId,TextPageLink pageLink);
 
-    List<AssetExInfo> findAllAssetExInfo();
+    List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId,TextPageLink pageLink);
+
+    List<AssetExInfo> findAllAssetExInfo(TextPageLink pageLink);
 }

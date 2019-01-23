@@ -122,7 +122,7 @@ public class TenantController extends BaseController {
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
             TextPageData<Tenant> tmpTenant = checkNotNull(tenantService.findTenants(pageLink));
             tmpTenant.getData().forEach(tenant -> {
-                retObj.add(new TenantAndAsset(tenant,assetService.findAssetExInfoByTenant(tenant.getId())));
+                retObj.add(new TenantAndAsset(tenant,assetService.findAssetExInfoByTenant(tenant.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()));
             });
 
 

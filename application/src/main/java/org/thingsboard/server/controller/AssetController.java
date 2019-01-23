@@ -441,18 +441,21 @@ public class AssetController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
 	@ResponseBody
-	public List<AssetExInfo> getCurrentUserAssets() throws ThingsboardException {
+	public TextPageData<AssetExInfo> getCurrentUserAssets(@RequestParam int limit,
+												  @RequestParam(required = false) String textSearch,
+												  @RequestParam(required = false) String idOffset,
+												  @RequestParam(required = false) String textOffset) throws ThingsboardException {
 		try {
 			SecurityUser user = getCurrentUser();
 			TenantId tenantId = user.getTenantId();
 			CustomerId customerId = user.getCustomerId();
-
+			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 			if(customerId != null && !customerId.isNullUid()){ //customer
-				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId));
+				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId,pageLink));
 			} else if(tenantId != null && !tenantId.isNullUid()){ //tenant
-				return checkNotNull(assetService.findAssetExInfoByTenant(tenantId));
+				return checkNotNull(assetService.findAssetExInfoByTenant(tenantId,pageLink));
 			} else { //admin
-				return checkNotNull(assetService.findAllAssetExInfo());
+				return checkNotNull(assetService.findAllAssetExInfo(pageLink));
 			}
 		} catch (ThingsboardException e) {
 			throw handleException(e);

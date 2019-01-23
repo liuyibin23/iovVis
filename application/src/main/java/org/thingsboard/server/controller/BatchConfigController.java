@@ -157,16 +157,7 @@ public class BatchConfigController extends BaseController {
 					device.setName(deviceInfo.getDeviceServerAttrib().getName());
 					device.setType(deviceInfo.getDeviceShareAttrib().getSensorType());
 					try {
-						device.setTenantId(getCurrentUser().getTenantId());
-						if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
-							if (device.getId() == null || device.getId().isNullUid() ||
-									device.getCustomerId() == null || device.getCustomerId().isNullUid()) {
-								throw new ThingsboardException("You don't have permission to perform this operation!",
-										ThingsboardErrorCode.PERMISSION_DENIED);
-							} else {
-								checkCustomerId(device.getCustomerId());
-							}
-						}
+						device.setTenantId(tenantId);
 						Device savedDevice = deviceService.saveDevice(device);
 						device = savedDevice;
 						actorService
@@ -222,6 +213,7 @@ public class BatchConfigController extends BaseController {
 					});
 					saveAttributes(tenantId, entityId, "SHARED_SCOPE", attributesShare);
 
+
 					List<AttributeKvEntry> attributesClient = new ArrayList<>();
 					String tClient = mapper.writeValueAsString(deviceInfo.getDeviceClientAttrib());
 					Map mClient = mapper.readValue(tClient, Map.class);
@@ -231,6 +223,7 @@ public class BatchConfigController extends BaseController {
 						}
 					});
 					saveAttributes(tenantId, entityId, "CLIENT_SCOPE", attributesClient);
+
 
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -254,33 +247,33 @@ public class BatchConfigController extends BaseController {
 		return null;
 	}
 
-	private DeferredResult<ResponseEntity> saveAttributes(TenantId srcTenantId,
+	private void saveAttributes(TenantId srcTenantId,
 														  EntityId entityIdSrc,
 														  String scope,
 														  List<AttributeKvEntry> attributes) throws ThingsboardException {
 
 		SecurityUser user = getCurrentUser();
-		return accessValidator.validateEntityAndCallback(getCurrentUser(), entityIdSrc, (result, tenantId, entityId) -> {
-			tsSubService.saveAndNotify(tenantId, entityId, scope, attributes, new FutureCallback<Void>() {
-				@Override
-				public void onSuccess(@Nullable Void tmp) {
-					logAttributesUpdated(user, entityId, scope, attributes, null);
-					if (entityId.getEntityType() == EntityType.DEVICE) {
-						DeviceId deviceId = new DeviceId(entityId.getId());
-						DeviceAttributesEventNotificationMsg notificationMsg = DeviceAttributesEventNotificationMsg.onUpdate(
-								user.getTenantId(), deviceId, scope, attributes);
-						actorService.onMsg(new SendToClusterMsg(deviceId, notificationMsg));
-					}
-					result.setResult(new ResponseEntity(HttpStatus.OK));
-				}
 
-				@Override
-				public void onFailure(Throwable t) {
-					logAttributesUpdated(user, entityId, scope, attributes, t);
-					AccessValidator.handleError(t, result, HttpStatus.INTERNAL_SERVER_ERROR);
+		tsSubService.saveAndNotify(srcTenantId, entityIdSrc, scope, attributes, new FutureCallback<Void>() {
+			@Override
+			public void onSuccess(@Nullable Void tmp) {
+				logAttributesUpdated(user, entityIdSrc, scope, attributes, null);
+				if (entityIdSrc.getEntityType() == EntityType.DEVICE) {
+					DeviceId deviceId = new DeviceId(entityIdSrc.getId());
+					DeviceAttributesEventNotificationMsg notificationMsg = DeviceAttributesEventNotificationMsg.onUpdate(
+							user.getTenantId(), deviceId, scope, attributes);
+					actorService.onMsg(new SendToClusterMsg(deviceId, notificationMsg));
 				}
-			});
+			}
+
+			@Override
+			public void onFailure(Throwable t) {
+				logAttributesUpdated(user, entityIdSrc, scope, attributes, t);
+			}
 		});
+
+		return  ;
+
 	}
 
 	private void logAttributesUpdated(SecurityUser user, EntityId entityId, String scope, List<AttributeKvEntry> attributes, Throwable e) {
