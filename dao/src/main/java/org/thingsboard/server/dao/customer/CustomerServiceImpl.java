@@ -155,7 +155,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 			customer.setAdminCount(userService.countByTenantIdAndCustomerId(fromTimeUUID(tenantId.getId()), fromTimeUUID(customer.getUuidId())));
 			customer.setUserCount(0);
 			customer.setInfrastructureCount(
-					assetService.findAssetExInfoByTenantAndCustomer(tenantId,customer.getId())
+					assetService.findAssetExInfoByTenantAndCustomer(tenantId,customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()
 					.stream().filter(asset -> "BRIDGE".equals(asset.getType()) || "TUNNEL".equals(asset.getType()) || "SLOPE".equals(asset.getType()) || "ROAD".equals(asset.getType())).count());
 		});
 		return new TextPageData<>(customers, pageLink);
@@ -172,7 +172,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 			customer.setAdminCount(userService.countByTenantIdAndCustomerId(fromTimeUUID(customer.getTenantId().getId()), fromTimeUUID(customer.getUuidId())));
 			customer.setUserCount(0);
 			customer.setInfrastructureCount(
-					assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId())
+					assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()
 							.stream().filter(asset -> "BRIDGE".equals(asset.getType()) || "TUNNEL".equals(asset.getType()) || "SLOPE".equals(asset.getType()) || "ROAD".equals(asset.getType())).count());
 		});
 		return new TextPageData<>(customers, pageLink);

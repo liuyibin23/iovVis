@@ -113,18 +113,6 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
     }
 
     @Override
-    public List<AssetExInfo> findAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
-//        return DaoUtil.convertDataList(assetRepository
-//                .findByTenantIdAndCustomerId(
-//                        fromTimeUUID(tenantId),
-//                        fromTimeUUID(customerId)));
-
-        return DaoUtil.convertDataList(assetExInfoRepository.
-                findAssetExInfoByTenantIdAndCustomerId(fromTimeUUID(tenantId),
-                fromTimeUUID(customerId)));
-    }
-
-    @Override
     public ListenableFuture<List<Asset>> findAssetsByTenantIdAndCustomerIdAndIdsAsync(UUID tenantId, UUID customerId, List<UUID> assetIds) {
         return service.submit(() ->
                 DaoUtil.convertDataList(assetRepository.findByTenantIdAndCustomerIdAndIdIn(fromTimeUUID(tenantId), fromTimeUUID(customerId), fromTimeUUIDs(assetIds))));
@@ -165,13 +153,35 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
     }
 
     @Override
-    public List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId) {
-        return DaoUtil.convertDataList(assetExInfoRepository.findAssetExInfoByTenantId(fromTimeUUID(tenantId)));
+    public List<AssetExInfo> findAssetExInfosByTenantIdAndCustomerId(UUID tenantId, UUID customerId,TextPageLink pageLink) {
+//        return DaoUtil.convertDataList(assetRepository
+//                .findByTenantIdAndCustomerId(
+//                        fromTimeUUID(tenantId),
+//                        fromTimeUUID(customerId)));
+
+        return DaoUtil.convertDataList(assetExInfoRepository.
+                findAssetExInfoByTenantIdAndCustomerId(
+                        fromTimeUUID(tenantId),fromTimeUUID(customerId),
+                        Objects.toString(pageLink.getTextSearch(), ""),
+                        pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                        pageLink.getLimit()));
     }
 
     @Override
-    public List<AssetExInfo> findAllAssetExInfo() {
-        return DaoUtil.convertDataList(assetExInfoRepository.findAllAssetExInfo());
+    public List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId,TextPageLink pageLink) {
+        return DaoUtil.convertDataList(assetExInfoRepository.
+                findAssetExInfoByTenantId(fromTimeUUID(tenantId),
+                        Objects.toString(pageLink.getTextSearch(), ""),
+                        pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                        pageLink.getLimit()));
+    }
+
+    @Override
+    public List<AssetExInfo> findAllAssetExInfo(TextPageLink pageLink) {
+        return DaoUtil.convertDataList(assetExInfoRepository.findAllAssetExInfo(
+                Objects.toString(pageLink.getTextSearch(), ""),
+                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                pageLink.getLimit()));
     }
 
     private List<EntitySubtype> convertTenantAssetTypesToDto(UUID tenantId, List<String> types) {

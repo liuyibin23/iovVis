@@ -15,7 +15,6 @@
  */
 package org.thingsboard.server.dao.asset;
 
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
@@ -94,20 +93,28 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	}
 
 	@Override
-	public List<AssetExInfo> findAllAssetExInfo(){
-		return assetDao.findAllAssetExInfo();
+	public TextPageData<AssetExInfo> findAllAssetExInfo(TextPageLink pageLink){
+		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+		List<AssetExInfo> assetExInfos = assetDao.findAllAssetExInfo(pageLink);
+		return  new TextPageData<>(assetExInfos, pageLink);
 	}
 
 	@Override
-	public List<AssetExInfo> findAssetExInfoByTenant(TenantId tenantId) {
+	public TextPageData<AssetExInfo> findAssetExInfoByTenant(TenantId tenantId,TextPageLink pageLink) {
 //		List<AssetExInfoEntity> assetExInfos = assetDao.findAssetExInfoByTenantId(tenantId.getId());
 //		return assetDao.find(tenantId);
-		return assetDao.findAssetExInfoByTenantId(tenantId.getId());
+		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+		List<AssetExInfo> assetExInfos = assetDao.findAssetExInfoByTenantId(tenantId.getId(),pageLink);
+		return  new TextPageData<>(assetExInfos, pageLink);
 	}
 
 	@Override
-	public List<AssetExInfo> findAssetExInfoByTenantAndCustomer(TenantId tenantId, CustomerId customerId) {
-		return assetDao.findAssetsByTenantIdAndCustomerId(tenantId.getId(),customerId.getId());
+	public TextPageData<AssetExInfo> findAssetExInfoByTenantAndCustomer(TenantId tenantId, CustomerId customerId,TextPageLink pageLink) {
+		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
+		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+		List<AssetExInfo> assetExInfos = assetDao.findAssetExInfosByTenantIdAndCustomerId(tenantId.getId(),customerId.getId(),pageLink);
+		return new TextPageData<>(assetExInfos, pageLink);
 	}
 
 	@Override
@@ -243,7 +250,7 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 
 	@Override
 	public TextPageData<Asset> findAssetsByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, TextPageLink pageLink) {
-		log.trace("Executing findAssetsByTenantIdAndCustomerId, tenantId [{}], customerId [{}], pageLink [{}]", tenantId, customerId, pageLink);
+		log.trace("Executing findAssetExInfosByTenantIdAndCustomerId, tenantId [{}], customerId [{}], pageLink [{}]", tenantId, customerId, pageLink);
 		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
 		validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
