@@ -40,6 +40,7 @@ public class ModelConstants {
     public static final String TENANT_ID_PROPERTY = "tenant_id";
     public static final String CUSTOMER_ID_PROPERTY = "customer_id";
     public static final String DEVICE_ID_PROPERTY = "device_id";
+    public static final String TASK_ID_PROPERTY = "task_id";
     public static final String TITLE_PROPERTY = "title";
     public static final String ALIAS_PROPERTY = "alias";
     public static final String SEARCH_TEXT_PROPERTY = "search_text";
@@ -51,6 +52,23 @@ public class ModelConstants {
     public static final String ATTRIBUTE_TYPE_COLUMN = "attribute_type";
     public static final String ATTRIBUTE_KEY_COLUMN = "attribute_key";
     public static final String LAST_UPDATE_TS_COLUMN = "last_update_ts";
+    /**
+     * task contants
+     */
+    public static final String TASK_TENANT_ID_PROPERTY = TENANT_ID_PROPERTY;
+    public static final String TASK_CUSTOMER_ID_PROPERTY = CUSTOMER_ID_PROPERTY;
+    public static final String TASK_NAME_PROPERTY = "name";
+    public static final String TASK_PROCESS_USER = "process_"+USER_ID_PROPERTY;
+    public static final String TASK_STATUS = "task_status";
+    public static final String TASK_KIND = "task_kind";
+    public static final String TASK_ADDITIONAL_INFO_PROPERTY = ADDITIONAL_INFO_PROPERTY;
+    public static final String TASK_ORIGINATOR_ID_PROPERTY = "originator_id";
+    public static final String TASK_ORIGINATOR_TYPE_PROPERTY = "originator_type";
+    public static final String TASK_START_TS_PROPERTY = "start_ts";
+    public static final String TASK_END_TS_PROPERTY = "end_ts";
+    public static final String TASK_ACK_TS_PROPERTY = "ack_ts";
+    public static final String TASK_CLEAR_TS_PROPERTY = "clear_ts";
+
 
     /**
      * Cassandra user constants.

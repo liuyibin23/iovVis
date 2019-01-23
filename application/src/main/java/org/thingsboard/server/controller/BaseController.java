@@ -67,8 +67,10 @@ import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
+import org.thingsboard.server.dao.partol.PatrolRecordService;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
+import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
@@ -117,6 +119,9 @@ public abstract class BaseController {
 
     @Autowired
     protected AssetService assetService;
+
+    @Autowired
+	protected TaskService taskService;
 
     @Autowired
     protected AlarmService alarmService;
@@ -168,6 +173,9 @@ public abstract class BaseController {
 
     @Autowired
 	protected DeviceAttributesService deviceAttributesService;
+
+    @Autowired
+    protected PatrolRecordService patrolRecordService;
 
     @Value("${server.log_controller_error_stack_trace}")
     @Getter

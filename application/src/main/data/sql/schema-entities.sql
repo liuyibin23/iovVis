@@ -242,6 +242,31 @@ CREATE TABLE IF NOT EXISTS entity_view (
     search_text varchar(255),
     additional_info varchar
 );
+CREATE TABLE IF NOT EXISTS task (
+    id varchar(31) NOT NULL CONSTRAINT task_pkey PRIMARY KEY,
+	tenant_id varchar(31),
+	customer_id varchar(31),
+	process_user_id varchar(31),
+	task_status varchar(31),
+	task_kind varchar(31),
+    originator_id varchar(31),
+    originator_type varchar(255),
+    name varchar(255),
+	start_ts bigint,
+	end_ts bigint,
+	ack_ts bigint,
+	clear_ts bigint,
+	search_text varchar(255),
+    additional_info varchar
+);
+CREATE TABLE IF NOT EXISTS patrol_record (
+    id varchar(31) NOT NULL PRIMARY KEY,
+	tenant_id varchar(31),
+	customer_id varchar(31),
+	originator_id varchar(31),
+    originator_type varchar(255),
+    info varchar
+);
 CREATE OR REPLACE VIEW vassetattrkv AS
  SELECT attribute_kv.entity_type,
     attribute_kv.entity_id,
