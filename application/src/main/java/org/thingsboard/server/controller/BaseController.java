@@ -118,7 +118,7 @@ public abstract class BaseController {
     @Autowired
     protected AssetService assetService;
 
-    @Autowired()
+    @Autowired
     protected AlarmService alarmService;
 
     @Autowired
