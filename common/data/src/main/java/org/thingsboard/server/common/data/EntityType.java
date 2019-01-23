@@ -20,5 +20,5 @@ package org.thingsboard.server.common.data;
  */
 public enum EntityType {
     TENANT, CUSTOMER, USER, DASHBOARD, ASSET, DEVICE, ALARM, RULE_CHAIN, RULE_NODE, ENTITY_VIEW,
-    PROJECT, BRIDGE, TUNNEL, ROAD, SLOPE, ALL
+    PROJECT, BRIDGE, TUNNEL, ROAD, SLOPE, TASK,PATROL,ALL
 }
