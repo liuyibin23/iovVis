@@ -18,10 +18,11 @@ let options = {
     explorer: false
   };
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
 app.use(tokenVerify());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
+
 
 app.use('/api/v1/templates', templatesRouter);
 app.use('/api/v1/reports', reportsRouter);

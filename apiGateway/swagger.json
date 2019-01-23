@@ -27,6 +27,14 @@
     {
       "name": "文件内容",
       "description": "文件内容API集"
+    },
+    {
+      "name": "告警",
+      "description": "设备告警"
+    },
+    {
+      "name": "预警",
+      "description": "设施预警"
     }
   ],
   "paths": {
@@ -422,6 +430,145 @@
           }
         }
       }
+    },
+    "/warnings/{assetId}": {
+      "get": {
+        "tags": [
+          "预警"
+        ],
+        "summary": "获取资产的预警状态",
+        "description": "返回与资产相关的预警状态。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回资产的预警状态。",
+            "schema": {
+              "required": [
+                "asset_warning_level"
+              ],
+              "properties": {
+                "asset_warning_level": {
+                  "type": "string",
+                  "enum": [
+                    "RED",
+                    "ORANGE",
+                    "BLUE",
+                    "GREEN"
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "预警"
+        ],
+        "summary": "设置资产预警状态",
+        "description": "更新资产的预警状态到设置的值（与规则触发的自动告警无优先级别，设置后如果有规则触发，将状态将可能变化）。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          },
+          {
+            "$ref": "#/parameters/warningLevel"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功设置预警状态。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/warnings/rules/{assetId}": {
+      "get": {
+        "tags": [
+          "预警"
+        ],
+        "summary": "获取资产的预警规则",
+        "description": "返回绑定在该资产的预警规则。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回资产的预警规则。",
+            "schema": {
+              "$ref": "#/definitions/Rules"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "预警"
+        ],
+        "summary": "设置资产预警规则",
+        "description": "更新资产的预警规则，需要设置规则引擎中的CONFIG_WARNING_RULE规则链的节点5（预警规则设置）和节点2（获取所有规则需要的属性）。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/assetId"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "预警规则。预警规则有触发蓝色预警的规则和触发橙色预警的规则。触发规则由两部分组成：与规则、或规则。与规则由表示设备号（传感器）的一个传感器数组表达；或规则是多个与规则对象组成的数组。",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Rules"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "设置预警规则成功。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
     }
   },
   "securityDefinitions": {
@@ -446,6 +593,43 @@
           "type": "string"
         }
       }
+    },
+    "Rules": {
+      "type": "object",
+      "properties": {
+        "blueRules": {
+          "type": "array",
+          "description": "或规则对象。",
+          "items": {
+            "type": "object",
+            "properties": {
+              "andRule": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "设备号数组"
+                }
+              }
+            }
+          }
+        },
+        "orangeRules": {
+          "type": "array",
+          "description": "或规则对象。",
+          "items": {
+            "type": "object",
+            "properties": {
+              "andRule": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "description": "设备号数组"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "parameters": {
@@ -454,6 +638,13 @@
       "in": "path",
       "required": true,
       "description": "资产编号（assetId）。",
+      "type": "string"
+    },
+    "deviceId": {
+      "name": "deviceId",
+      "in": "path",
+      "required": true,
+      "description": "设备编号（deviceId）。",
       "type": "string"
     },
     "templateName": {
@@ -469,6 +660,18 @@
       "in": "query",
       "type": "string",
       "required": true
+    },
+    "warningLevel": {
+      "name": "asset_warning_level",
+      "in": "query",
+      "type": "string",
+      "enum": [
+        "RED",
+        "ORANGE",
+        "BLUE",
+        "GREEN"
+      ],
+      "description": "资产预警状态。"
     }
   },
   "responses": {
