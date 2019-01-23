@@ -14,7 +14,7 @@ async function getAsset(assetId, token) {
   let get_asset_api = util.getAPI() + 'assets?assetIds=' + assetId;
   let assetInfo = await util.getSync(get_asset_api, {
     headers: {
-      "X-Authorization": "Bearer " + token
+      "X-Authorization": token
     }
   });
 
@@ -46,7 +46,7 @@ async function getAttributes(assetId, token) {
   let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetId}/values/attributes/SERVER_SCOPE`;
   let attributesInfo = await util.getSync(get_attributes_api, {
     headers: {
-      "X-Authorization": "Bearer " + token
+      "X-Authorization": token
     }
   });
 
@@ -84,14 +84,14 @@ router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
   console.log('assetId=' + assetID);
 
-  let token = toks.getTokenStr();
+  let token = req.headers['x-authorization'];
   //let data = getAttributes(assetID, token);
 
   let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
 
   axios.get(get_attributes_api, {
     headers: {
-      "X-Authorization": "Bearer " + token
+      "X-Authorization": token
     }
   })
     .then((resp) => {
@@ -145,7 +145,7 @@ async function addDocx2asset(assetId, docx, tk) {
     let assetRes = await axios.post(apiUrl, { rpt_docx: fileUrl },
       {
         headers: {
-          "X-Authorization": "Bearer " + tk
+          "X-Authorization": tk
         }
       });
 
@@ -157,7 +157,6 @@ async function addDocx2asset(assetId, docx, tk) {
 
 router.post('/abc', multipartMiddleware, async function (req, res) {
   let msg = 'Post ID:' + req.params.id + 'template_name:' + req.body.template_name;
-
 })
 
 //POST
@@ -173,7 +172,7 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     'type': fileInfo.type
   }
 
-  let token = toks.getTokenStr();
+  let token = req.headers['x-authorization'];
   //上传到服务器
   //addDocx2asset(req.params.id, fileInfo.path, token);
 
@@ -194,14 +193,15 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     let bodyData = JSON.parse(body)
     let str = [{
       "template_name": req.body.template_name,
-      "template_url:": host + bodyData.fileId
+      "template_url": host + bodyData.fileId
     }];
     let val = JSON.stringify(str);
 
     let data = {
       "TEMPLATES": `${val}`
     }
-    axios.post(url, (data), { headers: { "X-Authorization": "Bearer " + toks.getTokenStr() } })
+
+    axios.post(url, (data), { headers: { "X-Authorization":token } })
       .then(response => {
         res.status(response.status).json('成功创建报表模板并关联到资产。');
       })

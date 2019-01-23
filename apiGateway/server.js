@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const swaggerUi = require('swagger-ui-express');
 
 const swaggerDocument = require('./swagger.json');
-var tokVerifier = require('./middleware/token-verifier');
+const tokenVerify = require('./middleware/token-verifier');
 const errHandler = require('./middleware/error-handler');
 const templatesRouter = require('./routers/templates-router');
 const reportsRouter = require('./routers/reports-router');
@@ -18,7 +18,7 @@ let options = {
     explorer: false
   };
 
-app.use(tokVerifier.tokenVerify());
+app.use(tokenVerify());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));

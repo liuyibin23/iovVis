@@ -18,7 +18,7 @@ async function getAsset(assetId, token)
   let get_asset_api = util.getAPI() + 'assets?assetIds=' + assetId;
   let assetInfo = await util.getSync(get_asset_api, {
       headers: {
-          "X-Authorization": "Bearer " + token
+          "X-Authorization": token
       }
   });
 
@@ -56,7 +56,7 @@ router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
   console.log('assetId=' + assetID);
 
-  let token = toks.getTokenStr();
+  let token = req.headers['x-authorization'];
   let data = await getAsset(assetID, token);
 
   res.status(200).json(data);
