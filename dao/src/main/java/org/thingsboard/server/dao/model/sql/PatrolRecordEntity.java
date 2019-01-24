@@ -11,12 +11,9 @@ import org.thingsboard.server.common.data.id.EntityIdFactory;
 import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
-import org.thingsboard.server.dao.model.BaseSqlEntity;
 import org.thingsboard.server.dao.model.ToData;
 
 import javax.persistence.*;
-
-import java.util.UUID;
 
 import static org.thingsboard.server.dao.model.ModelConstants.*;
 
@@ -45,6 +42,9 @@ public class PatrolRecordEntity implements ToData<PatrolRecord> {
 	@Column(name = TASK_ORIGINATOR_TYPE_PROPERTY)
 	private EntityType originatorType;
 
+	@Column(name = "recode_type")
+	private String recodeType;
+
 	@Column(name = "info")
 	private String info;
 
@@ -68,6 +68,7 @@ public class PatrolRecordEntity implements ToData<PatrolRecord> {
 		if (record.getOriginator().getEntityType() != null)
 			this.originatorType = record.getOriginator().getEntityType();
 
+		recodeType = record.getRecordType();
 		info = record.getInfo();
 	}
 
@@ -82,6 +83,7 @@ public class PatrolRecordEntity implements ToData<PatrolRecord> {
 			record.setCustomerId(new CustomerId(UUIDConverter.fromString(customerId)));
 		}
 		record.setInfo(info);
+		record.setRecordType(recodeType);
 		record.setOriginator(EntityIdFactory.getByTypeAndUuid(originatorType, UUIDConverter.fromString(originatorId)));
 
 		return record;

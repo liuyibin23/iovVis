@@ -133,15 +133,15 @@ function postTemplates(resp, req, res)
     'path': fileInfo.path,
     'size': fileInfo.size,
     'type': fileInfo.type
-  }
+  };
 
   let token = req.headers['x-authorization'];
 
   var formData = {
     file: fs.createReadStream(fileInfo.path),
   };
-  let host = 'http://sm.schdri.com:80/'
-  let uploadFileHost = host + 'api/file/upload/'
+  let host = 'http://sm.schdri.com:80/';
+  let uploadFileHost = host + 'api/file/upload/';
   request.post({ url:uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
       return console.error('upload failed:', err);
@@ -152,7 +152,7 @@ function postTemplates(resp, req, res)
     {
       // 保存到属性表
       // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
-      let url = util.getAPI() + 'plugins/telemetry/ASSET/' + req.params.id + '/SERVER_SCOPE';
+      let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
       let bodyData = JSON.parse(body)
       let str = [{
           "template_name": req.body.template_name,
@@ -173,7 +173,7 @@ function postTemplates(resp, req, res)
 
       let data = {
         "TEMPLATES": `${val}`
-      }
+      };
 
       axios.post(url, (data), { headers: { "X-Authorization":token } })
         .then(response => {
@@ -233,7 +233,7 @@ router.delete('/:id', async function (req, res) {
 
 // define the about route
 router.get('/about', function (req, res) {
-  res.send('About templates')
+  res.send('About templates');
 })
 
 module.exports = router
