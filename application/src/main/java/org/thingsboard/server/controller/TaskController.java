@@ -23,7 +23,7 @@ import java.util.List;
 @Slf4j
 public class TaskController  extends BaseController{
 
-	@PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/task", method = RequestMethod.POST)
 	@ResponseBody
 	public Task saveTask(@RequestBody Task taskSaveRequest) throws ThingsboardException {
