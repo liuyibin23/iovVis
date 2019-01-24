@@ -1,21 +1,21 @@
-var express = require('express')
-var router = express.Router()
-var toks  = require('../middleware/token-verifier')
-var util  = require('./utils')
+var express = require('express');
+var router = express.Router();
+var toks  = require('../middleware/token-verifier');
+var util  = require('./utils');
 var multipart = require('connect-multiparty');  
 var multipartMiddleware = multipart();
-const axios = require('axios')
+const axios = require('axios');
 
 // middleware that is specific to this router
 router.use(function timeLog (req, res, next) {
-  console.log('Time: ', Date.now())
-  next()
+  console.log('Time: ', Date.now());
+  next();
 })
 
 // middleware that is specific to this router
 router.use(function timeLog (req, res, next) {
-  console.log('Reports Time: ', Date.now())
-  next()
+  console.log('Reports Time: ', Date.now());
+  next();
 })
 
 // GET
@@ -38,7 +38,7 @@ router.get('/:assetId', async function (req, res) {
       });
     })
     .catch((err) => {
-      let status = err.response.status
+      let status = err.response.status;
       if (status == 401){
         let resMsg = {
           "code":`${err.response.status}`,
@@ -63,13 +63,13 @@ router.get('/:assetId', async function (req, res) {
     });
 })
 
-function PostReport(req, res)
+function PostReports(resp, req, res)
 {
   let token = req.headers['x-authorization'];
-  let host = 'http://sm.schdri.com:80/'
+  let host = 'http://sm.schdri.com:80/';
   // 保存到属性表
   // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
-  let url = util.getAPI() + 'plugins/telemetry/ASSET/' + req.params.id + '/SERVER_SCOPE';
+  let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
   //let bodyData = JSON.parse(body)
   let fileInfo = req.files.report_file;
   let str = [{
@@ -78,11 +78,20 @@ function PostReport(req, res)
     }
   ];
 
+  resp.data.forEach(info => {
+    if (info.key === 'REPORTS') {
+      let data = JSON.parse(info.value);
+      data.forEach(_dt => {
+        str.push(_dt);
+      })      
+    }
+  });
+
   let val = JSON.stringify(str);
 
   let data = {
     "REPORTS": `${val}`
-  }
+  };
 
   axios.post(url, (data), { headers: { "X-Authorization":token } })
     .then(response => {
@@ -99,21 +108,31 @@ function PostReport(req, res)
 
 //POST
 router.post('/:id', multipartMiddleware, async function(req, res){
-  let fileInfo = req.files.report_file;
-  let info = {
-    'Post ID:':req.params.id,
-    'filename':fileInfo.originalFilename,
-    'path':fileInfo.path,
-    'size':fileInfo.size,
-    'type':fileInfo.type
-  }
-  PostReport(req, res);
+  let assetID = req.params.id;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
+
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      PostReports(resp, req, res);
+    })
+    .catch((err) => {
+      let resMsg = {
+        "code":`${err.response.status}`,
+        "message:":err.message
+      };
+      res.status(err.response.status).json(resMsg);
+    });
 })
 
 
 //DELETE
 router.delete('/:id', async function(req, res){
-  let msg = 'Delete ID:' + req.params.id + ' Name:' + req.query.reportemplateName ;
+  let msg = 'Delete ID:' + req.params.id + ' Name:' + req.query.reportemplateName;
 
   res.status(200).json(msg);
 })
@@ -126,6 +145,5 @@ router.get('/', function (req, res) {
 router.get('/about', function (req, res) {
   res.send('About reports')
 })
-
 
 module.exports = router
