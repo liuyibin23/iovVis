@@ -345,7 +345,7 @@ CREATE OR REPLACE VIEW deviceattrkv AS
     device
   WHERE attribute_kv.entity_id::text = device.id::text;
 
-CREATE OR REPLACE VIEW asset_atrributes AS
+CREATE OR REPLACE VIEW asset_attributes AS
   SELECT attribute_kv.entity_id,
     max(
         CASE attribute_kv.attribute_key
