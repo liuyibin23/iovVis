@@ -82,8 +82,6 @@ router.get('/about', function (req, res) {
 // GET
 router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
-  console.log('assetId=' + assetID);
-
   let token = req.headers['x-authorization'];
   let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
 
@@ -101,14 +99,30 @@ router.get('/:assetId', async function (req, res) {
       });
     })
     .catch((err) => {
-      res.status(500).json('');
+      let status = err.response.status
+      if (status == 401){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'无授权访问。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 500){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'服务器内部错误。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 404){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'访问资源不存在。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }      
     });
 })
-
-router.post('/abc', multipartMiddleware, async function (req, res) {
-  let msg = 'Post ID:' + req.params.id + 'template_name:' + req.body.template_name;
-})
-
 
 function postTemplates(resp, req, res)
 {
@@ -166,12 +180,20 @@ function postTemplates(resp, req, res)
           res.status(response.status).json('成功创建报表模板并关联到资产。');
         })
         .catch(err => {
-          res.status(502).json('报表模板更新冲突。');
+          let resMsg = {
+            "code":`${err.response.status}`,
+            "message:":err.message
+          };
+          res.status(err.response.status).json(resMsg);
         });
     }
     else
     {
-      res.status(501).json('报表模板上传失败。');
+      let resMsg = {
+        "code":`501`,
+        "message:":'报表模板上传失败。'
+      };
+      res.status(501).json(resMsg);
     }
   });
 }
@@ -193,7 +215,11 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
       postTemplates(resp, req, res);
     })
     .catch((err) => {
-      res.status(500).json('');
+      let resMsg = {
+        "code":`${err.response.status}`,
+        "message:":err.message
+      };
+      res.status(err.response.status).json(resMsg);
     });
 })
 
