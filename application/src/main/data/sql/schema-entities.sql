@@ -265,6 +265,7 @@ CREATE TABLE IF NOT EXISTS patrol_record (
 	customer_id varchar(31),
 	originator_id varchar(31),
     originator_type varchar(255),
+    recode_type varchar(255),
     info varchar
 );
 CREATE OR REPLACE VIEW vassetattrkv AS

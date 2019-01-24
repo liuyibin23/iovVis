@@ -17,6 +17,7 @@ public class PatrolRecord extends BaseData<PatrolId> implements HasTenantId, Has
 	private CustomerId customerId;
 	private EntityId originator;
 	private String info;
+	private String recordType;
 
 	public PatrolRecord(PatrolId patrolId){super(patrolId);}
 
