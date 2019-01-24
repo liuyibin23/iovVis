@@ -4,46 +4,13 @@ var toks  = require('../middleware/token-verifier')
 var util  = require('./utils')
 var multipart = require('connect-multiparty');  
 var multipartMiddleware = multipart();
-
+const axios = require('axios')
 
 // middleware that is specific to this router
 router.use(function timeLog (req, res, next) {
   console.log('Time: ', Date.now())
   next()
 })
-
-// Get asset
-async function getAsset(assetId, token)
-{
-  let get_asset_api = util.getAPI() + 'assets?assetIds=' + assetId;
-  let assetInfo = await util.getSync(get_asset_api, {
-      headers: {
-          "X-Authorization": token
-      }
-  });
-
-  if (!assetInfo) return;
-
-  let len = assetInfo.length;
-  let data = new Array();
-  if (len > 0) {
-      console.log('1. Get asset info:%d', len);
-      assetInfo.forEach(info => {
-          let _dt = {id:'', name:'', type:''};
-          _dt.id   = info.id.id;
-          _dt.name = info.name;
-          _dt.type = info.type;
-
-          data.push(_dt);
-      });
-
-      return data;
-  }
-
-  let _dt = {id:'', name:'', type:''};
-  data.push(_dt);
-  return data;
-}
 
 // middleware that is specific to this router
 router.use(function timeLog (req, res, next) {
@@ -54,13 +21,81 @@ router.use(function timeLog (req, res, next) {
 // GET
 router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
-  console.log('assetId=' + assetID);
-
   let token = req.headers['x-authorization'];
-  let data = await getAsset(assetID, token);
+  let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
 
-  res.status(200).json(data);
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      resp.data.forEach(info => {
+        if (info.key === 'REPORTS') {
+          info.value = JSON.parse(info.value);
+          res.status(200).json(info);
+        }
+      });
+    })
+    .catch((err) => {
+      let status = err.response.status
+      if (status == 401){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'无授权访问。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 500){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'服务器内部错误。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 404){
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":'访问资源不存在。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }      
+    });
 })
+
+function PostReport(req, res)
+{
+  let token = req.headers['x-authorization'];
+  let host = 'http://sm.schdri.com:80/'
+  // 保存到属性表
+  // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
+  let url = util.getAPI() + 'plugins/telemetry/ASSET/' + req.params.id + '/SERVER_SCOPE';
+  //let bodyData = JSON.parse(body)
+  let fileInfo = req.files.report_file;
+  let str = [{
+      "report_name": req.body.report_name,
+      "report_url": host + 'testReport.docx'
+    }
+  ];
+
+  let val = JSON.stringify(str);
+
+  let data = {
+    "REPORTS": `${val}`
+  }
+
+  axios.post(url, (data), { headers: { "X-Authorization":token } })
+    .then(response => {
+      res.status(response.status).json('成功创建报表并关联到资产。');
+    })
+    .catch(err => {
+      let resMsg = {
+        "code":`${err.response.status}`,
+        "message:":err.message
+      };
+      res.status(err.response.status).json(resMsg);
+    });
+}
 
 //POST
 router.post('/:id', multipartMiddleware, async function(req, res){
@@ -72,8 +107,7 @@ router.post('/:id', multipartMiddleware, async function(req, res){
     'size':fileInfo.size,
     'type':fileInfo.type
   }
-
-  res.status(200).json(info);
+  PostReport(req, res);
 })
 
 
