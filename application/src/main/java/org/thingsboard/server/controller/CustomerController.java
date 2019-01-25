@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.CustomerAndAssets;
+import org.thingsboard.server.common.data.CustomerExInfo;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -188,11 +189,11 @@ public class CustomerController extends BaseController {
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/customers", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
-	public TextPageData<Customer> getCustomers(@RequestParam int limit,
-											   @RequestParam(required = false) String tenantIdStr,
-											   @RequestParam(required = false) String textSearch,
-											   @RequestParam(required = false) String idOffset,
-											   @RequestParam(required = false) String textOffset) throws ThingsboardException {
+	public TextPageData<CustomerExInfo> getCustomers(@RequestParam int limit,
+													 @RequestParam(required = false) String tenantIdStr,
+													 @RequestParam(required = false) String textSearch,
+													 @RequestParam(required = false) String idOffset,
+													 @RequestParam(required = false) String textOffset) throws ThingsboardException {
 		try {
 			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 			if (tenantIdStr != null){
@@ -200,10 +201,11 @@ public class CustomerController extends BaseController {
 				checkTenantId(tenantIdTmp);
 				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-				return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+//				return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+				return checkNotNull(customerService.findCustomerExInfosByTenantId(tenantId, pageLink));
 			}
 			else {
-				return checkNotNull(customerService.findCustomers(pageLink));
+				return checkNotNull(customerService.findCustomerExInfos(pageLink));
 			}
 
 		} catch (Exception e) {

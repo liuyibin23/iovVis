@@ -23,7 +23,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thingsboard.server.common.data.Customer;
+import org.thingsboard.server.common.data.CustomerExInfo;
 import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -42,8 +44,10 @@ import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserService;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
 import static org.thingsboard.server.dao.service.Validator.validateId;
@@ -162,6 +166,16 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 	}
 
 	@Override
+	public TextPageData<CustomerExInfo> findCustomerExInfosByTenantId(TenantId tenantId, TextPageLink pageLink) {
+		log.trace("Executing findCustomersByTenantId, tenantId [{}], pageLink [{}]", tenantId, pageLink);
+		Validator.validateId(tenantId, "Incorrect tenantId " + tenantId);
+		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+		List<Customer> customers = customerDao.findCustomersByTenantId(tenantId.getId(), pageLink);
+		List<CustomerExInfo> customerExInfos = customersToCustomerExInfos(customers);
+		return new TextPageData<>(customerExInfos, pageLink);
+	}
+
+	@Override
 	public TextPageData<Customer> findCustomers(TextPageLink pageLink) {
 		log.trace("Executing findCustomersByTenantId, pageLink [{}]",  pageLink);
 
@@ -179,10 +193,51 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 	}
 
 	@Override
+	public TextPageData<CustomerExInfo> findCustomerExInfos(TextPageLink pageLink){
+		log.trace("Executing findCustomersByTenantId, pageLink [{}]",  pageLink);
+
+		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+		List<Customer> customers = customerDao.findCustomers(pageLink);
+		List<CustomerExInfo> customerExInfos = customersToCustomerExInfos(customers);
+		return new TextPageData<>(customerExInfos, pageLink);
+	}
+
+	@Override
 	public void deleteCustomersByTenantId(TenantId tenantId) {
 		log.trace("Executing deleteCustomersByTenantId, tenantId [{}]", tenantId);
 		Validator.validateId(tenantId, "Incorrect tenantId " + tenantId);
 		customersByTenantRemover.removeEntities(tenantId, tenantId);
+	}
+
+	private List<CustomerExInfo> customersToCustomerExInfos(List<Customer> customers){
+		List<CustomerExInfo> customerExInfos = customers.stream().map(CustomerExInfo::new).collect(Collectors.toList());
+		customerExInfos.forEach(customerExInfo -> {
+			List<User> adminUsers = new ArrayList<>() ;
+			List<User> commonUsers = new ArrayList<>() ;
+//					List<User> adminUsers = userService.findCustomerUsers(customerExInfo.getTenantId(),customerExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
+//					.getData().stream().filter(user ->
+//							user.getAdditionalInfo().has("power") && user.getAdditionalInfo().get("power").asText().equals("admin")
+//					).collect(Collectors.toList());
+
+			userService.findCustomerUsers(customerExInfo.getTenantId(),customerExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
+					.getData().stream().forEach(user -> {
+				if(user.getAdditionalInfo().has("power")){
+					if(user.getAdditionalInfo().get("power").asText().equals("admin")){
+						adminUsers.add(user);
+						customerExInfo.getAdminUserNameList().add(user.getFirstName());
+					} else if(user.getAdditionalInfo().get("power").asText().equals("common")){
+						commonUsers.add(user);
+					}
+				}
+			});
+
+			customerExInfo.setAdminCount(adminUsers.size());
+			customerExInfo.setUserCount(commonUsers.size());
+			customerExInfo.setInfrastructureCount(
+					assetService.findAssetExInfoByTenantAndCustomer(customerExInfo.getTenantId(),customerExInfo.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()
+							.stream().filter(asset -> "BRIDGE".equals(asset.getType()) || "TUNNEL".equals(asset.getType()) || "SLOPE".equals(asset.getType()) || "ROAD".equals(asset.getType())).count());
+		});
+		return customerExInfos;
 	}
 
 	private DataValidator<Customer> customerValidator =

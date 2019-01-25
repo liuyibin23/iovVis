@@ -21,6 +21,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.TenantExInfo;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -40,7 +42,9 @@ import org.thingsboard.server.dao.sql.user.UserRepository;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
 import static org.thingsboard.server.dao.service.Validator.validateId;
@@ -136,9 +140,41 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 	}
 
 	@Override
+	public TextPageData<TenantExInfo> findTenantExInfos(TextPageLink pageLink) {
+		log.trace("Executing findTenants pageLink [{}]", pageLink);
+		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+		List<Tenant> tenants = tenantDao.findTenantsByRegion(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION, pageLink);
+		return new TextPageData<>(tenantsToTenantExInfos(tenants), pageLink);
+	}
+
+	@Override
 	public void deleteTenants() {
 		log.trace("Executing deleteTenants");
 		tenantsRemover.removeEntities(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION);
+	}
+
+	private List<TenantExInfo> tenantsToTenantExInfos(List<Tenant> tenants){
+		List<TenantExInfo> tenantExInfos = tenants.stream().map(TenantExInfo::new).collect(Collectors.toList());
+		tenantExInfos.forEach(tenantExInfo -> {
+			List<User> adminUsers = new ArrayList<>();
+			List<User> commonUsers = new ArrayList<>();
+
+			userService.findTenantAdmins(tenantExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
+					.getData().forEach(user -> {
+				if (user.getAdditionalInfo().has("power")) {
+					if (user.getAdditionalInfo().get("power").asText().equals("admin")) {
+						adminUsers.add(user);
+						tenantExInfo.getAdminUserNameList().add(user.getFirstName());
+					} else if (user.getAdditionalInfo().get("power").asText().equals("common")) {
+						commonUsers.add(user);
+					}
+				}
+			});
+
+			tenantExInfo.setAdminCount(adminUsers.size());
+			tenantExInfo.setUserCount(commonUsers.size());
+		});
+		return tenantExInfos;
 	}
 
 	private DataValidator<Tenant> tenantValidator =

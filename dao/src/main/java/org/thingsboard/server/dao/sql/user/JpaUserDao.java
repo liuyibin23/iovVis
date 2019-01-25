@@ -44,7 +44,7 @@ import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID_STR;
 public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> implements UserDao {
 
 	private String TENANTADMINFILTERSTR = "common";//"%power%\"common\"%";
-	private String TENANTUSERFILTERSTR = "\"\"";//"%power%\"\"%";
+	private String TENANTUSERFILTERSTR = "\"admin\"";//"%power%\"\"%";
 
 	@Autowired
 	private UserRepository userRepository;

@@ -27,21 +27,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Device;
-import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.EntityView;
-import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
+import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.common.data.security.DeviceCredentialsType;
 import org.thingsboard.server.dao.customer.CustomerDao;
@@ -54,11 +47,7 @@ import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -187,6 +176,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return new TextPageData<>(devices, pageLink);
     }
 
+
     @Override
     public TextPageData<Device> findDevicesByType(String type, TextPageLink pageLink) {
         log.trace("Executing findDevicesByTenantIdAndType, type [{}], pageLink [{}]", type, pageLink);
@@ -268,6 +258,50 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
         customerDeviceUnasigner.removeEntities(tenantId, customerId);
+    }
+
+//    private void queryTest() {
+//        DeviceSearchQuery query = new DeviceSearchQuery();
+//
+//
+//        RelationsSearchParameters parameters = new RelationsSearchParameters(new AssetId(UUIDConverter.fromString("1e91df4265c7510b372db8be707c5f4")),EntitySearchDirection.FROM,1);
+//        query.setParameters(parameters);
+//        query.setRelationType(EntityRelation.CONTAINS_TYPE);
+////        List<String> deviceTypes = new ArrayList<>();
+//////        deviceTypes.add(EntityType.PROJECT.toString());
+//////        deviceTypes.add(EntityType.BRIDGE.toString());
+//////        deviceTypes.add(EntityType.TUNNEL.toString());
+//////        deviceTypes.add(EntityType.ROAD.toString());
+//////        deviceTypes.add(EntityType.SLOPE.toString());
+////        query.setDeviceTypes(deviceTypes);
+//        List<Device> devices = null;
+//        try {
+////            UUID.fromString("1e8ee1d830957d09eca119bc8fa90df")
+//            devices = findDevicesByQueryWithOutTypeFilter(new TenantId(UUIDConverter.fromString("1e8ee1d830957d09eca119bc8fa90df")),query).get();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        }
+//        List<Device> r = devices;
+//    }
+
+    @Override
+    public ListenableFuture<List<Device>> findDevicesByQueryWithOutTypeFilter(TenantId tenantId, DeviceSearchQuery query) {
+        ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
+        ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
+            EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
+            List<ListenableFuture<Device>> futures = new ArrayList<>();
+            for (EntityRelation relation : r) {
+                EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
+                if (entityId.getEntityType() == EntityType.DEVICE) {
+                    futures.add(findDeviceByIdAsync(tenantId, new DeviceId(entityId.getId())));
+                }
+            }
+            return Futures.successfulAsList(futures);
+        });
+
+        return devices;
     }
 
     @Override
