@@ -1,6 +1,7 @@
 package org.thingsboard.server.dao.sql.task;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -14,7 +15,7 @@ import org.thingsboard.server.dao.util.SqlDao;
 import java.util.List;
 
 @SqlDao
-public interface TaskRepository extends CrudRepository<TaskEntity, String> {
+public interface TaskRepository extends CrudRepository<TaskEntity, String>, JpaSpecificationExecutor<TaskEntity> {
 	@Query("SELECT a FROM TaskEntity a WHERE a.tenantId = :tenantId AND a.originatorId = :originatorId " +
 			"AND a.originatorType = :entityType  AND a.taskKind = :taskType ORDER BY a.taskKind ASC, a.id DESC")
 	List<TaskEntity> findLatestByOriginatorAndType(@Param("tenantId") String tenantId,
@@ -25,7 +26,7 @@ public interface TaskRepository extends CrudRepository<TaskEntity, String> {
 	@Query("SELECT a FROM TaskEntity a ")
 	List<TaskEntity> findAll();
 
-	List<TaskEntity> findAllByTenantId(TenantId tenantId);
+	List<TaskEntity> findAllByTenantId(String tenantId);
 
-	List<TaskEntity> findAllByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId);
+	List<TaskEntity> findAllByTenantIdAndCustomerId(String tenantId, String customerId);
 }
