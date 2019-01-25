@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.id.*;
 
 @Data
@@ -23,6 +24,8 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	private String taskName;
 //	private String name;
 	private JsonNode additionalInfo;
+
+	private EntityId alarmId;
 
 	private long startTs;
 	private long endTs;
@@ -43,6 +46,7 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 		this.customerId = task.getCustomerId();
 		this.userId = task.getUserId();
 		this.taskName = task.getTaskName();
+		this.alarmId = task.getAlarmId();
 
 		this.startTs = task.getStartTs();
 		this.endTs = task.getEndTs();
@@ -60,19 +64,19 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	}
 
 
-	@Override
-	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("Task [tenantId=");
-		builder.append(tenantId);
-		builder.append(", customerId=");
-		builder.append(customerId);
-		builder.append(", additionalInfo=");
-		builder.append(", createdTime=");
-		builder.append(createdTime);
-		builder.append(", id=");
-		builder.append(id);
-		builder.append("]");
-		return builder.toString();
-	}
+//	@Override
+//	public String toString() {
+//		StringBuilder builder = new StringBuilder();
+//		builder.append("Task [tenantId=");
+//		builder.append(tenantId);
+//		builder.append(", customerId=");
+//		builder.append(customerId);
+//		builder.append(", additionalInfo=");
+//		builder.append(", createdTime=");
+//		builder.append(createdTime);
+//		builder.append(", id=");
+//		builder.append(id);
+//		builder.append("]");
+//		return builder.toString();
+//	}
 }

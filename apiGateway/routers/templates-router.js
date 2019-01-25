@@ -1,10 +1,10 @@
-var express = require('express')
-var router = express.Router()
-var toks = require('../middleware/token-verifier')
-var util = require('./utils')
-const fs = require('fs')
-const axios = require('axios')
-var request = require('request')
+var express = require('express');
+var router = express.Router();
+var toks = require('../middleware/token-verifier');
+var util = require('./utils');
+const fs = require('fs');
+const axios = require('axios');
+var request = require('request');
 
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();

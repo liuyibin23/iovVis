@@ -13,19 +13,23 @@ import org.thingsboard.server.common.data.task.Task;
 @Builder
 @AllArgsConstructor
 public class PatrolRecord extends BaseData<PatrolId> implements HasTenantId, HasCustomerId {
-	private TenantId tenantId;
-	private CustomerId customerId;
-	private EntityId originator;
-	private String info;
-	private String recordType;
+    private TenantId tenantId;
+    private CustomerId customerId;
+    private EntityId originator;
+    private EntityId taskId;
+    private String info;
+    private String recordType;
 
-	public PatrolRecord(PatrolId patrolId){super(patrolId);}
+    public PatrolRecord(PatrolId patrolId) {
+        super(patrolId);
+    }
 
-	public PatrolRecord(PatrolRecord record) {
-		super(record.getId());
-		this.tenantId = record.getTenantId();
-		this.customerId = record.getCustomerId();
-		this.originator = record.getOriginator();
-		this.info = record.getInfo();
-	}
+    public PatrolRecord(PatrolRecord record) {
+        super(record.getId());
+        this.taskId = record.getTaskId();
+        this.tenantId = record.getTenantId();
+        this.customerId = record.getCustomerId();
+        this.originator = record.getOriginator();
+        this.info = record.getInfo();
+    }
 }
