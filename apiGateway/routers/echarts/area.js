@@ -55,7 +55,7 @@ var chart_data = {
     fillData: async function(params, token, res, callback) {
         console.log(token);
         let apiUrl = `http://cf.beidouapp.com:8080/api/plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
-        await axios.get(apiUrl, { headers: { "X-Authorization": token } })
+        axios.get(apiUrl, { headers: { "X-Authorization": token } })
         .then((resp) => {
             let data = resp.data.crackWidth;
             option.title.text = '设备ID: ' + params.devid;

@@ -1,3 +1,5 @@
+const axios = require('axios');
+
 var option = {
     backgroundColor: '#2c343c',
 
@@ -64,4 +66,24 @@ var option = {
         }
     ]
 };
-module.exports = option;
+
+var chart_pie = {
+	name: 'chart_data',
+	version: '1.0.0',
+
+    fillData: async function(params, token, res, callback) {
+        console.log(token);
+        let apiUrl = `http://cf.beidouapp.com:8080/api/plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
+        await axios.get(apiUrl, { headers: { "X-Authorization": token } })
+        .then((resp) => {
+            let data = resp.data.crackWidth;
+            option.title.text = '设备ID: ' + params.devid;
+            callback(option, params, res);
+        })
+        .catch((err) =>{
+            callback(null, params, res);
+        });  
+    }
+}
+
+module.exports = chart_pie;

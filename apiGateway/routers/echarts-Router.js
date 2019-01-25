@@ -63,12 +63,11 @@ router.get('/:id', async function (req, res) {
     let token = req.headers['x-authorization'];;
     switch (type) {
         case 'area':
-            option = await chart_area.fillData(params, token, res, processData);
+            chart_area.fillData(params, token, res, processData);
             break;
         case 'pie':
         {
-            option = chart_pie;
-            option.title.text = '设备ID:' + params.devid;
+            chart_pie.fillData(params, token, res, processData);
             break;
         }
         default:
