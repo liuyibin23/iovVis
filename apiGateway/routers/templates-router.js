@@ -97,6 +97,12 @@ router.get('/:assetId', async function (req, res) {
           res.status(200).json(info);
         }
       });
+
+      let resMsg = {
+        "code": `${resp.status}`,
+        "message:": '无数据'
+      };
+      res.status(resp.status).json(resMsg);
     })
     .catch((err) => {
       let status = err.response.status
