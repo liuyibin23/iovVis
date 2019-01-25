@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.TenantAndAsset;
+import org.thingsboard.server.common.data.TenantExInfo;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -99,13 +100,14 @@ public class TenantController extends BaseController {
     @PreAuthorize("hasAuthority('SYS_ADMIN')")
     @RequestMapping(value = "/tenants", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
-    public TextPageData<Tenant> getTenants(@RequestParam int limit,
-                                           @RequestParam(required = false) String textSearch,
-                                           @RequestParam(required = false) String idOffset,
-                                           @RequestParam(required = false) String textOffset) throws ThingsboardException {
+    public TextPageData<TenantExInfo> getTenants(@RequestParam int limit,
+                                                 @RequestParam(required = false) String textSearch,
+                                                 @RequestParam(required = false) String idOffset,
+                                                 @RequestParam(required = false) String textOffset) throws ThingsboardException {
         try {
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-            return checkNotNull(tenantService.findTenants(pageLink));
+//            return checkNotNull(tenantService.findTenants(pageLink));
+            return checkNotNull(tenantService.findTenantExInfos(pageLink));
         } catch (Exception e) {
             throw handleException(e);
         }
