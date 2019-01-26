@@ -56,6 +56,16 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
                                           @Param("searchText") String searchText,
                                           @Param("authority") Authority authority,
                                           Pageable pageable);
+
+	@Query("SELECT u FROM UserEntity u WHERE u.customerId = :customerId AND u.authority = :authority " +
+			"AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))" +
+			"AND u.id > :idOffset ORDER BY u.id")
+	List<UserEntity> findUsersByAuthority(@Param("customerId") String customerId,
+										  @Param("idOffset") String idOffset,
+										  @Param("searchText") String searchText,
+										  @Param("authority") Authority authority,
+										  Pageable pageable);
+
 	@Query("SELECT u FROM UserEntity u WHERE" +
 			" LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))" +
 			"AND u.id > :idOffset ORDER BY u.id")
