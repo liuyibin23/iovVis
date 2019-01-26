@@ -169,10 +169,95 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
 })
 
 //DELETE
-router.delete('/:id', async function (req, res) {
-  let msg = 'Delete ID:' + req.params.id + ' Name:' + req.query.reportemplateName;
+function processDeleteReq(resp, req, res, token)
+{
+  var info = null;
+  // 遍历，查找REPORTS属性
+  for (var i = 0; i < resp.data.length; i++)
+  {
+    info = resp.data[i];
+    if (info.key === 'REPORTS')
+    {
+        break;
+    }
+  }
+  
+  // 遍历REPORTS属性，删除匹配的
+  let find = false;
+  let new_value = new Array();
+  if (info)
+  {
+    let jsonVal = JSON.parse(info.value);
+    for (var i = 0; i < jsonVal.length; i++)
+    {
+      let _dt = jsonVal[i];
+      if (_dt.report_name === req.query.reportemplateName)
+      {
+        find = true;
+      }
+      else
+      {
+        new_value.push(_dt);
+      }
+    }
+  }
 
-  res.status(200).json(msg);
+  if (find)
+  {
+    // 更新删除后的属性
+    let val = JSON.stringify(new_value);
+    let data = {
+      "REPORTS": `${val}`
+    };
+    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+    axios.post(url, (data), { headers: { "X-Authorization":token } })
+      .then(response => {
+        let resMsg = {
+          "code":'200',
+          "message:":'成功删除资产的报表。'
+        };
+        res.status(response.status).json(resMsg);
+      })
+      .catch(err => {
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":err.message
+        };
+        res.status(err.response.status).json(resMsg);
+      });
+  }
+  else
+  {
+    let resMsg = {
+      "code":"200",
+      "message:": '未找到匹配数据'
+    };
+    res.status(200).json(resMsg);
+  }
+}
+
+//DELETE
+router.delete('/:id', async function (req, res) {
+  // 查询属性
+  let assetID = req.params.id;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
+
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      processDeleteReq(resp, req, res, token);
+    })
+    .catch((err) => {
+      let resMsg = {
+        "code":`${err.response.status}`,
+        "message:":err.message
+      };
+      res.status(err.response.status).json(resMsg);
+    });
 })
 
 // define the home page route

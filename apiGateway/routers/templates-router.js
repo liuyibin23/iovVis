@@ -261,7 +261,6 @@ function processDeleteReq(resp, req, res, token)
       if (_dt.template_name === req.query.templateName)
       {
         find = true;
-        //break;
       }
       else
       {
