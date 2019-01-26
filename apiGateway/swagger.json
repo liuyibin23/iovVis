@@ -396,6 +396,53 @@
         }
       }
     },
+    "/tables": {
+      "get": {
+        "tags": [
+          "文件内容"
+        ],
+        "summary": "根据不通过模板和对应的graphQL语句，查询返回的结果JSON对象",
+        "description": "根据不同的模板（template），确定数据源的类型，根据graphQL获得相关的对象。",
+        "parameters": [
+          {
+            "name": "template",
+            "type": "string",
+            "enum": [
+              "定期监测报告",
+              "系统自检报告",
+              "自动监测报表"
+            ],
+            "in": "query",
+            "required": true,
+            "description": "模板类型。"
+          },
+          {
+            "name": "graphQL",
+            "in": "query",
+            "required": true,
+            "description": "图标类型。",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回图表成功。",
+            "schema": {
+              "type": "string"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
     "/content/{fileId}": {
       "get": {
         "tags": [
@@ -504,7 +551,7 @@
         }
       }
     },
-    "/warnings/rules/{assetId}": {
+    "/rules/warnings/{assetId}": {
       "get": {
         "tags": [
           "预警"
@@ -557,6 +604,72 @@
         "responses": {
           "200": {
             "description": "设置预警规则成功。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/rules/alarms/{deviceId}": {
+      "get": {
+        "tags": [
+          "告警"
+        ],
+        "summary": "获取设备的告警规则",
+        "description": "返回绑定在该设备的告警规则。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/deviceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回设备的告警规则。",
+            "schema": {
+              "$ref": "#/definitions/AlarmRules"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "告警"
+        ],
+        "summary": "设置设备的告警规则",
+        "description": "更新设备的告警规则，需要设置规则引擎中的CONFIG_ALARM_RULE规则链的节点1（一级告警规则配置）和节点8（二级告警规则配置）。",
+        "parameters": [
+          {
+            "$ref": "#/parameters/deviceId"
+          },
+          {
+            "in": "body",
+            "name": "body",
+            "description": "告警规则分两级。一级触发，创建不确定告警（INDETERMINATE），二级触发创建警告（WARNING）。二级警告触发将导致设备所属资产的属性从蓝色升级为橙色。",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AlarmRules"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "设置告警规则成功。"
           },
           "401": {
             "$ref": "#/responses/Standard401ErrorResponse"
@@ -628,6 +741,41 @@
               }
             }
           }
+        }
+      }
+    },
+    "IndeterminateRules": {
+      "type": "object",
+      "description": "一级告警规则（一般）。",
+      "properties": {
+        "min": {
+          "type": "integer"
+        },
+        "max": {
+          "type": "integer"
+        }
+      }
+    },
+    "WarningRules": {
+      "type": "object",
+      "description": "二级告警规则（严重）。",
+      "properties": {
+        "min": {
+          "type": "integer"
+        },
+        "max": {
+          "type": "integer"
+        }
+      }
+    },
+    "AlarmRules": {
+      "type": "object",
+      "properties": {
+        "IndeterminateRules": {
+          "$ref": "#/definitions/IndeterminateRules"
+        },
+        "WarningRules": {
+          "$ref": "#/definitions/WarningRules"
         }
       }
     }

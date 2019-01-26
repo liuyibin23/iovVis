@@ -156,8 +156,8 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 	private List<TenantExInfo> tenantsToTenantExInfos(List<Tenant> tenants){
 		List<TenantExInfo> tenantExInfos = tenants.stream().map(TenantExInfo::new).collect(Collectors.toList());
 		tenantExInfos.forEach(tenantExInfo -> {
-			List<User> adminUsers = new ArrayList<>() ;
-			List<User> commonUsers = new ArrayList<>() ;
+			List<User> adminUsers = new ArrayList<>();
+			List<User> commonUsers = new ArrayList<>();
 
 			userService.findTenantAdmins(tenantExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
 					.getData().forEach(user -> {

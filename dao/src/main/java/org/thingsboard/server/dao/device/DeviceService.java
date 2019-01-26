@@ -64,6 +64,8 @@ public interface DeviceService {
 
     void unassignCustomerDevices(TenantId tenantId, CustomerId customerId);
 
+    ListenableFuture<List<Device>> findDevicesByQueryWithOutTypeFilter(TenantId tenantId, DeviceSearchQuery query);
+
     ListenableFuture<List<Device>> findDevicesByQuery(TenantId tenantId, DeviceSearchQuery query);
 
     ListenableFuture<List<EntitySubtype>> findDeviceTypesByTenantId(TenantId tenantId);
