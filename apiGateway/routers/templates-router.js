@@ -150,56 +150,63 @@ function postTemplates(resp, req, res)
   let uploadFileHost = host + 'api/file/upload/';
   request.post({ url:uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
-      return console.error('upload failed:', err);
-    }
-    console.log('Upload successful!  Server responded with:', body);
-
-    if (JSON.parse(body).success)
-    {
-      // 保存到属性表
-      // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
-      let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
-      let bodyData = JSON.parse(body)
-      let str = [{
-          "template_name": req.body.template_name,
-          "template_url": host + bodyData.fileId
-        }
-      ];
-      
-      resp.data.forEach(info => {
-        if (info.key === 'TEMPLATES') {
-          let data = JSON.parse(info.value);
-          data.forEach(_dt => {
-            str.push(_dt);
-          })      
-        }
-      });
-
-      let val = JSON.stringify(str);
-
-      let data = {
-        "TEMPLATES": `${val}`
-      };
-
-      axios.post(url, (data), { headers: { "X-Authorization":token } })
-        .then(response => {
-          res.status(response.status).json('成功创建报表模板并关联到资产。');
-        })
-        .catch(err => {
-          let resMsg = {
-            "code":`${err.response.status}`,
-            "message:":err.message
-          };
-          res.status(err.response.status).json(resMsg);
-        });
-    }
-    else
-    {
       let resMsg = {
         "code":`501`,
         "message:":'报表模板上传失败。'
       };
       res.status(501).json(resMsg);
+    }
+    else
+    {
+      console.log('Upload successful!  Server responded with:', body);
+
+      if (JSON.parse(body).success)
+      {
+        // 保存到属性表
+        // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
+        let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+        let bodyData = JSON.parse(body)
+        let str = [{
+            "template_name": req.body.template_name,
+            "template_url": host + bodyData.fileId
+          }
+        ];
+        
+        resp.data.forEach(info => {
+          if (info.key === 'TEMPLATES') {
+            let data = JSON.parse(info.value);
+            data.forEach(_dt => {
+              str.push(_dt);
+            })      
+          }
+        });
+
+        let val = JSON.stringify(str);
+
+        let data = {
+          "TEMPLATES": `${val}`
+        };
+
+        axios.post(url, (data), { headers: { "X-Authorization":token } })
+          .then(response => {
+            res.status(response.status).json('成功创建报表模板并关联到资产。');
+          })
+          .catch(err => {
+            let resMsg = {
+              "code":`${err.response.status}`,
+              "message:":err.message
+            };
+            res.status(err.response.status).json(resMsg);
+          });
+      }
+      else
+      {
+        let resMsg = {
+          "code":`501`,
+          "message:":'报表模板上传失败。'
+        };
+        res.status(501).json(resMsg);
+      }
     }
   });
 }
@@ -229,12 +236,96 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     });
 })
 
+function processDeleteReq(resp, req, res, token)
+{
+  var info = null;
+  // 遍历，查找TEMPLATES属性
+  for (var i = 0; i < resp.data.length; i++)
+  {
+    info = resp.data[i];
+    if (info.key === 'TEMPLATES')
+    {
+        break;
+    }
+  }
+  
+  // 遍历TEMPLATES属性，删除匹配的
+  let find = false;
+  let new_value = new Array();
+  if (info)
+  {
+    let jsonVal = JSON.parse(info.value);
+    for (var i = 0; i < jsonVal.length; i++)
+    {
+      let _dt = jsonVal[i];
+      if (_dt.template_name === req.query.templateName)
+      {
+        find = true;
+        //break;
+      }
+      else
+      {
+        new_value.push(_dt);
+      }
+    }
+  }
+
+  if (find)
+  {
+    // 更新删除后的属性
+    let val = JSON.stringify(new_value);
+    let data = {
+      "TEMPLATES": `${val}`
+    };
+    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+    axios.post(url, (data), { headers: { "X-Authorization":token } })
+      .then(response => {
+        let resMsg = {
+          "code":'200',
+          "message:":'成功删除资产的模板。'
+        };
+        res.status(response.status).json(resMsg);
+      })
+      .catch(err => {
+        let resMsg = {
+          "code":`${err.response.status}`,
+          "message:":err.message
+        };
+        res.status(err.response.status).json(resMsg);
+      });
+  }
+  else
+  {
+    let resMsg = {
+      "code":"200",
+      "message:": '未找到匹配数据'
+    };
+    res.status(200).json(resMsg);
+  }
+}
 
 //DELETE
 router.delete('/:id', async function (req, res) {
-  let msg = 'Delete ID:' + req.params.id + ' Name:' + req.query.templateName;
+  // 查询属性
+  let assetID = req.params.id;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
 
-  res.status(200).json(msg);
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      processDeleteReq(resp, req, res, token);
+    })
+    .catch((err) => {
+      let resMsg = {
+        "code":`${err.response.status}`,
+        "message:":err.message
+      };
+      res.status(err.response.status).json(resMsg);
+    });
 })
 
 // define the about route
