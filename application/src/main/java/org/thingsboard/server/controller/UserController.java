@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.rule.engine.api.MailService;
+import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.audit.ActionType;
@@ -130,10 +131,10 @@ public class UserController extends BaseController {
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/user", method = RequestMethod.POST)
-    @ResponseBody 
+    @ResponseBody
     public User saveUser(@RequestBody User user,
                          @RequestParam(required = false, defaultValue = "true") boolean sendActivationMail,
-            HttpServletRequest request) throws ThingsboardException {
+                         HttpServletRequest request) throws ThingsboardException {
         try {
             SecurityUser authUser = getCurrentUser();
             if (authUser.getAuthority() == Authority.CUSTOMER_USER && !authUser.getId().equals(user.getId())) {
@@ -246,8 +247,9 @@ public class UserController extends BaseController {
             throw handleException(e);
         }
     }
+
     @PreAuthorize("hasAuthority('SYS_ADMIN')")
-    @RequestMapping(value = "/admin/users", params = { "limit" }, method = RequestMethod.GET)
+    @RequestMapping(value = "/admin/users", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public TextPageData<User> getAllusers(
             @RequestParam int limit,
@@ -262,8 +264,9 @@ public class UserController extends BaseController {
             throw handleException(e);
         }
     }
+
     @PreAuthorize("hasAuthority('SYS_ADMIN')")
-    @RequestMapping(value = "/tenant/{tenantId}/users", params = { "limit" }, method = RequestMethod.GET)
+    @RequestMapping(value = "/tenant/{tenantId}/users", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public TextPageData<User> getTenantAdmins(
             @PathVariable("tenantId") String strTenantId,
@@ -281,8 +284,8 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAuthority('TENANT_ADMIN')")
-    @RequestMapping(value = "/customer/{customerId}/users", params = { "limit" }, method = RequestMethod.GET)
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @RequestMapping(value = "/customer/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public TextPageData<User> getCustomerUsers(
             @PathVariable("customerId") String strCustomerId,
@@ -293,8 +296,15 @@ public class UserController extends BaseController {
         checkParameter("customerId", strCustomerId);
         try {
             CustomerId customerId = new CustomerId(toUUID(strCustomerId));
-            checkCustomerId(customerId);
+
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+
+            if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+                return checkNotNull(userService.findCustomerUsers(customerId, pageLink));
+            } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+                checkCustomerId(customerId);
+            }
+
             TenantId tenantId = getCurrentUser().getTenantId();
             return checkNotNull(userService.findCustomerUsers(tenantId, customerId, pageLink));
         } catch (Exception e) {
@@ -302,46 +312,46 @@ public class UserController extends BaseController {
         }
     }
 
-	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
-	@RequestMapping(value = "/user/activationUser", method = RequestMethod.DELETE)
-	User unAceivationUser(@RequestParam String strUserId) throws ThingsboardException {
-		User user = null;
-		try {
-			UserId userId = new UserId(toUUID(strUserId));
-			user = checkUserId(userId);
-			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @RequestMapping(value = "/user/activationUser", method = RequestMethod.DELETE)
+    User unAceivationUser(@RequestParam String strUserId) throws ThingsboardException {
+        User user = null;
+        try {
+            UserId userId = new UserId(toUUID(strUserId));
+            user = checkUserId(userId);
+            UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(), user.getId());
 
-			userCredentials.setEnabled(false);
+            userCredentials.setEnabled(false);
 
-			userService.saveUserCredentials(getTenantId(),userCredentials);
-
-
-		} catch (ThingsboardException e) {
-			throw handleException(e);
-		}
-
-		return user;
-	}
-
-	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
-	@RequestMapping(value = "/user/activationUser", method = RequestMethod.POST)
-	User aceivationUser(@RequestParam String strUserId) throws ThingsboardException {
-		User user = null;
-		try {
-			UserId userId = new UserId(toUUID(strUserId));
-			user = checkUserId(userId);
-			UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(),user.getId());
-
-			userCredentials.setEnabled(true);
-
-			userService.saveUserCredentials(getTenantId(),userCredentials);
+            userService.saveUserCredentials(getTenantId(), userCredentials);
 
 
-		} catch (ThingsboardException e) {
-			throw handleException(e);
-		}
+        } catch (ThingsboardException e) {
+            throw handleException(e);
+        }
 
-		return user;
-	}
-    
+        return user;
+    }
+
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @RequestMapping(value = "/user/activationUser", method = RequestMethod.POST)
+    User aceivationUser(@RequestParam String strUserId) throws ThingsboardException {
+        User user = null;
+        try {
+            UserId userId = new UserId(toUUID(strUserId));
+            user = checkUserId(userId);
+            UserCredentials userCredentials = userService.findUserCredentialsByUserId(getTenantId(), user.getId());
+
+            userCredentials.setEnabled(true);
+
+            userService.saveUserCredentials(getTenantId(), userCredentials);
+
+
+        } catch (ThingsboardException e) {
+            throw handleException(e);
+        }
+
+        return user;
+    }
+
 }
