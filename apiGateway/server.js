@@ -9,6 +9,7 @@ const templatesRouter = require('./routers/templates-router');
 const reportsRouter = require('./routers/reports-router');
 const echartsRouter = require('./routers/echarts-Router');
 const alarmsRouter = require('./routers/alarms-router');
+const warningsRouter = require('./routers/warnings-router');
 const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
 
@@ -29,6 +30,7 @@ app.use('/api/v1/templates', templatesRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/alarms', alarmsRouter);
 app.use('/api/v1/echarts', echartsRouter);
+app.use('/api/v1/warnings', warningsRouter);
 app.use(defaultRouter);
 app.use(errHandler);
 logger.log('info', 'Simple API Gateway run on localhost:%d', port);
