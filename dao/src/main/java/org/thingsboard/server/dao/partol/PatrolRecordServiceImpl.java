@@ -72,6 +72,9 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 throw new IllegalArgumentException("taskId can not be null!");
             }
             Task task = taskDao.findTaskById(patrolRecord.getTaskId().getId());
+            if(task == null) {
+                throw new IllegalArgumentException("task not exists!");
+            }
             if (task.getTaskKind() != TaskKind.PATROL && task.getTaskKind() != TaskKind.MAINTENANCE) {
                 throw new IllegalStateException(String.format("%s not supported, task type must be [%s,%s]",
                         task.getTaskKind(), TaskKind.PATROL, TaskKind.MAINTENANCE));

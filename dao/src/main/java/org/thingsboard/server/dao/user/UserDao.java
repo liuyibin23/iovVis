@@ -70,6 +70,8 @@ public interface UserDao extends Dao<User> {
      */
     List<User> findCustomerUsers(UUID tenantId, UUID customerId, TextPageLink pageLink);
 
+    List<User> findCustomerUsers(UUID customerId, TextPageLink pageLink);
+
     /**
     * @Description: Count Tenant Admin
     * @Author: ShenJi
