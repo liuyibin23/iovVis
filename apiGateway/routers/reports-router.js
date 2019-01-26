@@ -26,18 +26,29 @@ router.get('/:assetId', async function (req, res) {
     }
   })
     .then((resp) => {
-      resp.data.forEach(info => {
-        if (info.key === 'REPORTS') {
-          info.value = JSON.parse(info.value);
-          res.status(200).json(info);
-        }
-      });
-
-      let resMsg = {
-        "code": `${resp.status}`,
-        "message:": '无数据'
-      };
-      res.status(resp.status).json(resMsg);
+      let find = false;
+      for (var i = 0; i < resp.data.length; i++)
+      {
+          let info = resp.data[i];
+          if (info.key === 'REPORTS') {
+            find = true;
+            info.value = JSON.parse(info.value);
+            
+            let resMsg = {
+              "code":'200',
+              "message:":info.value
+            };
+            res.status(200).json(resMsg);
+            break;
+          }
+      }
+      if (!find) {
+        let resMsg = {
+          "code": `${resp.status}`,
+          "message:": '无数据'
+        };
+        res.status(resp.status).json(resMsg);
+      }
     })
     .catch((err) => {
       let status = err.response.status;

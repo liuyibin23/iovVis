@@ -41,28 +41,6 @@ async function getAsset(assetId, token) {
   return data;
 }
 
-// http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/values/attributes/SERVER_SCOPE
-async function getAttributes(assetId, token) {
-  let get_attributes_api = util.getAPI() + `/plugins/telemetry/ASSET/${assetId}/values/attributes/SERVER_SCOPE`;
-  let attributesInfo = await util.getSync(get_attributes_api, {
-    headers: {
-      "X-Authorization": token
-    }
-  });
-
-  if (!attributesInfo) return;
-  let data = new Array();
-  let len = attributesInfo.length;
-  if (len > 0) {
-    attributesInfo.forEach(info => {
-      if (info.key === 'TEMPLATES') {
-        data.push(info);
-        return data;
-      }
-    });
-  }
-}
-
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
   console.log('Templat Time: ', Date.now())
@@ -91,18 +69,29 @@ router.get('/:assetId', async function (req, res) {
     }
   })
     .then((resp) => {
-      resp.data.forEach(info => {
-        if (info.key === 'TEMPLATES') {
-          info.value = JSON.parse(info.value);
-          res.status(200).json(info);
-        }
-      });
-
-      let resMsg = {
-        "code": `${resp.status}`,
-        "message:": '无数据'
-      };
-      res.status(resp.status).json(resMsg);
+      let find = false;
+      for (var i = 0; i < resp.data.length; i++)
+      {
+          let info = resp.data[i];
+          if (info.key === 'TEMPLATES') {
+            find = true;
+            info.value = JSON.parse(info.value);
+            
+            let resMsg = {
+              "code":'200',
+              "message:":info.value
+            };
+            res.status(200).json(resMsg);
+            break;
+          }
+      }
+      if (!find) {
+        let resMsg = {
+          "code": `${resp.status}`,
+          "message:": '无数据'
+        };
+        res.status(resp.status).json(resMsg);
+      }
     })
     .catch((err) => {
       let status = err.response.status
