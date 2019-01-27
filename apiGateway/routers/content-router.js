@@ -14,9 +14,41 @@ router.use(function timeLog(req, res, next) {
     next()
 })
 
+async function excuteGraphQL(req, res) {
+    let graphQL = req.query.graphQL;
+    if (graphQL) {
+        axios.post('http://swapi.apis.guru', {query:graphQL},
+        {
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(resp => {
+            let resMsg = {
+                "code": `${resp.status}`,
+                "message:": resp.data
+            };
+            res.status(resp.status).json(resMsg);
+        })
+        .catch(err => { 
+            let resMsg = {
+                "code": `500`,
+                "message:": '服务器内部错误。'
+            };
+            res.status(500).json(resMsg);
+        });
+    }
+}
+
 // define the home page route
 router.get('/', function (req, res) {
-    res.send('content Api home page')
+    if (req.baseUrl === '/api/v1/tables') {
+        excuteGraphQL(req, res);
+    }
+    else {
+        res.send('content Api home page');
+    }
 })
 
 // define the about route
@@ -46,7 +78,7 @@ router.get('/:id', async function (req, res) {
             };
             res.status(resp.status).json(resMsg);
         }
-    }).catch((err) =>{
+    }).catch((err) => {
         let resMsg = {
             "code": '404',
             "message:": err.message
