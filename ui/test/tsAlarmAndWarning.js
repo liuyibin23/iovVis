@@ -79,7 +79,8 @@ var blueRules = [{
     ]
 }, {
     andRule: [
-        "devD"
+        "devB",
+        "devC"
     ]
 }]
 
