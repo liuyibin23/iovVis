@@ -6,6 +6,51 @@ const router = express.Router();
 async function getWarningStatus(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
+
+  axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      let resMsg = {
+        "code": `${resp.status}`,
+        info: {}
+      };
+      resp.data.forEach(info => {
+        if (info.key === 'asset_warning_level') {
+          // info.value = JSON.parse(info.value);
+          // res.status(200).json(info);
+          resMsg.info = info;
+        }
+      });
+      res.status(resp.status).json(resMsg);
+    })
+    .catch((err) => {
+      let status = err.response.status
+      if (status == 401) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '无授权访问。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 500) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '服务器内部错误。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 404) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '访问资源不存在。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+    });
 }
 
 async function getWarningRules(req, res) {
@@ -73,7 +118,7 @@ router.get('/:assetId', async function (req, res) {
 
 
 // POST
-async function postWarningRules(req, res){
+async function postWarningRules(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
 
@@ -109,7 +154,7 @@ async function postWarningRules(req, res){
     if (ruleTables) {
       // 找到资产对应的规则 并返回
       let rules = ruleTables[assetID];
-      
+
       // 不存在 添加一条 有先直接覆盖
       ruleTables[assetID] = req.body;
       ruleMeta.nodes[5].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js5.substr(index);
@@ -117,38 +162,75 @@ async function postWarningRules(req, res){
       // post 更新
       url = util.getAPI() + 'ruleChain/metadata';
       axios.post(url, (ruleMeta), { headers: { "X-Authorization": token } })
-      .then(response => {
-          if (response.status == 200)
-          {
+        .then(response => {
+          if (response.status == 200) {
             let resMsg = {
-              "code":'200',
-              "message:":'设置预警规则成功。'
+              "code": '200',
+              "message:": '设置预警规则成功。'
             };
             res.status(200).json(resMsg);
-          } 
-          else
-          {
+          }
+          else {
             let resMsg = {
-              "code":`${response.status}`,
-              "message:":'访问资源不存在。'
+              "code": `${response.status}`,
+              "message:": '访问资源不存在。'
             };
             res.status(404).json(resMsg);
-          }      
-      })
-      .catch(err =>{
-        let resMsg = {
-          "code":'500',
-          "message:":'服务器内部错误。'
-        };
-        res.status(500).json(resMsg);
-      })
+          }
+        })
+        .catch(err => {
+          let resMsg = {
+            "code": '500',
+            "message:": '服务器内部错误。'
+          };
+          res.status(500).json(resMsg);
+        })
     }
   }
 }
 
 
-async function postWarningStatus(req, res){
-  
+async function postWarningStatus(req, res) {
+  let assetID = req.params.assetId;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/attributes/SERVER_SCOPE`;
+
+  axios.post(get_attributes_api, req.query, {
+    headers: {
+      "X-Authorization": token
+    }
+  })
+    .then((resp) => {
+      let resMsg = {
+        "code": `${resp.status}`,
+        info: {}
+      };
+      res.status(resp.status).json(resMsg);
+    })
+    .catch((err) => {
+      let status = err.response.status
+      if (status == 401) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '无授权访问。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 500) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '服务器内部错误。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+      else if (status == 404) {
+        let resMsg = {
+          "code": `${err.response.status}`,
+          "message:": '访问资源不存在。'
+        };
+        res.status(err.response.status).json(resMsg);
+      }
+    });
 }
 
 router.post('/:assetId', async function (req, res) {
