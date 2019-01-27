@@ -15,7 +15,7 @@ const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
 
 let app = express();
-let port = 4001;
+let port = 20050;
 let options = {
     customCss: '.swagger-ui .topbar { display: none }',
     explorer: false
