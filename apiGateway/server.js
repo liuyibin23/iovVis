@@ -33,6 +33,7 @@ app.use('/api/v1/rules/alarms', alarmsRouter);
 app.use('/api/v1/echarts', echartsRouter);
 app.use('/api/v1/content', contentRouter);
 app.use('/api/v1/warnings', warningsRouter);
+app.use('/api/v1/rules/warnings', warningsRouter);
 app.use(defaultRouter);
 app.use(errHandler);
 logger.log('info', 'Simple API Gateway run on localhost:%d', port);
