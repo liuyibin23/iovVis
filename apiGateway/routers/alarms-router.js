@@ -4,7 +4,7 @@ const axios = require('axios');
 var util = require('./utils');
 
 // middleware that is specific to this router
-router.use(function timeLog (req, res, next) {
+router.use(function timeLog(req, res, next) {
   console.log('Time: ', Date.now());
   next();
 })
@@ -22,19 +22,33 @@ router.get('/:id', async function (req, res) {
   var devID = req.params.id;
   let token = req.headers['x-authorization'];
 
-  let ruleID = '071b5610-1d97-11e9-b372-db8be707c5f4';
-  var url = util.getAPI() + `ruleChain/${ruleID}/metadata`;
+  // 获取规则链
+  let ruleChain = await util.getSync('http://cf.beidouapp.com:8080/api/ruleChains',
+    {
+      headers: {
+        "X-Authorization": token
+      },
+      params: {
+        textSearch: "CONFIG_ALARM_RULE",
+        limit: 1
+      }
+    }
+  );
 
-  var ruleMeta = await util.getSync(url,
-        {
-            headers: {
-                "X-Authorization": token
-            }
+  if (ruleChain) {
+    ruleID = ruleChain.data[0].id;
+    let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
+    // 获取告警规则链的meta数据
+    let ruleMeta = await util.getSync(url,
+      {
+        headers: {
+          "X-Authorization": token
         }
+      }
     );
 
-  let nodes = ruleMeta.nodes;
-  let retCfg ={
+    let nodes = ruleMeta.nodes;
+    let retCfg = {
       "IndeterminateRules": {
         "min": 0,
         "max": 0
@@ -43,39 +57,38 @@ router.get('/:id', async function (req, res) {
         "min": 0,
         "max": 0
       }
-  };
-  
-  // 一级告警配置
-  let jsScript = nodes[1].configuration.jsScript;
-  var index = jsScript.indexOf('/* alarm rule tables */');
-  eval(jsScript.substr(0, index));
-  if (devID) { 
-    let cfg = ruleTables[devID];
-    if (cfg)
-    {
-      retCfg.IndeterminateRules.min = 10;
-      retCfg.IndeterminateRules.max = 20;
-    }    
-  }
+    };
 
-  // 二级告警配置
-  jsScript = nodes[8].configuration.jsScript;
-  index = jsScript.indexOf('/* alarm rule tables */');
-  eval(jsScript.substr(0, index));
-  if (devID) { 
-    let cfg = ruleTables[devID];
-    if (cfg)
-    {
-      retCfg.WarningRules.min = 30;
-      retCfg.WarningRules.max = 50;
-    }    
-  }
+    // 一级告警配置
+    let jsScript = nodes[1].configuration.jsScript;
+    var index = jsScript.indexOf('/* alarm rule tables */');
+    eval(jsScript.substr(0, index));
+    if (devID) {
+      let cfg = ruleTables[devID];
+      if (cfg) {
+        retCfg.IndeterminateRules.min = 10;
+        retCfg.IndeterminateRules.max = 20;
+      }
+    }
 
-  let resMsg = {
-    "code":'200',
-    "message:":retCfg
-  };
-  res.status(200).json(resMsg);
+    // 二级告警配置
+    jsScript = nodes[8].configuration.jsScript;
+    index = jsScript.indexOf('/* alarm rule tables */');
+    eval(jsScript.substr(0, index));
+    if (devID) {
+      let cfg = ruleTables[devID];
+      if (cfg) {
+        retCfg.WarningRules.min = 30;
+        retCfg.WarningRules.max = 50;
+      }
+    }
+
+    let resMsg = {
+      "code": '200',
+      "message:": retCfg
+    };
+    res.status(200).json(resMsg);
+  }
 })
 
 //POST
@@ -83,70 +96,85 @@ router.post('/:id', async function (req, res) {
   var devID = req.params.id;
   var IndeterminateRules = req.body.IndeterminateRules;
   var WarningRules = req.body.WarningRules;
-
   let token = req.headers['x-authorization'];
 
-  let ruleID = '071b5610-1d97-11e9-b372-db8be707c5f4';
-  var url = util.getAPI() + `ruleChain/${ruleID}/metadata`;
 
-  var ruleMeta = await util.getSync(url,
-        {
-            headers: {
-                "X-Authorization": token
-            }
+  // 获取规则链
+  let ruleChain = await util.getSync('http://cf.beidouapp.com:8080/api/ruleChains',
+    {
+      headers: {
+        "X-Authorization": token
+      },
+      params: {
+        textSearch: "CONFIG_ALARM_RULE",
+        limit: 1
+      }
+    }
+  );
+
+  if (ruleChain) {
+    ruleID = ruleChain.data[0].id;
+    let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
+    // 获取告警规则链的meta数据
+    let ruleMeta = await util.getSync(url,
+      {
+        headers: {
+          "X-Authorization": token
         }
+      }
     );
 
-  let nodes = ruleMeta.nodes;
-  
-  // 一级告警配置
-  let jsScript = nodes[1].configuration.jsScript;
-  var index = jsScript.indexOf('/* alarm rule tables */');
-  eval(jsScript.substr(0, index));
-  if (devID) { 
-    let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${IndeterminateRules.min}/*E*/) return 1;});`;
-    ruleTables[devID] = newJs;
-    nodes[1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
-  }
+    if (ruleMeta) {
+      let nodes = ruleMeta.nodes;
 
-  // 二级告警配置
-  jsScript = nodes[8].configuration.jsScript;
-  index = jsScript.indexOf('/* alarm rule tables */');
-  eval(jsScript.substr(0, index));
-  if (devID) { 
-    let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${WarningRules.min}/*E*/) return 1;});`;
-    ruleTables[devID] = newJs;
-    nodes[8].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
-  }
+      // 一级告警配置
+      let jsScript = nodes[1].configuration.jsScript;
+      var index = jsScript.indexOf('/* alarm rule tables */');
+      eval(jsScript.substr(0, index));
+      if (devID) {
+        let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${IndeterminateRules.min}/*E*/) return 1;});`;
+        ruleTables[devID] = newJs;
+        nodes[1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
+      }
 
-  // post
-  url = util.getAPI() + 'ruleChain/metadata';
-  axios.post(url, (ruleMeta), { headers: { "X-Authorization": token } })
-  .then(response => {
-      if (response.status == 200)
-      {
-        let resMsg = {
-          "code":'200',
-          "message:":'设置告警规则成功。'
-        };
-        res.status(200).json(resMsg);
-      } 
-      else
-      {
-        let resMsg = {
-          "code":`${response.status}`,
-          "message:":'访问资源不存在。'
-        };
-        res.status(404).json(resMsg);
-      }      
-  })
-  .catch(err =>{
-    let resMsg = {
-      "code":'500',
-      "message:":'服务器内部错误。'
-    };
-    res.status(500).json(resMsg);
-  })
+      // 二级告警配置
+      jsScript = nodes[8].configuration.jsScript;
+      index = jsScript.indexOf('/* alarm rule tables */');
+      eval(jsScript.substr(0, index));
+      if (devID) {
+        let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${WarningRules.min}/*E*/) return 1;});`;
+        ruleTables[devID] = newJs;
+        nodes[8].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
+      }
+
+      // post
+      url = util.getAPI() + 'ruleChain/metadata';
+      axios.post(url, (ruleMeta), { headers: { "X-Authorization": token } })
+        .then(response => {
+          if (response.status == 200) {
+            let resMsg = {
+              "code": '200',
+              "message:": '设置告警规则成功。'
+            };
+            res.status(200).json(resMsg);
+          }
+          else {
+            let resMsg = {
+              "code": `${response.status}`,
+              "message:": '访问资源不存在。'
+            };
+            res.status(404).json(resMsg);
+          }
+        })
+        .catch(err => {
+          let resMsg = {
+            "code": '500',
+            "message:": '服务器内部错误。'
+          };
+          res.status(500).json(resMsg);
+        })
+    }
+  }
 })
 
 module.exports = router
