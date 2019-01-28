@@ -98,6 +98,12 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
+    public List<User> findCustomerUsers(UUID customerId) {
+        //todo add cassandra find customerUsers
+        return null;
+    }
+
+    @Override
     public int countTenant(String tenantId) {
         return 0;
     }

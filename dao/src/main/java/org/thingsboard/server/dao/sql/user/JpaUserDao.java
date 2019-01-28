@@ -115,6 +115,14 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	}
 
 	@Override
+	public List<User> findCustomerUsers(UUID customerId) {
+		return DaoUtil.convertDataList(
+				userRepository
+						.findUsersByCustomerId(
+								fromTimeUUID(customerId)));
+	}
+
+	@Override
 	public int countTenant(String tenantId) {
 		return userRepository.countByTenantIdAndAuthority(tenantId, Authority.TENANT_ADMIN);
 	}

@@ -52,6 +52,8 @@ import org.thingsboard.server.service.security.model.token.JwtToken;
 import org.thingsboard.server.service.security.model.token.JwtTokenFactory;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -284,7 +286,7 @@ public class UserController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(value = "/customer/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
     @ResponseBody
     public TextPageData<User> getCustomerUsers(
@@ -303,14 +305,65 @@ public class UserController extends BaseController {
                 return checkNotNull(userService.findCustomerUsers(customerId, pageLink));
             } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
                 checkCustomerId(customerId);
+                TenantId tenantId = getCurrentUser().getTenantId();
+                return checkNotNull(userService.findCustomerUsers(tenantId, customerId, pageLink));
+            } else if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
+                if (customerId.equals(getCurrentUser().getCustomerId())){
+                    return checkNotNull(userService.findCustomerUsers(getCurrentUser().getTenantId(), customerId, pageLink));
+                }
             }
-
-            TenantId tenantId = getCurrentUser().getTenantId();
-            return checkNotNull(userService.findCustomerUsers(tenantId, customerId, pageLink));
+            throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
+	@ResponseBody
+	public List<User> getCustomerUsers(
+			@PathVariable("customerId") String strCustomerId,
+			@RequestParam int limit,
+			@RequestParam(required = false) Boolean isAdmin) throws ThingsboardException {
+		checkParameter("customerId", strCustomerId);
+		try {
+			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
+
+			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+				List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+				if (retList == null)
+					throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
+				return retList;
+			} else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+				checkCustomerId(customerId);
+				TenantId tenantId = getCurrentUser().getTenantId();
+				List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+				if (retList == null)
+					throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
+				return retList;
+			} else if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
+				if (customerId.equals(getCurrentUser().getCustomerId())){
+					List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+					if (retList == null)
+						throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
+					return retList;
+				}
+			}
+			throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
+	private List<User> checkAdminUsers(List<User> userList){
+    	List<User> retUserList = new ArrayList<>();
+    	userList.forEach(user -> {
+    		if (user.getAdditionalInfo().get("power") != null){
+				if (user.getAdditionalInfo().get("power").asText().equals("admin"))
+					retUserList.add(user);
+			}
+    	});
+    	return retUserList;
+	}
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
     @RequestMapping(value = "/user/activationUser", method = RequestMethod.DELETE)

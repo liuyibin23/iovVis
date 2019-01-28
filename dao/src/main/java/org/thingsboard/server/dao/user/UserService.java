@@ -62,6 +62,8 @@ public interface UserService {
 
 	TextPageData<User> findCustomerUsers(CustomerId customerId, TextPageLink pageLink);
 
+	List<User> findCustomerUsers(CustomerId customerId);
+
 	    
 	void deleteCustomerUsers(TenantId tenantId, CustomerId customerId);
 

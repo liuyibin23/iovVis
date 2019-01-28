@@ -20,6 +20,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.Dao;
+import sun.java2d.pipe.AAShapePipe;
 
 import java.util.List;
 import java.util.UUID;
@@ -71,6 +72,8 @@ public interface UserDao extends Dao<User> {
     List<User> findCustomerUsers(UUID tenantId, UUID customerId, TextPageLink pageLink);
 
     List<User> findCustomerUsers(UUID customerId, TextPageLink pageLink);
+
+    List<User> findCustomerUsers(UUID customerId);
 
     /**
     * @Description: Count Tenant Admin

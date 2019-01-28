@@ -238,6 +238,15 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     }
 
     @Override
+    public List<User> findCustomerUsers(CustomerId customerId) {
+        log.trace("Executing findCustomerUsers, customerId [{}]", customerId);
+        validateId(customerId, "Incorrect customerId " + customerId);
+
+        List<User> users = userDao.findCustomerUsers(customerId.getId());
+        return users;
+    }
+
+    @Override
     public void deleteCustomerUsers(TenantId tenantId, CustomerId customerId) {
         log.trace("Executing deleteCustomerUsers, customerId [{}]", customerId);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
