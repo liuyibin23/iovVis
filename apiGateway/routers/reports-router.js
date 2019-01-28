@@ -34,45 +34,16 @@ router.get('/:assetId', async function (req, res) {
             find = true;
             info.value = JSON.parse(info.value);
             
-            let resMsg = {
-              "code":'200',
-              "message:":info.value
-            };
-            res.status(200).json(resMsg);
+            util.responData(200, info.value, res);
             break;
           }
       }
       if (!find) {
-        let resMsg = {
-          "code": `${resp.status}`,
-          "message:": '无数据'
-        };
-        res.status(resp.status).json(resMsg);
+        util.responData(resp.status, '无数据。', res);
       }
     })
     .catch((err) => {
-      let status = err.response.status;
-      if (status == 401) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '无授权访问。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 500) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '服务器内部错误。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 404) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '访问资源不存在。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -98,11 +69,7 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
         saveAssetSererScope(hisReprtsData, req.params.id, req.body.report_name, urlPath, req, res, token);
       }
       else {
-        let resMsg = {
-          "code": '501',
-          "message:": '报表文件上传失败。'
-        };
-        res.status(501).json(resMsg);
+        util.responData(501, '报表文件上传失败。', res);
       }
     }
   });
@@ -138,14 +105,10 @@ function saveAssetSererScope(hisReprtsData, assetID, reportName, urlPath, req, r
 
   axios.post(url, (data), { headers: { "X-Authorization": token } })
     .then(response => {
-      res.status(response.status).json('成功创建报表并关联到资产。');
+      util.responData(200, '成功创建报表并关联到资产。', res);
     })
     .catch(err => {
-      let resMsg = {
-        "code": `${err.response.status}`,
-        "message:": err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 }
 
@@ -171,11 +134,7 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
       PostReports(resp, req, res);
     })
     .catch((err) => {
-      let resMsg = {
-        "code": `${err.response.status}`,
-        "message:": err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -196,6 +155,7 @@ function processDeleteReq(resp, req, res, token)
   // 遍历REPORTS属性，删除匹配的
   let find = false;
   let new_value = new Array();
+  let report_url = null;
   if (info)
   {
     let jsonVal = JSON.parse(info.value);
@@ -205,6 +165,7 @@ function processDeleteReq(resp, req, res, token)
       if (_dt.report_name === req.query.reportemplateName)
       {
         find = true;
+        report_url = _dt.report_url;
       }
       else
       {
@@ -213,37 +174,41 @@ function processDeleteReq(resp, req, res, token)
     }
   }
 
-  if (find)
+  if (find && report_url)
   {
-    // 更新删除后的属性
-    let val = JSON.stringify(new_value);
-    let data = {
-      "REPORTS": `${val}`
-    };
-    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
-    axios.post(url, (data), { headers: { "X-Authorization":token } })
-      .then(response => {
-        let resMsg = {
-          "code":'200',
-          "message:":'成功删除资产的报表。'
+    // 从文件服务器删除
+    let host = 'http://sm.schdri.com:80/';
+    let deleteFileHost = host + 'api/file/delete/';
+    let filePath = report_url.substr(host.length); 
+    request.post({ url:deleteFileHost, form:{fileId:filePath} }, function (err, httpResponse, body) {
+    if (err) {
+      util.responData(501, '删除资产的报表失败。', res);
+    }
+    else
+    {
+      let result = JSON.parse(body);
+      if (result.success)
+      {
+        // 更新删除后的属性
+        let val = JSON.stringify(new_value);
+        let data = {
+          "REPORTS": `${val}`
         };
-        res.status(response.status).json(resMsg);
-      })
-      .catch(err => {
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":err.message
-        };
-        res.status(err.response.status).json(resMsg);
-      });
+        let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+        axios.post(url, (data), { headers: { "X-Authorization":token } })
+          .then(response => {
+            util.responData(200, '成功删除资产的报表。', res);
+          })
+          .catch(err => {
+            util.responErrorMsg(err, res);
+          });
+        }
+      }
+    })
   }
   else
   {
-    let resMsg = {
-      "code":"200",
-      "message:": '未找到匹配数据'
-    };
-    res.status(200).json(resMsg);
+    util.responData(200, '未找到匹配数据。', res);
   }
 }
 
@@ -263,11 +228,7 @@ router.delete('/:id', async function (req, res) {
       processDeleteReq(resp, req, res, token);
     })
     .catch((err) => {
-      let resMsg = {
-        "code":`${err.response.status}`,
-        "message:":err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 
