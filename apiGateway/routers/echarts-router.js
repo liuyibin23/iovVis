@@ -5,6 +5,7 @@ var chart_pie  = require('./echarts/pie');
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 const node_echarts = require('node-echarts');
+var util = require('./utils');
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
@@ -30,11 +31,7 @@ router.post('/:id', async function (req, res) {
 function processData(option, params, res){
     if (!option)
     {
-        let resMsg = {
-            "code": '404',
-            "message:": '访问资源不存在。'
-        };
-        res.status(404).json(resMsg);  
+        util.responData(404, '访问资源不存在。', res);
         return;  
     }
 
@@ -48,11 +45,8 @@ function processData(option, params, res){
     }
     let bytes = node_echarts(config);
     if (bytes) {
-        let resMsg = {
-            "code": '200',
-            "message:": 'data:image/png;base64,' + bytes.toString('base64')
-        };
-        res.status(200).json(resMsg);
+        let data = 'data:image/png;base64,' + bytes.toString('base64');
+        util.responData(200, data, res);
     }
 }
 

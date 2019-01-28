@@ -7,6 +7,7 @@ var multipartMiddleware = multipart();
 const node_echarts = require('node-echarts');
 var request = require('request');
 const axios = require('axios');
+var util = require('./utils');
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
@@ -25,11 +26,8 @@ async function excuteGraphQL(req, res) {
             }
         })
         .then(resp => {
-            let resMsg = {
-                "code": `${resp.status}`,
-                "message:": resp.data
-            };
             res.status(resp.status).json(resMsg);
+            util.responData(200, resp.data, res)
         })
         .catch(err => { 
             util.responErrorMsg(err, res);
@@ -65,15 +63,7 @@ router.get('/:id', async function (req, res) {
             "X-Authorization": token
         }
     }).then((resp) => {
-        console.log('Download successful!  Server responded with:', resp.body);
-
-        if (resp.status == 200) {
-            let resMsg = {
-                "code": `${resp.status}`,
-                "message:": `${resp.data}`
-            };
-            res.status(resp.status).json(resMsg);
-        }
+        util.responData(200, resp.data, res);
     }).catch((err) => {
         util.responErrorMsg(err, res);
     });

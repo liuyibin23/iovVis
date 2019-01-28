@@ -45,7 +45,7 @@ function responErrorMsg(err, res) {
         "code": ``,
         "message": ''
     };
-    let code = 500;
+    resMsg.code = 500;
     if (err.response && err.response.status) {
         let code = err.response.status;
     
@@ -57,6 +57,7 @@ function responErrorMsg(err, res) {
             resMsg.message = '访问资源不存在。';
         }
         else{
+            resMsg.code = 500;
             resMsg.message = '服务器内部错误。';
         }
     }
@@ -65,6 +66,15 @@ function responErrorMsg(err, res) {
         resMsg.message = err.message;
     }
 
+    res.status(resMsg.code).json(resMsg);
+}
+
+function responData(code, data, res) {
+    let resMsg = {
+        "code": `${code}`,
+        "message": data
+    };
+
     res.status(code).json(resMsg);
 }
 
@@ -72,3 +82,4 @@ exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getAPI = getAPI;
 exports.responErrorMsg = responErrorMsg;
+exports.responData = responData;

@@ -68,18 +68,10 @@ async function getWarningRules(req, res) {
       // 找到资产对应的规则 并返回
       let rules = ruleTables[assetID];
       if (rules) {
-        let resMsg = {
-          "code": '200',
-          "message": rules
-        };
-        res.status(200).json(resMsg);
+        util.responData(200, rules, res);
       }
       else {
-        let resMsg = {
-          "code": '404',
-          "message": '访问资源不存在。'
-        };
-        res.status(404).json(resMsg);
+        util.responData(404, '访问资源不存在。', res);
       }
     }
   }
@@ -167,11 +159,7 @@ async function postWarningRules(req, res) {
       axios.post(url, (ruleMeta), { headers: { "X-Authorization": token } })
         .then(response => {
           if (response.status == 200) {
-            let resMsg = {
-              "code": '200',
-              "message": '设置预警规则成功。'
-            };
-            res.status(200).json(resMsg);
+            util.responData(200,  '设置预警规则成功。', res);
           }
           else {
             //let code = response.status;
@@ -179,13 +167,11 @@ async function postWarningRules(req, res) {
           }
         })
         .catch(err => {
-          let code = err.response.status;
           util.responErrorMsg(err, res);
         })
     }
   }
 }
-
 
 async function postWarningStatus(req, res) {
   let assetID = req.params.assetId;
@@ -198,35 +184,10 @@ async function postWarningStatus(req, res) {
     }
   })
     .then((resp) => {
-      let resMsg = {
-        "code": `${resp.status}`,
-        info: {}
-      };
-      res.status(resp.status).json(resMsg);
+      util.responData(200, '成功设置预警状态。', res);
     })
     .catch((err) => {
-      let status = err.response.status
-      if (status == 401) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message": '无授权访问。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 500) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message": '服务器内部错误。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 404) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message": '访问资源不存在。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
+      util.responErrorMsg(err, res);
     });
 }
 

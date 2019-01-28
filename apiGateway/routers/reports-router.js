@@ -34,20 +34,12 @@ router.get('/:assetId', async function (req, res) {
             find = true;
             info.value = JSON.parse(info.value);
             
-            let resMsg = {
-              "code":'200',
-              "message:":info.value
-            };
-            res.status(200).json(resMsg);
+            util.responData(200, info.value, res);
             break;
           }
       }
       if (!find) {
-        let resMsg = {
-          "code": `${resp.status}`,
-          "message:": '无数据'
-        };
-        res.status(resp.status).json(resMsg);
+        util.responData(resp.status, '无数据。', res);
       }
     })
     .catch((err) => {
@@ -77,11 +69,7 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
         saveAssetSererScope(hisReprtsData, req.params.id, req.body.report_name, urlPath, req, res, token);
       }
       else {
-        let resMsg = {
-          "code": '501',
-          "message:": '报表文件上传失败。'
-        };
-        res.status(501).json(resMsg);
+        util.responData(501, '报表文件上传失败。', res);
       }
     }
   });
@@ -117,7 +105,7 @@ function saveAssetSererScope(hisReprtsData, assetID, reportName, urlPath, req, r
 
   axios.post(url, (data), { headers: { "X-Authorization": token } })
     .then(response => {
-      res.status(response.status).json('成功创建报表并关联到资产。');
+      util.responData(200, '成功创建报表并关联到资产。', res);
     })
     .catch(err => {
       util.responErrorMsg(err, res);
@@ -194,11 +182,7 @@ function processDeleteReq(resp, req, res, token)
     let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
     axios.post(url, (data), { headers: { "X-Authorization":token } })
       .then(response => {
-        let resMsg = {
-          "code":'200',
-          "message:":'成功删除资产的报表。'
-        };
-        res.status(response.status).json(resMsg);
+        util.responData(200, '成功删除资产的报表。', res);
       })
       .catch(err => {
         util.responErrorMsg(err, res);
@@ -206,11 +190,7 @@ function processDeleteReq(resp, req, res, token)
   }
   else
   {
-    let resMsg = {
-      "code":"200",
-      "message:": '未找到匹配数据'
-    };
-    res.status(200).json(resMsg);
+    util.responData(200, '未找到匹配数据。', res);
   }
 }
 

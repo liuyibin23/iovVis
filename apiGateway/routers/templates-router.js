@@ -9,38 +9,6 @@ var request = require('request');
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 
-// Get asset
-async function getAsset(assetId, token) {
-  let get_asset_api = util.getAPI() + 'assets?assetIds=' + assetId;
-  let assetInfo = await util.getSync(get_asset_api, {
-    headers: {
-      "X-Authorization": token
-    }
-  });
-
-  if (!assetInfo) return;
-
-  let len = assetInfo.length;
-  let data = new Array();
-  if (len > 0) {
-    console.log('1. Get asset info:%d', len);
-    assetInfo.forEach(info => {
-      let _dt = { id: '', name: '', type: '' };
-      _dt.id = info.id.id;
-      _dt.name = info.name;
-      _dt.type = info.type;
-
-      data.push(_dt);
-    });
-
-    return data;
-  }
-
-  let _dt = { id: '', name: '', type: '' };
-  data.push(_dt);
-  return data;
-}
-
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
   console.log('Templat Time: ', Date.now())
@@ -76,46 +44,17 @@ router.get('/:assetId', async function (req, res) {
           if (info.key === 'TEMPLATES') {
             find = true;
             info.value = JSON.parse(info.value);
-            
-            let resMsg = {
-              "code":'200',
-              "message:":info.value
-            };
-            res.status(200).json(resMsg);
+
+            util.responData(200, info.value, res);
             break;
           }
       }
       if (!find) {
-        let resMsg = {
-          "code": `${resp.status}`,
-          "message:": '无数据'
-        };
-        res.status(resp.status).json(resMsg);
+        util.responData(resp.status, '无数据', res);
       }
     })
     .catch((err) => {
-      let status = err.response.status
-      if (status == 401){
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":'无授权访问。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 500){
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":'服务器内部错误。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 404){
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":'访问资源不存在。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }      
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -139,11 +78,7 @@ function postTemplates(resp, req, res)
   let uploadFileHost = host + 'api/file/upload/';
   request.post({ url:uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
-      let resMsg = {
-        "code":`501`,
-        "message:":'报表模板上传失败。'
-      };
-      res.status(501).json(resMsg);
+      util.responData(501, '报表模板上传失败。', res);
     }
     else
     {
@@ -178,23 +113,15 @@ function postTemplates(resp, req, res)
 
         axios.post(url, (data), { headers: { "X-Authorization":token } })
           .then(response => {
-            res.status(response.status).json('成功创建报表模板并关联到资产。');
+            util.responData(response.status, '成功创建报表模板并关联到资产。', res);
           })
           .catch(err => {
-            let resMsg = {
-              "code":`${err.response.status}`,
-              "message:":err.message
-            };
-            res.status(err.response.status).json(resMsg);
+            util.responErrorMsg(err, res);
           });
       }
       else
       {
-        let resMsg = {
-          "code":`501`,
-          "message:":'报表模板上传失败。'
-        };
-        res.status(501).json(resMsg);
+        util.responData(501, '报表模板上传失败。', res);
       }
     }
   });
@@ -264,27 +191,15 @@ function processDeleteReq(resp, req, res, token)
     let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
     axios.post(url, (data), { headers: { "X-Authorization":token } })
       .then(response => {
-        let resMsg = {
-          "code":'200',
-          "message:":'成功删除资产的模板。'
-        };
-        res.status(response.status).json(resMsg);
+        util.responData(response.status, '成功删除资产的模板。', res);
       })
       .catch(err => {
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":err.message
-        };
-        res.status(err.response.status).json(resMsg);
+        util.responErrorMsg(err, res);
       });
   }
   else
   {
-    let resMsg = {
-      "code":"200",
-      "message:": '未找到匹配数据'
-    };
-    res.status(200).json(resMsg);
+    util.responData(200, '未找到匹配数据。', res);
   }
 }
 
