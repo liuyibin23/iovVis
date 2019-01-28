@@ -155,6 +155,7 @@ function processDeleteReq(resp, req, res, token)
   // 遍历REPORTS属性，删除匹配的
   let find = false;
   let new_value = new Array();
+  let report_url = null;
   if (info)
   {
     let jsonVal = JSON.parse(info.value);
@@ -164,6 +165,7 @@ function processDeleteReq(resp, req, res, token)
       if (_dt.report_name === req.query.reportemplateName)
       {
         find = true;
+        report_url = _dt.report_url;
       }
       else
       {
@@ -172,21 +174,37 @@ function processDeleteReq(resp, req, res, token)
     }
   }
 
-  if (find)
+  if (find && report_url)
   {
-    // 更新删除后的属性
-    let val = JSON.stringify(new_value);
-    let data = {
-      "REPORTS": `${val}`
-    };
-    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
-    axios.post(url, (data), { headers: { "X-Authorization":token } })
-      .then(response => {
-        util.responData(200, '成功删除资产的报表。', res);
-      })
-      .catch(err => {
-        util.responErrorMsg(err, res);
-      });
+    // 从文件服务器删除
+    let host = 'http://sm.schdri.com:80/';
+    let deleteFileHost = host + 'api/file/delete/';
+    let filePath = report_url.substr(host.length); 
+    request.post({ url:deleteFileHost, form:{fileId:filePath} }, function (err, httpResponse, body) {
+    if (err) {
+      util.responData(501, '删除资产的报表失败。', res);
+    }
+    else
+    {
+      let result = JSON.parse(body);
+      if (result.success)
+      {
+        // 更新删除后的属性
+        let val = JSON.stringify(new_value);
+        let data = {
+          "REPORTS": `${val}`
+        };
+        let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+        axios.post(url, (data), { headers: { "X-Authorization":token } })
+          .then(response => {
+            util.responData(200, '成功删除资产的报表。', res);
+          })
+          .catch(err => {
+            util.responErrorMsg(err, res);
+          });
+        }
+      }
+    })
   }
   else
   {

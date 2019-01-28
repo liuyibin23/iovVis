@@ -163,6 +163,7 @@ function processDeleteReq(resp, req, res, token)
   
   // 遍历TEMPLATES属性，删除匹配的
   let find = false;
+  let template_url = null;
   let new_value = new Array();
   if (info)
   {
@@ -173,6 +174,7 @@ function processDeleteReq(resp, req, res, token)
       if (_dt.template_name === req.query.templateName)
       {
         find = true;
+        template_url = _dt.template_url;
       }
       else
       {
@@ -181,21 +183,41 @@ function processDeleteReq(resp, req, res, token)
     }
   }
 
-  if (find)
+  if (find && template_url)
   {
-    // 更新删除后的属性
-    let val = JSON.stringify(new_value);
-    let data = {
-      "TEMPLATES": `${val}`
-    };
-    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
-    axios.post(url, (data), { headers: { "X-Authorization":token } })
-      .then(response => {
-        util.responData(response.status, '成功删除资产的模板。', res);
-      })
-      .catch(err => {
-        util.responErrorMsg(err, res);
-      });
+    // 从文件服务器删除
+    let host = 'http://sm.schdri.com:80/';
+    let deleteFileHost = host + 'api/file/delete/';
+    let filePath = template_url.substr(host.length); 
+    request.post({ url:deleteFileHost, form:{fileId:filePath} }, function (err, httpResponse, body) {
+      if (err) {
+        util.responData(501, '报表模板删除失败。', res);
+      }
+      else
+      {
+        let result = JSON.parse(body);
+        if (result.success)
+        {
+            // 更新删除后的属性
+          let val = JSON.stringify(new_value);
+          let data = {
+            "TEMPLATES": `${val}`
+          };
+          let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+          axios.post(url, (data), { headers: { "X-Authorization":token } })
+            .then(response => {
+              util.responData(response.status, '成功删除资产的模板。', res);
+            })
+            .catch(err => {
+              util.responErrorMsg(err, res);
+            });
+        }
+        else
+        {
+          util.responData('501', '报表模板删除失败。', res);
+        }
+      }
+    })
   }
   else
   {
