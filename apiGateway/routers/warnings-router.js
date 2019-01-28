@@ -152,12 +152,36 @@ async function postWarningRules(req, res) {
     let index = js5.indexOf('/* warning rule tables */');
     eval(js5.substr(0, index));
     if (ruleTables) {
-      // 找到资产对应的规则 并返回
-      let rules = ruleTables[assetID];
-
-      // 不存在 添加一条 有先直接覆盖
+      // 更新
       ruleTables[assetID] = req.body;
-      ruleMeta.nodes[5].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js5.substr(index);
+
+      //遍历新的ruleTables，把devId全部整理出来
+      let allDevIds = new Set();
+      let keys =  Object.keys(ruleTables);
+      keys.forEach(it => {
+          let rule = ruleTables[it];
+          let bRules = rule['blueRules'];
+          let oRules = rule['orangeRules'];
+          bRules.forEach(element => {
+              let ids = element.andRule;
+              ids.forEach(el => {
+                  allDevIds.add(el);
+              });
+          });
+          oRules.forEach(element => {
+              let ids = element.andRule;
+              ids.forEach(el => {
+                  allDevIds.add(el);
+              });
+          });
+      });
+
+      js2 = [...allDevIds];
+
+      js5 = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js5.substr(index);
+      
+      ruleMeta.nodes[2].configuration.latestTsKeyNames = js2;
+      ruleMeta.nodes[5].configuration.jsScript = js5;
 
       // post 更新
       url = util.getAPI() + 'ruleChain/metadata';

@@ -31,6 +31,7 @@ app.use('/api/v1/templates', templatesRouter);
 app.use('/api/v1/reports', reportsRouter);
 app.use('/api/v1/rules/alarms', alarmsRouter);
 app.use('/api/v1/echarts', echartsRouter);
+app.use('/api/v1/tables', contentRouter);
 app.use('/api/v1/content', contentRouter);
 app.use('/api/v1/warnings', warningsRouter);
 app.use('/api/v1/rules/warnings', warningsRouter);
