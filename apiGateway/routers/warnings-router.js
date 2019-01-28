@@ -28,28 +28,7 @@ async function getWarningStatus(req, res) {
       res.status(resp.status).json(resMsg);
     })
     .catch((err) => {
-      let status = err.response.status
-      if (status == 401) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '无授权访问。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 500) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '服务器内部错误。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 404) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '访问资源不存在。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
+      util.responErrorMsg(err, res);
     });
 }
 
@@ -91,14 +70,14 @@ async function getWarningRules(req, res) {
       if (rules) {
         let resMsg = {
           "code": '200',
-          "message:": rules
+          "message": rules
         };
         res.status(200).json(resMsg);
       }
       else {
         let resMsg = {
           "code": '404',
-          "message:": '访问资源不存在。'
+          "message": '访问资源不存在。'
         };
         res.status(404).json(resMsg);
       }
@@ -157,29 +136,29 @@ async function postWarningRules(req, res) {
 
       //遍历新的ruleTables，把devId全部整理出来
       let allDevIds = new Set();
-      let keys =  Object.keys(ruleTables);
+      let keys = Object.keys(ruleTables);
       keys.forEach(it => {
-          let rule = ruleTables[it];
-          let bRules = rule['blueRules'];
-          let oRules = rule['orangeRules'];
-          bRules.forEach(element => {
-              let ids = element.andRule;
-              ids.forEach(el => {
-                  allDevIds.add(el);
-              });
+        let rule = ruleTables[it];
+        let bRules = rule['blueRules'];
+        let oRules = rule['orangeRules'];
+        bRules.forEach(element => {
+          let ids = element.andRule;
+          ids.forEach(el => {
+            allDevIds.add(el);
           });
-          oRules.forEach(element => {
-              let ids = element.andRule;
-              ids.forEach(el => {
-                  allDevIds.add(el);
-              });
+        });
+        oRules.forEach(element => {
+          let ids = element.andRule;
+          ids.forEach(el => {
+            allDevIds.add(el);
           });
+        });
       });
 
       js2 = [...allDevIds];
 
       js5 = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js5.substr(index);
-      
+
       ruleMeta.nodes[2].configuration.latestTsKeyNames = js2;
       ruleMeta.nodes[5].configuration.jsScript = js5;
 
@@ -190,24 +169,18 @@ async function postWarningRules(req, res) {
           if (response.status == 200) {
             let resMsg = {
               "code": '200',
-              "message:": '设置预警规则成功。'
+              "message": '设置预警规则成功。'
             };
             res.status(200).json(resMsg);
           }
           else {
-            let resMsg = {
-              "code": `${response.status}`,
-              "message:": '访问资源不存在。'
-            };
-            res.status(404).json(resMsg);
+            //let code = response.status;
+            //util.responErrorMsg(code, res);
           }
         })
         .catch(err => {
-          let resMsg = {
-            "code": '500',
-            "message:": '服务器内部错误。'
-          };
-          res.status(500).json(resMsg);
+          let code = err.response.status;
+          util.responErrorMsg(err, res);
         })
     }
   }
@@ -236,21 +209,21 @@ async function postWarningStatus(req, res) {
       if (status == 401) {
         let resMsg = {
           "code": `${err.response.status}`,
-          "message:": '无授权访问。'
+          "message": '无授权访问。'
         };
         res.status(err.response.status).json(resMsg);
       }
       else if (status == 500) {
         let resMsg = {
           "code": `${err.response.status}`,
-          "message:": '服务器内部错误。'
+          "message": '服务器内部错误。'
         };
         res.status(err.response.status).json(resMsg);
       }
       else if (status == 404) {
         let resMsg = {
           "code": `${err.response.status}`,
-          "message:": '访问资源不存在。'
+          "message": '访问资源不存在。'
         };
         res.status(err.response.status).json(resMsg);
       }

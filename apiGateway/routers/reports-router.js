@@ -51,28 +51,7 @@ router.get('/:assetId', async function (req, res) {
       }
     })
     .catch((err) => {
-      let status = err.response.status;
-      if (status == 401) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '无授权访问。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 500) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '服务器内部错误。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
-      else if (status == 404) {
-        let resMsg = {
-          "code": `${err.response.status}`,
-          "message:": '访问资源不存在。'
-        };
-        res.status(err.response.status).json(resMsg);
-      }
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -141,11 +120,7 @@ function saveAssetSererScope(hisReprtsData, assetID, reportName, urlPath, req, r
       res.status(response.status).json('成功创建报表并关联到资产。');
     })
     .catch(err => {
-      let resMsg = {
-        "code": `${err.response.status}`,
-        "message:": err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 }
 
@@ -171,11 +146,7 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
       PostReports(resp, req, res);
     })
     .catch((err) => {
-      let resMsg = {
-        "code": `${err.response.status}`,
-        "message:": err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -230,11 +201,7 @@ function processDeleteReq(resp, req, res, token)
         res.status(response.status).json(resMsg);
       })
       .catch(err => {
-        let resMsg = {
-          "code":`${err.response.status}`,
-          "message:":err.message
-        };
-        res.status(err.response.status).json(resMsg);
+        util.responErrorMsg(err, res);
       });
   }
   else
@@ -263,11 +230,7 @@ router.delete('/:id', async function (req, res) {
       processDeleteReq(resp, req, res, token);
     })
     .catch((err) => {
-      let resMsg = {
-        "code":`${err.response.status}`,
-        "message:":err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 

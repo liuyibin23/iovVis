@@ -59,6 +59,7 @@ router.get('/:id', async function (req, res) {
       }
     };
 
+    let find = false;
     // 一级告警配置
     let jsScript = nodes[1].configuration.jsScript;
     var index = jsScript.indexOf('/* alarm rule tables */');
@@ -68,6 +69,7 @@ router.get('/:id', async function (req, res) {
       if (cfg) {
         retCfg.IndeterminateRules.min = 10;
         retCfg.IndeterminateRules.max = 20;
+        find = true;
       }
     }
 
@@ -80,14 +82,25 @@ router.get('/:id', async function (req, res) {
       if (cfg) {
         retCfg.WarningRules.min = 30;
         retCfg.WarningRules.max = 50;
+        find = true;
       }
     }
 
-    let resMsg = {
-      "code": '200',
-      "message:": retCfg
-    };
-    res.status(200).json(resMsg);
+    if (find){
+      let resMsg = {
+        "code": '200',
+        "message:": retCfg
+      };
+      res.status(200).json(resMsg);
+    }
+    else
+    {
+      let resMsg = {
+        "code": '404',
+        "message:": '访问资源不存在。'
+      };
+      res.status(404).json(resMsg);
+    }    
   }
 })
 
@@ -167,11 +180,7 @@ router.post('/:id', async function (req, res) {
           }
         })
         .catch(err => {
-          let resMsg = {
-            "code": '500',
-            "message:": '服务器内部错误。'
-          };
-          res.status(500).json(resMsg);
+          util.responErrorMsg(err, res);
         })
     }
   }

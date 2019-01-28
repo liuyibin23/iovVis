@@ -32,11 +32,7 @@ async function excuteGraphQL(req, res) {
             res.status(resp.status).json(resMsg);
         })
         .catch(err => { 
-            let resMsg = {
-                "code": `500`,
-                "message:": '服务器内部错误。'
-            };
-            res.status(500).json(resMsg);
+            util.responErrorMsg(err, res);
         });
     }
 }
@@ -79,11 +75,7 @@ router.get('/:id', async function (req, res) {
             res.status(resp.status).json(resMsg);
         }
     }).catch((err) => {
-        let resMsg = {
-            "code": '404',
-            "message:": err.message
-        };
-        res.status(404).json(resMsg);
+        util.responErrorMsg(err, res);
     });
 })
 

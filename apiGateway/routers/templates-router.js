@@ -217,11 +217,7 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
       postTemplates(resp, req, res);
     })
     .catch((err) => {
-      let resMsg = {
-        "code":`${err.response.status}`,
-        "message:":err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 
@@ -308,11 +304,7 @@ router.delete('/:id', async function (req, res) {
       processDeleteReq(resp, req, res, token);
     })
     .catch((err) => {
-      let resMsg = {
-        "code":`${err.response.status}`,
-        "message:":err.message
-      };
-      res.status(err.response.status).json(resMsg);
+      util.responErrorMsg(err, res);
     });
 })
 
