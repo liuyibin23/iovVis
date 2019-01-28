@@ -293,7 +293,7 @@ CREATE OR REPLACE VIEW device_attributes AS
  SELECT attribute_kv.entity_id,
     max(
         CASE attribute_kv.attribute_key
-            WHEN 'IP'::text THEN attribute_kv.str_v
+            WHEN 'ip'::text THEN attribute_kv.str_v
             ELSE NULL::character varying
         END::text) AS IP,
     max(
