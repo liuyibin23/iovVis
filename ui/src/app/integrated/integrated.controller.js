@@ -40,23 +40,23 @@ export default function IntegratedController(
     // please search IN Google： cesium display a echart on cesium 
 // A simple demo of 3D Tiles feature picking with hover and select behavior
 // Building data courtesy of NYC OpenData portal: http://www1.nyc.gov/site/doitt/initiatives/3d-building.page
-// var viewer = new Cesium.Viewer('cesiumContainer', {
-//     terrainProvider: Cesium.createWorldTerrain(),
-//     imageryProvider:new Cesium.createOpenStreetMapImageryProvider({
-//         url : 'https://a.tile.openstreetmap.org/'
-//     }),
-//     animation: false,
-//     timeline: false
-// });
 var viewer = new Cesium.Viewer('cesiumContainer', {
     terrainProvider: Cesium.createWorldTerrain(),
-    imageryProvider: new Cesium.UrlTemplateImageryProvider({
-        url : 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-        credit : 'Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
+    imageryProvider:new Cesium.createOpenStreetMapImageryProvider({
+        url : 'https://a.tile.openstreetmap.org/'
     }),
     animation: false,
     timeline: false
 });
+// var viewer = new Cesium.Viewer('cesiumContainer', {
+//     terrainProvider: Cesium.createWorldTerrain(),
+//     imageryProvider: new Cesium.UrlTemplateImageryProvider({
+//         url : 'http://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
+//         credit : 'Map tiles by CartoDB, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
+//     }),
+//     animation: false,
+//     timeline: false
+// });
 
 viewer.scene.globe.depthTestAgainstTerrain = true;
 
