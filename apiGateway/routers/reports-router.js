@@ -66,7 +66,7 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
         let bodyData = JSON.parse(body)
         let urlPath = host + bodyData.fileId;
         // 保存到属性表
-        saveAssetSererScope(hisReprtsData, req.params.id, req.body.report_name, urlPath, req, res, token);
+        saveAssetSererScope(hisReprtsData, req.params.id, req.body, urlPath, req, res, token);
       }
       else {
         util.responData(501, '报表文件上传失败。', res);
@@ -76,14 +76,16 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
 }
 
 // 保存到属性表
-function saveAssetSererScope(hisReprtsData, assetID, reportName, urlPath, req, res, token) {
+function saveAssetSererScope(hisReprtsData, assetID, reportInfo, urlPath, req, res, token) {
   let host = 'http://sm.schdri.com:80/';
   // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
   let url = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
   //let bodyData = JSON.parse(body)
   let fileInfo = req.files.report_file;
   let str = [{
-    "report_name": reportName,
+    "report_name": reportInfo.report_name,
+    "report_type": reportInfo.report_type,
+    "report_date": reportInfo.report_date,
     "report_url": urlPath
   }
   ];
