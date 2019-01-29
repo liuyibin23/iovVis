@@ -245,6 +245,8 @@ public class BaseRelationDao extends CassandraAbstractAsyncDao implements Relati
         return getFuture(executeAsyncRead(tenantId, query), this::getEntityRelations);
     }
 
+
+
     private PreparedStatement getSaveStmt() {
         if (saveStmt == null) {
             saveStmt = prepare("INSERT INTO " + ModelConstants.RELATION_COLUMN_FAMILY_NAME + " " +

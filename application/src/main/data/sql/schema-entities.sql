@@ -247,6 +247,7 @@ CREATE TABLE IF NOT EXISTS task (
 	tenant_id varchar(31),
 	customer_id varchar(31),
 	process_user_id varchar(31),
+	asset_id varchar(31),
 	task_status varchar(31),
 	task_kind varchar(31),
     originator_id varchar(31),

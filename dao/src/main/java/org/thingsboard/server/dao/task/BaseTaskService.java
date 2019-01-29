@@ -94,6 +94,16 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
         return findTaskAlarm(taskDao.checkTasks());
     }
 
+    @Override
+    public Task findTaskById(UUID taskId) {
+        return taskDao.findTaskById(taskId);
+    }
+
+    @Override
+    public Task findTaskByOriginator(EntityId entityId) {
+        return null;
+    }
+
     /**
      * 填充task关联的alarm id
      *

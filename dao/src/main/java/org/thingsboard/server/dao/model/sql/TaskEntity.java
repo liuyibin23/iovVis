@@ -56,6 +56,9 @@ public class TaskEntity extends BaseSqlEntity<Task> implements SearchTextEntity<
 	@Column(name = TASK_ORIGINATOR_TYPE_PROPERTY)
 	private EntityType originatorType;
 
+	@Column(name = TASK_ASSET_ID)
+	private String assetId;
+
 	@Column(name = TASK_NAME_PROPERTY)
 	private String name;
 
@@ -92,6 +95,9 @@ public class TaskEntity extends BaseSqlEntity<Task> implements SearchTextEntity<
 		}
 		if (task.getUserId() != null){
 			this.userId = UUIDConverter.fromTimeUUID(task.getUserId().getId());
+		}
+		if (task.getAssetId() != null){
+			this.assetId = UUIDConverter.fromTimeUUID(task.getAssetId().getId());
 		}
 
 		this.originatorId = UUIDConverter.fromTimeUUID(task.getOriginator().getId());
@@ -134,6 +140,9 @@ public class TaskEntity extends BaseSqlEntity<Task> implements SearchTextEntity<
 		}
 		if (userId != null) {
 			task.setUserId(new UserId(UUIDConverter.fromString(userId)));
+		}
+		if (assetId != null){
+			task.setAssetId(new AssetId(UUIDConverter.fromString(assetId)));
 		}
 		task.setTaskName(name);
 		task.setAdditionalInfo(additionalInfo);

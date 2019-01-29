@@ -77,6 +77,7 @@ public interface RelationService {
 
     ListenableFuture<List<EntityRelationInfo>> findInfoByQuery(TenantId tenantId, EntityRelationsQuery query);
 
+
 //    TODO: This method may be useful for some validations in the future
 //    ListenableFuture<Boolean> checkRecursiveRelation(EntityId from, EntityId to);
 

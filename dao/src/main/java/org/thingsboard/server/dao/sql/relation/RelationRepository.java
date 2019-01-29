@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,35 +26,37 @@ import java.util.List;
 
 @SqlDao
 public interface RelationRepository
-        extends CrudRepository<RelationEntity, RelationCompositeKey>, JpaSpecificationExecutor<RelationEntity> {
+		extends CrudRepository<RelationEntity, RelationCompositeKey>, JpaSpecificationExecutor<RelationEntity> {
 
-    List<RelationEntity> findAllByFromIdAndFromTypeAndRelationTypeGroup(String fromId,
-                                                                        String fromType,
-                                                                        String relationTypeGroup);
+	List<RelationEntity> findAllByFromIdAndFromTypeAndRelationTypeGroup(String fromId,
+																		String fromType,
+																		String relationTypeGroup);
 
-    List<RelationEntity> findAllByFromIdAndFromTypeAndRelationTypeAndRelationTypeGroup(String fromId,
-                                                                                       String fromType,
-                                                                                       String relationType,
-                                                                                       String relationTypeGroup);
+	List<RelationEntity> findAllByFromIdAndFromTypeAndRelationTypeAndRelationTypeGroup(String fromId,
+																					   String fromType,
+																					   String relationType,
+																					   String relationTypeGroup);
 
-    List<RelationEntity> findAllByToIdAndToTypeAndRelationTypeGroup(String toId,
-                                                                    String toType,
-                                                                    String relationTypeGroup);
+	List<RelationEntity> findAllByToIdAndToTypeAndRelationTypeGroup(String toId,
+																	String toType,
+																	String relationTypeGroup);
 
-    List<RelationEntity> findAllByToIdAndToTypeAndRelationTypeAndRelationTypeGroup(String toId,
-                                                                                   String toType,
-                                                                                   String relationType,
-                                                                                   String relationTypeGroup);
+	List<RelationEntity> findAllByToIdAndToTypeAndRelationTypeAndRelationTypeGroup(String toId,
+																				   String toType,
+																				   String relationType,
+																				   String relationTypeGroup);
 
-    List<RelationEntity> findAllByFromIdAndFromType(String fromId,
-                                                    String fromType);
 
-    @Transactional
-    RelationEntity save(RelationEntity entity);
 
-    @Transactional
-    void delete(RelationCompositeKey id);
+	List<RelationEntity> findAllByFromIdAndFromType(String fromId,
+													String fromType);
 
-    @Transactional
-    void deleteByFromIdAndFromType(String fromId, String fromType);
+	@Transactional
+	RelationEntity save(RelationEntity entity);
+
+	@Transactional
+	void delete(RelationCompositeKey id);
+
+	@Transactional
+	void deleteByFromIdAndFromType(String fromId, String fromType);
 }

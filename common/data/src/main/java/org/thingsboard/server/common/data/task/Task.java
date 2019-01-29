@@ -18,6 +18,7 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	private TenantId tenantId;
 	private CustomerId customerId;
 	private UserId userId;
+	private AssetId assetId;
 	private EntityId originator;
 	private TaskKind taskKind;
 	private TaskStatus taskStatus;
