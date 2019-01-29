@@ -72,7 +72,6 @@ var chart_pie = {
 	version: '1.0.0',
 
     fillData: async function(params, token, res, callback) {
-        console.log(token);
         let apiUrl = `http://cf.beidouapp.com:8080/api/plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
         await axios.get(apiUrl, { headers: { "X-Authorization": token } })
         .then((resp) => {
