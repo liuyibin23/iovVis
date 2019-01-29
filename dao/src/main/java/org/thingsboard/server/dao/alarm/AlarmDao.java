@@ -38,4 +38,6 @@ public interface AlarmDao extends Dao<Alarm> {
     Alarm save(TenantId tenantId, Alarm alarm);
 
     ListenableFuture<List<AlarmInfo>> findAlarms(TenantId tenantId, AlarmQuery query);
+
+    List<Alarm> findAlarmByOriginator( EntityId originator);
 }

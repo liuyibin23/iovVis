@@ -42,6 +42,7 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -316,6 +317,21 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 					assetTypes.sort(Comparator.comparing(EntitySubtype::getType));
 					return assetTypes;
 				});
+	}
+
+	@Override
+	public List<Asset> findAssets() {
+		return assetDao.findAssets();
+	}
+
+	@Override
+	public List<Asset> findAssetsByTenantId(TenantId tenantId) {
+		return assetDao.findAssetsByTenantId(tenantId.getId());
+	}
+
+	@Override
+	public List<Asset> findAssetsByCustomerId(CustomerId customerId) {
+		return assetDao.findAssetsByCustomerId(customerId.getId());
 	}
 
 	private DataValidator<Asset> assetValidator =

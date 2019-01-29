@@ -117,6 +117,12 @@ public class CassandraAlarmDao extends CassandraAbstractModelDao<AlarmEntity, Al
     }
 
     @Override
+    public List<Alarm> findAlarmByOriginator(EntityId originator) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
     public ListenableFuture<Alarm> findAlarmByIdAsync(TenantId tenantId, UUID key) {
         log.debug("Get alarm by id {}", key);
         Select.Where query = select().from(ALARM_BY_ID_VIEW_NAME).where(eq(ModelConstants.ID_PROPERTY, key));

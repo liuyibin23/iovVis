@@ -110,4 +110,10 @@ public class JpaAlarmDao extends JpaAbstractDao<AlarmEntity, Alarm> implements A
             return Futures.successfulAsList(alarmFutures);
         });
     }
+
+    @Override
+    public List<Alarm> findAlarmByOriginator( EntityId originator) {
+        return DaoUtil.convertDataList(alarmRepository.findAlarmEntitiesByOriginatorIdAndOrderByOriginatorType(UUIDConverter.fromTimeUUID(originator.getId()),
+                originator.getEntityType()));
+    }
 }

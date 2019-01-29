@@ -76,4 +76,8 @@ public interface AssetService {
     ListenableFuture<List<Asset>> findAssetsByQuery(TenantId tenantId, AssetSearchQuery query);
 
     ListenableFuture<List<EntitySubtype>> findAssetTypesByTenantId(TenantId tenantId);
+
+    List<Asset> findAssets();
+    List<Asset> findAssetsByTenantId(TenantId tenantId);
+    List<Asset> findAssetsByCustomerId(CustomerId customerId);
 }
