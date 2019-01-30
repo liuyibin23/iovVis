@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.controller;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +33,7 @@ import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.kv.BaseAttributeKvEntry;
 import org.thingsboard.server.common.data.kv.StringDataEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
@@ -337,6 +339,59 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
+
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/currentUser/devices", params = {"limit"}, method = RequestMethod.GET)
+    @ResponseBody
+    public TextPageData<Device> getCurrentUserDevices(@RequestParam int limit,
+                                                      @RequestParam(required = false) String textSearch,
+                                                      @RequestParam(required = false) String idOffset,
+                                                      @RequestParam(required = false) String textOffset) throws ThingsboardException {
+        SecurityUser currentUser = getCurrentUser();
+        CustomerId customerId = currentUser.getCustomerId();
+        TenantId tenantId = currentUser.getTenantId();
+        TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+        if(customerId != null && !customerId.isNullUid()){ //customer
+            return deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,pageLink);
+        } else if(tenantId !=null && !tenantId.isNullUid()){//tenant
+            return deviceService.findDevicesByTenantId(tenantId,pageLink);
+        } else { //admin
+            return deviceService.findDevices(pageLink);
+        }
+    }
+
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/currentUser/deviceCount", method = RequestMethod.GET)
+    public DeviceCount getCurrentUserDeviceCount() throws ThingsboardException, ExecutionException, InterruptedException {
+        SecurityUser currentUser = getCurrentUser();
+        CustomerId customerId = currentUser.getCustomerId();
+        TenantId tenantId = currentUser.getTenantId();
+        if(customerId != null && !customerId.isNullUid()){ //customer
+            List<Device> devices = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData();
+            return getDeviceCount(devices,tenantId);
+        } else if(tenantId !=null && !tenantId.isNullUid()){//tenant
+            List<Device> devices = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData();
+            return getDeviceCount(devices,tenantId);
+        } else { //admin
+            List<Device> devices = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData();
+            return getDeviceCount(devices,TenantId.SYS_TENANT_ID);
+        }
+    }
+
+    private DeviceCount getDeviceCount(List<Device> devices,TenantId tenantId) throws ExecutionException, InterruptedException {
+        List<ListenableFuture<Optional<AttributeKvEntry>>> futures = new ArrayList<>();
+        devices.forEach(device -> {
+            futures.add(attributesService.find(tenantId,device.getId(),DataConstants.SHARED_SCOPE,DataConstants.DEVICE_ACTIVE));
+        });
+        ListenableFuture< List<Optional<AttributeKvEntry>>> successFuture = Futures.successfulAsList(futures);
+        List<Optional<AttributeKvEntry>> activeAttrKeys = successFuture
+                .get()
+                .stream()
+                .filter(item-> item.isPresent() && item.get().getBooleanValue().isPresent() && item.get().getBooleanValue().get())
+                .collect(Collectors.toList());
+        return new DeviceCount(devices.size(),activeAttrKeys.size());
+    }
+
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/devicesAndInfo", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody

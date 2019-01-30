@@ -60,6 +60,8 @@ public class DataConstants {
     public static final String ALARM_ACK = "ALARM_ACK";
     public static final String ALARM_CLEAR = "ALARM_CLEAR";
 
+    public static final String DEVICE_ACTIVE = "active";
+
     public static final String RPC_CALL_FROM_SERVER_TO_DEVICE = "RPC_CALL_FROM_SERVER_TO_DEVICE";
 
 }
