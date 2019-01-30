@@ -145,4 +145,9 @@ public interface DeviceDao extends Dao<Device> {
      * @return the optional device object
      */
     List<Device> findByIdLike(@Param("searchId") String deviceId);
+
+    List<Device> findDevicesByName(String deviceName);
+
+    List<Device> findDevicesByNameAndTenantId(String deviceName,UUID tenantId);
+    List<Device> findDevicesByNameAndCustomerId(String deviceName,UUID customerId);
 }

@@ -347,6 +347,21 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return deviceDao.findByIdLike(deviceId);
     }
 
+    @Override
+    public List<Device> findDevicesByName(String deviceName) {
+        return deviceDao.findDevicesByName(deviceName);
+    }
+
+    @Override
+    public List<Device> findDevicesByName(String deviceName, TenantId tenantId) {
+        return deviceDao.findDevicesByNameAndTenantId(deviceName,tenantId.getId());
+    }
+
+    @Override
+    public List<Device> findDevicesByName(String deviceName, CustomerId customerId) {
+        return deviceDao.findDevicesByNameAndCustomerId(deviceName,customerId.getId());
+    }
+
     private DataValidator<Device> deviceValidator =
             new DataValidator<Device>() {
 

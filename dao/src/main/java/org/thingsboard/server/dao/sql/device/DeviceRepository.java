@@ -19,6 +19,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.util.SqlDao;
 
@@ -97,4 +98,10 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
     List<DeviceEntity> findDevicesByTenantIdAndCustomerIdAndIdIn(String tenantId, String customerId, List<String> deviceIds);
 
     List<DeviceEntity> findDevicesByTenantIdAndIdIn(String tenantId, List<String> deviceIds);
+
+    List<DeviceEntity> findAllByNameLike(String deviceName);
+
+    List<DeviceEntity> findAllByNameLikeAndTenantId(String deviceName,String tenantId);
+
+    List<DeviceEntity> findAllByNameLikeAndCustomerId(String deviceName,String customerId);
 }

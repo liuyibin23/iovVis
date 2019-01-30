@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmId;
@@ -47,6 +48,7 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
 
 import javax.management.relation.RelationType;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -55,6 +57,38 @@ public class AlarmController extends BaseController {
 
     public static final String ALARM_ID = "alarmId";
 
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/getAlarm", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Alarm> getAlarmByDeviceName(@RequestParam String strDeviceName) throws ThingsboardException {
+		checkNotNull(strDeviceName);
+
+		List<Alarm> retAlarmList = new ArrayList<>();
+		List<Device> deviceList = null;
+		switch (getCurrentUser().getAuthority()){
+			case TENANT_ADMIN:
+				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%",getCurrentUser().getTenantId());
+				break;
+			case SYS_ADMIN:
+				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%");
+				break;
+			case CUSTOMER_USER:
+				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%",getCurrentUser().getCustomerId());
+				break;
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		}
+
+
+		if (null != deviceList)
+			deviceList.stream().forEach(device -> {
+				retAlarmList.addAll(alarmService.findAlarmByOriginator(device.getId()));
+			});
+
+
+		return retAlarmList;
+	}
     /**
     * @Description: 跟据报警ID查询任务
     * @Author: ShenJi
