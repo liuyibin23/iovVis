@@ -58,6 +58,13 @@ public class AlarmController extends BaseController {
     public static final String ALARM_ID = "alarmId";
 
 
+    /**
+    * @Description: 1.2.5.6 设备名称查询告警信息
+    * @Author: ShenJi
+    * @Date: 2019/1/30
+    * @Param: [strDeviceName]
+    * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
+    */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getAlarm", method = RequestMethod.GET)
 	@ResponseBody
