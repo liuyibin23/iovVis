@@ -18,11 +18,15 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	private TenantId tenantId;
 	private CustomerId customerId;
 	private UserId userId;
+	private String userFirstName;
 	private AssetId assetId;
+	private String assetName;
 	private EntityId originator;
+	private String originatorName;
 	private TaskKind taskKind;
 	private TaskStatus taskStatus;
 	private String taskName;
+
 //	private String name;
 	private JsonNode additionalInfo;
 

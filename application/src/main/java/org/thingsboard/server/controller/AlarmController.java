@@ -139,35 +139,7 @@ public class AlarmController extends BaseController {
 		return retAlarmList;
 	}
 
-	/**
-	 * @Description: 跟据报警ID查询任务
-	 * @Author: ShenJi
-	 * @Date: 2019/1/29
-	 * @Param: [strAlarmId]
-	 * @return: org.thingsboard.server.common.data.task.Task
-	 */
-	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getTasks", method = RequestMethod.GET)
-	@ResponseBody
-	public Task getTaskByAlarmId(@RequestParam String strAlarmId) throws ThingsboardException {
-		checkParameter(ALARM_ID, strAlarmId);
-		try {
 
-			Task retTask = null;
-			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
-			checkAlarmId(alarmId);
-			List<EntityRelation> entityRelationList = relationService.findByToAndType(null, alarmId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON);
-			for (EntityRelation relation : entityRelationList) {
-				if (relation.getFrom().getEntityType() == EntityType.TASK) {
-					retTask = taskService.findTaskById(relation.getFrom().getId());
-					break;
-				}
-			}
-			return retTask;
-		} catch (Exception e) {
-			throw handleException(e);
-		}
-	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/alarm/{alarmId}", method = RequestMethod.GET)
