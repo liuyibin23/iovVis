@@ -129,4 +129,16 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
         return 0;
     }
 
+	@Override
+	public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+		//todo add cassandra
+    	return null;
+	}
+
+	@Override
+	public List<User> findUsersByFirstNameLike(String firstname) {
+    	//todo add cassandra
+		return null;
+	}
+
 }

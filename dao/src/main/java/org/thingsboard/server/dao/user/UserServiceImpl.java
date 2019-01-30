@@ -274,6 +274,16 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         return userDao.countTenantUser(tenantId);
     }
 
+    @Override
+    public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+        return userDao.findUsersByFirstNameLikeAndLastNameLike(firstName,lastName);
+    }
+
+    @Override
+    public List<User> findUsersByFirstNameLike(String firstName) {
+        return userDao.findUsersByFirstNameLike(firstName);
+    }
+
     private DataValidator<User> userValidator =
             new DataValidator<User>() {
                 @Override

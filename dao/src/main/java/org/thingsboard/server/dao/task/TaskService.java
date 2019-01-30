@@ -3,6 +3,7 @@ package org.thingsboard.server.dao.task;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.task.Task;
 
 import java.util.List;
@@ -14,5 +15,6 @@ public interface TaskService {
 	List<Task> checkTasks(TenantId tenantId);
 	List<Task> checkTasks();
 	Task findTaskById(UUID taskId);
+	List<Task> findTasksByUserId(UserId userId);
 	Task findTaskByOriginator(EntityId entityId);
 }

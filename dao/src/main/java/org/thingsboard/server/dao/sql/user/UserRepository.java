@@ -76,4 +76,8 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 							  Pageable pageable);
 
 	List<UserEntity> findAllByTenantIdAndAuthority(String tenantId,Authority authority);
+
+	List<UserEntity> findAllByFirstNameLikeAndLastNameLike(String firstName,String lastName);
+
+	List<UserEntity> findAllByFirstNameLike(String firstName);
 }

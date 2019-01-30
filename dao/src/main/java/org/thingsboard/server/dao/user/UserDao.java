@@ -113,4 +113,22 @@ public interface UserDao extends Dao<User> {
      * @return
      */
     int countTenantUser(String tenantId);
+
+    /**
+    * @Description: 按照姓名模糊查找用户
+    * @Author: ShenJi
+    * @Date: 2019/1/30
+    * @Param: [firstName, lastName]
+    * @return: java.util.List<org.thingsboard.server.common.data.User>
+    */
+    List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName,String lastName);
+
+    /**
+    * @Description: 按照firstName模糊查找用户
+    * @Author: ShenJi
+    * @Date: 2019/1/30
+    * @Param: [firstname]
+    * @return: java.util.List<org.thingsboard.server.common.data.User>
+    */
+    List<User> findUsersByFirstNameLike(String firstname);
 }
