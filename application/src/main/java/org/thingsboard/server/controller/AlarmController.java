@@ -38,6 +38,7 @@ import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
+import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.EntityIdFactory;
 import org.thingsboard.server.common.data.page.TimePageData;
@@ -50,21 +51,66 @@ import org.thingsboard.server.common.data.task.Task;
 import javax.management.relation.RelationType;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
 public class AlarmController extends BaseController {
 
-    public static final String ALARM_ID = "alarmId";
+	public static final String ALARM_ID = "alarmId";
 
+	/** 
+	* @Description: 1.2.5.7 设备ID查询告警信息
+	* @Author: ShenJi
+	* @Date: 2019/1/30 
+	* @Param: [strDeviceId] 
+	* @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
+	*/ 
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/getAlarmsByDeviceId", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Alarm> getAlarmsByDeviceId(@RequestParam String strDeviceId) throws ThingsboardException {
+		checkNotNull(strDeviceId);
 
-    /**
-    * @Description: 1.2.5.6 设备名称查询告警信息
-    * @Author: ShenJi
-    * @Date: 2019/1/30
-    * @Param: [strDeviceName]
-    * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
-    */
+		List<Alarm> retAlarmList = new ArrayList<>();
+		Device device = null;
+		switch (getCurrentUser().getAuthority()) {
+			case TENANT_ADMIN:
+				device = deviceService.findDeviceById(getCurrentUser().getTenantId(), new DeviceId(toUUID(strDeviceId)));
+				break;
+			case SYS_ADMIN:
+				device = deviceService.findDeviceById(null, new DeviceId(toUUID(strDeviceId)));
+				break;
+			case CUSTOMER_USER:
+				List<DeviceId> tmpList = new ArrayList<DeviceId>();
+				tmpList.add(new DeviceId(toUUID(strDeviceId)));
+				try {
+					List<Device> devices = deviceService.findDevicesByTenantIdCustomerIdAndIdsAsync(getCurrentUser().getTenantId(),
+							getCurrentUser().getCustomerId(),
+							tmpList).get();
+					if (null != devices && devices.size() > 0)
+						device = devices.get(1);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				break;
+			default:
+				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		}
+		if (null != device)
+			retAlarmList.addAll(alarmService.findAlarmByOriginator(device.getId()));
+
+		return retAlarmList;
+	}
+
+	/**
+	 * @Description: 1.2.5.6 设备名称查询告警信息
+	 * @Author: ShenJi
+	 * @Date: 2019/1/30
+	 * @Param: [strDeviceName]
+	 * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
+	 */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getAlarm", method = RequestMethod.GET)
 	@ResponseBody
@@ -73,36 +119,33 @@ public class AlarmController extends BaseController {
 
 		List<Alarm> retAlarmList = new ArrayList<>();
 		List<Device> deviceList = null;
-		switch (getCurrentUser().getAuthority()){
+		switch (getCurrentUser().getAuthority()) {
 			case TENANT_ADMIN:
-				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%",getCurrentUser().getTenantId());
+				deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%", getCurrentUser().getTenantId());
 				break;
 			case SYS_ADMIN:
-				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%");
+				deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%");
 				break;
 			case CUSTOMER_USER:
-				deviceList = deviceService.findDevicesByName("%"+strDeviceName+"%",getCurrentUser().getCustomerId());
+				deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%", getCurrentUser().getCustomerId());
 				break;
-				default:
-					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+			default:
+				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 		}
-
-
 		if (null != deviceList)
 			deviceList.stream().forEach(device -> {
 				retAlarmList.addAll(alarmService.findAlarmByOriginator(device.getId()));
 			});
-
-
 		return retAlarmList;
 	}
-    /**
-    * @Description: 跟据报警ID查询任务
-    * @Author: ShenJi
-    * @Date: 2019/1/29
-    * @Param: [strAlarmId]
-    * @return: org.thingsboard.server.common.data.task.Task
-    */
+
+	/**
+	 * @Description: 跟据报警ID查询任务
+	 * @Author: ShenJi
+	 * @Date: 2019/1/29
+	 * @Param: [strAlarmId]
+	 * @return: org.thingsboard.server.common.data.task.Task
+	 */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getTasks", method = RequestMethod.GET)
 	@ResponseBody
@@ -113,9 +156,9 @@ public class AlarmController extends BaseController {
 			Task retTask = null;
 			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
 			checkAlarmId(alarmId);
-			List<EntityRelation> entityRelationList=  relationService.findByToAndType(null,alarmId,EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
-			for (EntityRelation relation : entityRelationList){
-				if (relation.getFrom().getEntityType() == EntityType.TASK){
+			List<EntityRelation> entityRelationList = relationService.findByToAndType(null, alarmId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON);
+			for (EntityRelation relation : entityRelationList) {
+				if (relation.getFrom().getEntityType() == EntityType.TASK) {
 					retTask = taskService.findTaskById(relation.getFrom().getId());
 					break;
 				}
@@ -126,137 +169,137 @@ public class AlarmController extends BaseController {
 		}
 	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/{alarmId}", method = RequestMethod.GET)
-    @ResponseBody
-    public Alarm getAlarmById(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
-        checkParameter(ALARM_ID, strAlarmId);
-        try {
-            AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
-            return checkAlarmId(alarmId);
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/{alarmId}", method = RequestMethod.GET)
+	@ResponseBody
+	public Alarm getAlarmById(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
+		checkParameter(ALARM_ID, strAlarmId);
+		try {
+			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
+			return checkAlarmId(alarmId);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/info/{alarmId}", method = RequestMethod.GET)
-    @ResponseBody
-    public AlarmInfo getAlarmInfoById(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
-        checkParameter(ALARM_ID, strAlarmId);
-        try {
-            AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
-            return checkAlarmInfoId(alarmId);
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/info/{alarmId}", method = RequestMethod.GET)
+	@ResponseBody
+	public AlarmInfo getAlarmInfoById(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
+		checkParameter(ALARM_ID, strAlarmId);
+		try {
+			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
+			return checkAlarmInfoId(alarmId);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm", method = RequestMethod.POST)
-    @ResponseBody
-    public Alarm saveAlarm(@RequestBody Alarm alarm) throws ThingsboardException {
-        try {
-            alarm.setTenantId(getCurrentUser().getTenantId());
-            Alarm savedAlarm = checkNotNull(alarmService.createOrUpdateAlarm(alarm));
-            logEntityAction(savedAlarm.getId(), savedAlarm,
-                    getCurrentUser().getCustomerId(),
-                    alarm.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
-            return savedAlarm;
-        } catch (Exception e) {
-            logEntityAction(emptyId(EntityType.ALARM), alarm,
-                    null, alarm.getId() == null ? ActionType.ADDED : ActionType.UPDATED, e);
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm", method = RequestMethod.POST)
+	@ResponseBody
+	public Alarm saveAlarm(@RequestBody Alarm alarm) throws ThingsboardException {
+		try {
+			alarm.setTenantId(getCurrentUser().getTenantId());
+			Alarm savedAlarm = checkNotNull(alarmService.createOrUpdateAlarm(alarm));
+			logEntityAction(savedAlarm.getId(), savedAlarm,
+					getCurrentUser().getCustomerId(),
+					alarm.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
+			return savedAlarm;
+		} catch (Exception e) {
+			logEntityAction(emptyId(EntityType.ALARM), alarm,
+					null, alarm.getId() == null ? ActionType.ADDED : ActionType.UPDATED, e);
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/{alarmId}/ack", method = RequestMethod.POST)
-    @ResponseStatus(value = HttpStatus.OK)
-    public void ackAlarm(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
-        checkParameter(ALARM_ID, strAlarmId);
-        try {
-            AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
-            Alarm alarm = checkAlarmId(alarmId);
-            alarmService.ackAlarm(getCurrentUser().getTenantId(), alarmId, System.currentTimeMillis()).get();
-            logEntityAction(alarmId, alarm, getCurrentUser().getCustomerId(), ActionType.ALARM_ACK, null);
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/{alarmId}/ack", method = RequestMethod.POST)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void ackAlarm(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
+		checkParameter(ALARM_ID, strAlarmId);
+		try {
+			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
+			Alarm alarm = checkAlarmId(alarmId);
+			alarmService.ackAlarm(getCurrentUser().getTenantId(), alarmId, System.currentTimeMillis()).get();
+			logEntityAction(alarmId, alarm, getCurrentUser().getCustomerId(), ActionType.ALARM_ACK, null);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/{alarmId}/clear", method = RequestMethod.POST)
-    @ResponseStatus(value = HttpStatus.OK)
-    public void clearAlarm(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
-        checkParameter(ALARM_ID, strAlarmId);
-        try {
-            AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
-            Alarm alarm = checkAlarmId(alarmId);
-            alarmService.clearAlarm(getCurrentUser().getTenantId(), alarmId, null, System.currentTimeMillis()).get();
-            logEntityAction(alarmId, alarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/{alarmId}/clear", method = RequestMethod.POST)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void clearAlarm(@PathVariable(ALARM_ID) String strAlarmId) throws ThingsboardException {
+		checkParameter(ALARM_ID, strAlarmId);
+		try {
+			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
+			Alarm alarm = checkAlarmId(alarmId);
+			alarmService.clearAlarm(getCurrentUser().getTenantId(), alarmId, null, System.currentTimeMillis()).get();
+			logEntityAction(alarmId, alarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/{entityType}/{entityId}", method = RequestMethod.GET)
-    @ResponseBody
-    public TimePageData<AlarmInfo> getAlarms(
-            @PathVariable("entityType") String strEntityType,
-            @PathVariable("entityId") String strEntityId,
-            @RequestParam(required = false) String searchStatus,
-            @RequestParam(required = false) String status,
-            @RequestParam int limit,
-            @RequestParam(required = false) Long startTime,
-            @RequestParam(required = false) Long endTime,
-            @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
-            @RequestParam(required = false) String offset,
-            @RequestParam(required = false) Boolean fetchOriginator
-    ) throws ThingsboardException {
-        checkParameter("EntityId", strEntityId);
-        checkParameter("EntityType", strEntityType);
-        EntityId entityId = EntityIdFactory.getByTypeAndId(strEntityType, strEntityId);
-        AlarmSearchStatus alarmSearchStatus = StringUtils.isEmpty(searchStatus) ? null : AlarmSearchStatus.valueOf(searchStatus);
-        AlarmStatus alarmStatus = StringUtils.isEmpty(status) ? null : AlarmStatus.valueOf(status);
-        if (alarmSearchStatus != null && alarmStatus != null) {
-            throw new ThingsboardException("Invalid alarms search query: Both parameters 'searchStatus' " +
-                    "and 'status' can't be specified at the same time!", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
-        }
-        checkEntityId(entityId);
-        try {
-            TimePageLink pageLink = createPageLink(limit, startTime, endTime, ascOrder, offset);
-            return checkNotNull(alarmService.findAlarms(getCurrentUser().getTenantId(), new AlarmQuery(entityId, pageLink, alarmSearchStatus, alarmStatus, fetchOriginator)).get());
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/{entityType}/{entityId}", method = RequestMethod.GET)
+	@ResponseBody
+	public TimePageData<AlarmInfo> getAlarms(
+			@PathVariable("entityType") String strEntityType,
+			@PathVariable("entityId") String strEntityId,
+			@RequestParam(required = false) String searchStatus,
+			@RequestParam(required = false) String status,
+			@RequestParam int limit,
+			@RequestParam(required = false) Long startTime,
+			@RequestParam(required = false) Long endTime,
+			@RequestParam(required = false, defaultValue = "false") boolean ascOrder,
+			@RequestParam(required = false) String offset,
+			@RequestParam(required = false) Boolean fetchOriginator
+	) throws ThingsboardException {
+		checkParameter("EntityId", strEntityId);
+		checkParameter("EntityType", strEntityType);
+		EntityId entityId = EntityIdFactory.getByTypeAndId(strEntityType, strEntityId);
+		AlarmSearchStatus alarmSearchStatus = StringUtils.isEmpty(searchStatus) ? null : AlarmSearchStatus.valueOf(searchStatus);
+		AlarmStatus alarmStatus = StringUtils.isEmpty(status) ? null : AlarmStatus.valueOf(status);
+		if (alarmSearchStatus != null && alarmStatus != null) {
+			throw new ThingsboardException("Invalid alarms search query: Both parameters 'searchStatus' " +
+					"and 'status' can't be specified at the same time!", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		}
+		checkEntityId(entityId);
+		try {
+			TimePageLink pageLink = createPageLink(limit, startTime, endTime, ascOrder, offset);
+			return checkNotNull(alarmService.findAlarms(getCurrentUser().getTenantId(), new AlarmQuery(entityId, pageLink, alarmSearchStatus, alarmStatus, fetchOriginator)).get());
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alarm/highestSeverity/{entityType}/{entityId}", method = RequestMethod.GET)
-    @ResponseBody
-    public AlarmSeverity getHighestAlarmSeverity(
-            @PathVariable("entityType") String strEntityType,
-            @PathVariable("entityId") String strEntityId,
-            @RequestParam(required = false) String searchStatus,
-            @RequestParam(required = false) String status
-    ) throws ThingsboardException {
-        checkParameter("EntityId", strEntityId);
-        checkParameter("EntityType", strEntityType);
-        EntityId entityId = EntityIdFactory.getByTypeAndId(strEntityType, strEntityId);
-        AlarmSearchStatus alarmSearchStatus = StringUtils.isEmpty(searchStatus) ? null : AlarmSearchStatus.valueOf(searchStatus);
-        AlarmStatus alarmStatus = StringUtils.isEmpty(status) ? null : AlarmStatus.valueOf(status);
-        if (alarmSearchStatus != null && alarmStatus != null) {
-            throw new ThingsboardException("Invalid alarms search query: Both parameters 'searchStatus' " +
-                    "and 'status' can't be specified at the same time!", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
-        }
-        checkEntityId(entityId);
-        try {
-            return alarmService.findHighestAlarmSeverity(getCurrentUser().getTenantId(), entityId, alarmSearchStatus, alarmStatus);
-        } catch (Exception e) {
-            throw handleException(e);
-        }
-    }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/highestSeverity/{entityType}/{entityId}", method = RequestMethod.GET)
+	@ResponseBody
+	public AlarmSeverity getHighestAlarmSeverity(
+			@PathVariable("entityType") String strEntityType,
+			@PathVariable("entityId") String strEntityId,
+			@RequestParam(required = false) String searchStatus,
+			@RequestParam(required = false) String status
+	) throws ThingsboardException {
+		checkParameter("EntityId", strEntityId);
+		checkParameter("EntityType", strEntityType);
+		EntityId entityId = EntityIdFactory.getByTypeAndId(strEntityType, strEntityId);
+		AlarmSearchStatus alarmSearchStatus = StringUtils.isEmpty(searchStatus) ? null : AlarmSearchStatus.valueOf(searchStatus);
+		AlarmStatus alarmStatus = StringUtils.isEmpty(status) ? null : AlarmStatus.valueOf(status);
+		if (alarmSearchStatus != null && alarmStatus != null) {
+			throw new ThingsboardException("Invalid alarms search query: Both parameters 'searchStatus' " +
+					"and 'status' can't be specified at the same time!", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		}
+		checkEntityId(entityId);
+		try {
+			return alarmService.findHighestAlarmSeverity(getCurrentUser().getTenantId(), entityId, alarmSearchStatus, alarmStatus);
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
 }
