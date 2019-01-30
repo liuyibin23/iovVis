@@ -28,16 +28,13 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmId;
-import org.thingsboard.server.common.data.alarm.AlarmInfo;
-import org.thingsboard.server.common.data.alarm.AlarmQuery;
-import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
-import org.thingsboard.server.common.data.alarm.AlarmSeverity;
-import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.UUIDConverter;
+import org.thingsboard.server.common.data.alarm.*;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
+import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.EntityIdFactory;
@@ -47,6 +44,7 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 
 import javax.management.relation.RelationType;
 import java.util.ArrayList;
@@ -114,7 +112,7 @@ public class AlarmController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getAlarm", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Alarm> getAlarmByDeviceName(@RequestParam String strDeviceName) throws ThingsboardException {
+	public List<AlarmExInfo> getAlarmByDeviceName(@RequestParam String strDeviceName) throws ThingsboardException {
 		checkNotNull(strDeviceName);
 
 		List<Alarm> retAlarmList = new ArrayList<>();
@@ -136,7 +134,8 @@ public class AlarmController extends BaseController {
 			deviceList.stream().forEach(device -> {
 				retAlarmList.addAll(alarmService.findAlarmByOriginator(device.getId()));
 			});
-		return retAlarmList;
+
+		return fillAlarmExInfo(retAlarmList);
 	}
 
 
@@ -272,6 +271,48 @@ public class AlarmController extends BaseController {
 		} catch (Exception e) {
 			throw handleException(e);
 		}
+	}
+
+	private List<AlarmExInfo> fillAlarmExInfo(List<Alarm> alarmList) throws ThingsboardException {
+		checkNotNull(alarmList);
+		List<AlarmExInfo> retList = new ArrayList<>();
+
+		alarmList.stream().forEach(alarm -> {
+			AlarmExInfo tmpInfo = new AlarmExInfo();
+			tmpInfo.setAlarmId(alarm.getId().toString());
+			tmpInfo.setAlarmLevel(alarm.getSeverity().name());
+			tmpInfo.setAlarmStatus(alarm.getStatus().name());
+			tmpInfo.setAlarmTime(alarm.getStartTs());
+
+			if (null != alarm.getOriginator()){
+				if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){
+					Device device = deviceService.findDeviceById(null,new DeviceId(alarm.getOriginator().getId()));
+					if (null != device){
+						tmpInfo.setDeviceName(device.getName());
+						tmpInfo.setDeviceType(device.getType());
+						tmpInfo.setAdditionalInfo(device.getAdditionalInfo());
+					}
+					DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
+					if (null != deviceAttributes.getMeasureid()){
+						tmpInfo.setMeasureid(deviceAttributes.getMeasureid());
+					}
+					List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,device.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
+					for (EntityRelation entityRelation : tmpEntityRelationList){
+						if (entityRelation.getFrom().getEntityType() == EntityType.ASSET){
+							Asset tmpAsset = assetService.findAssetById(null,new AssetId(entityRelation.getFrom().getId()));
+							if (null != tmpAsset){
+								tmpInfo.setAssetName(tmpAsset.getName());
+								break;
+							}
+						}
+					}
+
+				}
+			}
+			retList.add(tmpInfo);
+
+		});
+		return retList;
 	}
 
 }

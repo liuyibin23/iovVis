@@ -51,8 +51,7 @@ public class TaskController extends BaseController {
 		try {
 			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
 				return getTasksNameInfo(checkNotNull(taskService.checkTasks()));
-			}
-			if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)) {
+			} else if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)) {
 				return getTasksNameInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId())));
 			} else
 				return getTasksNameInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId(), getCurrentUser().getCustomerId())));
@@ -69,8 +68,7 @@ public class TaskController extends BaseController {
 		try {
 			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
 				taskList = checkNotNull(taskService.checkTasks());
-			}
-			if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)) {
+			} else if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)) {
 				taskList = checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId()));
 			} else
 				taskList = checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId(), getCurrentUser().getCustomerId()));
@@ -141,6 +139,8 @@ public class TaskController extends BaseController {
 				task.setAssetName(assetService.findAssetById(null,task.getAssetId()).getName());
 			if (null != task.getUserId())
 				task.setUserFirstName(userService.findUserById(null,task.getUserId()).getFirstName());
+			if (null != task.getCustomerId())
+				task.setCustomerName(customerService.findCustomerById(null,task.getCustomerId()).getName());
 			if (null != task.getOriginator()){
 				if (task.getOriginator().getEntityType() == EntityType.DEVICE){
 					DeviceId deviceId = new DeviceId(task.getOriginator().getId());
@@ -158,6 +158,8 @@ public class TaskController extends BaseController {
 			task.setAssetName(assetService.findAssetById(null,task.getAssetId()).getName());
 		if (null != task.getUserId())
 			task.setUserFirstName(userService.findUserById(null,task.getUserId()).getFirstName());
+		if (null != task.getCustomerId())
+			task.setCustomerName(customerService.findCustomerById(null,task.getCustomerId()).getName());
 		if (null != task.getOriginator()){
 			if (task.getOriginator().getEntityType() == EntityType.DEVICE){
 				DeviceId deviceId = new DeviceId(task.getOriginator().getId());
