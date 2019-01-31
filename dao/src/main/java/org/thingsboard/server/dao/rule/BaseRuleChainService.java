@@ -293,6 +293,16 @@ public class BaseRuleChainService extends AbstractEntityService implements RuleC
     }
 
     @Override
+    public List<RuleChain> findRuleChains() {
+        return ruleChainDao.findRuleChains();
+    }
+
+    @Override
+    public List<RuleChain> findRuleChainsByTenantId(TenantId tenantId) {
+        return ruleChainDao.findRuleChainsByTenantId(tenantId.getId());
+    }
+
+    @Override
     public void deleteRuleChainById(TenantId tenantId, RuleChainId ruleChainId) {
         Validator.validateId(ruleChainId, "Incorrect rule chain id for delete request.");
         RuleChain ruleChain = ruleChainDao.findById(tenantId, ruleChainId.getId());

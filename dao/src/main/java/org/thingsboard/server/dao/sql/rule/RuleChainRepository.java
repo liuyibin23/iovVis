@@ -35,4 +35,9 @@ public interface RuleChainRepository extends CrudRepository<RuleChainEntity, Str
                                          @Param("idOffset") String idOffset,
                                          Pageable pageable);
 
+    @Query("SELECT rc FROM RuleChainEntity rc")
+    List<RuleChainEntity> findAllRuleChainEntities();
+
+    List<RuleChainEntity> findAllByTenantId(String tenantId);
+
 }

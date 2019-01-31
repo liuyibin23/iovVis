@@ -22,15 +22,12 @@ import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.rule.engine.api.msg.DeviceAttributes;
 import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.audit.ActionType;
-import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
-import org.thingsboard.server.common.data.batchconfig.DeviceClientAttrib;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.AssetId;
@@ -51,10 +48,7 @@ import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController

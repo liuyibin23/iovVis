@@ -38,6 +38,7 @@ import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Event;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.RuleChainId;
 import org.thingsboard.server.common.data.id.RuleNodeId;
@@ -72,6 +73,29 @@ public class RuleChainController extends BaseController {
 
     @Autowired
     private JsInvokeService jsInvokeService;
+
+
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/beidouapp/ruleChains", method = RequestMethod.GET)
+    @ResponseBody
+    public List<RuleChain> getRuleChains() throws ThingsboardException {
+
+        List<RuleChain> retRuleChainsList = null;
+        switch (getCurrentUser().getAuthority()){
+            case SYS_ADMIN:
+                retRuleChainsList = ruleChainService.findRuleChains();
+                break;
+            case TENANT_ADMIN:
+                retRuleChainsList = ruleChainService.findRuleChainsByTenantId(getCurrentUser().getTenantId());
+                break;
+            case CUSTOMER_USER:
+                retRuleChainsList = null;
+                break;
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+        }
+        return retRuleChainsList;
+    }
 
     @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/ruleChain/{ruleChainId}", method = RequestMethod.GET)

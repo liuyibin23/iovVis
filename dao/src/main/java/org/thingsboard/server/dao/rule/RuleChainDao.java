@@ -37,4 +37,7 @@ public interface RuleChainDao extends Dao<RuleChain> {
      */
     List<RuleChain> findRuleChainsByTenantId(UUID tenantId, TextPageLink pageLink);
 
+    List<RuleChain> findRuleChains();
+    List<RuleChain> findRuleChainsByTenantId(UUID tenantId);
+
 }
