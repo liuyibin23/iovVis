@@ -127,6 +127,9 @@ public class TaskController extends BaseController {
 					break;
 				}
 			}
+			if (null == retTask){
+				return null;
+			}
 			return getTasksNameInfo(retTask);
 		} catch (Exception e) {
 			throw handleException(e);

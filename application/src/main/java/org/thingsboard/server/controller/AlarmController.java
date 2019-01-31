@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -44,6 +45,7 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 
 import javax.management.relation.RelationType;
@@ -58,6 +60,48 @@ public class AlarmController extends BaseController {
 
 	public static final String ALARM_ID = "alarmId";
 
+	/**
+	* @Description: 1.2.5.7 告警处理
+	* @Author: ShenJi
+	* @Date: 2019/1/31
+	* @Param: [strAlarmId, additionalInfo]
+	* @return: org.thingsboard.server.common.data.alarm.Alarm
+	*/
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/closeAlarm", method = RequestMethod.POST)
+	@ResponseBody
+	public Alarm closeAlarm(@RequestParam String strAlarmId,@RequestBody JsonNode additionalInfo) throws ThingsboardException{
+		checkNotNull(strAlarmId);
+		checkNotNull(additionalInfo);
+
+		Alarm closeAlarm = null;
+
+		switch (getCurrentUser().getAuthority()){
+			case CUSTOMER_USER:
+				//todo customer
+				break;
+			case SYS_ADMIN:
+				closeAlarm = alarmService.findAlarmById(new AlarmId(toUUID(strAlarmId)));
+				break;
+			case TENANT_ADMIN:
+				closeAlarm = alarmService.findAlarmById(getCurrentUser().getTenantId(),new AlarmId(toUUID(strAlarmId)));
+				break;
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		}
+		if (null == closeAlarm){
+			return null;
+		}
+		Long closeTime = System.currentTimeMillis();
+		closeAlarm.setClearTs(closeTime);
+		closeAlarm.setEndTs(closeTime);
+		closeAlarm.setDetails(additionalInfo);
+		closeAlarm.setStatus(AlarmStatus.CLEARED_ACK);
+		alarmService.createOrUpdateAlarm(closeAlarm);
+		logEntityAction(closeAlarm.getId(), closeAlarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
+
+		return closeAlarm;
+	}
 	/** 
 	* @Description: 1.2.5.7 设备ID查询告警信息
 	* @Author: ShenJi
@@ -290,7 +334,7 @@ public class AlarmController extends BaseController {
 					if (null != device){
 						tmpInfo.setDeviceName(device.getName());
 						tmpInfo.setDeviceType(device.getType());
-						tmpInfo.setAdditionalInfo(device.getAdditionalInfo());
+						tmpInfo.setAdditionalInfo(alarm.getDetails());
 					}
 					DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
 					if (null != deviceAttributes.getMeasureid()){

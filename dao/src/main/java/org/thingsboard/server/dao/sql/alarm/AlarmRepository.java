@@ -42,4 +42,8 @@ public interface AlarmRepository extends CrudRepository<AlarmEntity, String> {
             "AND a.originatorType = :entityType ORDER BY a.type ASC, a.id DESC")
     List<AlarmEntity> findAlarmEntitiesByOriginatorIdAndOrderByOriginatorType(@Param("originatorId") String originatorId,
                                                                               @Param("entityType") EntityType entityType);
+
+    AlarmEntity findAlarmEntitiesById(String alarmId);
+
+    AlarmEntity findAlarmEntityByIdAndTenantId(String alarmId,String tenandId);
 }
