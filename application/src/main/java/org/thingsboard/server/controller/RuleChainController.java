@@ -118,15 +118,33 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
     @RequestMapping(value = "/ruleChain/{ruleChainId}/metadata", method = RequestMethod.GET)
     @ResponseBody
-    public RuleChainMetaData getRuleChainMetaData(@PathVariable(RULE_CHAIN_ID) String strRuleChainId) throws ThingsboardException {
+    public RuleChainMetaData getRuleChainMetaData(@PathVariable(RULE_CHAIN_ID) String strRuleChainId,
+												  @RequestParam(required = false) String strTenantId) throws ThingsboardException {
         checkParameter(RULE_CHAIN_ID, strRuleChainId);
+		RuleChainId ruleChainId = null;
         try {
-            RuleChainId ruleChainId = new RuleChainId(toUUID(strRuleChainId));
-            checkRuleChain(ruleChainId);
-            return ruleChainService.loadRuleChainMetaData(getTenantId(), ruleChainId);
+        	switch (getCurrentUser().getAuthority()){
+				case TENANT_ADMIN:
+					ruleChainId = new RuleChainId(toUUID(strRuleChainId));
+					checkRuleChain(ruleChainId);
+					return ruleChainService.loadRuleChainMetaData(getTenantId(), ruleChainId);
+				case SYS_ADMIN:
+					TenantId tenantId = new TenantId(toUUID(strTenantId));
+					checkTenantId(tenantId);
+
+					ruleChainId = new RuleChainId(toUUID(strRuleChainId));
+					RuleChain ruleChain = ruleChainService.findRuleChainById(getCurrentUser().getTenantId(), ruleChainId);
+					if (null != ruleChain)
+						return ruleChainService.loadRuleChainMetaData(tenantId, ruleChainId);
+					else
+						return null;
+					default:
+						throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+			}
+
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -202,7 +220,7 @@ public class RuleChainController extends BaseController {
     @RequestMapping(value = "/ruleChain/metadata", method = RequestMethod.POST)
     @ResponseBody
     public RuleChainMetaData saveRuleChainMetaData(@RequestBody RuleChainMetaData ruleChainMetaData,
-                                                   @RequestParam String tenantId) throws ThingsboardException {
+                                                   @RequestParam(required = false) String tenantId) throws ThingsboardException {
         RuleChainMetaData savedRuleChainMetaData = null;
         RuleChain ruleChain = null;
         try {

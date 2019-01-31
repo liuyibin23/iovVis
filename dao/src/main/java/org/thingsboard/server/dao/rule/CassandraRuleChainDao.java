@@ -60,4 +60,16 @@ public class CassandraRuleChainDao extends CassandraAbstractSearchTextDao<RuleCh
         return DaoUtil.convertDataList(ruleChainEntities);
     }
 
+    @Override
+    public List<RuleChain> findRuleChains() {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<RuleChain> findRuleChainsByTenantId(UUID tenantId) {
+        //todo cassandra
+        return null;
+    }
+
 }
