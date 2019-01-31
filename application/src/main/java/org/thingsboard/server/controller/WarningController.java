@@ -10,6 +10,8 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetWarningsInfo;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
+import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.TenantId;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,14 +31,39 @@ public class WarningController extends BaseController{
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getWarnings", method = RequestMethod.GET)
 	@ResponseBody
-	public List<AssetWarningsInfo> getWarnings() throws ThingsboardException{
+	public List<AssetWarningsInfo> getWarnings(@RequestParam(required = false) String tenantId,
+											   @RequestParam(required = false) String customerId) throws ThingsboardException{
 		List<Asset> assetList = null;
 		switch (getCurrentUser().getAuthority()){
 			case SYS_ADMIN:
-				assetList = assetService.findAssets();
+				if (null != tenantId && null == customerId) {
+					Tenant te = tenantService.findTenantById(new TenantId(toUUID(tenantId)));
+					if (null != te){
+						assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
+					} else {
+						return null;
+					}
+				} else if (null != customerId){
+					Customer cu = customerService.findCustomerById(getCurrentUser().getTenantId(),new CustomerId(toUUID(customerId)));
+					if (null != cu){
+						assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
+					} else {
+						return null;
+					}
+				} else
+					assetList = assetService.findAssets();
 				break;
 			case TENANT_ADMIN:
-				assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
+				if (null != customerId){
+					Customer cu = customerService.findCustomerById(getCurrentUser().getTenantId(),new CustomerId(toUUID(customerId)));
+					if (null != cu){
+						assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
+					} else {
+						return null;
+					}
+				} else {
+					assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
+				}
 				break;
 			case CUSTOMER_USER:
 				assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
@@ -46,8 +73,6 @@ public class WarningController extends BaseController{
 		}
 		if (null == assetList )
 			return null;
-
-
 		return convertAssetListToAssetWarningList(assetList);
 	}
 
