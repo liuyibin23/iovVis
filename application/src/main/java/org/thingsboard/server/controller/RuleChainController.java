@@ -37,6 +37,7 @@ import org.thingsboard.rule.engine.api.ScriptEngine;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Event;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -75,6 +76,13 @@ public class RuleChainController extends BaseController {
     private JsInvokeService jsInvokeService;
 
 
+    /**
+    * @Description: 1.2.9.11 查询登录用户规则链列表
+    * @Author: ShenJi
+    * @Date: 2019/1/31
+    * @Param: []
+    * @return: java.util.List<org.thingsboard.server.common.data.rule.RuleChain>
+    */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/beidouapp/ruleChains", method = RequestMethod.GET)
     @ResponseBody
@@ -190,21 +198,49 @@ public class RuleChainController extends BaseController {
         }
     }
 
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
     @RequestMapping(value = "/ruleChain/metadata", method = RequestMethod.POST)
     @ResponseBody
-    public RuleChainMetaData saveRuleChainMetaData(@RequestBody RuleChainMetaData ruleChainMetaData) throws ThingsboardException {
+    public RuleChainMetaData saveRuleChainMetaData(@RequestBody RuleChainMetaData ruleChainMetaData,
+                                                   @RequestParam String tenantId) throws ThingsboardException {
+        RuleChainMetaData savedRuleChainMetaData = null;
+        RuleChain ruleChain = null;
         try {
-            RuleChain ruleChain = checkRuleChain(ruleChainMetaData.getRuleChainId());
-            RuleChainMetaData savedRuleChainMetaData = checkNotNull(ruleChainService.saveRuleChainMetaData(getTenantId(), ruleChainMetaData));
+            switch (getCurrentUser().getAuthority()){
+                case TENANT_ADMIN:
+                    ruleChain = checkRuleChain(ruleChainMetaData.getRuleChainId());
+                    savedRuleChainMetaData = checkNotNull(ruleChainService.saveRuleChainMetaData(getTenantId(), ruleChainMetaData));
 
-            actorService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
+                    actorService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
 
-            logEntityAction(ruleChain.getId(), ruleChain,
-                    null,
-                    ActionType.UPDATED, null, ruleChainMetaData);
+                    logEntityAction(ruleChain.getId(), ruleChain,
+                            null,
+                            ActionType.UPDATED, null, ruleChainMetaData);
 
-            return savedRuleChainMetaData;
+                    return savedRuleChainMetaData;
+
+                case SYS_ADMIN:
+                    checkNotNull(tenantId);
+                    Tenant tenant = tenantService.findTenantById(new TenantId(toUUID(tenantId)));
+                    if (null == tenant)
+                        throw new ThingsboardException("tenantId Not Find",ThingsboardErrorCode.INVALID_ARGUMENTS);
+
+                    ruleChain = ruleChainService.findRuleChainById(tenant.getId(), ruleChainMetaData.getRuleChainId());
+
+                    savedRuleChainMetaData = checkNotNull(ruleChainService.saveRuleChainMetaData(tenant.getId(), ruleChainMetaData));
+
+                    actorService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
+
+                    logEntityAction(ruleChain.getId(), ruleChain,
+                            null,
+                            ActionType.UPDATED, null, ruleChainMetaData);
+
+                    return savedRuleChainMetaData;
+
+                    default:
+                        throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+            }
+
         } catch (Exception e) {
 
             logEntityAction(emptyId(EntityType.RULE_CHAIN), null,
