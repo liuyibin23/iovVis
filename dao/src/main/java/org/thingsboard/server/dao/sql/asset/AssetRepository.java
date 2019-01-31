@@ -97,7 +97,7 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
     @Query("SELECT DISTINCT a.type FROM AssetEntity a WHERE a.tenantId = :tenantId")
     List<String> findTenantAssetTypes(@Param("tenantId") String tenantId);
 
-	@Query("SELECT a FROM AssetEntity a WHERE a.customerId = :tenantId ORDER BY a.id")
+	@Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId ORDER BY a.id")
     List<AssetEntity> findAllByTenantId(@Param("tenantId") String tenantId);
 	@Query("SELECT a FROM AssetEntity a WHERE a.customerId = :customerId ORDER BY a.id")
     List<AssetEntity> findAllByCustomerId(@Param("customerId") String customerId);

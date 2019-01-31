@@ -39,14 +39,14 @@ public class WarningController extends BaseController{
 				if (null != tenantId && null == customerId) {
 					Tenant te = tenantService.findTenantById(new TenantId(toUUID(tenantId)));
 					if (null != te){
-						assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
+						assetList = assetService.findAssetsByTenantId(te.getId());
 					} else {
 						return null;
 					}
 				} else if (null != customerId){
 					Customer cu = customerService.findCustomerById(getCurrentUser().getTenantId(),new CustomerId(toUUID(customerId)));
 					if (null != cu){
-						assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
+						assetList = assetService.findAssetsByCustomerId(cu.getId());
 					} else {
 						return null;
 					}
