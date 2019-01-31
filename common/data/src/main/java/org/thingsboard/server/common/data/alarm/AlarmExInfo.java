@@ -15,6 +15,8 @@ public class AlarmExInfo {
 	private String measureid;
 	private String deviceName;
 	private String deviceType;
+	private Long alarmStartTime;
+	private Long alarmEndTime;
 	private Long alarmTime;
 	private String alarmLevel;
 	private String alarmStatus;

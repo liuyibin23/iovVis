@@ -443,6 +443,8 @@ public class AssetController extends BaseController {
 							tmpNode.put("alarmLevel",alarm.getSeverity().toString());
 							tmpNode.put("alarmStatus",alarm.getStatus().toString());
 							tmpNode.put("additional_info",alarm.getDetails().toString());
+							tmpNode.put("alarmStartTime",alarm.getStartTs());
+							tmpNode.put("alarmEndTime",alarm.getEndTs());
 							arrayNode.add(tmpNode);
 
 						});

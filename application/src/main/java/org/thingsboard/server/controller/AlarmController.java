@@ -327,6 +327,8 @@ public class AlarmController extends BaseController {
 			tmpInfo.setAlarmLevel(alarm.getSeverity().name());
 			tmpInfo.setAlarmStatus(alarm.getStatus().name());
 			tmpInfo.setAlarmTime(alarm.getStartTs());
+			tmpInfo.setAlarmStartTime(alarm.getStartTs());
+			tmpInfo.setAlarmEndTime(alarm.getEndTs());
 
 			if (null != alarm.getOriginator()){
 				if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){
