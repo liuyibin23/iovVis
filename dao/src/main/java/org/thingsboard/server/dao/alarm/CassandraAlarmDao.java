@@ -23,10 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmInfo;
-import org.thingsboard.server.common.data.alarm.AlarmQuery;
-import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
+import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -114,6 +111,24 @@ public class CassandraAlarmDao extends CassandraAbstractModelDao<AlarmEntity, Al
             }
             return Futures.successfulAsList(alarmFutures);
         });
+    }
+
+    @Override
+    public List<Alarm> findAlarmByOriginator(EntityId originator) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public Alarm findAlarmById(AlarmId alarmId) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
+        //todo cassandra
+        return null;
     }
 
     @Override

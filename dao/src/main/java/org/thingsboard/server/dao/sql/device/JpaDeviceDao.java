@@ -153,6 +153,21 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
         return DaoUtil.convertDataList(deviceRepository.findByIdLike(deviceId));
     }
 
+    @Override
+    public List<Device> findDevicesByName(String deviceName) {
+        return DaoUtil.convertDataList(deviceRepository.findAllByNameLike(deviceName));
+    }
+
+    @Override
+    public List<Device> findDevicesByNameAndTenantId(String deviceName, UUID tenantId) {
+        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndTenantId(deviceName,fromTimeUUID(tenantId)));
+    }
+
+    @Override
+    public List<Device> findDevicesByNameAndCustomerId(String deviceName, UUID customerId) {
+        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndCustomerId(deviceName,fromTimeUUID(customerId)));
+    }
+
     private List<EntitySubtype> convertTenantDeviceTypesToDto(UUID tenantId, List<String> types) {
         List<EntitySubtype> list = Collections.emptyList();
         if (types != null && !types.isEmpty()) {

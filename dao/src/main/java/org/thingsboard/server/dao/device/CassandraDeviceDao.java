@@ -206,4 +206,22 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
         return null;
     }
 
+    @Override
+    public List<Device> findDevicesByName(String deviceName) {
+        //todo cassandra find
+        return null;
+    }
+
+    @Override
+    public List<Device> findDevicesByNameAndTenantId(String deviceName, UUID tenantId) {
+        //todo cassandra find
+        return null;
+    }
+
+    @Override
+    public List<Device> findDevicesByNameAndCustomerId(String deviceName, UUID customerId) {
+        //todo cassandra find
+        return null;
+    }
+
 }

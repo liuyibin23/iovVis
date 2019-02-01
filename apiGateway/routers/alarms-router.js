@@ -67,9 +67,15 @@ router.get('/:id', async function (req, res) {
     if (devID) {
       let cfg = ruleTables[devID];
       if (cfg) {
-        retCfg.IndeterminateRules.min = 10;
-        retCfg.IndeterminateRules.max = 20;
-        find = true;
+        var start_idx = cfg.indexOf('/*S*/');
+        var end_idx   = cfg.indexOf('/*E*/');
+        var cfg_rule = cfg.substr(start_idx, end_idx - start_idx);
+        eval(cfg_rule);
+        if (thd) {
+          retCfg.IndeterminateRules.min = thd.min;
+          retCfg.IndeterminateRules.max = thd.max;
+          find = true;
+        }
       }
     }
 
@@ -80,9 +86,15 @@ router.get('/:id', async function (req, res) {
     if (devID) {
       let cfg = ruleTables[devID];
       if (cfg) {
-        retCfg.WarningRules.min = 30;
-        retCfg.WarningRules.max = 50;
-        find = true;
+        var start_idx = cfg.indexOf('/*S*/');
+        var end_idx   = cfg.indexOf('/*E*/');
+        var cfg_rule = cfg.substr(start_idx, end_idx - start_idx);
+        eval(cfg_rule);
+        if (thd) {
+          retCfg.WarningRules.min = thd.min;
+          retCfg.WarningRules.max = thd.max;
+          find = true;
+        }
       }
     }
 
@@ -145,7 +157,7 @@ router.post('/:id', async function (req, res) {
       var index = jsScript.indexOf('/* alarm rule tables */');
       eval(jsScript.substr(0, index));
       if (devID) {
-        let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${IndeterminateRules.min}/*E*/) return 1;});`;
+        let newJs = `JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:${IndeterminateRules.min}, max:${IndeterminateRules.max}};/*E*/if(it < thd.min || it > thd.max) return 1;});`;
         ruleTables[devID] = newJs;
         nodes[1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       }
@@ -155,7 +167,7 @@ router.post('/:id', async function (req, res) {
       index = jsScript.indexOf('/* alarm rule tables */');
       eval(jsScript.substr(0, index));
       if (devID) {
-        let newJs = `JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > ${WarningRules.min}/*E*/) return 1;});`;
+        let newJs = `JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:${WarningRules.min}, max:${WarningRules.max}};/*E*/if(it < thd.min || it > thd.max) return 1;});`;
         ruleTables[devID] = newJs;
         nodes[8].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       }

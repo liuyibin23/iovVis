@@ -6,6 +6,7 @@ import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.dao.Dao;
@@ -19,5 +20,6 @@ public interface TaskDao extends Dao<Task> {
 	List<Task> checkTasks();
 	List<Task> checkTasks(TenantId tenantId);
 	List<Task> checkTasks(TenantId tenantId, CustomerId customerId);
+	List<Task> findTasksByUserId(UserId userId);
 	Task findTaskById(UUID Id);
 }

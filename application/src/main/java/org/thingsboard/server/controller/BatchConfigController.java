@@ -57,7 +57,7 @@ public class BatchConfigController extends BaseController {
 			AssetId aid = new AssetId(UUID.fromString(assetId));
 			Asset a = checkNotNull(assetService.findAssetById(tenantId, aid));
 
-			List<EntityRelation> relations = checkNotNull(relationService.findByFromAndType(tenantId, a.getId(), "Contains", RelationTypeGroup.COMMON));
+			List<EntityRelation> relations = checkNotNull(relationService.findByFromAndType(tenantId, a.getId(), EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON));
 
 			return getDevicesAttrib(tenantId,relations);
 		} catch (Exception e) {
@@ -231,7 +231,7 @@ public class BatchConfigController extends BaseController {
 				//endregion
 				//region 添加关联
 
-				EntityRelation relation = new EntityRelation(a.getId(), device.getId(), "Contains");
+				EntityRelation relation = new EntityRelation(a.getId(), device.getId(), EntityRelation.CONTAINS_TYPE);
 				try {
 					relationService.saveRelation(getTenantId(), relation);
 				} catch (ThingsboardException e) {

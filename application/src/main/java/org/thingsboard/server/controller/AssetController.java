@@ -16,20 +16,14 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ArrayNode;
+import org.codehaus.jackson.node.ObjectNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.UUIDConverter;
+import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
@@ -38,16 +32,21 @@ import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
+import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -58,7 +57,7 @@ public class AssetController extends BaseController {
 
 	public static final String ASSET_ID = "assetId";
 
-	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/asset/{assetId}", method = RequestMethod.GET)
 	@ResponseBody
 	public Asset getAssetById(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -70,6 +69,7 @@ public class AssetController extends BaseController {
 			throw handleException(e);
 		}
 	}
+
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/asset", method = RequestMethod.POST)
@@ -372,6 +372,88 @@ public class AssetController extends BaseController {
 	}
 
 	/**
+	* @Description: 返回权限内可以看到的所有设施以及设施的所有属性和设施的报警信息
+	* @Author: ShenJi
+	* @Date: 2019/1/29
+	* @Param: []
+	* @return: java.util.List<org.codehaus.jackson.JsonNode>
+	*/
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/beidouapp/assetsAlarm", method = RequestMethod.GET)
+	@ResponseBody
+	public String getAssetsAlarmAndAttributes() throws ThingsboardException, IOException {
+		List<Asset> assetList;
+		ObjectMapper retObj = new ObjectMapper();
+		ArrayNode arrayNode = retObj.createArrayNode();
+
+		TenantId tenantId = getCurrentUser().getTenantId();
+		//获取asset列表
+		switch (getCurrentUser().getAuthority()){
+			case CUSTOMER_USER:
+				assetList = checkNotNull(assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId()));
+				break;
+			case SYS_ADMIN:
+				assetList = checkNotNull(assetService.findAssets());
+				break;
+			case TENANT_ADMIN:
+				assetList = checkNotNull(assetService.findAssetsByTenantId(getCurrentUser().getTenantId()));
+				break;
+			default:
+				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
+		}
+		//获取设备列表
+		assetList.forEach(asset -> {
+			relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON)
+					.stream()
+					.filter(entityRelation -> {	if(entityRelation.getTo().getEntityType() == EntityType.DEVICE) return true; else return false;})
+					.forEach(entityRelation -> {
+						Device deviceTmp = deviceService.findDeviceById(tenantId,new DeviceId(entityRelation.getTo().getId()));
+
+						//获取设备是否告警
+
+						List<Alarm> alarmTmp = alarmService.findAlarmByOriginator(deviceTmp.getId());
+						//生成返回数据
+						alarmTmp.forEach(alarm -> {
+							ObjectNode tmpNode = retObj.createObjectNode();
+							tmpNode.put("alarmId",alarm.getId().toString());
+
+							tmpNode.put("assetName",asset.getName());
+
+							DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(deviceTmp.getId().getId()));
+							if (null != deviceAttributes.getMeasureid())
+								tmpNode.put("measureid",deviceAttributes.getMeasureid());
+
+							tmpNode.put("deviceName",deviceTmp.getName());
+							tmpNode.put("deviceType",deviceTmp.getType());
+
+							try {
+								List<AttributeKvEntry> attributeKvEntries = attributesService.findAll(tenantId,deviceTmp.getId(),"CLIENT_SCOPE").get();
+								attributeKvEntries.stream().filter(attributeKvEntry -> attributeKvEntry.getKey().equals("model"))
+										.forEach(attributeKvEntry -> {tmpNode.put("model",attributeKvEntry.getValueAsString());});
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+
+							tmpNode.put("alarmTime",alarm.getStartTs());
+							tmpNode.put("alarmLevel",alarm.getSeverity().toString());
+							tmpNode.put("alarmStatus",alarm.getStatus().toString());
+							tmpNode.put("additional_info",alarm.getDetails().toString());
+							tmpNode.put("alarmStartTime",alarm.getStartTs());
+							tmpNode.put("alarmEndTime",alarm.getEndTs());
+							arrayNode.add(tmpNode);
+
+						});
+					});
+			});
+
+
+
+
+
+		return retObj.writeValueAsString(arrayNode);
+	}
+
+	/**
 	 * 将根据key1和key1查找得出的两张表join后得出结果，用于ASSET属性复合查找
 	 * @param attrKey1
 	 * @param attrKey2
@@ -439,7 +521,7 @@ public class AssetController extends BaseController {
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
+	@RequestMapping(value = "/beidouapp/assets", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<AssetExInfo> getCurrentUserAssets(@RequestParam int limit,
 												  @RequestParam(required = false) String textSearch,

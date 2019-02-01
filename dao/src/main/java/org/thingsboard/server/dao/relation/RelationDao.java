@@ -60,4 +60,5 @@ public interface RelationDao {
 
     ListenableFuture<List<EntityRelation>> findRelations(TenantId tenantId, EntityId from, String relationType, RelationTypeGroup typeGroup, EntityType toType, TimePageLink pageLink);
 
+
 }

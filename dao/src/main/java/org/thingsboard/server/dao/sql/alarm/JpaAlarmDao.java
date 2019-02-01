@@ -24,10 +24,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmInfo;
-import org.thingsboard.server.common.data.alarm.AlarmQuery;
-import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
+import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -109,5 +106,22 @@ public class JpaAlarmDao extends JpaAbstractDao<AlarmEntity, Alarm> implements A
             }
             return Futures.successfulAsList(alarmFutures);
         });
+    }
+
+    @Override
+    public List<Alarm> findAlarmByOriginator( EntityId originator) {
+        return DaoUtil.convertDataList(alarmRepository.findAlarmEntitiesByOriginatorIdAndOrderByOriginatorType(UUIDConverter.fromTimeUUID(originator.getId()),
+                originator.getEntityType()));
+    }
+
+    @Override
+    public Alarm findAlarmById(AlarmId alarmId) {
+        return alarmRepository.findAlarmEntitiesById(UUIDConverter.fromTimeUUID(alarmId.getId())).toData();
+    }
+
+    @Override
+    public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
+        return alarmRepository.findAlarmEntityByIdAndTenantId(UUIDConverter.fromTimeUUID(alarmId.getId()),
+                UUIDConverter.fromTimeUUID(tenantId.getId())).toData();
     }
 }

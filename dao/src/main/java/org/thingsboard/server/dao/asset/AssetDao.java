@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.dao.Dao;
@@ -60,6 +61,31 @@ public interface AssetDao extends Dao<Asset> {
      */
     List<Asset> findAssetsType(String type, TextPageLink pageLink);
 
+    /**
+    * @Description: 查询所有customer的Asset
+    * @Author: ShenJi
+    * @Date: 2019/1/29
+    * @Param: [customerId]
+    * @return: java.util.List<org.thingsboard.server.common.data.asset.Asset>
+    */
+    List<Asset> findAssetsByCustomerId(UUID customerId);
+
+    /**
+    * @Description: 查询所有tenant的asset
+    * @Author: ShenJi
+    * @Date: 2019/1/29
+    * @Param: [tenantId]
+    * @return: java.util.List<org.thingsboard.server.common.data.asset.Asset>
+    */
+    List<Asset> findAssetsByTenantId(UUID tenantId);
+    /**
+    * @Description: 查询所有asset
+    * @Author: ShenJi
+    * @Date: 2019/1/29
+    * @Param: []
+    * @return: java.util.List<org.thingsboard.server.common.data.asset.Asset>
+    */
+    List<Asset> findAssets();
     /**
      * Find assets by tenantId and page link.
      *

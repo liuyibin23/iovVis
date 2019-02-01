@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -59,12 +60,67 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static org.thingsboard.server.controller.AssetController.ASSET_ID;
+
 @RestController
 @RequestMapping("/api")
 public class DeviceController extends BaseController {
 
     public static final String DEVICE_ID = "deviceId";
 
+    /** 
+    * @Description: 1.2.7.15 跟据基础设施ID查询所有设备
+    * @Author: ShenJi
+    * @Date: 2019/2/1 
+    * @Param: [strAssetId] 
+    * @return: java.util.List<org.thingsboard.server.common.data.Device>
+    */ 
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/getDeviceByAssetId", method = RequestMethod.GET)
+	@ResponseBody
+	public List<Device> getDevicesByAssetId(@RequestParam(ASSET_ID) String strAssetId) throws ThingsboardException {
+		checkParameter(ASSET_ID, strAssetId);
+
+		List<Device> retDeviceList = new ArrayList<>();
+		AssetId assetId = new AssetId(toUUID(strAssetId));
+		Asset asset = assetService.findAssetById(null, assetId);
+		if (null == asset)
+			return null;
+
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+				break;
+			case TENANT_ADMIN:
+				if (!asset.getTenantId().equals(getCurrentUser().getTenantId()))
+					return retDeviceList;
+				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+				break;
+			case CUSTOMER_USER:
+				if (!asset.getCustomerId().equals(getCurrentUser().getCustomerId()))
+					return retDeviceList;
+				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+				break;
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		}
+
+		return retDeviceList;
+
+	}
+	private List<Device> getEneityRelationFromAssetId(Asset asset,EntityType entityType){
+		List<EntityRelation> entityRelationList = null;
+		List<Device> retDeviceList = new ArrayList<>();
+		entityRelationList = relationService.findByFromAndType(null,asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
+		if (null == entityRelationList)
+			return null;
+		entityRelationList.stream()
+				.filter(entityRelation -> entityRelation.getTo().getEntityType().equals(entityType))
+				.forEach(entityRelation -> {
+					retDeviceList.add(deviceService.findDeviceById(null,new DeviceId(entityRelation.getTo().getId())));
+				});
+		return retDeviceList;
+	}
     @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/device/{deviceId}", method = RequestMethod.GET)
     @ResponseBody

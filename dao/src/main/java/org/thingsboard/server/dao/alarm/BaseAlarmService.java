@@ -144,6 +144,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         }
     }
 
+    @Override
+    public Alarm findAlarmById(AlarmId alarmId) {
+        return alarmDao.findAlarmById(alarmId);
+    }
+
+    @Override
+    public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
+        return alarmDao.findAlarmById(tenantId,alarmId);
+    }
+
     public ListenableFuture<Alarm> findLatestByOriginatorAndType(TenantId tenantId, EntityId originator, String type) {
         return alarmDao.findLatestByOriginatorAndType(tenantId, originator, type);
     }
@@ -496,6 +506,11 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                     tenantId, customerId, ExceptionUtils.getStackTrace(e));
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public List<Alarm> findAlarmByOriginator(EntityId originator) {
+        return alarmDao.findAlarmByOriginator(originator);
     }
 
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {

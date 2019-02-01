@@ -99,6 +99,24 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
     }
 
     @Override
+    public List<Asset> findAssetsByCustomerId(UUID customerId) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Asset> findAssetsByTenantId(UUID tenantId) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Asset> findAssets() {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
     public List<Asset> findAssetsByTenantId(UUID tenantId, TextPageLink pageLink) {
         log.debug("Try to find assets by tenantId [{}] and pageLink [{}]", tenantId, pageLink);
         List<AssetEntity> assetEntities = findPageWithTextSearch(new TenantId(tenantId), ASSET_BY_TENANT_AND_SEARCH_TEXT_COLUMN_FAMILY_NAME,

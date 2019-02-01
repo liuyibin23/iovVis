@@ -82,6 +82,9 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
             task.setTaskStatus(TaskStatus.CLEARED_ACK);
             taskDao.save(null, task);
 
+            result.setTaskId(task.getId());
+            result.setTenantId(task.getTenantId());
+
             //绑定relation
             EntityRelation relation = new EntityRelation(result.getId(), patrolRecord.getTaskId(), EntityRelation.CONTAINS_TYPE);
             if (!relationDao.saveRelation(null, relation)) {

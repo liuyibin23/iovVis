@@ -11,6 +11,7 @@ import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.dao.DaoUtil;
@@ -70,6 +71,13 @@ public class JpaTaskDao extends JpaAbstractDao<TaskEntity, Task> implements Task
         return DaoUtil.convertDataList(
                 taskRepository.findAllByTenantIdAndCustomerId(UUIDConverter.fromTimeUUID(tenantId.getId()),
                         UUIDConverter.fromTimeUUID(customerId.getId()))
+        );
+    }
+
+    @Override
+    public List<Task> findTasksByUserId(UserId userId) {
+        return DaoUtil.convertDataList(
+                taskRepository.findAllByUserId(UUIDConverter.fromTimeUUID(userId.getId()))
         );
     }
 

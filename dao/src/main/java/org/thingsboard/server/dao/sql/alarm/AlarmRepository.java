@@ -38,4 +38,12 @@ public interface AlarmRepository extends CrudRepository<AlarmEntity, String> {
                                                     @Param("entityType") EntityType entityType,
                                                     @Param("alarmType") String alarmType,
                                                     Pageable pageable);
+    @Query("SELECT a FROM AlarmEntity a WHERE a.originatorId = :originatorId " +
+            "AND a.originatorType = :entityType ORDER BY a.type ASC, a.id DESC")
+    List<AlarmEntity> findAlarmEntitiesByOriginatorIdAndOrderByOriginatorType(@Param("originatorId") String originatorId,
+                                                                              @Param("entityType") EntityType entityType);
+
+    AlarmEntity findAlarmEntitiesById(String alarmId);
+
+    AlarmEntity findAlarmEntityByIdAndTenantId(String alarmId,String tenandId);
 }

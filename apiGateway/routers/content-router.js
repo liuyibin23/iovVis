@@ -26,7 +26,6 @@ async function excuteGraphQL(req, res) {
             }
         })
         .then(resp => {
-            res.status(resp.status).json(resMsg);
             util.responData(200, resp.data, res)
         })
         .catch(err => { 

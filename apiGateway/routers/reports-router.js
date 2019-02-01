@@ -66,7 +66,7 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
         let bodyData = JSON.parse(body)
         let urlPath = host + bodyData.fileId;
         // 保存到属性表
-        saveAssetSererScope(hisReprtsData, req.params.id, req.body.report_name, urlPath, req, res, token);
+        saveAssetSererScope(hisReprtsData, req.params.id, req.body, urlPath, req, res, token);
       }
       else {
         util.responData(501, '报表文件上传失败。', res);
@@ -76,14 +76,16 @@ async function generateReports(hisReprtsData, reportFilePath, req, res, token) {
 }
 
 // 保存到属性表
-function saveAssetSererScope(hisReprtsData, assetID, reportName, urlPath, req, res, token) {
+function saveAssetSererScope(hisReprtsData, assetID, reportInfo, urlPath, req, res, token) {
   let host = 'http://sm.schdri.com:80/';
   // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
   let url = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
   //let bodyData = JSON.parse(body)
   let fileInfo = req.files.report_file;
   let str = [{
-    "report_name": reportName,
+    "report_name": reportInfo.report_name,
+    "report_type": reportInfo.report_type,
+    "report_date": reportInfo.report_date,
     "report_url": urlPath
   }
   ];
@@ -155,6 +157,7 @@ function processDeleteReq(resp, req, res, token)
   // 遍历REPORTS属性，删除匹配的
   let find = false;
   let new_value = new Array();
+  let report_url = null;
   if (info)
   {
     let jsonVal = JSON.parse(info.value);
@@ -164,6 +167,7 @@ function processDeleteReq(resp, req, res, token)
       if (_dt.report_name === req.query.reportemplateName)
       {
         find = true;
+        report_url = _dt.report_url;
       }
       else
       {
@@ -172,21 +176,37 @@ function processDeleteReq(resp, req, res, token)
     }
   }
 
-  if (find)
+  if (find && report_url)
   {
-    // 更新删除后的属性
-    let val = JSON.stringify(new_value);
-    let data = {
-      "REPORTS": `${val}`
-    };
-    let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
-    axios.post(url, (data), { headers: { "X-Authorization":token } })
-      .then(response => {
-        util.responData(200, '成功删除资产的报表。', res);
-      })
-      .catch(err => {
-        util.responErrorMsg(err, res);
-      });
+    // 从文件服务器删除
+    let host = 'http://sm.schdri.com:80/';
+    let deleteFileHost = host + 'api/file/delete/';
+    let filePath = report_url.substr(host.length); 
+    request.post({ url:deleteFileHost, form:{fileId:filePath} }, function (err, httpResponse, body) {
+    if (err) {
+      util.responData(501, '删除资产的报表失败。', res);
+    }
+    else
+    {
+      let result = JSON.parse(body);
+      if (result.success)
+      {
+        // 更新删除后的属性
+        let val = JSON.stringify(new_value);
+        let data = {
+          "REPORTS": `${val}`
+        };
+        let url = util.getAPI() + `plugins/telemetry/ASSET/${req.params.id}/SERVER_SCOPE`;
+        axios.post(url, (data), { headers: { "X-Authorization":token } })
+          .then(response => {
+            util.responData(200, '成功删除资产的报表。', res);
+          })
+          .catch(err => {
+            util.responErrorMsg(err, res);
+          });
+        }
+      }
+    })
   }
   else
   {

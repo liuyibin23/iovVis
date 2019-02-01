@@ -98,6 +98,12 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
+    public List<User> findCustomerUsers(UUID customerId) {
+        //todo add cassandra find customerUsers
+        return null;
+    }
+
+    @Override
     public int countTenant(String tenantId) {
         return 0;
     }
@@ -122,5 +128,17 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     public int countTenantUser(String tenantId) {
         return 0;
     }
+
+	@Override
+	public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+		//todo add cassandra
+    	return null;
+	}
+
+	@Override
+	public List<User> findUsersByFirstNameLike(String firstname) {
+    	//todo add cassandra
+		return null;
+	}
 
 }

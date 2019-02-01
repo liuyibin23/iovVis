@@ -29,4 +29,6 @@ public interface TaskRepository extends CrudRepository<TaskEntity, String>, JpaS
 	List<TaskEntity> findAllByTenantId(String tenantId);
 
 	List<TaskEntity> findAllByTenantIdAndCustomerId(String tenantId, String customerId);
+
+	List<TaskEntity> findAllByUserId(String userId);
 }

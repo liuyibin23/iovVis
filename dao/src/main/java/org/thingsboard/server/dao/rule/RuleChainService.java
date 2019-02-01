@@ -58,6 +58,10 @@ public interface RuleChainService {
 
     TextPageData<RuleChain> findTenantRuleChains(TenantId tenantId, TextPageLink pageLink);
 
+    List<RuleChain> findRuleChains();
+    List<RuleChain> findRuleChainsByTenantId(TenantId tenantId);
+
+
     void deleteRuleChainById(TenantId tenantId, RuleChainId ruleChainId);
 
     void deleteRuleChainsByTenantId(TenantId tenantId);

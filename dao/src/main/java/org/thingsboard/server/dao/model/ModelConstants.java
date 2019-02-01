@@ -68,6 +68,7 @@ public class ModelConstants {
     public static final String TASK_END_TS_PROPERTY = "end_ts";
     public static final String TASK_ACK_TS_PROPERTY = "ack_ts";
     public static final String TASK_CLEAR_TS_PROPERTY = "clear_ts";
+    public static final String TASK_ASSET_ID = "asset_id";
 
 
     /**

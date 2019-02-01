@@ -20,6 +20,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.Dao;
+import sun.java2d.pipe.AAShapePipe;
 
 import java.util.List;
 import java.util.UUID;
@@ -72,6 +73,8 @@ public interface UserDao extends Dao<User> {
 
     List<User> findCustomerUsers(UUID customerId, TextPageLink pageLink);
 
+    List<User> findCustomerUsers(UUID customerId);
+
     /**
     * @Description: Count Tenant Admin
     * @Author: ShenJi
@@ -110,4 +113,22 @@ public interface UserDao extends Dao<User> {
      * @return
      */
     int countTenantUser(String tenantId);
+
+    /**
+    * @Description: 按照姓名模糊查找用户
+    * @Author: ShenJi
+    * @Date: 2019/1/30
+    * @Param: [firstName, lastName]
+    * @return: java.util.List<org.thingsboard.server.common.data.User>
+    */
+    List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName,String lastName);
+
+    /**
+    * @Description: 按照firstName模糊查找用户
+    * @Author: ShenJi
+    * @Date: 2019/1/30
+    * @Param: [firstname]
+    * @return: java.util.List<org.thingsboard.server.common.data.User>
+    */
+    List<User> findUsersByFirstNameLike(String firstname);
 }

@@ -115,6 +115,14 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	}
 
 	@Override
+	public List<User> findCustomerUsers(UUID customerId) {
+		return DaoUtil.convertDataList(
+				userRepository
+						.findUsersByCustomerId(
+								fromTimeUUID(customerId)));
+	}
+
+	@Override
 	public int countTenant(String tenantId) {
 		return userRepository.countByTenantIdAndAuthority(tenantId, Authority.TENANT_ADMIN);
 	}
@@ -138,6 +146,16 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	@Override
 	public int countTenantUser(String tenantId) {
 		return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN,TENANTUSERFILTERSTR);
+	}
+
+	@Override
+	public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+		return DaoUtil.convertDataList(userRepository.findAllByFirstNameLikeAndLastNameLike(firstName,lastName));
+	}
+
+	@Override
+	public List<User> findUsersByFirstNameLike(String firstname) {
+		return DaoUtil.convertDataList(userRepository.findAllByFirstNameLike(firstname));
 	}
 
 }

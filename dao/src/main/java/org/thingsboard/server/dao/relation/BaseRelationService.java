@@ -496,6 +496,8 @@ public class BaseRelationService implements RelationService {
                 });
     }
 
+
+
     protected void validate(EntityRelation relation) {
         if (relation == null) {
             throw new DataValidationException("Relation type should be specified!");

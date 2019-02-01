@@ -238,6 +238,15 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     }
 
     @Override
+    public List<User> findCustomerUsers(CustomerId customerId) {
+        log.trace("Executing findCustomerUsers, customerId [{}]", customerId);
+        validateId(customerId, "Incorrect customerId " + customerId);
+
+        List<User> users = userDao.findCustomerUsers(customerId.getId());
+        return users;
+    }
+
+    @Override
     public void deleteCustomerUsers(TenantId tenantId, CustomerId customerId) {
         log.trace("Executing deleteCustomerUsers, customerId [{}]", customerId);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
@@ -263,6 +272,16 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     @Override
     public int countTenantUserByTenantId(String tenantId) {
         return userDao.countTenantUser(tenantId);
+    }
+
+    @Override
+    public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+        return userDao.findUsersByFirstNameLikeAndLastNameLike(firstName,lastName);
+    }
+
+    @Override
+    public List<User> findUsersByFirstNameLike(String firstName) {
+        return userDao.findUsersByFirstNameLike(firstName);
     }
 
     private DataValidator<User> userValidator =

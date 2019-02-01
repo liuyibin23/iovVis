@@ -72,4 +72,8 @@ public interface DeviceService {
 
     List<Device> findByIdLike(String deviceId);
 
+    List<Device> findDevicesByName(String deviceName);
+    List<Device> findDevicesByName(String deviceName,TenantId tenantId);
+    List<Device> findDevicesByName(String deviceName,CustomerId customerId);
+
 }

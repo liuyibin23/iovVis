@@ -15,6 +15,7 @@ import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
@@ -92,6 +93,21 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     @Override
     public List<Task> checkTasks() {
         return findTaskAlarm(taskDao.checkTasks());
+    }
+
+    @Override
+    public Task findTaskById(UUID taskId) {
+        return taskDao.findTaskById(taskId);
+    }
+
+    @Override
+    public List<Task> findTasksByUserId(UserId userId) {
+        return taskDao.findTasksByUserId(userId);
+    }
+
+    @Override
+    public Task findTaskByOriginator(EntityId entityId) {
+        return null;
     }
 
     /**

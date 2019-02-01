@@ -247,6 +247,7 @@ CREATE TABLE IF NOT EXISTS task (
 	tenant_id varchar(31),
 	customer_id varchar(31),
 	process_user_id varchar(31),
+	asset_id varchar(31),
 	task_status varchar(31),
 	task_kind varchar(31),
     originator_id varchar(31),
@@ -301,7 +302,7 @@ CREATE OR REPLACE VIEW device_attributes AS
  SELECT attribute_kv.entity_id,
     max(
         CASE attribute_kv.attribute_key
-            WHEN 'IP'::text THEN attribute_kv.str_v
+            WHEN 'ip'::text THEN attribute_kv.str_v
             ELSE NULL::character varying
         END::text) AS IP,
     max(

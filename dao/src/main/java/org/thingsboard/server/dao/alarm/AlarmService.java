@@ -31,12 +31,18 @@ import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageData;
 
+import java.util.List;
+
 /**
  * Created by ashvayka on 11.05.17.
  */
 public interface AlarmService {
 
     Alarm createOrUpdateAlarm(Alarm alarm);
+
+    Alarm findAlarmById(AlarmId alarmId);
+
+    Alarm findAlarmById(TenantId tenantId,AlarmId alarmId);
 
     ListenableFuture<Boolean> ackAlarm(TenantId tenantId, AlarmId alarmId, long ackTs);
 
@@ -108,4 +114,13 @@ public interface AlarmService {
      * @return
      */
     TimePageData<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId,CustomerId customerId,AlarmStatisticsQuery query);
+
+    /**
+    * @Description: 通过ID和Type查询报警
+    * @Author: ShenJi
+    * @Date: 2019/1/29
+    * @Param: [originator]
+    * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
+    */
+    List<Alarm> findAlarmByOriginator(EntityId originator);
 }

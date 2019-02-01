@@ -63,4 +63,14 @@ public class JpaRuleChainDao extends JpaAbstractSearchTextDao<RuleChainEntity, R
                         new PageRequest(0, pageLink.getLimit())));
     }
 
+    @Override
+    public List<RuleChain> findRuleChains() {
+        return DaoUtil.convertDataList(ruleChainRepository.findAllRuleChainEntities());
+    }
+
+    @Override
+    public List<RuleChain> findRuleChainsByTenantId(UUID tenantId) {
+        return DaoUtil.convertDataList(ruleChainRepository.findAllByTenantId(UUIDConverter.fromTimeUUID(tenantId)));
+    }
+
 }

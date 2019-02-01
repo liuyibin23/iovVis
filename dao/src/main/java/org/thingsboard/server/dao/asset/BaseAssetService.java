@@ -42,6 +42,7 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -186,7 +187,7 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
 		List<Asset> assets = assetDao.findAssets(pageLink);
 		assets.stream().forEach(asset -> {
-			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),"Contains",RelationTypeGroup.COMMON).size());
+			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
 		});
 		return  new TextPageData<>(assets, pageLink);
 	}
@@ -197,7 +198,7 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		validateString(type, "Incorrect type " + type);
 		List<Asset> assets = assetDao.findAssetsType(type, pageLink);
 		assets.stream().forEach(asset -> {
-			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),"Contains",RelationTypeGroup.COMMON).size());
+			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
 		});
 		return  new TextPageData<>(assets, pageLink);
 	}
@@ -209,7 +210,7 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
 		List<Asset> assets = assetDao.findAssetsByTenantId(tenantId.getId(), pageLink);
 		assets.stream().forEach(asset -> {
-			asset.setContainsCount(relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON).size());
+			asset.setContainsCount(relationService.findByFromAndType(tenantId,asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
 		});
 		return new TextPageData<>(assets, pageLink);
 	}
@@ -223,8 +224,8 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		List<Asset> assets = assetDao.findAssetsByTenantIdAndType(tenantId.getId(), type, pageLink);
 
 		assets.stream().forEach(asset -> {
-			asset.setContainsCount(relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON).size());
-			relationService.findByToAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON).forEach(entityRelation -> {
+			asset.setContainsCount(relationService.findByFromAndType(tenantId,asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
+			relationService.findByToAndType(tenantId,asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).forEach(entityRelation -> {
 				if (entityRelation.getTo().getEntityType() == EntityType.ASSET){
 					asset.setAffiliation(assetDao.findById(tenantId,entityRelation.getTo().getId()).getName());
 				}
@@ -316,6 +317,21 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 					assetTypes.sort(Comparator.comparing(EntitySubtype::getType));
 					return assetTypes;
 				});
+	}
+
+	@Override
+	public List<Asset> findAssets() {
+		return assetDao.findAssets();
+	}
+
+	@Override
+	public List<Asset> findAssetsByTenantId(TenantId tenantId) {
+		return assetDao.findAssetsByTenantId(tenantId.getId());
+	}
+
+	@Override
+	public List<Asset> findAssetsByCustomerId(CustomerId customerId) {
+		return assetDao.findAssetsByCustomerId(customerId.getId());
 	}
 
 	private DataValidator<Asset> assetValidator =

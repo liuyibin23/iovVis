@@ -194,6 +194,8 @@ public class JpaRelationDao extends JpaAbstractDaoListeningExecutorService imple
                 DaoUtil.convertDataList(relationRepository.findAll(where(timeSearchSpec).and(fieldsSpec), pageable).getContent()));
     }
 
+
+
     private Specification<RelationEntity> getEntityFieldsSpec(EntityId from, String relationType, RelationTypeGroup typeGroup, EntityType childType) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
