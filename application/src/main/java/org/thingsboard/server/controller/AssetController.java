@@ -57,7 +57,7 @@ public class AssetController extends BaseController {
 
 	public static final String ASSET_ID = "assetId";
 
-	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/asset/{assetId}", method = RequestMethod.GET)
 	@ResponseBody
 	public Asset getAssetById(@PathVariable(ASSET_ID) String strAssetId) throws ThingsboardException {
@@ -69,6 +69,7 @@ public class AssetController extends BaseController {
 			throw handleException(e);
 		}
 	}
+
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/asset", method = RequestMethod.POST)
@@ -520,7 +521,7 @@ public class AssetController extends BaseController {
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
+	@RequestMapping(value = "/beidouapp/assets", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<AssetExInfo> getCurrentUserAssets(@RequestParam int limit,
 												  @RequestParam(required = false) String textSearch,
