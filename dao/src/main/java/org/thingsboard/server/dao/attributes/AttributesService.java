@@ -20,6 +20,7 @@ import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 
+import javax.xml.stream.events.Attribute;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -40,4 +41,6 @@ public interface AttributesService {
     void saveAttributes(TenantId tenantId, EntityId entityId, String scope, List<AttributeKvEntry> attributes);
 
     ListenableFuture<List<Void>> removeAll(TenantId tenantId, EntityId entityId, String scope, List<String> attributeKeys);
+
+    List<AttributeKvEntry> findAllByEntityTypeAndEntityId(EntityId entityId);
 }

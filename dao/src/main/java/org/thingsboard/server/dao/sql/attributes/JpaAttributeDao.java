@@ -21,6 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -106,6 +107,11 @@ public class JpaAttributeDao extends JpaAbstractDaoListeningExecutorService impl
             attributeKvRepository.delete(entitiesToDelete);
             return null;
         });
+    }
+
+    @Override
+    public List<AttributeKvEntry> findAllByEntityTypeAndEntityId(EntityId entityId) {
+        return DaoUtil.convertDataList(Lists.newArrayList(attributeKvRepository.findAllByEntityTypeAndEntityId(entityId.getEntityType(), fromTimeUUID(entityId.getId()))));
     }
 
     private AttributeKvCompositeKey getAttributeKvCompositeKey(EntityId entityId, String attributeType, String attributeKey) {
