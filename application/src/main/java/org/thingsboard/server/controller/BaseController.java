@@ -72,6 +72,7 @@ import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
+import org.thingsboard.server.dao.tshourvaluestatistic.BaseTsHourValueStatisticService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
 import org.thingsboard.server.dao.vdeviceattrkv.DeviceAttrKVService;
@@ -176,6 +177,9 @@ public abstract class BaseController {
 
     @Autowired
     protected PatrolRecordService patrolRecordService;
+
+    @Autowired
+    protected BaseTsHourValueStatisticService tsHourValueStatisticService;
 
     @Value("${server.log_controller_error_stack_trace}")
     @Getter
