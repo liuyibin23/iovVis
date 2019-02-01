@@ -1,7 +1,8 @@
 // const url   = require("url");
 const axios = require('axios')
 
-var API = 'http://cf.beidouapp.com:8080/api/';
+// var API = 'http://cf.beidouapp.com:8080/api/';
+var API = 'http://192.168.1.76:8080/api/';
 
 
 function getAPI() {
