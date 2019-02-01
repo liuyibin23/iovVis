@@ -18,6 +18,7 @@ package org.thingsboard.server;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
@@ -29,6 +30,7 @@ import java.util.Arrays;
 @EnableSwagger2
 @EnableScheduling
 @ComponentScan({"org.thingsboard.server"})
+@EnableAspectJAutoProxy(proxyTargetClass = true)
 public class ThingsboardServerApplication {
 
     private static final String SPRING_CONFIG_NAME_KEY = "--spring.config.name";
