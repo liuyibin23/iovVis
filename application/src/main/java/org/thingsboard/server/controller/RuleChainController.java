@@ -86,15 +86,22 @@ public class RuleChainController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/beidouapp/ruleChains", method = RequestMethod.GET)
     @ResponseBody
-    public List<RuleChain> getRuleChains(@RequestParam(required = false) String textSearch) throws ThingsboardException {
+    public List<RuleChain> getRuleChains(@RequestParam(required = false) String textSearch,
+										 @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 
         List<RuleChain> retRuleChainsList = null;
         switch (getCurrentUser().getAuthority()){
             case SYS_ADMIN:
             	if (null == textSearch)
                 	retRuleChainsList = ruleChainService.findRuleChains();
-            	else
-            		retRuleChainsList = ruleChainService.findRuleChainsByTextSearch(textSearch);
+            	else if (null == tenantIdStr){
+					retRuleChainsList = ruleChainService.findRuleChainsByTextSearch(textSearch);
+				} else {
+					TenantId tenantId = new TenantId(toUUID(tenantIdStr));
+					checkTenantId(tenantId);
+					retRuleChainsList = ruleChainService.findRuleChainsByTenantIdAndTextSearch(tenantId,textSearch);
+				}
+
                 break;
             case TENANT_ADMIN:
 				if (null == textSearch)
@@ -142,7 +149,7 @@ public class RuleChainController extends BaseController {
 					checkTenantId(tenantId);
 
 					ruleChainId = new RuleChainId(toUUID(strRuleChainId));
-					RuleChain ruleChain = ruleChainService.findRuleChainById(getCurrentUser().getTenantId(), ruleChainId);
+					RuleChain ruleChain = ruleChainService.findRuleChainById(tenantId, ruleChainId);
 					if (null != ruleChain)
 						return ruleChainService.loadRuleChainMetaData(tenantId, ruleChainId);
 					else

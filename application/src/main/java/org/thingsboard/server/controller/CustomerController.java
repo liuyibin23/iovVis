@@ -201,7 +201,7 @@ public class CustomerController extends BaseController {
 				checkTenantId(tenantIdTmp);
 				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-//				return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+				// return checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
 				return checkNotNull(customerService.findCustomerExInfosByTenantId(tenantId, pageLink));
 			}
 			else {
