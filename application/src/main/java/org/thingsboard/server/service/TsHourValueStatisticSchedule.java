@@ -53,7 +53,7 @@ public class TsHourValueStatisticSchedule {
                 if(item != null && item.isPresent() && nowTs - item.get().getLongValue().orElse(0L) < 3600*1000){
                     tsHourValueStatisticService.save(EntityType.DEVICE,
                             devices.get(i).getId(),
-                            nowTs,
+                            nowTs - 1800*1000,//当前统计的是上一个小时的数据，所以当前时间回退半小时，回到上一个小时时间段内
                             devices.get(i).getTenantId(),
                             devices.get(i).getCustomerId());
                 }
