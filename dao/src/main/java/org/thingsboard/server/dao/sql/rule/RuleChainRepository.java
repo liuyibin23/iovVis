@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,17 +27,25 @@ import java.util.List;
 @SqlDao
 public interface RuleChainRepository extends CrudRepository<RuleChainEntity, String> {
 
-    @Query("SELECT rc FROM RuleChainEntity rc WHERE rc.tenantId = :tenantId " +
-            "AND LOWER(rc.searchText) LIKE LOWER(CONCAT(:searchText, '%')) " +
-            "AND rc.id > :idOffset ORDER BY rc.id")
-    List<RuleChainEntity> findByTenantId(@Param("tenantId") String tenantId,
-                                         @Param("searchText") String searchText,
-                                         @Param("idOffset") String idOffset,
-                                         Pageable pageable);
+	@Query("SELECT rc FROM RuleChainEntity rc WHERE rc.tenantId = :tenantId " +
+			"AND LOWER(rc.searchText) LIKE LOWER(CONCAT(:searchText, '%')) " +
+			"AND rc.id > :idOffset ORDER BY rc.id")
+	List<RuleChainEntity> findByTenantId(@Param("tenantId") String tenantId,
+										 @Param("searchText") String searchText,
+										 @Param("idOffset") String idOffset,
+										 Pageable pageable);
 
-    @Query("SELECT rc FROM RuleChainEntity rc")
-    List<RuleChainEntity> findAllRuleChainEntities();
+	@Query("SELECT rc FROM RuleChainEntity rc")
+	List<RuleChainEntity> findAllRuleChainEntities();
 
-    List<RuleChainEntity> findAllByTenantId(String tenantId);
+	List<RuleChainEntity> findAllByTenantId(String tenantId);
+
+	@Query("SELECT rc FROM RuleChainEntity rc WHERE LOWER(rc.searchText)  LIKE LOWER(CONCAT(:searchText, '%')) ")
+	List<RuleChainEntity> findRuleChainsByTextSearch(@Param("searchText") String textSearch);
+
+	@Query("SELECT rc FROM RuleChainEntity rc WHERE rc.tenantId = :tenantId " +
+			"AND LOWER(rc.searchText) LIKE LOWER(CONCAT(:searchText, '%')) ")
+	List<RuleChainEntity> findRuleChainsByTenantIdAndTextSearch(@Param("tenantId") String tenantId,
+																@Param("searchText") String textSearch);
 
 }

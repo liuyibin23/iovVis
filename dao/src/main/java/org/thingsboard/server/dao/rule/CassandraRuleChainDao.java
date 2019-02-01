@@ -72,4 +72,16 @@ public class CassandraRuleChainDao extends CassandraAbstractSearchTextDao<RuleCh
         return null;
     }
 
+	@Override
+	public List<RuleChain> findRuleChainsByTextSearch(String textSearch) {
+		//todo cassandra
+		return null;
+	}
+
+	@Override
+	public List<RuleChain> findRuleChainsByTenantIdAndTextSearch(UUID tenantId, String textSearch) {
+		//todo cassandra
+		return null;
+	}
+
 }
