@@ -34,5 +34,9 @@ public interface AttributeKvRepository extends CrudRepository<AttributeKvEntity,
     List<AttributeKvEntity> findAllByEntityTypeAndEntityIdAndAttributeType(@Param("entityType") EntityType entityType,
                                                                            @Param("entityId") String entityId,
                                                                            @Param("attributeType") String attributeType);
+    @Query("SELECT a FROM AttributeKvEntity a WHERE a.id.entityType = :entityType " +
+            "AND a.id.entityId = :entityId ")
+    List<AttributeKvEntity> findAllByEntityTypeAndEntityId(@Param("entityType") EntityType entityType,
+                                                            @Param("entityId") String entityId);
 }
 

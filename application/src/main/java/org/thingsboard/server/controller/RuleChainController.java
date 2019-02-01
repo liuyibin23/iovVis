@@ -122,7 +122,7 @@ public class RuleChainController extends BaseController {
     @RequestMapping(value = "/ruleChain/{ruleChainId}/metadata", method = RequestMethod.GET)
     @ResponseBody
     public RuleChainMetaData getRuleChainMetaData(@PathVariable(RULE_CHAIN_ID) String strRuleChainId,
-												  @RequestParam(required = false) String strTenantId) throws ThingsboardException {
+												  @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
         checkParameter(RULE_CHAIN_ID, strRuleChainId);
 		RuleChainId ruleChainId = null;
         try {
@@ -132,7 +132,7 @@ public class RuleChainController extends BaseController {
 					checkRuleChain(ruleChainId);
 					return ruleChainService.loadRuleChainMetaData(getTenantId(), ruleChainId);
 				case SYS_ADMIN:
-					TenantId tenantId = new TenantId(toUUID(strTenantId));
+					TenantId tenantId = new TenantId(toUUID(tenantIdStr));
 					checkTenantId(tenantId);
 
 					ruleChainId = new RuleChainId(toUUID(strRuleChainId));
@@ -220,7 +220,7 @@ public class RuleChainController extends BaseController {
     @RequestMapping(value = "/ruleChain/metadata", method = RequestMethod.POST)
     @ResponseBody
     public RuleChainMetaData saveRuleChainMetaData(@RequestBody RuleChainMetaData ruleChainMetaData,
-                                                   @RequestParam(required = false) String tenantId) throws ThingsboardException {
+                                                   @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
         RuleChainMetaData savedRuleChainMetaData = null;
         RuleChain ruleChain = null;
         try {
@@ -238,8 +238,8 @@ public class RuleChainController extends BaseController {
                     return savedRuleChainMetaData;
 
                 case SYS_ADMIN:
-                    checkNotNull(tenantId);
-                    Tenant tenant = tenantService.findTenantById(new TenantId(toUUID(tenantId)));
+                    checkNotNull(tenantIdStr);
+                    Tenant tenant = tenantService.findTenantById(new TenantId(toUUID(tenantIdStr)));
                     if (null == tenant)
                         throw new ThingsboardException("tenantId Not Find",ThingsboardErrorCode.INVALID_ARGUMENTS);
 

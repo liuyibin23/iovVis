@@ -150,6 +150,12 @@ public class CassandraBaseAttributesDao extends CassandraAbstractAsyncDao implem
         return Futures.allAsList(futures);
     }
 
+    @Override
+    public List<AttributeKvEntry> findAllByEntityTypeAndEntityId(EntityId entityId) {
+        //todo cassandra
+        return null;
+    }
+
     private ListenableFuture<Void> delete(TenantId tenantId, EntityId entityId, String attributeType, String key) {
         Statement delete = QueryBuilder.delete().all().from(ModelConstants.ATTRIBUTES_KV_CF)
                 .where(eq(ENTITY_TYPE_COLUMN, entityId.getEntityType()))

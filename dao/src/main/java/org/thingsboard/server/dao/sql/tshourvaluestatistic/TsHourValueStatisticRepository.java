@@ -13,7 +13,7 @@ import java.util.List;
 public interface TsHourValueStatisticRepository extends CrudRepository<TsHourValueStatisticEntity,TsHourValueStatisticCompositeKey> {
 
 
-    @Query(value = "SELECT (ts / 3600 * 3600) as tshour " +
+    @Query(value = "SELECT (ts / (3600*1000) * (3600*1000)) as tshour " +
             "FROM ts_hour_value_statistic  " +
             "WHERE (entity_type = :entityType  or :entityType is null)  " +
             "AND ts BETWEEN :startTs and :endTs  " +
@@ -24,7 +24,7 @@ public interface TsHourValueStatisticRepository extends CrudRepository<TsHourVal
                                @Param("startTs")long startTs,
                                @Param("endTs")long endTs);
 
-    @Query(value = "SELECT (ts / 3600 * 3600) as tshour " +
+    @Query(value = "SELECT (ts /(3600*1000) * (3600*1000)) as tshour " +
             "FROM ts_hour_value_statistic  " +
             "WHERE (entity_type = :entityType  or :entityType is null)  " +
             "AND (customer_id = :customerId or :customerId is null)" +
@@ -39,7 +39,7 @@ public interface TsHourValueStatisticRepository extends CrudRepository<TsHourVal
                                                     @Param("startTs")long startTs,
                                                     @Param("endTs")long endTs);
 
-    @Query(value = "SELECT (ts / 3600 * 3600) as tshour " +
+    @Query(value = "SELECT (ts / (3600*1000) * (3600*1000)) as tshour " +
             "FROM ts_hour_value_statistic  " +
             "WHERE (entity_type = :entityType  or :entityType is null)  " +
             "AND (tenant_id = :tenantId or :tenantId is null)" +
@@ -52,7 +52,7 @@ public interface TsHourValueStatisticRepository extends CrudRepository<TsHourVal
                                        @Param("startTs")long startTs,
                                        @Param("endTs")long endTs);
 
-    @Query(value="SELECT (ts / 3600 * 3600) as tshour " +
+    @Query(value="SELECT (ts / (3600*1000) * (3600*1000)) as tshour " +
             "FROM ts_hour_value_statistic  " +
             "WHERE entity_id = :entityId  " +
             "AND ts BETWEEN :startTs and :endTs  " +
