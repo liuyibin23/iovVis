@@ -21,6 +21,7 @@
     "body-parser": "^1.18.3",
     "canvas-prebuilt": "^2.0.0-alpha.14",
     "connect-multiparty": "^2.2.0",
+    "cors": "^2.8.5",
     "echarts": "^4.2.0-rc.2",
     "express": "^4.16.4",
     "node-echarts": "^1.1.4",
