@@ -40,13 +40,10 @@ import org.springframework.web.context.request.async.DeferredResult;
 import org.thingsboard.rule.engine.api.msg.DeviceAttributesEventNotificationMsg;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.EntityIdFactory;
-import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.id.UUIDBased;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.kv.Aggregation;
 import org.thingsboard.server.common.data.kv.AttributeKey;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
@@ -202,6 +199,49 @@ public class TelemetryController extends BaseController {
 
                     Futures.addCallback(tsService.findAll(tenantId, entityId, queries), getTsKvListCallback(result));
                 });
+    }
+
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/timeseries/statistic", method = RequestMethod.GET)
+    @ResponseBody
+    public List<Long> getTsStatisticsValue(@RequestParam(name = "tenantId",required = false)String tenantIdStr,
+                                           @RequestParam(name = "customerId" ,required = false)String customerIdStr,
+                                           @RequestParam(name = "entityId",required = false)String entityId,
+                                           @RequestParam(name = "startTs") Long startTs,
+                                           @RequestParam(name = "endTs") Long endTs){
+
+        //entityId参数存在则直接查询指定设备，忽略其他筛选条件
+        if(entityId != null && !EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId).isNullUid() ){
+            return tsHourValueStatisticService.findTsHoursByEntityId(EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId),
+                                                                    startTs,endTs);
+        } else{
+            TenantId tenantId ;
+            CustomerId customerId;
+
+            if(tenantIdStr == null || tenantIdStr.isEmpty()){
+                tenantId =  null;
+            } else{
+                tenantId = new TenantId(UUIDConverter.fromString(tenantIdStr));
+            }
+            if(customerIdStr == null || customerIdStr.isEmpty()){
+                customerId = null;
+            } else {
+                customerId = new CustomerId(UUIDConverter.fromString(customerIdStr));
+            }
+
+            if(tenantId != null && customerId != null){
+                return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
+            } else if(tenantId != null && customerId==null){
+                return tsHourValueStatisticService.findTsHoursByTenantId(EntityType.DEVICE, tenantId, startTs,endTs);
+            } else if(tenantId==null && customerId == null){
+                return tsHourValueStatisticService.findTsHours(EntityType.DEVICE,startTs,endTs);
+            } else {
+                return new ArrayList<>();
+            }
+
+//            return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
+        }
+
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")

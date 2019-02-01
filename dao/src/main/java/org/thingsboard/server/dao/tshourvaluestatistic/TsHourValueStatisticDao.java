@@ -12,6 +12,11 @@ public interface TsHourValueStatisticDao {
 
     ListenableFuture<Void> save(EntityType entityType, EntityId entityId, long ts, TenantId tenantId, CustomerId customerId);
 
-    List<Long> findTsHours(EntityType entityType, TenantId tenantId, CustomerId customerId, long startTs, long endTs);
+    List<Long> findTsHoursByTenantIdAndCustomerId(EntityType entityType, TenantId tenantId, CustomerId customerId, long startTs, long endTs);
 
+    List<Long> findTsHoursByTenantId(EntityType entityType, TenantId tenantId, long startTs, long endTs);
+
+    List<Long> findTsHours(EntityType entityType,long startTs, long endTs);
+
+    List<Long> findTsHoursByEntityId(EntityId entityId, long startTs, long endTs);
 }

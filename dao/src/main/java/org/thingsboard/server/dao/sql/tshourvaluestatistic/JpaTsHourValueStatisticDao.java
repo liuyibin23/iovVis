@@ -15,6 +15,7 @@ import org.thingsboard.server.dao.util.SqlDao;
 
 import javax.annotation.PostConstruct;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -51,17 +52,50 @@ public class JpaTsHourValueStatisticDao implements TsHourValueStatisticDao {
     }
 
     @Override
-    public List<Long> findTsHours(EntityType entityType,TenantId tenantId, CustomerId customerId,long startTs,long endTs){
+    public List<Long> findTsHoursByTenantIdAndCustomerId(EntityType entityType, TenantId tenantId, CustomerId customerId, long startTs, long endTs){
         String entityTypeStr = null;
         if(entityType != null){
             entityTypeStr = entityType.name();
         }
-        List<Object[]> results = tsHourValueStatisticRepository.findTsHours(entityTypeStr,
+        List<Object> results = tsHourValueStatisticRepository.findTsHoursByTenantIdAndCustomerId(entityTypeStr,
                 fromTimeUUID(customerId.getId()),fromTimeUUID(tenantId.getId()),
                 startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    @Override
+    public List<Long> findTsHoursByTenantId(EntityType entityType, TenantId tenantId, long startTs, long endTs) {
+        String entityTypeStr = null;
+        if(entityType != null){
+            entityTypeStr = entityType.name();
+        }
+//        List<Object> results = new ArrayList<>();
+        List<Object> results = tsHourValueStatisticRepository.findTsHoursByTenantId(entityTypeStr,fromTimeUUID(tenantId.getId()),startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    @Override
+    public List<Long> findTsHours(EntityType entityType, long startTs, long endTs) {
+        String entityTypeStr = null;
+        if(entityType != null){
+            entityTypeStr = entityType.name();
+        }
+//        List<Object> results = tsHourValueStatisticRepository.findTsHours(entityTypeStr,null,null,startTs,endTs);
+        List<Object> results = tsHourValueStatisticRepository.findTsHours(entityTypeStr,startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+
+    @Override
+    public List<Long> findTsHoursByEntityId(EntityId entityId,long startTs,long endTs){
+        List<Object> results = tsHourValueStatisticRepository.findTsHoursByEntityId(fromTimeUUID(entityId.getId()),startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    private List<Long> objQueryResultsToType(List<Object> results){
         List<Long> tsHours = new ArrayList<>();
         results.forEach(item->{
-            tsHours.add((Long) item[0]);
+            tsHours.add(((BigInteger) item).longValue());
         });
         return tsHours;
     }

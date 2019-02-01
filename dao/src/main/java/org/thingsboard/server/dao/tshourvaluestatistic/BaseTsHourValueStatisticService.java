@@ -22,7 +22,22 @@ public class BaseTsHourValueStatisticService implements TsHourValueStatisticServ
     }
 
     @Override
-    public List<Long> findTsHours(EntityType entityType, TenantId tenantId, CustomerId customerId, long startTs, long endTs) {
-        return tsHourValueStatisticDao.findTsHours(entityType,tenantId,customerId,startTs,endTs);
+    public List<Long> findTsHoursByTenantIdAndCustomerId(EntityType entityType, TenantId tenantId, CustomerId customerId, long startTs, long endTs) {
+        return tsHourValueStatisticDao.findTsHoursByTenantIdAndCustomerId(entityType,tenantId,customerId,startTs,endTs);
+    }
+
+    @Override
+    public List<Long> findTsHoursByTenantId(EntityType entityType, TenantId tenantId, long startTs, long endTs) {
+        return tsHourValueStatisticDao.findTsHoursByTenantId(entityType,tenantId,startTs,endTs);
+    }
+
+    @Override
+    public List<Long> findTsHours(EntityType entityType, long startTs, long endTs) {
+        return tsHourValueStatisticDao.findTsHours(entityType,startTs,endTs);
+    }
+
+    @Override
+    public List<Long> findTsHoursByEntityId(EntityId entityId, long startTs, long endTs) {
+        return tsHourValueStatisticDao.findTsHoursByEntityId(entityId,startTs,endTs);
     }
 }
