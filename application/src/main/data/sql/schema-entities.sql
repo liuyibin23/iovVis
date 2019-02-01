@@ -268,6 +268,14 @@ CREATE TABLE IF NOT EXISTS patrol_record (
     recode_type varchar(255),
     info varchar
 );
+CREATE TABLE IF NOT EXISTS ts_hour_value_statistic (
+    entity_type varchar(255) NOT NULL,
+    entity_id varchar(31) NOT NULL,
+    ts bigint NOT NULL,
+    customer_id varchar(31),
+	tenant_id varchar(31),
+    CONSTRAINT ts_hour_value_statistic_unq_key UNIQUE (entity_type, entity_id, ts)
+);
 CREATE OR REPLACE VIEW vassetattrkv AS
  SELECT attribute_kv.entity_type,
     attribute_kv.entity_id,
