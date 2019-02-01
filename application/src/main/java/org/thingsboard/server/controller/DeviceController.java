@@ -59,7 +59,7 @@ public class DeviceController extends BaseController {
     public static final String DEVICE_ID = "deviceId";
 
     /** 
-    * @Description: 1.2.7.15 跟据基础设施ID查询所有设备以及所有设备属性
+    * @Description: 1.2.7.16 跟据基础设施ID查询所有设备以及所有设备属性
     * @Author: ShenJi
     * @Date: 2019/2/1 
     * @Param: [strAssetId] 
