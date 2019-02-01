@@ -23,16 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thingsboard.rule.engine.api.MailService;
-import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.audit.ActionType;
@@ -76,7 +68,31 @@ public class UserController extends BaseController {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
-
+	/**
+	* @Description: 1.2.8.13 以登录用户权限查询所有用户
+	* @Author: ShenJi
+	* @Date: 2019/2/1
+	* @Param: []
+	* @return: java.util.List<org.thingsboard.server.common.data.User>
+	*/
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/users", method = RequestMethod.GET)
+	@ResponseBody
+	public List<User> getUsers() throws ThingsboardException {
+		List<User> retUserList = new ArrayList<>();
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				retUserList.addAll(userService.findUsers());
+				break;
+			case TENANT_ADMIN:
+				retUserList.addAll(userService.findTenantUsers(getCurrentUser().getTenantId()));
+				break;
+			case CUSTOMER_USER:
+				retUserList.addAll(userService.findCustomerUsers(getCurrentUser().getCustomerId()));
+				break;
+		}
+		return retUserList;
+	}
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     @ResponseBody
