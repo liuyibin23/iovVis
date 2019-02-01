@@ -85,6 +85,11 @@ public class BaseAttributesService implements AttributesService {
         return attributesDao.removeAll(tenantId, entityId, scope, keys);
     }
 
+    @Override
+    public List<AttributeKvEntry> findAllByEntityTypeAndEntityId(EntityId entityId) {
+        return attributesDao.findAllByEntityTypeAndEntityId(entityId);
+    }
+
     private static void validate(EntityId id, String scope) {
         Validator.validateId(id.getId(), "Incorrect id " + id);
         Validator.validateString(scope, "Incorrect scope " + scope);

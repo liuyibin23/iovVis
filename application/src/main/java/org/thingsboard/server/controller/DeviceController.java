@@ -33,8 +33,7 @@ import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
-import org.thingsboard.server.common.data.kv.BaseAttributeKvEntry;
-import org.thingsboard.server.common.data.kv.StringDataEntry;
+import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -47,15 +46,13 @@ import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttrKV;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
-import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
+import org.thingsboard.server.service.telemetry.AttributeData;
+import org.thingsboard.server.service.telemetry.DeviceAndAttributeKv;
 
-import javax.management.relation.RelationType;
-import javax.swing.text.html.parser.Entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static org.thingsboard.server.controller.AssetController.ASSET_ID;
@@ -67,7 +64,7 @@ public class DeviceController extends BaseController {
     public static final String DEVICE_ID = "deviceId";
 
     /** 
-    * @Description: 1.2.7.15 跟据基础设施ID查询所有设备
+    * @Description: 1.2.7.15 跟据基础设施ID查询所有设备以及所有设备属性
     * @Author: ShenJi
     * @Date: 2019/2/1 
     * @Param: [strAssetId] 
@@ -76,10 +73,11 @@ public class DeviceController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/beidouapp/getDeviceByAssetId", method = RequestMethod.GET)
 	@ResponseBody
-	public List<Device> getDevicesByAssetId(@RequestParam(ASSET_ID) String strAssetId) throws ThingsboardException {
+	public List<DeviceAndAttributeKv> getDevicesByAssetId(@RequestParam(ASSET_ID) String strAssetId) throws ThingsboardException {
 		checkParameter(ASSET_ID, strAssetId);
 
 		List<Device> retDeviceList = new ArrayList<>();
+		List<DeviceAndAttributeKv> retDeviceAttribute = new ArrayList<>();
 		AssetId assetId = new AssetId(toUUID(strAssetId));
 		Asset asset = assetService.findAssetById(null, assetId);
 		if (null == asset)
@@ -87,23 +85,36 @@ public class DeviceController extends BaseController {
 
 		switch (getCurrentUser().getAuthority()){
 			case SYS_ADMIN:
-				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+				retDeviceList.addAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
 				break;
 			case TENANT_ADMIN:
 				if (!asset.getTenantId().equals(getCurrentUser().getTenantId()))
-					return retDeviceList;
-				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+					return retDeviceAttribute;
+				retDeviceList.addAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
 				break;
 			case CUSTOMER_USER:
 				if (!asset.getCustomerId().equals(getCurrentUser().getCustomerId()))
-					return retDeviceList;
-				retDeviceList.containsAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
+					return retDeviceAttribute;
+				retDeviceList.addAll(getEneityRelationFromAssetId(asset,EntityType.DEVICE));
 				break;
 				default:
 					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 		}
 
-		return retDeviceList;
+		retDeviceList.stream()
+				.forEach(device -> {
+					DeviceAndAttributeKv tmp = new DeviceAndAttributeKv();
+					tmp.setDevice(device);
+					List<AttributeKvEntry> tmpAttrib = attributesService.findAllByEntityTypeAndEntityId(device.getId());
+					List<AttributeData> values = tmpAttrib.stream().map(attribute -> new AttributeData(attribute.getLastUpdateTs(),
+							attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+
+					if (null != tmpAttrib)
+						tmp.setAttributeKvList(values);
+					retDeviceAttribute.add(tmp);
+				});
+
+		return retDeviceAttribute;
 
 	}
 	private List<Device> getEneityRelationFromAssetId(Asset asset,EntityType entityType){
@@ -119,7 +130,7 @@ public class DeviceController extends BaseController {
 				});
 		return retDeviceList;
 	}
-    @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/device/{deviceId}", method = RequestMethod.GET)
     @ResponseBody
     public Device getDeviceById(@PathVariable(DEVICE_ID) String strDeviceId) throws ThingsboardException {
