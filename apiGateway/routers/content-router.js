@@ -51,6 +51,7 @@ router.get('/about', function (req, res) {
 
 router.post('/:id', async function (req, res) {
     let assetID = req.params.id;
+    res.status(200).json({code:200,message:'not support this time!'});
 })
 
 router.get('/:id', async function (req, res) {
