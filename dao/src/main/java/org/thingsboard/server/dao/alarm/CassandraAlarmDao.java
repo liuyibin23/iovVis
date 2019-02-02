@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.alarm.*;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -36,6 +37,7 @@ import org.thingsboard.server.dao.util.NoSqlDao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
@@ -127,6 +129,24 @@ public class CassandraAlarmDao extends CassandraAbstractModelDao<AlarmEntity, Al
 
     @Override
     public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId, long startTs, long endTs) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs) {
         //todo cassandra
         return null;
     }

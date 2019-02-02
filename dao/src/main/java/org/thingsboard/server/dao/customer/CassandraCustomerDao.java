@@ -80,4 +80,16 @@ public class CassandraCustomerDao extends CassandraAbstractSearchTextDao<Custome
         return Optional.ofNullable(customer);
     }
 
+    @Override
+    public List<Customer> findCustomers() {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Customer> findCustomersByTenantId(UUID tenantId) {
+        //todo cassandra
+        return null;
+    }
+
 }

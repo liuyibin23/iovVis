@@ -30,13 +30,7 @@ import org.springframework.util.StringUtils;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmId;
-import org.thingsboard.server.common.data.alarm.AlarmInfo;
-import org.thingsboard.server.common.data.alarm.AlarmQuery;
-import org.thingsboard.server.common.data.alarm.AlarmSearchStatus;
-import org.thingsboard.server.common.data.alarm.AlarmSeverity;
-import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.id.AssetId;
@@ -67,10 +61,7 @@ import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.sql.Time;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -511,6 +502,21 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     @Override
     public List<Alarm> findAlarmByOriginator(EntityId originator) {
         return alarmDao.findAlarmByOriginator(originator);
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs){
+        return alarmDao.findAlarmDevicesCount(startTs,endTs);
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId,long startTs, long endTs){
+        return alarmDao.findAlarmDevicesCountByTenantId(tenantId,startTs,endTs);
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId,CustomerId customerId,long startTs, long endTs){
+        return alarmDao.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,startTs,endTs);
     }
 
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {

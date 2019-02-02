@@ -61,6 +61,8 @@ public class EntityIdFactory {
                 return new RuleNodeId(uuid);
             case ENTITY_VIEW:
                 return new EntityViewId(uuid);
+            case PATROL:
+                return new PatrolId(uuid);
         }
         throw new IllegalArgumentException("EntityType " + type + " is not supported!");
     }

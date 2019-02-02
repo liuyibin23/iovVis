@@ -203,6 +203,20 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 	}
 
 	@Override
+	public List<CustomerExInfo> findCustomerExinfos() {
+		List<Customer> customers = customerDao.findCustomers();
+		List<CustomerExInfo> customerExInfos = customersToCustomerExInfos(customers);
+		return customerExInfos;
+	}
+
+	@Override
+	public List<CustomerExInfo> findCustomerByTenantIdExinfos(TenantId tenantId) {
+		List<Customer> customers = customerDao.findCustomersByTenantId(tenantId.getId());
+		List<CustomerExInfo> customerExInfos = customersToCustomerExInfos(customers);
+		return customerExInfos;
+	}
+
+	@Override
 	public void deleteCustomersByTenantId(TenantId tenantId) {
 		log.trace("Executing deleteCustomersByTenantId, tenantId [{}]", tenantId);
 		Validator.validateId(tenantId, "Incorrect tenantId " + tenantId);

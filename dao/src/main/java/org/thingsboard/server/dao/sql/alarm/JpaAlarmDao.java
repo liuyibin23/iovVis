@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.alarm.*;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -37,9 +38,8 @@ import org.thingsboard.server.dao.relation.RelationDao;
 import org.thingsboard.server.dao.sql.JpaAbstractDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigInteger;
+import java.util.*;
 
 /**
  * Created by Valerii Sosliuk on 5/19/2017.
@@ -123,5 +123,33 @@ public class JpaAlarmDao extends JpaAbstractDao<AlarmEntity, Alarm> implements A
     public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
         return alarmRepository.findAlarmEntityByIdAndTenantId(UUIDConverter.fromTimeUUID(alarmId.getId()),
                 UUIDConverter.fromTimeUUID(tenantId.getId())).toData();
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs){
+        List<Object[]> results = alarmRepository.findAlarmDevicesCount(startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId,long startTs, long endTs){
+        List<Object[]> results = alarmRepository.findAlarmDevicesCountByTenantId(UUIDConverter.fromTimeUUID(tenantId.getId()),startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    @Override
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId,long startTs,long endTs){
+        List<Object[]> results = alarmRepository.findAlarmDevicesCountByTenantIdAndCustomerId(UUIDConverter.fromTimeUUID(tenantId.getId()),
+                    UUIDConverter.fromTimeUUID(customerId.getId()),startTs,endTs);
+        return objQueryResultsToType(results);
+    }
+
+    private List<AlarmDevicesCount> objQueryResultsToType(List<Object[]> results){
+        List<AlarmDevicesCount> alarmDevices = new ArrayList<>();
+        results.forEach(item->{
+            AlarmDevicesCount alarmDevicesInDay = new AlarmDevicesCount(((BigInteger) item[0]).longValue(),((BigInteger) item[1]).intValue());
+            alarmDevices.add(alarmDevicesInDay);
+        });
+        return alarmDevices;
     }
 }
