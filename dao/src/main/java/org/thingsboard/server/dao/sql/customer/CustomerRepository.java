@@ -47,5 +47,12 @@ public interface CustomerRepository extends CrudRepository<CustomerEntity, Strin
 
 	CustomerEntity findByTenantIdAndTitle(String tenantId, String title);
 
+	@Query("SELECT c FROM CustomerEntity c ")
+	List<CustomerEntity> findBy();
+
+	@Query("SELECT c FROM CustomerEntity c WHERE c.tenantId = :tenantId ")
+	List<CustomerEntity> findByTenantId(@Param("tenantId") String tenantId);
+
+
 
 }

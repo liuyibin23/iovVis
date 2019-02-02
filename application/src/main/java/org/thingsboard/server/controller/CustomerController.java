@@ -33,6 +33,7 @@ import org.thingsboard.server.common.data.CustomerAndAssets;
 import org.thingsboard.server.common.data.CustomerExInfo;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -186,6 +187,32 @@ public class CustomerController extends BaseController {
 		}
 	}
 
+	/**
+	* @Description: 1.2.8.14 以登录用户权限查询项目级别用户组
+	* @Author: ShenJi
+	* @Date: 2019/2/2
+	* @Param: []
+	* @return: java.util.List<org.thingsboard.server.common.data.CustomerExInfo>
+	*/
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
+	@RequestMapping(value = "/beidouapp/customers", method = RequestMethod.GET)
+	@ResponseBody
+	public List<CustomerExInfo> getCustomers() throws ThingsboardException {
+		List<CustomerExInfo> retInfo = new ArrayList<>();
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				retInfo.addAll(customerService.findCustomerExinfos());
+				break;
+			case TENANT_ADMIN:
+				retInfo.addAll(customerService.findCustomerByTenantIdExinfos(getCurrentUser().getTenantId()));
+				break;
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		}
+
+		return retInfo;
+
+	}
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
 	@RequestMapping(value = "/admin/customers", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody

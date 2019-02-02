@@ -77,4 +77,14 @@ public class JpaCustomerDao extends JpaAbstractSearchTextDao<CustomerEntity, Cus
         Customer customer = DaoUtil.getData(customerRepository.findByTenantIdAndTitle(UUIDConverter.fromTimeUUID(tenantId), title));
         return Optional.ofNullable(customer);
     }
+
+    @Override
+    public List<Customer> findCustomers() {
+        return DaoUtil.convertDataList(customerRepository.findBy());
+    }
+
+    @Override
+    public List<Customer> findCustomersByTenantId(UUID tenantId) {
+        return DaoUtil.convertDataList(customerRepository.findByTenantId(UUIDConverter.fromTimeUUID(tenantId)));
+    }
 }
