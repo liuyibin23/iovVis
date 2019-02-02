@@ -43,6 +43,7 @@ import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -239,8 +240,16 @@ public class CustomerController extends BaseController {
 			throw handleException(e);
 		}
 	}
-	@PreAuthorize("hasAuthority('SYS_ADMIN')")
-	@RequestMapping(value = "/admin/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
+
+	/** 
+	* @Description: 1.2.8.15 以登录用户权限查询项目组及所属资产
+	* @Author: ShenJi
+	* @Date: 2019/2/2 
+	* @Param: [limit, tenantIdStr, textSearch, idOffset, textOffset] 
+	* @return: java.util.List<org.thingsboard.server.common.data.CustomerAndAssets>
+	*/ 
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/beidouapp/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
 	public List<CustomerAndAssets> getCustomersAndAssets(@RequestParam int limit,
 														 @RequestParam(required = false) String tenantIdStr,
@@ -249,18 +258,36 @@ public class CustomerController extends BaseController {
 														 @RequestParam(required = false) String textOffset) throws ThingsboardException {
 		try {
 			List<CustomerAndAssets> retObj = new ArrayList<>();
-			TextPageData<Customer> customerTextPageData;
-			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-			if (tenantIdStr != null){
-				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
-				checkTenantId(tenantIdTmp);
-				TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+			TextPageData<Customer> customerTextPageData = null;
+			TextPageLink pageLink = null;
+			CustomerId customerId = getCurrentUser().getCustomerId();
+			switch (getCurrentUser().getAuthority()){
+				case SYS_ADMIN:
+					pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+					if (tenantIdStr != null){
+						TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+						checkTenantId(tenantIdTmp);
+						TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
-				customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+						customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
+					}
+					else {
+						customerTextPageData = checkNotNull(customerService.findCustomers(pageLink));
+					}
+					break;
+				case TENANT_ADMIN:
+					customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(getCurrentUser().getTenantId(), pageLink));
+					break;
+				case CUSTOMER_USER:
+					customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(getCurrentUser().getTenantId(), pageLink));
+					List<Customer> customerList = new ArrayList<>();
+					customerList = customerTextPageData.getData().stream().filter(customer -> customerId.equals(customer.getId())).collect(Collectors.toList());
+					customerList.stream().forEach(customer -> {retObj.add(new CustomerAndAssets(customer,assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()));});
+					return retObj;
+				default:
+						throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 			}
-			else {
-				customerTextPageData = checkNotNull(customerService.findCustomers(pageLink));
-			}
+
 			customerTextPageData.getData().forEach(customer -> {
 				retObj.add(new CustomerAndAssets(customer,assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()));
 			});
