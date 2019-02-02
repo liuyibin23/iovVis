@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.alarm.AlarmDevicesCount;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
@@ -565,6 +566,53 @@ public class DeviceController extends BaseController {
 			throw handleException(e);
 		}
 	}
+
+    /**
+     * 获取指定时间段内的正常设备数量，按天分布
+     * @return
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/currentUser/normalDevicesInDate", method = RequestMethod.GET)
+	public List<AlarmDevicesCount> getNormalDevicesInDate(@RequestParam long start_ts,
+                                                          @RequestParam long end_ts) throws ThingsboardException {
+        SecurityUser user = getCurrentUser();
+        TenantId tenantId = user.getTenantId();
+        CustomerId customerId = user.getCustomerId();
+        if(!customerId.isNullUid()&&!tenantId.isNullUid()){ //customer
+            int devicesCount = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,start_ts,end_ts);
+            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+        } else if(!tenantId.isNullUid()){ //tenant
+            int devicesCount = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantId(tenantId,start_ts,end_ts);
+            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+        } else { //sysadmin
+            int devicesCount = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData().size();
+            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCount(start_ts,end_ts);
+            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+        }
+    }
+
+    private List<AlarmDevicesCount> convertToNormalDevicesInDate(List<AlarmDevicesCount> devicesCounts,int devicesCount,long startTs,long endTs){
+        long dayTs = 24 * 3600 * 1000;
+        startTs = startTs / dayTs * dayTs;
+        endTs = endTs / dayTs * dayTs;
+        List<AlarmDevicesCount> result = new ArrayList<>();
+        int j=0;
+        for(long i = startTs;i <= endTs;i = i + dayTs){
+            if(devicesCounts.get(j).getTs_day() == i){
+                //设备总数减报警设备数为正常设备数
+                AlarmDevicesCount alarmDevicesCount = new AlarmDevicesCount(devicesCounts.get(j).getTs_day(),devicesCount - devicesCounts.get(j).getCount());
+                result.add(alarmDevicesCount);
+                j++;
+            } else {
+                AlarmDevicesCount alarmDevicesCount = new AlarmDevicesCount(i,devicesCount);
+                result.add(alarmDevicesCount);
+            }
+        }
+        return result;
+    }
+
 	private List<DeviceForDisplay> devicesSearchInfo(List<Device> deviceList){
 		List<DeviceForDisplay> retObj = new ArrayList<>();
 		deviceList.forEach(device -> {
