@@ -80,7 +80,7 @@ public interface AlarmRepository extends CrudRepository<AlarmEntity, String> {
             "and device.tenant_id = :tenantId  " +
             "and device.customer_id = :customerId " +
             "and alarm.start_ts between :startTs and :endTs " +
-            "group by ts_day\n" +
+            "group by ts_day " +
             "order by ts_day"
             ,nativeQuery = true)
     List<Object[]> findAlarmDevicesCountByTenantIdAndCustomerId(@Param("tenantId")String tenantId,
