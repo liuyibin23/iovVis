@@ -258,25 +258,24 @@ public class TelemetryController extends BaseController {
     @ResponseBody
     public DeferredResult<ResponseEntity> saveEntityAttributesV1(@PathVariable("entityType") String entityType, @PathVariable("entityId") String entityIdStr,
                                                                  @PathVariable("scope") String scope,
-																 @RequestParam(required = false) String tenantIdStr,
-                                                                 @RequestBody JsonNode request) throws ThingsboardException {
+																 @RequestBody JsonNode request) throws ThingsboardException {
         EntityId entityId = EntityIdFactory.getByTypeAndId(entityType, entityIdStr);
         if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
 			DeferredResult<ResponseEntity> response = new DeferredResult<>();
-        	if (tenantIdStr == null){
+ /*       	if (tenantIdStr == null){
 				response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
 				return response;
 			}
 			TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
 			checkTenantId(tenantIdTmp);
 			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
-
+*/
 			if (request.isObject()) {
 				List<AttributeKvEntry> attributes = extractRequestAttributes(request);
 				if (attributes.isEmpty()) {
 					return getImmediateDeferredResult("No attributes data found in request body!", HttpStatus.BAD_REQUEST);
 				}
-				attributesService.saveAttributes(getTenantId(),entityId,scope,attributes);
+				attributesService.saveAttributes(null,entityId,scope,attributes);
 				response.setResult(new ResponseEntity(HttpStatus.OK));
 				return response;
 			}
