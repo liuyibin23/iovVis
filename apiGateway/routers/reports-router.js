@@ -1,12 +1,13 @@
-var express = require('express');
-var router = express.Router();
-var toks = require('../middleware/token-verifier');
-var util = require('./utils');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
+const express = require('express');
+const multipart = require('connect-multiparty');
 const axios = require('axios');
 const fs = require('fs');
-var request = require('request');
+const request = require('request');
+// const toks = require('../middleware/token-verifier');
+const util = require('../util/utils');
+
+const router = express.Router();
+const multipartMiddleware = multipart();
 
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {

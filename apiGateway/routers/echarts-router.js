@@ -1,12 +1,12 @@
-var express = require('express');
-var router = express.Router();
-var chart_area = require('./echarts/area');
-var chart_pie  = require('./echarts/pie');
-var multipart = require('connect-multiparty');
-var multipartMiddleware = multipart();
+const express = require('express');
+const chart_area = require('./echarts/area');
+const chart_pie  = require('./echarts/pie');
 const node_echarts = require('node-echarts');
-var util = require('./utils');
+const util = require('../util/utils');
+// var multipart = require('connect-multiparty');
+// var multipartMiddleware = multipart();
 
+const router = express.Router();
 // middleware that is specific to this router
 router.use(function timeLog(req, res, next) {
     console.log('echarts Time: ', Date.now())

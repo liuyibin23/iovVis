@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-const util = require('./utils');
+const util = require('../util/utils');
 const logger = require('../util/logger');
 
 
 // middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-  console.log('Time: ', Date.now());
-  next();
-})
+// router.use(function timeLog(req, res, next) {
+//   console.log('Time: ', Date.now());
+//   next();
+// })
 // define the home page route
 router.get('/', function (req, res) {
   res.send('Alarms Api home page');
@@ -133,7 +133,7 @@ router.get('/:id', async function (req, res) {
       util.responErrorMsg(err, res);
     });
   }).catch(err => {
-    // 由资产号查询tenantId出现问题
+    // 由devID查询tenantId出现问题
     util.responErrorMsg(err, res);
   });
 })
