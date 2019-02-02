@@ -25,19 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thingsboard.rule.engine.api.ScriptEngine;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Event;
-import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -86,15 +78,28 @@ public class RuleChainController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/beidouapp/ruleChains", method = RequestMethod.GET)
     @ResponseBody
-    public List<RuleChain> getRuleChains() throws ThingsboardException {
+    public List<RuleChain> getRuleChains(@RequestParam(required = false) String textSearch,
+										 @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 
         List<RuleChain> retRuleChainsList = null;
         switch (getCurrentUser().getAuthority()){
             case SYS_ADMIN:
-                retRuleChainsList = ruleChainService.findRuleChains();
+            	if (null == textSearch)
+                	retRuleChainsList = ruleChainService.findRuleChains();
+            	else if (null == tenantIdStr){
+					retRuleChainsList = ruleChainService.findRuleChainsByTextSearch(textSearch);
+				} else {
+					TenantId tenantId = new TenantId(toUUID(tenantIdStr));
+					checkTenantId(tenantId);
+					retRuleChainsList = ruleChainService.findRuleChainsByTenantIdAndTextSearch(tenantId,textSearch);
+				}
+
                 break;
             case TENANT_ADMIN:
-                retRuleChainsList = ruleChainService.findRuleChainsByTenantId(getCurrentUser().getTenantId());
+				if (null == textSearch)
+                	retRuleChainsList = ruleChainService.findRuleChainsByTenantId(getCurrentUser().getTenantId());
+				else
+					retRuleChainsList = ruleChainService.findRuleChainsByTenantIdAndTextSearch(getCurrentUser().getTenantId(),textSearch);
                 break;
             case CUSTOMER_USER:
                 retRuleChainsList = null;
@@ -132,13 +137,14 @@ public class RuleChainController extends BaseController {
 					checkRuleChain(ruleChainId);
 					return ruleChainService.loadRuleChainMetaData(getTenantId(), ruleChainId);
 				case SYS_ADMIN:
-					TenantId tenantId = new TenantId(toUUID(tenantIdStr));
-					checkTenantId(tenantId);
+/*					TenantId tenantId = new TenantId(toUUID(tenantIdStr));
+					checkTenantId(tenantId);*/
 
 					ruleChainId = new RuleChainId(toUUID(strRuleChainId));
-					RuleChain ruleChain = ruleChainService.findRuleChainById(getCurrentUser().getTenantId(), ruleChainId);
+					RuleChain ruleChain = ruleChainService.findRuleChainById(null, ruleChainId);
+
 					if (null != ruleChain)
-						return ruleChainService.loadRuleChainMetaData(tenantId, ruleChainId);
+						return ruleChainService.loadRuleChainMetaData(ruleChain.getTenantId(), ruleChainId);
 					else
 						return null;
 					default:
@@ -238,14 +244,14 @@ public class RuleChainController extends BaseController {
                     return savedRuleChainMetaData;
 
                 case SYS_ADMIN:
-                    checkNotNull(tenantIdStr);
+                    /*checkNotNull(tenantIdStr);
                     Tenant tenant = tenantService.findTenantById(new TenantId(toUUID(tenantIdStr)));
                     if (null == tenant)
                         throw new ThingsboardException("tenantId Not Find",ThingsboardErrorCode.INVALID_ARGUMENTS);
+*/
+                    ruleChain = ruleChainService.findRuleChainById(null, ruleChainMetaData.getRuleChainId());
 
-                    ruleChain = ruleChainService.findRuleChainById(tenant.getId(), ruleChainMetaData.getRuleChainId());
-
-                    savedRuleChainMetaData = checkNotNull(ruleChainService.saveRuleChainMetaData(tenant.getId(), ruleChainMetaData));
+                    savedRuleChainMetaData = checkNotNull(ruleChainService.saveRuleChainMetaData(ruleChain.getTenantId(), ruleChainMetaData));
 
                     actorService.onEntityStateChange(ruleChain.getTenantId(), ruleChain.getId(), ComponentLifecycleEvent.UPDATED);
 

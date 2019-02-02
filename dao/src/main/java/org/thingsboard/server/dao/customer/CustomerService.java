@@ -23,6 +23,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CustomerService {
@@ -46,6 +47,8 @@ public interface CustomerService {
     TextPageData<Customer> findCustomers(TextPageLink pageLink);
 
     TextPageData<CustomerExInfo> findCustomerExInfos(TextPageLink pageLink);
+    List<CustomerExInfo> findCustomerExinfos();
+    List<CustomerExInfo> findCustomerByTenantIdExinfos(TenantId tenantId);
 
     void deleteCustomersByTenantId(TenantId tenantId);
 

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const swaggerUi = require('swagger-ui-express');
+const cors = require('cors');
 
 const swaggerDocument = require('./swagger.json');
 const tokenVerify = require('./middleware/token-verifier');
@@ -22,6 +23,7 @@ let options = {
   };
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
+app.use(cors());
 app.use(tokenVerify());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

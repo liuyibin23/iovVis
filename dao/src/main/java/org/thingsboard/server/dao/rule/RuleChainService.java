@@ -61,6 +61,9 @@ public interface RuleChainService {
     List<RuleChain> findRuleChains();
     List<RuleChain> findRuleChainsByTenantId(TenantId tenantId);
 
+    List<RuleChain> findRuleChainsByTextSearch(String textSearch);
+    List<RuleChain> findRuleChainsByTenantIdAndTextSearch(TenantId tenantId,String textSearch);
+
 
     void deleteRuleChainById(TenantId tenantId, RuleChainId ruleChainId);
 

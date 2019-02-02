@@ -158,4 +158,14 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 		return DaoUtil.convertDataList(userRepository.findAllByFirstNameLike(firstname));
 	}
 
+	@Override
+	public List<User> findUsers() {
+		return DaoUtil.convertDataList(userRepository.findAllUsers());
+	}
+
+	@Override
+	public List<User> findUsersByTenantId(UUID tenantId) {
+		return DaoUtil.convertDataList(userRepository.findUsersByTenantId(fromTimeUUID(tenantId)));
+	}
+
 }

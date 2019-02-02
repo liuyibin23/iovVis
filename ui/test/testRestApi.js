@@ -59,7 +59,8 @@ function postCliAttrValue(ptJson) {
 // let pt = { "crackWidth": 12.1, idType: "CRACK-ID", alarmCnt: 10.79 };
 // postCrackWidth(pt);
 
-setInterval(post_devAB, 5000);
+// setInterval(post_devAB, 5000);
+setInterval(postCrackDeepth, 5000, { "crackDeepth": 0.458 });
 
 // let pt2 = { "裂缝深度": 0.4, idType: "CRACK", alarmCnt: 1 };
 // postCrackDeepth(pt2);

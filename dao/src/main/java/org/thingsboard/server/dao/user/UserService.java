@@ -28,6 +28,7 @@ import org.thingsboard.server.common.data.security.UserCredentials;
 import java.util.List;
 
 public interface UserService {
+
 	TextPageData<User> findUsers(TextPageLink pageLink);
 
 	List<User> findUserByTenantIdAndAuthority(TenantId tenantId, Authority authority);
@@ -62,7 +63,9 @@ public interface UserService {
 
 	TextPageData<User> findCustomerUsers(CustomerId customerId, TextPageLink pageLink);
 
+	List<User> findUsers();
 	List<User> findCustomerUsers(CustomerId customerId);
+	List<User> findTenantUsers(TenantId tenantId);
 
 	    
 	void deleteCustomerUsers(TenantId tenantId, CustomerId customerId);
