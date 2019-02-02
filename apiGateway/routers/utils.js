@@ -1,8 +1,8 @@
 // const url   = require("url");
 const axios = require('axios')
 
-var API = 'http://cf.beidouapp.com:8080/api/';
-// var API = 'http://192.168.1.76:8080/api/';
+// var API = 'http://cf.beidouapp.com:8080/api/';
+var API = 'http://192.168.1.76:8080/api/';
 
 
 function getAPI() {
@@ -72,13 +72,24 @@ function responErrorMsg(err, res) {
 
 function responData(code, data, res) {
     let resMsg = {
-        "code": `${code}`,
+        // "code": `${code}`,
         "message": data
     };
 
     res.status(code).json(resMsg);
 }
 
+exports.CFG = Object.freeze({
+    ALARM_NODE_NAME_1: '一级告警规则配置',
+    ALARM_NODE_NAME_2: '二级告警规则配置'
+});
+
+exports.CST = Object.freeze({
+    OK200: 200, MSG200: '成功。',
+    ERR404: 404, MSG404: '访问资源不存在。',
+    ERR510: 510, MSG510: 'CONFIG_ALARM_RULE规则链不存在。',
+    ERR511: 511, MSG511: 'CONFIG_ALARM_RULE的META值异常。',
+});
 exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getAPI = getAPI;

@@ -2,36 +2,66 @@ const express = require('express');
 const axios = require('axios');
 const util = require('./utils');
 const router = express.Router();
-
+// define warnings route
+router.get('/:assetId', async function (req, res) {
+  if (req.baseUrl === '/api/v1/rules/warnings') {
+    getWarningRules(req, res);
+  }
+  else if (req.baseUrl === '/api/v1/warnings') {
+    getWarningStatus(req, res);
+  }
+})
+router.post('/:assetId', async function (req, res) {
+  if (req.baseUrl === '/api/v1/rules/warnings') {
+    postWarningRules(req, res);
+  }
+  else if (req.baseUrl === '/api/v1/warnings') {
+    postWarningStatus(req, res);
+  }
+})
+//获取预警状态
 async function getWarningStatus(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
   let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
-
   axios.get(get_attributes_api, {
+    headers: {
+      "X-Authorization": token
+    }
+  }).then((resp) => {
+    let resMsg = {
+      "code": `${resp.status}`,
+      info: {}
+    };
+    resp.data.forEach(info => {
+      if (info.key === 'asset_warning_level') {
+        // info.value = JSON.parse(info.value);
+        // res.status(200).json(info);
+        resMsg.info = info;
+      }
+    });
+    res.status(resp.status).json(resMsg);
+  }).catch((err) => {
+    util.responErrorMsg(err, res);
+  });
+}
+async function postWarningStatus(req, res) {
+  let assetID = req.params.assetId;
+  let token = req.headers['x-authorization'];
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/attributes/SERVER_SCOPE`;
+
+  axios.post(get_attributes_api, req.query, {
     headers: {
       "X-Authorization": token
     }
   })
     .then((resp) => {
-      let resMsg = {
-        "code": `${resp.status}`,
-        info: {}
-      };
-      resp.data.forEach(info => {
-        if (info.key === 'asset_warning_level') {
-          // info.value = JSON.parse(info.value);
-          // res.status(200).json(info);
-          resMsg.info = info;
-        }
-      });
-      res.status(resp.status).json(resMsg);
+      util.responData(200, '成功设置预警状态。', res);
     })
     .catch((err) => {
       util.responErrorMsg(err, res);
     });
 }
-
 async function getWarningRules(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
@@ -76,17 +106,6 @@ async function getWarningRules(req, res) {
     }
   }
 }
-
-// define warnings route
-router.get('/:assetId', async function (req, res) {
-  if (req.baseUrl === '/api/v1/rules/warnings') {
-    getWarningRules(req, res);
-  }
-  else if (req.baseUrl === '/api/v1/warnings') {
-    getWarningStatus(req, res);
-  }
-})
-
 
 // POST
 async function postWarningRules(req, res) {
@@ -159,7 +178,7 @@ async function postWarningRules(req, res) {
       axios.post(url, (ruleMeta), { headers: { "X-Authorization": token } })
         .then(response => {
           if (response.status == 200) {
-            util.responData(200,  '设置预警规则成功。', res);
+            util.responData(200, '设置预警规则成功。', res);
           }
           else {
             //let code = response.status;
@@ -173,31 +192,6 @@ async function postWarningRules(req, res) {
   }
 }
 
-async function postWarningStatus(req, res) {
-  let assetID = req.params.assetId;
-  let token = req.headers['x-authorization'];
-  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/attributes/SERVER_SCOPE`;
 
-  axios.post(get_attributes_api, req.query, {
-    headers: {
-      "X-Authorization": token
-    }
-  })
-    .then((resp) => {
-      util.responData(200, '成功设置预警状态。', res);
-    })
-    .catch((err) => {
-      util.responErrorMsg(err, res);
-    });
-}
-
-router.post('/:assetId', async function (req, res) {
-  if (req.baseUrl === '/api/v1/rules/warnings') {
-    postWarningRules(req, res);
-  }
-  else if (req.baseUrl === '/api/v1/warnings') {
-    postWarningStatus(req, res);
-  }
-})
 
 module.exports = router
