@@ -18,7 +18,7 @@ router.get('/', function (req, res) {
 router.get('/about', function (req, res) {
   res.send('About alarms');
 })
-//GET
+//GET获取指定设备号上绑定的告警规则
 router.get('/:id', async function (req, res) {
   var devID = req.params.id;
   let token = req.headers['x-authorization'];
@@ -137,7 +137,7 @@ router.get('/:id', async function (req, res) {
     util.responErrorMsg(err, res);
   });
 })
-//POST
+//POST更新设备的告警规则，并且更新设备表的addtionalInfo，记录该告警规则
 router.post('/:id', async function (req, res) {
   let devID = req.params.id;
   let IndeterminateRules = req.body.IndeterminateRules;
@@ -222,7 +222,37 @@ router.post('/:id', async function (req, res) {
               headers: { "X-Authorization": token }
             }).then(response => {
               if (response.status == 200) {
-                util.responData(util.CST.OK200, util.CST.MSG200, res);
+                //2.写入设备的addinfo（失败的情况不考虑）
+                //IndeterminateRules, WarningRules, devID, TID
+                //通过设备ID获取设备信息
+                url = util.getAPI() + `device/${devID}`;
+                axios.get(url, {
+                  headers: {
+                    "X-Authorization": token
+                  }
+                }).then(resp => {
+                  //添加addinfo后更新device信息
+                  url = util.getAPI() + `device`;
+                  let data = resp.data;
+                  data.additionalInfo = {
+                    WarningRules,
+                    IndeterminateRules
+                  };
+                  axios.post(url, (data), {
+                    headers: { "X-Authorization": token },
+                    params: { "tenantIdStr": TID }
+                  }).then(resp => {
+                    //添加addinfo后更新device信息
+                    util.responData(util.CST.OK200, util.CST.MSG200, res);
+                  }).catch(err => {
+                    //通过设备ID获取设备信息失败
+                    util.responErrorMsg(err, res);
+                  });
+                }).catch(err => {
+                  //通过设备ID获取设备信息失败
+                  util.responErrorMsg(err, res);
+                });
+                //util.responData(util.CST.OK200, util.CST.MSG200, res);
               }
               else {
                 //
@@ -232,36 +262,7 @@ router.post('/:id', async function (req, res) {
             }).catch(err => {
               util.responErrorMsg(err, res);
             })
-            //2.写入设备的addinfo（失败的情况不考虑）
-            //IndeterminateRules, WarningRules, devID, TID
-            //通过设备ID获取设备信息
-            url = util.getAPI() + `device/${devID}`;
-            axios.get(url, {
-              headers: {
-                "X-Authorization": token
-              }
-            }).then(resp => {
-              //添加addinfo后更新device信息
-              url = util.getAPI() + `device`;
-              let data = resp.data;
-              data.additionalInfo = {
-                WarningRules,
-                IndeterminateRules
-              };
-              axios.post(url, (data), {
-                headers: { "X-Authorization": token },
-                params: { "tenantIdStr": TID }
-              }).then(resp => {
-                //添加addinfo后更新device信息
-                util.responData(util.CST.OK200, util.CST.MSG200, res);
-              }).catch(err => {
-                //通过设备ID获取设备信息失败
-                util.responErrorMsg(err, res);
-              });
-            }).catch(err => {
-              //通过设备ID获取设备信息失败
-              util.responErrorMsg(err, res);
-            });
+
           }
           // util.responData(511, 'CONFIG_ALARM_RULE规则链MetaData获取失败。' , res);
         }).catch(err => {
