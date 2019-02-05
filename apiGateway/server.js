@@ -15,6 +15,8 @@ const warningsRouter = require('./routers/warnings-router');
 const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
 
+const VERSION = '1.0.0';
+
 let app = express();
 let port = 20050;
 let options = {
@@ -39,6 +41,8 @@ app.use('/api/v1/warnings', warningsRouter);
 app.use('/api/v1/rules/warnings', warningsRouter);
 app.use(defaultRouter);
 app.use(errHandler);
+
+logger.log('info', 'API Gateway version: %s', VERSION);
 logger.log('info', 'Simple API Gateway run on localhost:%d', port);
 
 app.listen(port);
