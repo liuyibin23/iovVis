@@ -48,7 +48,11 @@ router.get('/stat', function (req, res) {
             ret_data.push(it);
           }
         });
-        util.responData(util.CST.OK200, ret_data, res);
+        let reports = [];
+        ret_data.forEach(element=>{
+          reports = [... element.reports, ...reports];
+        })
+        util.responData(util.CST.OK200, reports, res);
       } catch (err) {
         util.responErrorMsg(err, res);
       }

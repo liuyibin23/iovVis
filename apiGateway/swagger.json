@@ -357,17 +357,7 @@
             "schema": {
               "type": "array",
               "items": {
-                "properties": {
-                  "assetId": {
-                    "type": "string"
-                  },
-                  "reports": {
-                    "type": "array",
-                    "items": {
-                      "$ref": "#/definitions/Report"
-                    }
-                  }
-                }
+                "$ref": "#/definitions/Report"
               }
             }
           },
