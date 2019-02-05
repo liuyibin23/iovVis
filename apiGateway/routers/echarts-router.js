@@ -3,15 +3,16 @@ const chart_area = require('./echarts/area');
 const chart_pie  = require('./echarts/pie');
 const node_echarts = require('node-echarts');
 const util = require('../util/utils');
+const logger = require('../util/logger');
 // var multipart = require('connect-multiparty');
 // var multipartMiddleware = multipart();
 
 const router = express.Router();
 // middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-    console.log('echarts Time: ', Date.now())
-    next()
-})
+// router.use(function timeLog(req, res, next) {
+//     console.log('echarts Time: ', Date.now())
+//     next()
+// })
 
 // define the home page route
 router.get('/', function (req, res) {
@@ -53,7 +54,7 @@ function processData(option, params, res){
 router.get('/:id', async function (req, res) {
     let type   = req.params.id;
     let params = req.query;
-    console.log('type:', type, 'query:', req.query);
+    logger.log('info', 'type:', type, 'query:', req.query);
     let token = req.headers['x-authorization'];;
     switch (type) {
         case 'area':

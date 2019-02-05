@@ -9,10 +9,10 @@ const router = express.Router();
 const util = require('../util/utils');
 
 // middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-    console.log('content Time: ', Date.now())
-    next()
-})
+// router.use(function timeLog(req, res, next) {
+//     console.log('content Time: ', Date.now())
+//     next()
+// })
 
 async function excuteGraphQL(req, res) {
     let graphQL = req.query.graphQL;

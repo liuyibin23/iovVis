@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 //var toks = require('../middleware/token-verifier');
 const util = require('../util/utils');
+const logger = require('../util/logger');
 const fs = require('fs');
 const axios = require('axios');
 const request = require('request');
@@ -9,10 +10,10 @@ const multipart = require('connect-multiparty');
 const multipartMiddleware = multipart();
 
 // middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-  console.log('Templat Time: ', Date.now())
-  next()
-})
+// router.use(function timeLog(req, res, next) {
+//   console.log('Templat Time: ', Date.now())
+//   next()
+// })
 // define the home page route
 router.get('/', function (req, res) {
   res.status(200).json({ result: 'Templates Api home page' });
@@ -112,8 +113,7 @@ function postTemplates(assetID, resp, req, res) {
       util.responData(501, '报表模板上传失败。', res);
     }
     else {
-      console.log('Upload successful!  Server responded with:', body);
-
+      logger.log('info', 'Upload successful!  Server responded with:', body);
       if (JSON.parse(body).success) {
         // 保存到属性表
         // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
@@ -194,7 +194,7 @@ function processDeleteReq(assetID, resp, req, res) {
 
   if (find && template_url) {
     // 从文件服务器删除
-    let host = 'http://sm.schdri.com:80/';
+    let host = util.getFSVR(); //'http://sm.schdri.com:80/';
     let deleteFileHost = host + 'api/file/delete/';
     let filePath = template_url.substr(host.length);
     request.post({ url: deleteFileHost, form: { fileId: filePath } }, function (err, httpResponse, body) {

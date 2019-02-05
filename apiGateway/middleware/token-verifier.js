@@ -1,4 +1,5 @@
 const logger = require('../util/logger');
+const util = require('../util/utils');
 
 function tokenVerify() {
     return async function (req, res, next) {
@@ -14,7 +15,8 @@ function tokenVerify() {
         if (tok) {
             next();
         } else
-            res.status(401).send('ERROR: 401 unauthorized token').end();
+            util.responData(util.CST.ERR401, util.CST.MSG401, res);
+            // res.status(401).send('ERROR: 401 unauthorized token').end();
     }
 }
 module.exports = tokenVerify;

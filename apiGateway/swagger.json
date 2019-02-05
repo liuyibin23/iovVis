@@ -208,20 +208,7 @@
                 "value": {
                   "type": "array",
                   "items": {
-                    "properties": {
-                      "report_name": {
-                        "type": "string"
-                      },
-                      "report_url": {
-                        "type": "string"
-                      },
-                      "report_type": {
-                        "type": "string"
-                      },
-                      "report_date": {
-                        "type": "string"
-                      }
-                    }
+                    "$ref": "#/definitions/Report"
                   }
                 },
                 "lastUpdateTs": {
@@ -349,6 +336,53 @@
         }
       }
     },
+    "/reports/stat": {
+      "get": {
+        "tags": [
+          "报表"
+        ],
+        "summary": "统计当前登录业主的所有资产的报表",
+        "description": "返回所有资产的报表的全部数据用于统计。",
+        "parameters": [
+          {
+            "name": "limit",
+            "type": "integer",
+            "in": "query",
+            "description": "限制返回记录的数量。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回资产关联的所有报表的名称、URL、类型、创建时间。",
+            "schema": {
+              "type": "array",
+              "items": {
+                "properties": {
+                  "assetId": {
+                    "type": "string"
+                  },
+                  "reports": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/definitions/Report"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
     "/echarts/{type}": {
       "get": {
         "tags": [
@@ -426,7 +460,7 @@
         "tags": [
           "文件内容"
         ],
-        "summary": "根据不通过模板和对应的graphQL语句，查询返回的结果JSON对象",
+        "summary": "根据模板和对应的graphQL语句，查询返回的结果JSON对象",
         "description": "根据不同的模板（template），确定数据源的类型，根据graphQL获得相关的对象。",
         "parameters": [
           {
@@ -808,6 +842,24 @@
         },
         "WarningRules": {
           "$ref": "#/definitions/WarningRules"
+        }
+      }
+    },
+    "Report": {
+      "type": "object",
+      "description": "资产关联的报告信息。",
+      "properties": {
+        "report_name": {
+          "type": "string"
+        },
+        "report_url": {
+          "type": "string"
+        },
+        "report_type": {
+          "type": "string"
+        },
+        "report_date": {
+          "type": "string"
         }
       }
     }

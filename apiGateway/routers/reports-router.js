@@ -10,10 +10,10 @@ const router = express.Router();
 const multipartMiddleware = multipart();
 
 // middleware that is specific to this router
-router.use(function timeLog(req, res, next) {
-  console.log('Reports Time: ', Date.now());
-  next();
-})
+// router.use(function timeLog(req, res, next) {
+//   console.log('Reports Time: ', Date.now());
+//   next();
+// })
 // define the home page route
 router.get('/', function (req, res) {
   res.send('Reports Api home page')
@@ -21,6 +21,43 @@ router.get('/', function (req, res) {
 // define the about route
 router.get('/about', function (req, res) {
   res.send('About reports')
+})
+
+//GET STAT
+router.get('/stat', function (req, res) {
+  let ret_data = [];
+  let limit = req.query.limit;
+  let token = req.headers['x-authorization'];
+  let urlGetReports = util.getAPI() + `assets/assetattr`;
+  if (limit) {
+    axios.get(urlGetReports, {
+      headers: {
+        "X-Authorization": token
+      },
+      params: {
+        limit,
+        attrKey: 'REPORTS'
+      }
+    }).then(resp => {
+      try {
+        resp.data.forEach(element => {
+          if(element.entity_type='ASSET') {
+            let it = {};
+            it.assetId = element.id;
+            it.reports = JSON.parse(element.strV);
+            ret_data.push(it);
+          }
+        });
+        util.responData(util.CST.OK200, ret_data, res);
+      } catch (err) {
+        util.responErrorMsg(err, res);
+      }
+    }).catch(err => {
+      util.responErrorMsg(err, res);
+    });
+  } else {
+    util.responData(util.CST.ERR400, util.CST.MSG400, res);
+  }
 })
 // GET
 router.get('/:assetId', async function (req, res) {
@@ -134,6 +171,9 @@ function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, req, r
 }
 // 生成报表文件
 async function generateReports(assetId, hisReprtsData, reportFilePath, req, res, token) {
+  /* temporary added */
+  saveAssetSeverScope(hisReprtsData, assetId, req.body, 'http://sm.schdri.com:80/ABCDEFG.tst', req, res, token);
+  /* temporary comment 
   // 上传生成的报表文件    ==> 返回上传成功的地址
   var formData = {
     file: fs.createReadStream(reportFilePath),
@@ -158,6 +198,7 @@ async function generateReports(assetId, hisReprtsData, reportFilePath, req, res,
       }
     }
   });
+  */
 }
 
 function PostReports(assetID, hisReprtsData, req, res) {
@@ -166,7 +207,6 @@ function PostReports(assetID, hisReprtsData, req, res) {
   // 根据发送过来的报表模板 ==> 生成报表文件
   generateReports(assetID, hisReprtsData, fileInfo.path, req, res, token);
 }
-
 //DELETE
 function processDeleteReq(assetID, resp, req, res, token) {
   var info = null;
@@ -198,7 +238,7 @@ function processDeleteReq(assetID, resp, req, res, token) {
 
   if (find && report_url) {
     // 从文件服务器删除
-    let host = 'http://sm.schdri.com:80/';
+    let host = util.getFSVR(); //'http://sm.schdri.com:80/';
     let deleteFileHost = host + 'api/file/delete/';
     let filePath = report_url.substr(host.length);
     request.post({ url: deleteFileHost, form: { fileId: filePath } }, function (err, httpResponse, body) {

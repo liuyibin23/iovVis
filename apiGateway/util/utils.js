@@ -1,14 +1,17 @@
 // const url   = require("url");
 const axios = require('axios')
 
-var API = 'http://cf.beidouapp.com:8080/api/';
+const API = 'http://cf.beidouapp.com:8080/api/';
+const fileSVR = 'http://sm.schdri.com:80/';
 // var API = 'http://192.168.1.76:8080/api/';
 
 
 function getAPI() {
     return API;
 }
-
+function getFSVR() {
+    return fileSVR;
+}
 async function getSync(url, data, tok) {
     try {
         let res = await axios.get(url, data);
@@ -85,6 +88,8 @@ exports.CFG = Object.freeze({
 
 exports.CST = Object.freeze({
     OK200: 200, MSG200: {message: '成功。'},
+    ERR400: 400, MSG400: {message: '请求方法参数错误或方法不被允许。'},
+    ERR404: 401, MSG401: {message: '无效的api token。'},
     ERR404: 404, MSG404: {message: '访问资源不存在。'},
     ERR510: 510, MSG510: {message: 'CONFIG_ALARM_RULE规则链不存在。'},
     ERR511: 511, MSG511: {message: 'CONFIG_ALARM_RULE的META值异常。'}
@@ -92,5 +97,6 @@ exports.CST = Object.freeze({
 exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getAPI = getAPI;
+exports.getFSVR = getFSVR;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
