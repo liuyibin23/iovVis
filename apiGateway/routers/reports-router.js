@@ -175,9 +175,6 @@ function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, req, r
 }
 // 生成报表文件
 async function generateReports(assetId, hisReprtsData, reportFilePath, req, res, token) {
-  /* temporary added */
-  saveAssetSeverScope(hisReprtsData, assetId, req.body, 'http://sm.schdri.com:80/ABCDEFG.tst', req, res, token);
-  /* temporary comment 
   // 上传生成的报表文件    ==> 返回上传成功的地址
   var formData = {
     file: fs.createReadStream(reportFilePath),
@@ -202,7 +199,6 @@ async function generateReports(assetId, hisReprtsData, reportFilePath, req, res,
       }
     }
   });
-  */
 }
 
 function PostReports(assetID, hisReprtsData, req, res) {
