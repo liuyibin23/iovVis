@@ -42,6 +42,7 @@ import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.kv.Aggregation;
@@ -208,13 +209,14 @@ public class TelemetryController extends BaseController {
                                            @RequestParam(name = "customerId" ,required = false)String customerIdStr,
                                            @RequestParam(name = "entityId",required = false)String entityId,
                                            @RequestParam(name = "startTs") Long startTs,
-                                           @RequestParam(name = "endTs") Long endTs){
+                                           @RequestParam(name = "endTs") Long endTs) throws ThingsboardException {
 
         //entityId参数存在则直接查询指定设备，忽略其他筛选条件
         if(entityId != null && !EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId).isNullUid() ){
             return tsHourValueStatisticService.findTsHoursByEntityId(EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId),
                                                                     startTs,endTs);
         } else{
+
             TenantId tenantId ;
             CustomerId customerId;
 
@@ -229,19 +231,45 @@ public class TelemetryController extends BaseController {
                 customerId = new CustomerId(UUIDConverter.fromString(customerIdStr));
             }
 
-            if(tenantId != null && customerId != null){
-                return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
-            } else if(tenantId != null && customerId==null){
-                return tsHourValueStatisticService.findTsHoursByTenantId(EntityType.DEVICE, tenantId, startTs,endTs);
-            } else if(tenantId==null && customerId == null){
-                return tsHourValueStatisticService.findTsHours(EntityType.DEVICE,startTs,endTs);
-            } else {
-                return new ArrayList<>();
+            SecurityUser currentUser = getCurrentUser();
+            if(currentUser.getAuthority() == Authority.SYS_ADMIN){
+                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
+            } else if(currentUser.getAuthority() == Authority.TENANT_ADMIN){
+                if(tenantId != null){
+                    checkTenantId(tenantId);
+                }else{
+                    tenantId = currentUser.getTenantId();
+                }
+                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
+            } else if(currentUser.getAuthority() == Authority.CUSTOMER_USER){
+                if(tenantId != null){
+                    checkTenantId(tenantId);
+                } else {
+                    tenantId = currentUser.getTenantId();
+                }
+                if(customerId != null){
+                    checkCustomerId(customerId);
+                } else {
+                    customerId = currentUser.getCustomerId();
+                }
+                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
             }
+            throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
 
-//            return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
         }
 
+    }
+
+    private List<Long> getTsStatisticsValue(TenantId tenantId,CustomerId customerId,Long startTs,Long endTs) throws ThingsboardException {
+        if(tenantId != null && customerId != null){
+            return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
+        } else if(tenantId != null && customerId==null){
+            return tsHourValueStatisticService.findTsHoursByTenantId(EntityType.DEVICE, tenantId, startTs,endTs);
+        } else if(tenantId==null && customerId == null){
+            return tsHourValueStatisticService.findTsHours(EntityType.DEVICE,startTs,endTs);
+        } else {
+            return new ArrayList<>();
+        }
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
