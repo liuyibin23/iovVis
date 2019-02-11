@@ -1,18 +1,8 @@
 
 const express = require('express');
 const router = express.Router();
-//var chart_area = require('./echarts/area');
-//var chart_pie = require('./echarts/pie');
-//var multipart = require('connect-multiparty');
-//var multipartMiddleware = multipart();
-
+const axios = require('axios');
 const util = require('../util/utils');
-
-// middleware that is specific to this router
-// router.use(function timeLog(req, res, next) {
-//     console.log('content Time: ', Date.now())
-//     next()
-// })
 
 async function excuteGraphQL(req, res) {
     let graphQL = req.query.graphQL;
