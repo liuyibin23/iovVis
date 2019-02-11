@@ -123,15 +123,18 @@ function postTemplates(assetID, resp, req, res) {
           "template_name": req.body.template_name,
           "template_url": host + bodyData.fileId
         }];
-        // FIXME:资产模板名称重复会多次出现，需要修改
-        resp.data.forEach(info => {
+
+          // 遍历，查找TEMPLATES属性
+        for (var i = 0; i < resp.data.length; i++) {
+          let info = resp.data[i];
           if (info.key === 'TEMPLATES') {
             let data = JSON.parse(info.value);
             data.forEach(_dt => {
               str.push(_dt);
             })
+            break;
           }
-        });
+        }
 
         let val = JSON.stringify(str);
 
