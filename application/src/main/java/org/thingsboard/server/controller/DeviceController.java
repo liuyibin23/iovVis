@@ -605,7 +605,7 @@ public class DeviceController extends BaseController {
         List<AlarmDevicesCount> result = new ArrayList<>();
         int j=0;
         for(long i = startTs;i <= endTs;i = i + dayTs){
-            if(devicesCounts.get(j).getTs_day() == i){
+            if(devicesCounts.size() > j && devicesCounts.get(j).getTs_day() == i){
                 //设备总数减报警设备数为正常设备数
                 AlarmDevicesCount alarmDevicesCount = new AlarmDevicesCount(devicesCounts.get(j).getTs_day(),devicesCount - devicesCounts.get(j).getCount());
                 result.add(alarmDevicesCount);
