@@ -259,11 +259,10 @@ public class CustomerController extends BaseController {
 		try {
 			List<CustomerAndAssets> retObj = new ArrayList<>();
 			TextPageData<Customer> customerTextPageData = null;
-			TextPageLink pageLink = null;
+			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 			CustomerId customerId = getCurrentUser().getCustomerId();
 			switch (getCurrentUser().getAuthority()){
 				case SYS_ADMIN:
-					pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 					if (tenantIdStr != null){
 						TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
 						checkTenantId(tenantIdTmp);
