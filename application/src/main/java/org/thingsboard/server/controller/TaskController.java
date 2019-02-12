@@ -61,7 +61,7 @@ public class TaskController extends BaseController {
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/tasks", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/tasks", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Task> findTasks(@RequestParam TaskKind taskKind) throws ThingsboardException {
 		List<Task> taskList = null;
@@ -82,7 +82,7 @@ public class TaskController extends BaseController {
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/findTasksByUserName", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/findTasksByUserName", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Task> findTasksByUserName(@RequestParam String firstName,
 										  @RequestParam(required = false) String lastName) throws ThingsboardException {
@@ -111,7 +111,7 @@ public class TaskController extends BaseController {
 	 * @return: org.thingsboard.server.common.data.task.Task
 	 */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getTasks", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getTasks", method = RequestMethod.GET)
 	@ResponseBody
 	public Task getTaskByAlarmId(@RequestParam String strAlarmId) throws ThingsboardException {
 		checkParameter(ALARM_ID, strAlarmId);

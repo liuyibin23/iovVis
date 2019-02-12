@@ -76,7 +76,7 @@ public class RuleChainController extends BaseController {
     * @return: java.util.List<org.thingsboard.server.common.data.rule.RuleChain>
     */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/beidouapp/ruleChains", method = RequestMethod.GET)
+    @RequestMapping(value = "/currentUser/ruleChains", method = RequestMethod.GET)
     @ResponseBody
     public List<RuleChain> getRuleChains(@RequestParam(required = false) String textSearch,
 										 @RequestParam(required = false) String tenantIdStr) throws ThingsboardException {

@@ -379,7 +379,7 @@ public class AssetController extends BaseController {
 	* @return: java.util.List<org.codehaus.jackson.JsonNode>
 	*/
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
-	@RequestMapping(value = "/beidouapp/assetsAlarm", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/assetsAlarm", method = RequestMethod.GET)
 	@ResponseBody
 	public String getAssetsAlarmAndAttributes() throws ThingsboardException, IOException {
 		List<Asset> assetList;
@@ -521,7 +521,7 @@ public class AssetController extends BaseController {
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/assets", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<AssetExInfo> getCurrentUserAssets(@RequestParam int limit,
 												  @RequestParam(required = false) String textSearch,

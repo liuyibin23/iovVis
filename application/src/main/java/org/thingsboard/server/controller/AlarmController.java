@@ -68,7 +68,7 @@ public class AlarmController extends BaseController {
 	* @return: org.thingsboard.server.common.data.alarm.Alarm
 	*/
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/closeAlarm", method = RequestMethod.POST)
+	@RequestMapping(value = "/currentUser/closeAlarm", method = RequestMethod.POST)
 	@ResponseBody
 	public Alarm closeAlarm(@RequestParam String strAlarmId,@RequestBody JsonNode additionalInfo) throws ThingsboardException{
 		checkNotNull(strAlarmId);
@@ -110,7 +110,7 @@ public class AlarmController extends BaseController {
 	* @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
 	*/ 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getAlarmsByDeviceId", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getAlarmsByDeviceId", method = RequestMethod.GET)
 	@ResponseBody
 	public List<Alarm> getAlarmsByDeviceId(@RequestParam String strDeviceId) throws ThingsboardException {
 		checkNotNull(strDeviceId);
@@ -154,7 +154,7 @@ public class AlarmController extends BaseController {
 	 * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
 	 */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getAlarm", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getAlarm", method = RequestMethod.GET)
 	@ResponseBody
 	public List<AlarmExInfo> getAlarmByDeviceName(@RequestParam String strDeviceName) throws ThingsboardException {
 		checkNotNull(strDeviceName);

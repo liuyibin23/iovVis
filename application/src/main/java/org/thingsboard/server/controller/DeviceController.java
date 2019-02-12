@@ -67,7 +67,7 @@ public class DeviceController extends BaseController {
     * @return: java.util.List<org.thingsboard.server.common.data.Device>
     */ 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getDeviceByAssetId", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getDeviceByAssetId", method = RequestMethod.GET)
 	@ResponseBody
 	public List<DeviceAndAttributeKv> getDevicesByAssetId(@RequestParam(ASSET_ID) String strAssetId) throws ThingsboardException {
 		checkParameter(ASSET_ID, strAssetId);
