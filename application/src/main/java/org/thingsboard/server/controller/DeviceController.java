@@ -503,7 +503,7 @@ public class DeviceController extends BaseController {
                     if (type != null && type.trim().length() > 0){
                         deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
                     } else {
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantId(tenantId, pageLink)).getData();
+                        deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId,pageLink)).getData();
                     }
                 }
 			} else if (tenantIdStr != null && tenantIdStr.trim().length() > 0){
