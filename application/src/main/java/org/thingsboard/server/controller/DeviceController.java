@@ -578,18 +578,23 @@ public class DeviceController extends BaseController {
         SecurityUser user = getCurrentUser();
         TenantId tenantId = user.getTenantId();
         CustomerId customerId = user.getCustomerId();
-        if(!customerId.isNullUid()&&!tenantId.isNullUid()){ //customer
-            int devicesCount = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
-        } else if(!tenantId.isNullUid()){ //tenant
-            int devicesCount = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantId(tenantId,start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
-        } else { //sysadmin
-            int devicesCount = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCount(start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+        int devicesCount;
+        List<AlarmDevicesCount> alarmDevicesCounts;
+        switch(user.getAuthority()){
+            case SYS_ADMIN:
+                devicesCount = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCount(start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+            case TENANT_ADMIN:
+                devicesCount = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantId(tenantId,start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+            case CUSTOMER_USER:
+                devicesCount = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
         }
     }
 
