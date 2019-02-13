@@ -152,14 +152,59 @@ public class JpaAssetDao extends JpaAbstractSearchTextDao<AssetEntity, Asset> im
 
     @Override
     public List<Asset> findAssetsByTenantIdAndCustomerIdAndType(UUID tenantId, UUID customerId, String type, TextPageLink pageLink) {
+        if (tenantId != null && customerId != null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findByTenantIdAndCustomerIdAndType(
+                            fromTimeUUID(tenantId),
+                            fromTimeUUID(customerId),
+                            type,
+                            Objects.toString(pageLink.getTextSearch(), ""),
+                            pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                            new PageRequest(0, pageLink.getLimit())));
+        } else if (tenantId != null && customerId == null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findByTenantIdAndType(
+                            fromTimeUUID(tenantId),
+                            type,
+                            Objects.toString(pageLink.getTextSearch(), ""),
+                            pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                            new PageRequest(0, pageLink.getLimit())));
+        }
         return DaoUtil.convertDataList(assetRepository
-                .findByTenantIdAndCustomerIdAndType(
-                        fromTimeUUID(tenantId),
-                        fromTimeUUID(customerId),
+                .findByType(
                         type,
                         Objects.toString(pageLink.getTextSearch(), ""),
                         pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
                         new PageRequest(0, pageLink.getLimit())));
+    }
+
+    @Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerIdAndType(UUID tenantId, UUID customerId, String type) {
+        if (tenantId != null && customerId != null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findAllByTenantIdAndCustomerIdAndType(
+                            fromTimeUUID(tenantId),
+                            fromTimeUUID(customerId),
+                            type));
+        } else if (tenantId != null && customerId == null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findAllByTenantIdAndType(
+                            fromTimeUUID(tenantId),
+                            type));
+        }
+        return DaoUtil.convertDataList(assetRepository.findAllByType(type));
+    }
+
+    @Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
+        if (tenantId != null && customerId != null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findAllByCustomerId(fromTimeUUID(customerId)));
+        } else if (tenantId != null && customerId == null) {
+            return DaoUtil.convertDataList(assetRepository
+                    .findAllByTenantId(fromTimeUUID(tenantId)));
+        }
+        return DaoUtil.convertDataList(assetRepository.findAll());
     }
 
     @Override

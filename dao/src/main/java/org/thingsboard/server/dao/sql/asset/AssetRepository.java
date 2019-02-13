@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,16 +33,17 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
     @Query("SELECT a FROM AssetEntity a WHERE " +
             "LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
             "AND a.id > :idOffset ORDER BY a.id")
-    List<AssetEntity> findAllBy(     @Param("textSearch") String textSearch,
-                                     @Param("idOffset") String idOffset,
-                                     Pageable pageable);
-	@Query("SELECT a FROM AssetEntity a WHERE a.type = :type " +
-			"AND LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
-			"AND a.id > :idOffset ORDER BY a.id")
-	List<AssetEntity> findByType(@Param("type") String type,
-									 @Param("textSearch") String textSearch,
-									 @Param("idOffset") String idOffset,
-									 Pageable pageable);
+    List<AssetEntity> findAllBy(@Param("textSearch") String textSearch,
+                                @Param("idOffset") String idOffset,
+                                Pageable pageable);
+
+    @Query("SELECT a FROM AssetEntity a WHERE a.type = :type " +
+            "AND LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
+            "AND a.id > :idOffset ORDER BY a.id")
+    List<AssetEntity> findByType(@Param("type") String type,
+                                 @Param("textSearch") String textSearch,
+                                 @Param("idOffset") String idOffset,
+                                 Pageable pageable);
 
     @Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
             "AND LOWER(a.searchText) LIKE LOWER(CONCAT(:textSearch, '%')) " +
@@ -62,10 +63,10 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
                                                   @Param("idOffset") String idOffset,
                                                   Pageable pageable);
 
-	@Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
-			"AND a.customerId = :customerId ORDER BY a.id")
-	List<AssetEntity> findByTenantIdAndCustomerId(@Param("tenantId") String tenantId,
-												  @Param("customerId") String customerId);
+    @Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId " +
+            "AND a.customerId = :customerId ORDER BY a.id")
+    List<AssetEntity> findByTenantIdAndCustomerId(@Param("tenantId") String tenantId,
+                                                  @Param("customerId") String customerId);
 
     List<AssetEntity> findByTenantIdAndIdIn(String tenantId, List<String> assetIds);
 
@@ -94,14 +95,35 @@ public interface AssetRepository extends CrudRepository<AssetEntity, String> {
                                                          @Param("idOffset") String idOffset,
                                                          Pageable pageable);
 
+
     @Query("SELECT DISTINCT a.type FROM AssetEntity a WHERE a.tenantId = :tenantId")
     List<String> findTenantAssetTypes(@Param("tenantId") String tenantId);
 
-	@Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId ORDER BY a.id")
+    @Query("SELECT a FROM AssetEntity a WHERE a.tenantId = :tenantId ORDER BY a.id")
     List<AssetEntity> findAllByTenantId(@Param("tenantId") String tenantId);
-	@Query("SELECT a FROM AssetEntity a WHERE a.customerId = :customerId ORDER BY a.id")
+
+    @Query("SELECT a FROM AssetEntity a WHERE a.customerId = :customerId ORDER BY a.id")
     List<AssetEntity> findAllByCustomerId(@Param("customerId") String customerId);
-	@Query("SELECT a FROM AssetEntity a")
+
+    @Query("SELECT a FROM AssetEntity a")
     List<AssetEntity> findAll();
+
+    @Query("select a from AssetEntity a where a.tenantId = :tenantId " +
+            "and a.type = :type " +
+            "order by a.id")
+    List<AssetEntity> findAllByTenantIdAndType(@Param("tenantId") String tenantId,
+                                               @Param("type") String type);
+
+    @Query("select a from AssetEntity a where a.tenantId = :tenantId " +
+            "and a.customerId = :customerId " +
+            "and a.type = :type " +
+            "order by a.id")
+    List<AssetEntity> findAllByTenantIdAndCustomerIdAndType(@Param("tenantId") String tenantId,
+                                                            @Param("customerId") String customerId,
+                                                            @Param("type") String type);
+
+    @Query("select a from AssetEntity a where a.type = :type " +
+            "order by a.id")
+    List<AssetEntity> findAllByType(@Param("type") String type);
 
 }
