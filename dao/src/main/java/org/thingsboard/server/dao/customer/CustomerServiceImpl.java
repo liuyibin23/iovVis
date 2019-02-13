@@ -223,6 +223,23 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 		customersByTenantRemover.removeEntities(tenantId, tenantId);
 	}
 
+	@Override
+	public TenantId findTenantIdByCustomerId(CustomerId customerId,TextPageLink pageLink){
+		TenantId tenantId = null;
+		TextPageData<Customer> customers = findCustomers(pageLink);
+		List<Customer> customerList = customers.getData();
+		for (Customer customer:customerList) {
+			if(customer.getId().equals(customerId)){
+				tenantId = customer.getTenantId();
+				break;
+			}
+		}
+		if(tenantId == null && customers.hasNext()){
+			findTenantIdByCustomerId(customerId,customers.getNextPageLink());
+		}
+		return tenantId;
+	}
+
 	private List<CustomerExInfo> customersToCustomerExInfos(List<Customer> customers){
 		List<CustomerExInfo> customerExInfos = customers.stream().map(CustomerExInfo::new).collect(Collectors.toList());
 		customerExInfos.forEach(customerExInfo -> {
