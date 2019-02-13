@@ -1,7 +1,8 @@
 // const url   = require("url");
 const axios = require('axios')
 
-const API = 'http://cf.beidouapp.com:8080/api/';
+//const API = 'http://cf.beidouapp.com:8080/api/';
+const API = 'http://sm.schdri.com/api/';
 const fileSVR = 'http://sm.schdri.com:80/';
 // var API = 'http://192.168.1.76:8080/api/';
 
