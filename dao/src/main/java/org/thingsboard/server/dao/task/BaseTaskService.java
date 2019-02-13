@@ -1,15 +1,14 @@
 package org.thingsboard.server.dao.task;
 
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thingsboard.server.common.data.*;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmId;
-import org.thingsboard.server.common.data.alarm.AlarmStatus;
+import org.thingsboard.server.common.data.Customer;
+import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -19,7 +18,6 @@ import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
-import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.dao.alarm.AlarmDao;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
@@ -29,8 +27,6 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserDao;
 
-import javax.annotation.Nullable;
-import javax.management.relation.RelationType;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
@@ -147,6 +143,7 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
 
     private Task merage(Task old, Task newTask) {
         old.setTaskStatus(newTask.getTaskStatus());
+        old.setAdditionalInfo(newTask.getAdditionalInfo());
 
         return old;
     }

@@ -67,7 +67,7 @@ public class DeviceController extends BaseController {
     * @return: java.util.List<org.thingsboard.server.common.data.Device>
     */ 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getDeviceByAssetId", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getDeviceByAssetId", method = RequestMethod.GET)
 	@ResponseBody
 	public List<DeviceAndAttributeKv> getDevicesByAssetId(@RequestParam(ASSET_ID) String strAssetId) throws ThingsboardException {
 		checkParameter(ASSET_ID, strAssetId);
@@ -503,7 +503,7 @@ public class DeviceController extends BaseController {
                     if (type != null && type.trim().length() > 0){
                         deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
                     } else {
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantId(tenantId, pageLink)).getData();
+                        deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId,pageLink)).getData();
                     }
                 }
 			} else if (tenantIdStr != null && tenantIdStr.trim().length() > 0){
@@ -578,18 +578,23 @@ public class DeviceController extends BaseController {
         SecurityUser user = getCurrentUser();
         TenantId tenantId = user.getTenantId();
         CustomerId customerId = user.getCustomerId();
-        if(!customerId.isNullUid()&&!tenantId.isNullUid()){ //customer
-            int devicesCount = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
-        } else if(!tenantId.isNullUid()){ //tenant
-            int devicesCount = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantId(tenantId,start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
-        } else { //sysadmin
-            int devicesCount = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData().size();
-            List<AlarmDevicesCount> alarmDevicesCounts = alarmService.findAlarmDevicesCount(start_ts,end_ts);
-            return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+        int devicesCount;
+        List<AlarmDevicesCount> alarmDevicesCounts;
+        switch(user.getAuthority()){
+            case SYS_ADMIN:
+                devicesCount = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCount(start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+            case TENANT_ADMIN:
+                devicesCount = deviceService.findDevicesByTenantId(tenantId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantId(tenantId,start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+            case CUSTOMER_USER:
+                devicesCount = deviceService.findDevicesByTenantIdAndCustomerId(tenantId,customerId,new TextPageLink(Integer.MAX_VALUE)).getData().size();
+                alarmDevicesCounts = alarmService.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,start_ts,end_ts);
+                return convertToNormalDevicesInDate(alarmDevicesCounts,devicesCount,start_ts,end_ts);
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
         }
     }
 
@@ -600,7 +605,7 @@ public class DeviceController extends BaseController {
         List<AlarmDevicesCount> result = new ArrayList<>();
         int j=0;
         for(long i = startTs;i <= endTs;i = i + dayTs){
-            if(devicesCounts.get(j).getTs_day() == i){
+            if(devicesCounts.size() > j && devicesCounts.get(j).getTs_day() == i){
                 //设备总数减报警设备数为正常设备数
                 AlarmDevicesCount alarmDevicesCount = new AlarmDevicesCount(devicesCounts.get(j).getTs_day(),devicesCount - devicesCounts.get(j).getCount());
                 result.add(alarmDevicesCount);

@@ -196,7 +196,7 @@ public class CustomerController extends BaseController {
 	* @return: java.util.List<org.thingsboard.server.common.data.CustomerExInfo>
 	*/
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
-	@RequestMapping(value = "/beidouapp/customers", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/customers", method = RequestMethod.GET)
 	@ResponseBody
 	public List<CustomerExInfo> getCustomers() throws ThingsboardException {
 		List<CustomerExInfo> retInfo = new ArrayList<>();
@@ -249,7 +249,7 @@ public class CustomerController extends BaseController {
 	* @return: java.util.List<org.thingsboard.server.common.data.CustomerAndAssets>
 	*/ 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
 	public List<CustomerAndAssets> getCustomersAndAssets(@RequestParam int limit,
 														 @RequestParam(required = false) String tenantIdStr,
@@ -259,11 +259,10 @@ public class CustomerController extends BaseController {
 		try {
 			List<CustomerAndAssets> retObj = new ArrayList<>();
 			TextPageData<Customer> customerTextPageData = null;
-			TextPageLink pageLink = null;
+			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 			CustomerId customerId = getCurrentUser().getCustomerId();
 			switch (getCurrentUser().getAuthority()){
 				case SYS_ADMIN:
-					pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 					if (tenantIdStr != null){
 						TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
 						checkTenantId(tenantIdTmp);

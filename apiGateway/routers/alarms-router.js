@@ -30,7 +30,7 @@ router.get('/:id', async function (req, res) {
       "X-Authorization": token
     }
   }).then(resp => {
-    let url = util.getAPI() + `beidouapp/ruleChains`;
+    let url = util.getAPI() + `currentUser/ruleChains`;
     var tenantId = resp.data.tenantId.id;
     //获取规则链
     axios.get(url, {
@@ -153,7 +153,7 @@ router.post('/:id', async function (req, res) {
     }
   }).then(resp => {
     //根据tenantId和规则链名称获取规则链
-    let url = util.getAPI() + `beidouapp/ruleChains`;
+    let url = util.getAPI() + `currentUser/ruleChains`;
     let tenantId = resp.data.tenantId.id;
     TID = tenantId; // save it for later usage.
     axios.get(url, {

@@ -76,7 +76,7 @@ public class UserController extends BaseController {
 	* @return: java.util.List<org.thingsboard.server.common.data.User>
 	*/
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/users", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/users", method = RequestMethod.GET)
 	@ResponseBody
 	public List<User> getUsers() throws ThingsboardException {
 		List<User> retUserList = new ArrayList<>();
@@ -335,7 +335,7 @@ public class UserController extends BaseController {
     }
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
 	public List<User> getCustomerUsers(
 			@PathVariable("customerId") String strCustomerId,

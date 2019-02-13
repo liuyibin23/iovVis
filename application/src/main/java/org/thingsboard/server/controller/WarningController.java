@@ -29,7 +29,7 @@ public class WarningController extends BaseController{
 	* @return: java.util.List<org.thingsboard.server.common.data.asset.AssetWarningsInfo>
 	*/
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/beidouapp/getWarnings", method = RequestMethod.GET)
+	@RequestMapping(value = "/currentUser/getWarnings", method = RequestMethod.GET)
 	@ResponseBody
 	public List<AssetWarningsInfo> getWarnings(@RequestParam(required = false) String tenantId,
 											   @RequestParam(required = false) String customerId) throws ThingsboardException{
