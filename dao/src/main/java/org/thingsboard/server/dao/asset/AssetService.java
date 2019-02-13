@@ -80,4 +80,6 @@ public interface AssetService {
     List<Asset> findAssets();
     List<Asset> findAssetsByTenantId(TenantId tenantId);
     List<Asset> findAssetsByCustomerId(CustomerId customerId);
+
+    TenantId findTenantIdByAssetId(AssetId assetId,TextPageLink pageLink);
 }

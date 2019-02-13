@@ -334,6 +334,23 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		return assetDao.findAssetsByCustomerId(customerId.getId());
 	}
 
+	@Override
+	public TenantId findTenantIdByAssetId(AssetId assetId,TextPageLink pageLink){
+		TenantId tenantId = null;
+		TextPageData<Asset> assets = findAssets(pageLink);
+		List<Asset> assetList = assets.getData();
+		for (Asset asset:assetList) {
+			if(asset.getId() == assetId){
+				tenantId = asset.getTenantId();
+				break;
+			}
+		}
+		if(tenantId == null && assets.hasNext()){
+			findTenantIdByAssetId(assetId,assets.getNextPageLink());
+		}
+		return tenantId;
+	}
+
 	private DataValidator<Asset> assetValidator =
 			new DataValidator<Asset>() {
 

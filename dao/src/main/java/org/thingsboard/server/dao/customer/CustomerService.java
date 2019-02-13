@@ -52,4 +52,6 @@ public interface CustomerService {
 
     void deleteCustomersByTenantId(TenantId tenantId);
 
+    TenantId findTenantIdByCustomerId(CustomerId customerId,TextPageLink pageLink);
+
 }

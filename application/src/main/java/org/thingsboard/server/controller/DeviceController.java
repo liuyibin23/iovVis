@@ -491,6 +491,10 @@ public class DeviceController extends BaseController {
         if(assetIdStr != null && assetIdStr.trim().length() > 0){
             assetId = new AssetId(toUUID(assetIdStr));
             checkAssetId(assetId);
+            tenantId = assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
+            if(tenantId == null){
+                throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+            }
         } else {
             assetId = null;
         }
@@ -498,6 +502,12 @@ public class DeviceController extends BaseController {
         try {
             switch (user.getAuthority()) {
                 case SYS_ADMIN:
+                    if(customerId != null && tenantId == null){
+                        tenantId = customerService.findTenantIdByCustomerId(customerId,new TextPageLink(100));
+                        if(tenantId == null){
+                            throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                        }
+                    }
                     deviceList = findDevices(pageLink, type, tenantId, customerId, assetId, searchId);
                     break;
                 case TENANT_ADMIN:
@@ -571,7 +581,6 @@ public class DeviceController extends BaseController {
             deviceList = checkNotNull(deviceService.findDevices(pageLink)).getData();
         }
         return deviceList;
-
     }
 
     /**
