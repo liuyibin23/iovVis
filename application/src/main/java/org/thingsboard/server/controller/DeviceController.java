@@ -453,8 +453,9 @@ public class DeviceController extends BaseController {
         return new DeviceCount(devices.size(),activeAttrKeys.size());
     }
 
-	@PreAuthorize("hasAuthority('SYS_ADMIN')")
-	@RequestMapping(value = "/admin/devicesAndInfo", params = {"limit"}, method = RequestMethod.GET)
+//	@PreAuthorize("hasAuthority('SYS_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/devicesAndInfo", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
 	public List<DeviceForDisplay> getDevicesAndInfo(
 			@RequestParam int limit,
@@ -470,102 +471,108 @@ public class DeviceController extends BaseController {
 
 		List<Device> deviceList = null;
 		TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-		TenantId tenantIdTmp,tenantId;
-		CustomerId customerIdTmp,customerId;
+		SecurityUser user = getCurrentUser();
+		TenantId tenantId;
+		CustomerId customerId;
+		AssetId assetId;
 
+		if(tenantIdStr != null && tenantIdStr.trim().length() > 0){
+            tenantId = new TenantId(toUUID(tenantIdStr));
+        } else {
+            tenantId = null;
+        }
 
-		try {
-			if (searchId != null && searchId.trim().length() > 0){
-				deviceList = checkNotNull(deviceService.findByIdLike(searchId));
-				//todo id search
-			} else if (customerIdStr != null && customerIdStr.trim().length() > 0){
-				tenantIdTmp = new TenantId(toUUID(tenantIdStr));
-				checkTenantId(tenantIdTmp);
-				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
+        if(customerIdStr != null && customerIdStr.trim().length() > 0){
+            customerId = new CustomerId(toUUID(customerIdStr));
+        } else {
+		    customerId = null;
+        }
 
-				customerIdTmp = new CustomerId(toUUID(customerIdStr));
-				checkTenantId(tenantIdTmp);
-				customerId = customerService.findCustomerById(tenantId,customerIdTmp).getId();
+        if(assetIdStr != null && assetIdStr.trim().length() > 0){
+            assetId = new AssetId(toUUID(assetIdStr));
+            checkAssetId(assetId);
+        } else {
+            assetId = null;
+        }
 
-                if(assetIdStr != null && assetIdStr.trim().length() > 0){
-                    DeviceSearchQuery query = new DeviceSearchQuery();
-                    //RelationsSearchParameters parameters = new RelationsSearchParameters(new AssetId(UUIDConverter.fromString("1e91df4265c7510b372db8be707c5f4")),EntitySearchDirection.FROM,1);
-                    RelationsSearchParameters parameters = new RelationsSearchParameters(AssetId.fromString(assetIdStr),EntitySearchDirection.FROM,1);
-                    query.setParameters(parameters);
-                    query.setRelationType(EntityRelation.CONTAINS_TYPE);
-                    if (type != null && type.trim().length() > 0){
-                        List<String> deviceTypes = new ArrayList<>();
-                        deviceTypes.add(type);
-                        query.setDeviceTypes(deviceTypes);
-                    }
-                    deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId,query).get();
-                } else {
-                    if (type != null && type.trim().length() > 0){
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+        try {
+            switch (user.getAuthority()) {
+                case SYS_ADMIN:
+                    deviceList = findDevices(pageLink, type, tenantId, customerId, assetId, searchId);
+                    break;
+                case TENANT_ADMIN:
+                    if(tenantId == null){
+                        tenantId = user.getTenantId();
                     } else {
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId,pageLink)).getData();
+                        checkTenantId(tenantId);
                     }
-                }
-			} else if (tenantIdStr != null && tenantIdStr.trim().length() > 0){
-				tenantIdTmp = new TenantId(toUUID(tenantIdStr));
-				checkTenantId(tenantIdTmp);
-				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
-
-                if(assetIdStr != null && assetIdStr.trim().length() > 0){
-                    DeviceSearchQuery query = new DeviceSearchQuery();
-                    //RelationsSearchParameters parameters = new RelationsSearchParameters(new AssetId(UUIDConverter.fromString("1e91df4265c7510b372db8be707c5f4")),EntitySearchDirection.FROM,1);
-                    RelationsSearchParameters parameters = new RelationsSearchParameters(AssetId.fromString(assetIdStr),EntitySearchDirection.FROM,1);
-                    query.setParameters(parameters);
-                    query.setRelationType(EntityRelation.CONTAINS_TYPE);
-                    if (type != null && type.trim().length() > 0){
-                        List<String> deviceTypes = new ArrayList<>();
-                        deviceTypes.add(type);
-                        query.setDeviceTypes(deviceTypes);
-                    }
-                    deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId,query).get();
-                } else {
-                    if (type != null && type.trim().length() > 0){
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+                    deviceList = findDevices(pageLink, type, tenantId, customerId, assetId, searchId);
+                    break;
+                case CUSTOMER_USER:
+                    if(tenantId == null){
+                        tenantId = user.getTenantId();
                     } else {
-                        deviceList = checkNotNull(deviceService.findDevicesByTenantId(tenantId, pageLink)).getData();
+                        checkTenantId(tenantId);
                     }
-                }
-
-			} else if(assetIdStr != null && assetIdStr.trim().length() > 0){
-                DeviceSearchQuery query = new DeviceSearchQuery();
-                //RelationsSearchParameters parameters = new RelationsSearchParameters(new AssetId(UUIDConverter.fromString("1e91df4265c7510b372db8be707c5f4")),EntitySearchDirection.FROM,1);
-                RelationsSearchParameters parameters = new RelationsSearchParameters(AssetId.fromString(assetIdStr),EntitySearchDirection.FROM,1);
-                query.setParameters(parameters);
-                query.setRelationType(EntityRelation.CONTAINS_TYPE);
-                if (type != null && type.trim().length() > 0){
-                    List<String> deviceTypes = new ArrayList<>();
-                    deviceTypes.add(type);
-                    query.setDeviceTypes(deviceTypes);
-                }
-                deviceList = new ArrayList<>();
-                List<Device> finalDeviceList = deviceList;
-                List<Tenant> tenants = tenantService.findTenants(new TextPageLink(Integer.MAX_VALUE)).getData();
-                if(tenants.size() != 0){
-                    finalDeviceList.addAll(deviceService.findDevicesByQueryWithOutTypeFilter(tenants.get(0).getId(),query).get());
-                }
-                deviceList = finalDeviceList;
-            } else if (type != null && type.trim().length() > 0) {
-                deviceList = checkNotNull(deviceService.findDevicesByType(type, pageLink)).getData();
-            } else {
-                deviceList = checkNotNull(deviceService.findDevices(pageLink)).getData();
+                    if(customerId == null){
+                        customerId = user.getCustomerId();
+                    } else {
+                        checkCustomerId(customerId);
+                    }
+                    deviceList = findDevices(pageLink, type, tenantId, customerId, assetId, searchId);
+                    break;
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
             }
-//			else if (type != null && type.trim().length() > 0){
-//				deviceList = checkNotNull(deviceService.findDevicesByType(type, pageLink)).getData();
-//			} else {
-//				deviceList = checkNotNull(deviceService.findDevices(pageLink)).getData();
-//			}
-
-			return devicesSearchInfo(deviceList);
-
-		} catch (Exception e) {
-			throw handleException(e);
-		}
+            return devicesSearchInfo(deviceList);
+        } catch (Exception e) {
+            throw handleException(e);
+        }
 	}
+
+	private List<Device> findDevices(TextPageLink pageLink,
+                                     String type,
+                                     TenantId tenantId,
+                                     CustomerId customerId,
+                                     AssetId assetId,
+                                     String searchId) throws ThingsboardException, ExecutionException, InterruptedException {
+        List<Device> deviceList = null;
+        if(searchId != null && searchId.trim().length() > 0){
+            deviceList = checkNotNull(deviceService.findByIdLike(searchId));
+            //todo id search
+        }else if(assetId != null && assetId.getId() != AssetId.NULL_UUID){
+            DeviceSearchQuery query = new DeviceSearchQuery();
+            RelationsSearchParameters parameters = new RelationsSearchParameters(assetId,EntitySearchDirection.FROM,1);
+            query.setParameters(parameters);
+            query.setRelationType(EntityRelation.CONTAINS_TYPE);
+            if (type != null && type.trim().length() > 0){
+                List<String> deviceTypes = new ArrayList<>();
+                deviceTypes.add(type);
+                query.setDeviceTypes(deviceTypes);
+                deviceList = deviceService.findDevicesByQuery(tenantId,query).get();
+            } else{
+                deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId,query).get();
+            }
+        } else if(customerId != null && customerId.getId() != CustomerId.NULL_UUID){
+            if (type != null && type.trim().length() > 0){
+                deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+            } else {
+                deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId,pageLink)).getData();
+            }
+        } else if(tenantId != null && tenantId.getId() != TenantId.NULL_UUID){
+            if (type != null && type.trim().length() > 0){
+                deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+            } else {
+                deviceList = checkNotNull(deviceService.findDevicesByTenantId(tenantId, pageLink)).getData();
+            }
+        } else if (type != null && type.trim().length() > 0) {
+            deviceList = checkNotNull(deviceService.findDevicesByType(type, pageLink)).getData();
+        } else {
+            deviceList = checkNotNull(deviceService.findDevices(pageLink)).getData();
+        }
+        return deviceList;
+
+    }
 
     /**
      * 获取指定时间段内的正常设备数量，按天分布
@@ -621,7 +628,7 @@ public class DeviceController extends BaseController {
 	private List<DeviceForDisplay> devicesSearchInfo(List<Device> deviceList){
 		List<DeviceForDisplay> retObj = new ArrayList<>();
 		deviceList.forEach(device -> {
-
+            //todo 这个forEach里面执行效率较慢，待优化
 			DeviceForDisplay tmp = new DeviceForDisplay();
 			tmp.setDevice(device);
 			tmp.setTenantName(tenantService.findTenantById(device.getTenantId()).getName());
