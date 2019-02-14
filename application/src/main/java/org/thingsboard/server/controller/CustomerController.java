@@ -40,6 +40,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.Authority;
+import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -186,6 +187,65 @@ public class CustomerController extends BaseController {
 
 			throw handleException(e);
 		}
+	}
+
+	/**
+	 * 删除当前用户所属的指定的customer
+	 * @param strCustomerId
+	 * @param tenantIdStr
+	 */
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
+	@RequestMapping(value = "/customer/currentUser/{customerId}", method = RequestMethod.DELETE)
+	@ResponseStatus(value = HttpStatus.OK)
+	public void deleteCustomerCurrentUser(@PathVariable(CUSTOMER_ID) String strCustomerId,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
+		checkParameter(CUSTOMER_ID, strCustomerId);
+		try {
+			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
+			Customer customer = null;
+			TenantId tenantId;
+			SecurityUser user = getCurrentUser();
+			if (tenantIdStr != null && !tenantIdStr.trim().isEmpty()) {
+				tenantId = new TenantId(toUUID(tenantIdStr));
+				checkTenantId(tenantId);
+			} else {
+				tenantId = null;
+			}
+
+			switch (user.getAuthority()) {
+				case SYS_ADMIN:
+					if (tenantId == null) {
+						tenantId = customerService.findTenantIdByCustomerId(customerId, new TextPageLink(100));
+						if (tenantId == null) {
+							//如果传入的Customer不属于任何一个Tenant，则参数无效
+							throw new ThingsboardException("INVALID ARGUMENTS", ThingsboardErrorCode.INVALID_ARGUMENTS);
+						}
+						customer = checkCustomerIdAdmin(tenantId, customerId);
+					}
+					break;
+				case TENANT_ADMIN:
+					if (tenantId == null) {
+						tenantId = user.getTenantId();
+					}
+					customer = checkCustomerId(customerId);
+					break;
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+			}
+			customerService.deleteCustomer(tenantId, customerId);
+			logEntityAction(customerId, customer,
+					customer.getId(),
+					ActionType.DELETED, null, strCustomerId);
+		}  catch (Exception e) {
+
+			logEntityAction(emptyId(EntityType.CUSTOMER),
+					null,
+					null,
+					ActionType.DELETED, e, strCustomerId);
+
+			throw handleException(e);
+
+		}
+
 	}
 
 	/**
