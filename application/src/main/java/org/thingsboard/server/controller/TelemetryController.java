@@ -202,6 +202,16 @@ public class TelemetryController extends BaseController {
                 });
     }
 
+    /**
+     * 获取设备指定时间段数据统计按小时分布
+     * @param tenantIdStr
+     * @param customerIdStr
+     * @param entityId
+     * @param startTs
+     * @param endTs
+     * @return 设备收到过数据的小时时间戳列表
+     * @throws ThingsboardException
+     */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/timeseries/statistic", method = RequestMethod.GET)
     @ResponseBody
@@ -220,12 +230,12 @@ public class TelemetryController extends BaseController {
             TenantId tenantId ;
             CustomerId customerId;
 
-            if(tenantIdStr == null || tenantIdStr.isEmpty()){
+            if(tenantIdStr == null || tenantIdStr.trim().isEmpty()){
                 tenantId =  null;
             } else{
                 tenantId = new TenantId(UUIDConverter.fromString(tenantIdStr));
             }
-            if(customerIdStr == null || customerIdStr.isEmpty()){
+            if(customerIdStr == null || customerIdStr.trim().isEmpty()){
                 customerId = null;
             } else {
                 customerId = new CustomerId(UUIDConverter.fromString(customerIdStr));
@@ -254,7 +264,7 @@ public class TelemetryController extends BaseController {
                 }
                 return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
             }
-            throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
+            throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 
         }
 
