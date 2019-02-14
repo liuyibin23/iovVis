@@ -34,6 +34,7 @@ public class TsHourValueStatisticSchedule {
     @Autowired
     private BaseAttributesService attributesService;
 
+//    @Scheduled(cron = "0 * * * * ?")//每分钟执行一次计划任务，调试用
     @Scheduled(cron = "0 0 0/1 * * ?")//每小时执行一次计划任务
     public void saveTsHourValueStatisticData() {
         long nowTs = new Date().getTime();
@@ -41,7 +42,7 @@ public class TsHourValueStatisticSchedule {
         List<Device> devices = deviceService.findDevices(new TextPageLink(Integer.MAX_VALUE)).getData();//获取所有设备
         List<ListenableFuture<Optional<AttributeKvEntry>>> futures = new ArrayList<>();
         devices.forEach(device -> {
-            futures.add(attributesService.find(TenantId.SYS_TENANT_ID,device.getId(),DataConstants.SHARED_SCOPE,DataConstants.LAST_ACTIVITY_TIME));
+            futures.add(attributesService.find(TenantId.SYS_TENANT_ID,device.getId(),DataConstants.SERVER_SCOPE,DataConstants.LAST_ACTIVITY_TIME));
         });
         ListenableFuture< List<Optional<AttributeKvEntry>>> listFuture = Futures.allAsList(futures);
 
@@ -53,7 +54,8 @@ public class TsHourValueStatisticSchedule {
                 if(item != null && item.isPresent() && nowTs - item.get().getLongValue().orElse(0L) < 3600*1000){
                     tsHourValueStatisticService.save(EntityType.DEVICE,
                             devices.get(i).getId(),
-                            nowTs - 1800*1000,//当前统计的是上一个小时的数据，所以当前时间回退半小时，回到上一个小时时间段内
+                            //当前统计的是上一个小时的数据，所以当前时间回退一个小时，回到上一个小时时间段内，再按小时取整
+                            (nowTs - 3600*1000) / (3600*1000) * (3600 *1000),
                             devices.get(i).getTenantId(),
                             devices.get(i).getCustomerId());
                 }
