@@ -65,23 +65,21 @@ public class AlarmStatisticsController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(value = "/alarm/statistics/severity/{entityType}", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<AlarmSeverityCountInfo> getAlarmStatisticsBySeverity(@PathVariable EntityType entityType,
-                                                                             @RequestParam int limit,
-                                                                             @RequestParam(required = false) String idOffset) throws ThingsboardException {
+    public List<AlarmSeverityCountInfo> getAlarmStatisticsBySeverity(@PathVariable EntityType entityType) throws ThingsboardException {
         checkEntityType(entityType, Lists.newArrayList(EntityType.ALL, EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE));
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            TimePageLink pageLink = createPageLink(limit, null, null, true, idOffset);
-            AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
-                    .pageLink(pageLink)
-                    .entityType(entityType)
-                    .build();
-            TimePageData<AlarmSeverityCountInfo> rst;
+//            TimePageLink pageLink = createPageLink(limit, null, null, true, idOffset);
+//            AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
+//                    .pageLink(pageLink)
+//                    .entityType(entityType)
+//                    .build();
+            List<AlarmSeverityCountInfo> rst;
             if (entityType == EntityType.ALL) {
-                rst = alarmService.findAllAlarmStatisticsSeverityCount(tenantId, customerId, query);
+                rst = alarmService.findAllAlarmStatisticsSeverityCount(tenantId, customerId);
             } else {
-                rst = alarmService.findAlarmStatisticSeverityCountByType(tenantId, customerId, query);
+                rst = alarmService.findAlarmStatisticSeverityCountByType(tenantId, customerId, entityType);
             }
             return rst;
         } catch (Exception e) {
@@ -100,7 +98,6 @@ public class AlarmStatisticsController extends BaseController {
         checkEntityType(entityType, Lists.newArrayList(EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE));
         checkTimePeriod(startTime, endTime);
         try {
-
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
             TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
@@ -118,17 +115,15 @@ public class AlarmStatisticsController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(path = "/alarm/statistics/alarms/{entityType}", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<AlarmInfoEx> getAlarmStatisticsAlarmsByType(@PathVariable EntityType entityType,
-                                                                    @RequestParam Long startTime,
-                                                                    @RequestParam Long endTime,
-                                                                    @RequestParam int limit,
-                                                                    @RequestParam(required = false) String idOffset) throws ThingsboardException {
-        checkEntityType(entityType, Lists.newArrayList(EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE));
+    public List<AlarmInfoEx> getAlarmStatisticsAlarmsByType(@PathVariable EntityType entityType,
+                                                            @RequestParam Long startTime,
+                                                            @RequestParam Long endTime) throws ThingsboardException {
+        checkEntityType(entityType, Lists.newArrayList(EntityType.ALL, EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE));
         checkTimePeriod(startTime, endTime);
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            TimePageLink pageLink = createPageLink(limit, startTime, endTime, true, idOffset);
+            TimePageLink pageLink = createPageLink(0, startTime, endTime, true, null);
             AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
                     .pageLink(pageLink)
                     .entityType(entityType)

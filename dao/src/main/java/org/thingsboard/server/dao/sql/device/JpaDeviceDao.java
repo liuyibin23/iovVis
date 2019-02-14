@@ -99,10 +99,24 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
 
     @Override
     public List<Device> findDevicesByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink) {
+        if (tenantId != null && customerId != null) {
+            return DaoUtil.convertDataList(
+                    deviceRepository.findByTenantIdAndCustomerId(
+                            fromTimeUUID(tenantId),
+                            fromTimeUUID(customerId),
+                            Objects.toString(pageLink.getTextSearch(), ""),
+                            pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                            new PageRequest(0, pageLink.getLimit())));
+        } else if (tenantId != null && customerId == null) {
+            return DaoUtil.convertDataList(
+                    deviceRepository.findByTenantId(
+                            fromTimeUUID(tenantId),
+                            Objects.toString(pageLink.getTextSearch(), ""),
+                            pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                            new PageRequest(0, pageLink.getLimit())));
+        }
         return DaoUtil.convertDataList(
-                deviceRepository.findByTenantIdAndCustomerId(
-                        fromTimeUUID(tenantId),
-                        fromTimeUUID(customerId),
+                deviceRepository.findAllPage(
                         Objects.toString(pageLink.getTextSearch(), ""),
                         pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
                         new PageRequest(0, pageLink.getLimit())));
