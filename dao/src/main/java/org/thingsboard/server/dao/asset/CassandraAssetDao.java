@@ -224,6 +224,18 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
     }
 
     @Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerIdAndType(UUID tenantId, UUID customerId, String type) {
+        //todo
+        return null;
+    }
+
+    @Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerId(UUID tenantId, UUID customerId) {
+        //todo
+        return null;
+    }
+
+    @Override
     public List<AssetExInfo> findAssetExInfoByTenantId(UUID tenantId,TextPageLink pageLink) {
         return null;
     }

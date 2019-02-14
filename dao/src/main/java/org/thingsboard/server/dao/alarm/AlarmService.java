@@ -17,6 +17,7 @@ package org.thingsboard.server.dao.alarm;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ListenableFuture;
+import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.alarmstatistics.*;
@@ -37,7 +38,7 @@ public interface AlarmService {
 
     Alarm findAlarmById(AlarmId alarmId);
 
-    Alarm findAlarmById(TenantId tenantId,AlarmId alarmId);
+    Alarm findAlarmById(TenantId tenantId, AlarmId alarmId);
 
     ListenableFuture<Boolean> ackAlarm(TenantId tenantId, AlarmId alarmId, long ackTs);
 
@@ -72,10 +73,9 @@ public interface AlarmService {
      *
      * @param tenantId
      * @param customerId
-     * @param query
      * @return
      */
-    TimePageData<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
+    List<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId);
 
     /**
      * 根据告警级别，查询当前登录用户下，指定类型的项目、基础设施的告警统计。
@@ -83,11 +83,10 @@ public interface AlarmService {
      *
      * @param tenantId
      * @param customerId
-     * @param query
+     * @param type
      * @return
      */
-    TimePageData<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
-
+    List<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, EntityType type);
 
     /**
      * 查询当前登录用户一定周期内的观测点告警处理情况统计信息。
@@ -100,34 +99,35 @@ public interface AlarmService {
      */
     AlarmHandledCountInfo findAlarmStatisticsHandledCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
-
     /**
      * 查询当前登录用户下，一定周期内，指定类型基础设施的报警信息。
+     *
      * @param tenantId
      * @param customerId
      * @param query
      * @return
      */
-    TimePageData<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId,CustomerId customerId,AlarmStatisticsQuery query);
+    List<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery query);
 
     /**
-    * @Description: 通过ID和Type查询报警
-    * @Author: ShenJi
-    * @Date: 2019/1/29
-    * @Param: [originator]
-    * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
-    */
+     * @Description: 通过ID和Type查询报警
+     * @Author: ShenJi
+     * @Date: 2019/1/29
+     * @Param: [originator]
+     * @return: java.util.List<org.thingsboard.server.common.data.alarm.Alarm>
+     */
     List<Alarm> findAlarmByOriginator(EntityId originator);
 
     /**
      * 获取在指定时间段类按天划分，每天产生过报警的设备数量
+     *
      * @param startTs
      * @param endTs
      * @return
      */
     List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs);
 
-    List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId,long startTs, long endTs);
+    List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId, long startTs, long endTs);
 
-    List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId,CustomerId customerId,long startTs, long endTs);
+    List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs);
 }

@@ -20,10 +20,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.sun.org.apache.xalan.internal.xsltc.trax.TemplatesImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.joda.time.DateTimeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -60,7 +58,6 @@ import org.thingsboard.server.dao.tenant.TenantDao;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -142,7 +139,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     @Override
     public Alarm findAlarmById(TenantId tenantId, AlarmId alarmId) {
-        return alarmDao.findAlarmById(tenantId,alarmId);
+        return alarmDao.findAlarmById(tenantId, alarmId);
     }
 
     public ListenableFuture<Alarm> findLatestByOriginatorAndType(TenantId tenantId, EntityId originator, String type) {
@@ -363,15 +360,22 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public TimePageData<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
-        log.trace("Executing findAlarmStatisticSeverityCountByType TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+    public List<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId ,EntityType type) {
+        log.trace("Executing findAlarmStatisticSeverityCountByType TenantId:[{}], CustomerId:[{}]",tenantId,customerId);
         //1. 找到指定类型的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
-        TimePageLink reqPageLink = statisticsQuery.getPageLink();
-        TextPageLink tempPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
-        List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), statisticsQuery.getEntityType().toString(), tempPageLink);
+//        TimePageLink reqPageLink = statisticsQuery.getPageLink();
+//        TextPageLink tempPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
 
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+        List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerIdAndType(tId, cId, type.toString());
 
         List<AlarmSeverityCountInfo> data = new ArrayList<>();
         //根据asset查询所有alarm
@@ -384,25 +388,66 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                     .alarmCount(alarmSeverityCount)
                     .entityId(asset.getId().toString())
                     .entityName(asset.getName())
-                    .entityType(statisticsQuery.getEntityType())
+                    .entityType(type)
                     .build();
             data.add(alarmSeverityCountInfo);
         });
 
-        TimePageData<Asset> timePageData = new TimePageData<>(assets, reqPageLink);
-        boolean hasNext = timePageData.hasNext();
-        TimePageLink resPageLink = timePageData.getNextPageLink();
+//        TimePageData<Asset> timePageData = new TimePageData<>(assets, reqPageLink);
+//        boolean hasNext = timePageData.hasNext();
+//        TimePageLink resPageLink = timePageData.getNextPageLink();
 
-        return new TimePageData<>(data, resPageLink, hasNext);
+//        return new TimePageData<>(data, resPageLink, hasNext);
+        return data;
     }
 
     @Override
-    public TimePageData<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
-        log.trace("Executing findAllAlarmStatisticsSeverityCount TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
+    public List<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId) {
+        log.trace("Executing findAllAlarmStatisticsSeverityCount TenantId:[{}], CustomerId:[{}]", tenantId,customerId);
         //1. 找到所有类型的的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
-        throw new RuntimeException("this function is not implements");
+//        TimePageLink reqPageLink = statisticsQuery.getPageLink();
+//        TextPageLink tempPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
+
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+        List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerId(tId, cId);
+
+        List<AlarmSeverityCountInfo> data = new ArrayList<>();
+        //根据asset查询所有alarm
+        assets.forEach(asset -> {
+            AlarmQuery alarmQuery = new AlarmQuery(asset.getId(), new TimePageLink(100), null, null, false);
+            AlarmSeverityCount alarmSeverityCount = new AlarmSeverityCount();
+            calculateAlarmSeverityCount(alarmSeverityCount, tenantId, alarmQuery);
+
+            EntityType entityType = EntityType.UNDEFINED;
+            try {
+                entityType = EntityType.valueOf(asset.getType().toUpperCase());
+            }catch (Exception ex) {
+                log.warn("数据库中存在错误的资产类型：[{}]",asset.getType());
+            }
+
+            AlarmSeverityCountInfo alarmSeverityCountInfo = AlarmSeverityCountInfo.builder()
+                    .alarmCount(alarmSeverityCount)
+                    .entityId(asset.getId().toString())
+                    .entityName(asset.getName())
+                    .entityType(entityType)
+                    .build();
+            data.add(alarmSeverityCountInfo);
+        });
+
+//        TimePageData<Asset> timePageData = new TimePageData<>(assets, reqPageLink);
+//        boolean hasNext = timePageData.hasNext();
+//        TimePageLink resPageLink = timePageData.getNextPageLink();
+
+//        return new TimePageData<>(data, resPageLink, hasNext);
+        return data;
     }
 
     @Override
@@ -465,33 +510,49 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public TimePageData<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
+    public List<AlarmInfoEx> findAlarmStatisticsAlarmsByType(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
         log.trace("Executing findAlarmStatisticsAlarmsByType TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
         //资产分页，资产下的报警不分页（每个资产的报警不会太多）
-        EntityType entityType = statisticsQuery.getEntityType();
+//        EntityType entityType = statisticsQuery.getEntityType();
         Long startTime = statisticsQuery.getPageLink().getStartTime();
         Long endTime = statisticsQuery.getPageLink().getEndTime();
 
         try {
             List<AlarmInfoEx> alarmInfoExes = new ArrayList<>();
+//            TimePageLink reqPageLink = statisticsQuery.getPageLink();
+//            TextPageLink nextPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
 
-            TimePageLink reqPageLink = statisticsQuery.getPageLink();
-            TextPageLink nextPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
+            UUID tId = null, cId = null;
+            if (!tenantId.isNullUid()) {
+                tId = tenantId.getId();
+            }
+            if (!customerId.isNullUid()) {
+                cId = customerId.getId();
+            }
 
-            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), entityType.toString(), nextPageLink);
+          List<Asset>  assets =  assetDao.findAllAssetsByTenantIdAndCustomerId(tId,cId);
+//            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), entityType.toString(), nextPageLink);
             for (Asset asset : assets) {
                 List<Alarm> alarms = findAllAlarmsByEntityId(tenantId, asset.getId(), startTime, endTime);
 
-                alarmInfoExes.add(AlarmInfoEx.builder()
-                        .entityId(asset.getId().toString())
-                        .entityName(asset.getName())
-                        .entityType(entityType)
-                        .alarms(alarms)
-                        .build());
+                try {
+                    EntityType entityType = EntityType.UNDEFINED;
+                    entityType = EntityType.valueOf(asset.getType().toUpperCase());
+                    alarmInfoExes.add(AlarmInfoEx.builder()
+                            .entityId(asset.getId().toString())
+                            .entityName(asset.getName())
+                            .entityType(entityType)
+                            .alarms(alarms)
+                            .build());
+                }catch (Exception ex){
+                    log.warn("数据库中存在错误的资产类型：[{}]",asset.getType());
+                }
+
             }
 
-            TimePageData timePageData = new TimePageData<>(assets, reqPageLink);
-            return new TimePageData<>(alarmInfoExes, timePageData.getNextPageLink(), timePageData.hasNext());
+//            TimePageData timePageData = new TimePageData<>(assets, reqPageLink);
+//            return new TimePageData<>(alarmInfoExes, timePageData.getNextPageLink(), timePageData.hasNext());
+            return alarmInfoExes;
         } catch (Exception e) {
             log.warn("Failed to findAlarmStatisticsAlarmsByType .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
                     tenantId, customerId, ExceptionUtils.getStackTrace(e));
@@ -505,18 +566,18 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs){
-        return alarmDao.findAlarmDevicesCount(startTs,endTs);
+    public List<AlarmDevicesCount> findAlarmDevicesCount(long startTs, long endTs) {
+        return alarmDao.findAlarmDevicesCount(startTs, endTs);
     }
 
     @Override
-    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId,long startTs, long endTs){
-        return alarmDao.findAlarmDevicesCountByTenantId(tenantId,startTs,endTs);
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId, long startTs, long endTs) {
+        return alarmDao.findAlarmDevicesCountByTenantId(tenantId, startTs, endTs);
     }
 
     @Override
-    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId,CustomerId customerId,long startTs, long endTs){
-        return alarmDao.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId,customerId,startTs,endTs);
+    public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs) {
+        return alarmDao.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId, customerId, startTs, endTs);
     }
 
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {
@@ -545,7 +606,14 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         TextPageLink nextPageLink = new TextPageLink(100);
         boolean hasNext = true;
         while (hasNext) {
-            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), assetType.toString(), nextPageLink);
+            UUID tId = null, cId = null;
+            if (!tenantId.isNullUid()) {
+                tId = tenantId.getId();
+            }
+            if (!customerId.isNullUid()) {
+                cId = customerId.getId();
+            }
+            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tId, cId, assetType.toString(), nextPageLink);
             alarmCount.entityTotalCountPlus(assets.size());
 
             //根据asset查询所有alarm
@@ -572,7 +640,14 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         TextPageLink nextPageLink = new TextPageLink(100);
         boolean hasNext = true;
         while (hasNext) {
-            List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tenantId.getId(), customerId.getId(), nextPageLink);
+            UUID tId = null, cId = null;
+            if (!tenantId.isNullUid()) {
+                tId = tenantId.getId();
+            }
+            if (!customerId.isNullUid()) {
+                cId = customerId.getId();
+            }
+            List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tId, cId, nextPageLink);
             alarmCount.entityTotalCountPlus(devices.size());
 
             //根据asset查询所有alarm
@@ -595,6 +670,9 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     private void calculateAlarmCount(AlarmCount alarmCount, AlarmHighestSeverity highestSeverity, TenantId tenantId, AlarmQuery query) {
         try {
+            int unackCount = alarmCount.getUnacked();
+            int ackCount = alarmCount.getAcked();
+
             AlarmQuery nextQuery = new AlarmQuery(query);
             TimePageLink nextPageLink = query.getPageLink();
             boolean hasNext = true;
@@ -632,6 +710,11 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 hasNext = timePageData.hasNext();
                 nextPageLink = timePageData.getNextPageLink();
                 nextQuery.setPageLink(nextPageLink);
+            }
+
+            //ack的数量或者unack的数量增加，说明当前asset存在unclear（未处理）的告警，那么统计计数+1
+            if(alarmCount.getUnacked() > unackCount || alarmCount.getAcked()> ackCount) {
+                alarmCount.alarmingEntityCountPlus(1);
             }
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to statistics alarm count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",

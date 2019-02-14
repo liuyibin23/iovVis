@@ -16,7 +16,17 @@ public class AlarmCount {
     private int cleared = 0;
     private int createdOfMonth = 0;
     private int createdOfToday = 0;
+    /**
+     * 资产总数量
+     */
     private int entityTotalCount = 0;
+    /**
+     * 正在告警的资产数量
+     */
+    private int alarmingEntityCount = 0;
+    /**
+     * 该类资产的所有报警数量
+     */
     private int entityAlarmCount = 0;
 
     public int ackPlus(int count) {
@@ -47,6 +57,11 @@ public class AlarmCount {
     public int entityTotalCountPlus(int count) {
         entityTotalCount += count;
         return entityTotalCount;
+    }
+
+    public int alarmingEntityCountPlus(int count) {
+        alarmingEntityCount += count;
+        return alarmingEntityCount;
     }
 
     public int entityAlarmCountPlus(int count) {
