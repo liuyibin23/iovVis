@@ -306,6 +306,15 @@ public abstract class BaseController {
 			throw handleException(e, false);
 		}
 	}
+
+	Customer checkCustomerId(TenantId tenantId,CustomerId customerId)throws ThingsboardException{
+        if(getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+            return checkCustomerIdAdmin(tenantId,customerId);
+        } else {
+            return checkCustomerId(customerId);
+        }
+    }
+
     Customer checkCustomerId(CustomerId customerId) throws ThingsboardException {
         try {
             SecurityUser authUser = getCurrentUser();
@@ -394,8 +403,7 @@ public abstract class BaseController {
 			validateId(deviceId, "Incorrect deviceId " + deviceId);
 			Device device = deviceService.findDeviceById(tenantId, deviceId);
 			checkNotNull(device);
-			//todo check SYS_ADMIN
-//			checkDevice(device);
+			checkDevice(tenantId,device);
 			return device;
 		} catch (Exception e) {
 			throw handleException(e, false);
@@ -411,6 +419,12 @@ public abstract class BaseController {
         } catch (Exception e) {
             throw handleException(e, false);
         }
+    }
+
+    protected void checkDevice(TenantId tenantId,Device device) throws ThingsboardException {
+        checkNotNull(device);
+        checkTenantId(tenantId);
+        checkCustomerId(tenantId,device.getCustomerId());
     }
 
     protected void checkDevice(Device device) throws ThingsboardException {

@@ -287,6 +287,71 @@ public class DeviceController extends BaseController {
         }
     }
 
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
+    @RequestMapping(value = "/currentUser/customer/{customerId}/device/{deviceId}", method = RequestMethod.POST)
+    @ResponseBody
+    public Device currentUserAssignDeviceToCustomer(@PathVariable("customerId") String strCustomerId,
+                                                    @PathVariable(DEVICE_ID) String strDeviceId,
+                                                    @RequestParam(required = false) String tenantIdStr
+                                                    ) throws ThingsboardException {
+        checkParameter("customerId", strCustomerId);
+        checkParameter(DEVICE_ID, strDeviceId);
+//        checkParameter("tenantIdStr", tenantIdStr);
+
+        try{
+            TenantId tenantId;
+            CustomerId customerId = new CustomerId(toUUID(strCustomerId));
+            Customer customer;
+
+            DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
+
+
+            if(tenantIdStr != null && !tenantIdStr.trim().isEmpty()){
+                tenantId = new TenantId(toUUID(tenantIdStr));
+            } else {
+                tenantId = null;
+            }
+
+            switch (getCurrentUser().getAuthority()){
+
+                case SYS_ADMIN:
+                    if(tenantId == null){
+                        tenantId = customerService.findTenantIdByCustomerId(customerId,new TextPageLink(100));
+                        if(tenantId == null){
+                            throw new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                        }
+                    }
+                    checkDeviceId(tenantId,deviceId);
+                    customer = checkCustomerId(tenantId,customerId);
+                    break;
+                case TENANT_ADMIN:
+                case CUSTOMER_USER:
+                    if(tenantId == null){
+                        tenantId = getTenantId();
+                    }
+                    checkDeviceId(deviceId);
+                    customer = checkCustomerId(customerId);
+                    break;
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+            }
+
+            Device savedDevice = checkNotNull(deviceService.assignDeviceToCustomer(tenantId, deviceId, customerId));
+
+            logEntityAction(deviceId, savedDevice,
+                    savedDevice.getCustomerId(),
+                    ActionType.ASSIGNED_TO_CUSTOMER, null, strDeviceId, strCustomerId, customer.getName());
+
+            return savedDevice;
+        } catch (Exception e){
+            logEntityAction(emptyId(EntityType.DEVICE), null,
+                    null,
+                    ActionType.ASSIGNED_TO_CUSTOMER, e, strDeviceId, strCustomerId);
+            throw handleException(e);
+        }
+    }
+
+
     @PreAuthorize("hasAuthority('TENANT_ADMIN')")
     @RequestMapping(value = "/customer/device/{deviceId}", method = RequestMethod.DELETE)
     @ResponseBody
