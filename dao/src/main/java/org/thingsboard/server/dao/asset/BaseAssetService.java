@@ -340,7 +340,7 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		TextPageData<Asset> assets = findAssets(pageLink);
 		List<Asset> assetList = assets.getData();
 		for (Asset asset:assetList) {
-			if(asset.getId() == assetId){
+			if(asset.getId().equals(assetId)){
 				tenantId = asset.getTenantId();
 				break;
 			}
