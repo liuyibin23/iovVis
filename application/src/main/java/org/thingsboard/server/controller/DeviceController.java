@@ -318,7 +318,8 @@ public class DeviceController extends BaseController {
                     if(tenantId == null){
                         tenantId = customerService.findTenantIdByCustomerId(customerId,new TextPageLink(100));
                         if(tenantId == null){
-                            throw new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+//                            throw new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                            throw new IncorrectParameterException("customer isn't assign to any tenant!");
                         }
                     }
                     checkDeviceId(tenantId,deviceId);
@@ -553,24 +554,29 @@ public class DeviceController extends BaseController {
 		    customerId = null;
         }
 
-        if(assetIdStr != null && assetIdStr.trim().length() > 0){
-            assetId = new AssetId(toUUID(assetIdStr));
-            checkAssetId(assetId);
-            tenantId = assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
-            if(tenantId == null){
-                throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
-            }
-        } else {
-            assetId = null;
-        }
+
 
         try {
+
+            if(assetIdStr != null && assetIdStr.trim().length() > 0){
+                assetId = new AssetId(toUUID(assetIdStr));
+                checkAssetId(assetId);
+                tenantId = tenantId == null ? assetService.findTenantIdByAssetId(assetId,new TextPageLink(100)) : tenantId;
+                if(tenantId == null){
+//                throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                    throw new IncorrectParameterException("Asset isn't exist!");
+                }
+            } else {
+                assetId = null;
+            }
+
             switch (user.getAuthority()) {
                 case SYS_ADMIN:
                     if(customerId != null && tenantId == null){
                         tenantId = customerService.findTenantIdByCustomerId(customerId,new TextPageLink(100));
                         if(tenantId == null){
-                            throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+//                            throw  new ThingsboardException("INVALID ARGUMENTS",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                            throw new IncorrectParameterException("customer isn't assign to any tenant!");
                         }
                     }
                     deviceList = findDevices(pageLink, type, tenantId, customerId, assetId, searchId);

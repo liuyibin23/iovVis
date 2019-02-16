@@ -40,6 +40,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.security.Authority;
+import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
@@ -217,7 +218,8 @@ public class CustomerController extends BaseController {
 						tenantId = customerService.findTenantIdByCustomerId(customerId, new TextPageLink(100));
 						if (tenantId == null) {
 							//如果传入的Customer不属于任何一个Tenant，则参数无效
-							throw new ThingsboardException("INVALID ARGUMENTS", ThingsboardErrorCode.INVALID_ARGUMENTS);
+//							throw new ThingsboardException("INVALID ARGUMENTS", ThingsboardErrorCode.INVALID_ARGUMENTS);
+							throw new IncorrectParameterException("customer isn't assign to any tenant!");
 						}
 						customer = checkCustomerIdAdmin(tenantId, customerId);
 					}
