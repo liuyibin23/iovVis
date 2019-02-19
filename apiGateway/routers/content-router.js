@@ -4,18 +4,17 @@ const router = express.Router();
 const axios = require('axios');
 const util = require('../util/utils');
 
+var schema = require('./schema');
+var graphql = require('graphql');
+
 async function excuteGraphQL(req, res) {
     let graphQL = req.query.graphQL;
     if (graphQL) {
-        axios.post('http://swapi.apis.guru', {query:graphQL},
-        {
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            }
-        })
-        .then(resp => {
-            util.responData(200, resp.data, res)
+        let query = 'query ' + graphQL;
+        // execute GraphQL!
+        graphql.graphql(schema, query, req)
+        .then((result) => {
+            util.responData(200, result.data, res)
         })
         .catch(err => { 
             util.responErrorMsg(err, res);
