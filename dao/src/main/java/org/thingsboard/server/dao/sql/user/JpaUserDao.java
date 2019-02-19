@@ -114,13 +114,6 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 
 	}
 
-	@Override
-	public List<User> findCustomerUsers(UUID customerId) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByCustomerId(
-								fromTimeUUID(customerId)));
-	}
 
 	@Override
 	public int countTenant(String tenantId) {
@@ -159,13 +152,23 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	}
 
 	@Override
-	public List<User> findUsers() {
-		return DaoUtil.convertDataList(userRepository.findAllUsers());
+	public List<User> findUsersByTenantId(UUID tenantId,TextPageLink pageLink) {
+		return DaoUtil.convertDataList(userRepository.findUsersByTenantId(
+				fromTimeUUID(tenantId),
+				pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+				Objects.toString(pageLink.getTextSearch(), ""),
+				new PageRequest(0, pageLink.getLimit())));
 	}
 
 	@Override
-	public List<User> findUsersByTenantId(UUID tenantId) {
-		return DaoUtil.convertDataList(userRepository.findUsersByTenantId(fromTimeUUID(tenantId)));
+	public List<User> findUsersByTenantIdAndCustomerId(UUID tenantId,UUID customerId,TextPageLink pageLink) {
+		return DaoUtil.convertDataList(
+				userRepository
+						.findUsersByTenantAndCustomerId(
+								fromTimeUUID(tenantId),
+								fromTimeUUID(customerId),
+								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+								Objects.toString(pageLink.getTextSearch(), ""),
+								new PageRequest(0, pageLink.getLimit())));
 	}
-
 }

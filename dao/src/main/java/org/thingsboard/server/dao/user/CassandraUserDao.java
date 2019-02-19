@@ -98,12 +98,6 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
-    public List<User> findCustomerUsers(UUID customerId) {
-        //todo add cassandra find customerUsers
-        return null;
-    }
-
-    @Override
     public int countTenant(String tenantId) {
         return 0;
     }
@@ -141,16 +135,17 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
 		return null;
 	}
 
-	@Override
-	public List<User> findUsers() {
-		//todo add cassandra
-		return null;
-	}
+    @Override
+    public List<User> findUsersByTenantId(UUID tenantId, TextPageLink pageLink) {
+        //todo add cassandra
+        return null;
+    }
 
-	@Override
-	public List<User> findUsersByTenantId(UUID tenantId) {
-		//todo add cassandra
-		return null;
-	}
+    @Override
+    public List<User> findUsersByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink) {
+        //todo add cassandra
+        return null;
+    }
+
 
 }

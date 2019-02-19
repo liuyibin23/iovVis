@@ -79,20 +79,21 @@ public class UserController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/users", method = RequestMethod.GET)
 	@ResponseBody
-	public List<User> getUsers() throws ThingsboardException {
-		List<User> retUserList = new ArrayList<>();
+	public TextPageData<User> getUsers(@RequestParam int limit,
+                               @RequestParam(required = false) String textSearch,
+                               @RequestParam(required = false) String idOffset,
+                               @RequestParam(required = false) String textOffset) throws ThingsboardException {
+        TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 		switch (getCurrentUser().getAuthority()){
 			case SYS_ADMIN:
-				retUserList.addAll(userService.findUsers());
-				break;
+			    return userService.findUsers(pageLink);
 			case TENANT_ADMIN:
-				retUserList.addAll(userService.findTenantUsers(getCurrentUser().getTenantId()));
-				break;
+                return userService.findTenantUsers(getCurrentUser().getTenantId(),pageLink);
 			case CUSTOMER_USER:
-				retUserList.addAll(userService.findCustomerUsers(getCurrentUser().getCustomerId()));
-				break;
+                return userService.findUsersByTenantIdAndCustomerId(getTenantId(),getCurrentUser().getCustomerId(),pageLink);
+			default:
+				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 		}
-		return retUserList;
 	}
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
@@ -342,29 +343,33 @@ public class UserController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/{customerId}/users", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
-	public List<User> getCustomerUsers(
+	public TextPageData<User> getCustomerUsers(
 			@PathVariable("customerId") String strCustomerId,
 			@RequestParam int limit,
+            @RequestParam(required = false) String textSearch,
+            @RequestParam(required = false) String idOffset,
+            @RequestParam(required = false) String textOffset,
 			@RequestParam(required = false) Boolean isAdmin) throws ThingsboardException {
 		checkParameter("customerId", strCustomerId);
 		try {
+            TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
 
 			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-				List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+                TextPageData<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId,pageLink)))):checkNotNull(userService.findCustomerUsers(customerId,pageLink));
 				if (retList == null)
 					throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 				return retList;
 			} else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
 				checkCustomerId(customerId);
 				TenantId tenantId = getCurrentUser().getTenantId();
-				List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+                TextPageData<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId,pageLink)))):checkNotNull(userService.findCustomerUsers(customerId,pageLink));
 				if (retList == null)
 					throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 				return retList;
 			} else if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
 				if (customerId.equals(getCurrentUser().getCustomerId())){
-					List<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId)))):checkNotNull(userService.findCustomerUsers(customerId));
+					TextPageData<User> retList = isAdmin?(checkAdminUsers(checkNotNull(userService.findCustomerUsers(customerId,pageLink)))):checkNotNull(userService.findCustomerUsers(customerId,pageLink));
 					if (retList == null)
 						throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 					return retList;
@@ -375,15 +380,15 @@ public class UserController extends BaseController {
 			throw handleException(e);
 		}
 	}
-	private List<User> checkAdminUsers(List<User> userList){
+	private TextPageData<User> checkAdminUsers(TextPageData<User> userList){
     	List<User> retUserList = new ArrayList<>();
-    	userList.forEach(user -> {
+    	userList.getData().forEach(user -> {
     		if (user.getAdditionalInfo().get("power") != null){
 				if (user.getAdditionalInfo().get("power").asText().equals("admin"))
 					retUserList.add(user);
 			}
     	});
-    	return retUserList;
+    	return new TextPageData<>(retUserList,userList.getNextPageLink());
 	}
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")

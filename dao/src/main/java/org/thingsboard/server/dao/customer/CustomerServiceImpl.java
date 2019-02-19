@@ -245,7 +245,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 		customerExInfos.forEach(customerExInfo -> {
 			List<User> adminUsers = new ArrayList<>() ;
 			List<User> commonUsers = new ArrayList<>() ;
-//					List<User> adminUsers = userService.findCustomerUsers(customerExInfo.getTenantId(),customerExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
+//					List<User> adminUsers = userService.findUsersByTenantIdAndCustomerId(customerExInfo.getTenantId(),customerExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
 //					.getData().stream().filter(user ->
 //							user.getAdditionalInfo().has("power") && user.getAdditionalInfo().get("power").asText().equals("admin")
 //					).collect(Collectors.toList());
