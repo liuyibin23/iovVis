@@ -65,7 +65,7 @@ public class AuthController extends BaseController {
     @Autowired
     private MailService mailService;
 
-    public static final String CREATE_PASSWORD_URI = "/setPassword";//前端用户激活设置密码页面
+    public static final String CREATE_PASSWORD_URI = "/setPassword";//前端用户设置密码页面
     public static final String LOGIN_URL_PATTERN = "%s/login";
 
     @PreAuthorize("isAuthenticated()")
@@ -145,7 +145,8 @@ public class AuthController extends BaseController {
             @RequestParam(value = "resetToken") String resetToken) {
         HttpHeaders headers = new HttpHeaders();
         HttpStatus responseStatus;
-        String resetURI = "/login/resetPassword";
+//        String resetURI = "/login/resetPassword";
+        String resetURI = CREATE_PASSWORD_URI;
         UserCredentials userCredentials = userService.findUserCredentialsByResetToken(TenantId.SYS_TENANT_ID, resetToken);
         if (userCredentials != null) {
             try {
