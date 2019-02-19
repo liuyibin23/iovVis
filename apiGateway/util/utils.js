@@ -90,7 +90,7 @@ exports.CFG = Object.freeze({
 exports.CST = Object.freeze({
     OK200: 200, MSG200: {message: '成功。'},
     ERR400: 400, MSG400: {message: '请求方法参数错误或方法不被允许。'},
-    ERR404: 401, MSG401: {message: '无效的api token。'},
+    ERR401: 401, MSG401: {message: '无效的api token。'},
     ERR404: 404, MSG404: {message: '访问资源不存在。'},
     ERR510: 510, MSG510: {message: 'CONFIG_ALARM_RULE规则链不存在。'},
     ERR511: 511, MSG511: {message: 'CONFIG_ALARM_RULE的META值异常。'}

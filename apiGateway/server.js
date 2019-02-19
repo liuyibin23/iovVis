@@ -26,7 +26,7 @@ let options = {
   };
 
 const root = path.join(__dirname, '/public');
-app.use(express.static(root));  
+app.use('/config', express.static(root));  
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
 app.use(cors());
 app.use(tokenVerify());
