@@ -1,0 +1,65 @@
+[
+  {"code":"a10","name":"断面交通流、车型、车轴重、轴数、车辆总重、车速","categoryCode":"a"},
+
+  {"code":"b10","name":"桥面","categoryCode":"b"},
+  {"code":"b11","name":"拱顶","categoryCode":"b"},
+  {"code":"b12","name":"塔顶","categoryCode":"b"},
+  {"code":"b13","name":"梁表面风压","categoryCode":"b"},
+  {"code":"b14","name":"箱梁内外环境温度","categoryCode":"b"},
+  {"code":"b15","name":"混凝土温度","categoryCode":"b"},
+  {"code":"b16","name":"钢结构温度","categoryCode":"b"},
+  {"code":"b17","name":"主拱温度","categoryCode":"b"},
+  {"code":"b18","name":"主缆温度","categoryCode":"b"},
+  {"code":"b19","name":"锚室内温度","categoryCode":"b"},
+  {"code":"b20","name":"鞍罩内温度","categoryCode":"b"},
+  {"code":"b21","name":"桥面铺装层温度","categoryCode":"b"},
+  {"code":"b22","name":"箱梁内湿度","categoryCode":"b"},
+  {"code":"b23","name":"环境湿度","categoryCode":"b"},
+  {"code":"b24","name":"索塔锚固区湿度","categoryCode":"b"},
+  {"code":"b25","name":"主缆内湿度","categoryCode":"b"},
+  {"code":"b26","name":"锚室内湿度","categoryCode":"b"},
+  {"code":"b27","name":"鞍罩内湿度","categoryCode":"b"},
+  {"code":"b28","name":"降雨量","categoryCode":"b"},
+
+  {"code":"c10","name":"桥墩加速度","categoryCode":"c"},
+  {"code":"c11","name":"桥岸地表场地加速度","categoryCode":"c"},
+  {"code":"c12","name":"承台底或桥墩底部加速度","categoryCode":"c"},
+
+  {"code":"d10","name":"主梁竖向振动加速度","categoryCode":"d"},
+  {"code":"d11","name":"主梁横向振动加速度","categoryCode":"d"},
+  {"code":"d12","name":"主梁纵向振动加速度","categoryCode":"d"},
+  {"code":"d13","name":"桥墩顶部纵向和横向振动加速度","categoryCode":"d"},
+  {"code":"d14","name":"拱顶三向振动加速度","categoryCode":"d"},
+  {"code":"d15","name":"塔顶水平双向振动加速度","categoryCode":"d"},
+  {"code":"d16","name":"吊杆（素）振动加速度","categoryCode":"d"},
+  {"code":"d17","name":"斜拉索振动加速度（面内、面外）","categoryCode":"d"},
+
+  {"code":"e10","name":"主梁绕度","categoryCode":"e"},
+  {"code":"e11","name":"主梁横向变形","categoryCode":"e"},
+  {"code":"e12","name":"墩顶偏位","categoryCode":"e"},
+  {"code":"e13","name":"拱顶偏位","categoryCode":"e"},
+  {"code":"e14","name":"拱脚偏位","categoryCode":"e"},
+  {"code":"e15","name":"塔顶偏位","categoryCode":"e"},
+  {"code":"e16","name":"主缆偏位","categoryCode":"e"},
+
+  {"code":"f10","name":"支座位移","categoryCode":"f"},
+  {"code":"f11","name":"梁端纵向位移","categoryCode":"f"},
+  {"code":"f12","name":"锚锭位移","categoryCode":"f"},
+
+  {"code":"g10","name":"主梁关键截面应变","categoryCode":"g"},
+  {"code":"g11","name":"体内、体外预应力","categoryCode":"g"},
+  {"code":"g12","name":"主拱关键截面应变","categoryCode":"g"},
+
+  {"code":"h10","name":"混凝土结构","categoryCode":"h"},
+
+  {"code":"i10","name":"吊杆（索）","categoryCode":"i"},
+  {"code":"i11","name":"系杆","categoryCode":"i"},
+  {"code":"i12","name":"斜拉索（索力）","categoryCode":"i"},
+  {"code":"i13","name":"拉索断丝","categoryCode":"i"},
+
+  {"code":"j10","name":"斜拉索（疲劳）","categoryCode":"j"},
+  {"code":"j11","name":"主梁","categoryCode":"j"},
+  {"code":"j12","name":"吊索","categoryCode":"j"},
+  {"code":"j13","name":"伸缩缝","categoryCode":"j"}
+
+]

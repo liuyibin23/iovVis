@@ -1,0 +1,12 @@
+[
+  {"code":"a","name":"荷载"},
+  {"code":"b","name":"环境"},
+  {"code":"c","name":"特殊事件"},
+  {"code":"d","name":"振动"},
+  {"code":"e","name":"变形"},
+  {"code":"f","name":"位移"},
+  {"code":"g","name":"应力应变"},
+  {"code":"h","name":"裂缝"},
+  {"code":"i","name":"索力"},
+  {"code":"j","name":"疲劳"}
+]
