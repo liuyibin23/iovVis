@@ -1,6 +1,8 @@
 
 const axios = require('axios');
 const util = require('../util/utils');
+var path = require('path'); //系统路径模块
+var fs = require('fs'); //文件模块
 
 const {
   GraphQLObjectType,
@@ -12,9 +14,20 @@ const {
   GraphQLNonNull,
 } = require('graphql');
 
-function findExist(itemkey, dataList){
+function findExist(itemkey, sensorType, dataList){
   for (var i = 0; i < dataList.length; i++){
-    if (dataList[i].monitorItem == itemkey){
+    if (dataList[i].monitorItem == itemkey && dataList[i].sensorType == sensorType){
+      return i;
+    }
+  }
+
+  return -1;
+}
+
+//  根据编码获取检测项索引值
+function getMonitorItemIdxByCode(code, monitorItem){
+  for (var i = 0; i < monitorItem.length; i++){
+    if (monitorItem[i].code === code){
       return i;
     }
   }
@@ -48,6 +61,10 @@ async function getMonitorData(req, assetId){
   // return data;
 
   let data = [];
+  var file = path.join('public/monitorItem.json'); 
+  //读取json文件
+  var monitorItem = fs.readFileSync(file, 'utf-8');
+  var jsonMonitorItem = JSON.parse(monitorItem);
 
   let token = req.headers['x-authorization'];
   let getDeviceByAssetIdAPI = util.getAPI() + `currentUser/getDeviceByAssetId?assetId=${assetId.assetId}`;
@@ -66,12 +83,17 @@ async function getMonitorData(req, assetId){
           let attr = info.attributeKvList[j];
           if (attr.key === 'moniteritem' && attr.value != '') {
             // console.log('监测项:' + attr.value + ' ' + info.device.type);
-            let idx = findExist(attr.value, data);
-            if (-1 != idx) {
-              data[idx].measurePointCnt += 1;
-            } else {
-              let _dt = {monitorItem:attr.value, sensorType:info.device.type, unit:'度', measurePointCnt:1};
-              data.push(_dt);
+            let code_idx = getMonitorItemIdxByCode(attr.value, jsonMonitorItem);
+            
+            if (-1 != code_idx){
+              let monitorItemName = jsonMonitorItem[code_idx].name;
+              let idx = findExist(monitorItemName, info.device.type, data);
+              if (-1 != idx) {
+                data[idx].measurePointCnt += 1;
+              } else {
+                let _dt = {monitorItem:monitorItemName, sensorType:info.device.type, unit:'度', measurePointCnt:1};
+                data.push(_dt);
+              }
             }
           }
         }
