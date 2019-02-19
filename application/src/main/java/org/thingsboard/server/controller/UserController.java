@@ -168,10 +168,10 @@ public class UserController extends BaseController {
             if (sendEmail) {
                 UserCredentials userCredentials = userService.findUserCredentialsByUserId(authUser.getTenantId(), savedUser.getId());
                 String baseUrl = constructBaseUrl(request);
-//                String activateUrl = String.format(ACTIVATE_URL_PATTERN, baseUrl,
-//                        userCredentials.getActivateToken());
-                String activateUrl = String.format(ACTIVATE_PAGE_PATTERN, baseUrl,
+                String activateUrl = String.format(ACTIVATE_URL_PATTERN, baseUrl,
                         userCredentials.getActivateToken());
+//                String activateUrl = String.format(ACTIVATE_PAGE_PATTERN, baseUrl,
+//                        userCredentials.getActivateToken());
                 String email = savedUser.getEmail();
                 try {
                     mailService.sendActivationEmail(activateUrl, email);
@@ -206,10 +206,10 @@ public class UserController extends BaseController {
             UserCredentials userCredentials = userService.findUserCredentialsByUserId(getCurrentUser().getTenantId(), user.getId());
             if (!userCredentials.isEnabled()) {
                 String baseUrl = constructBaseUrl(request);
-//                String activateUrl = String.format(ACTIVATE_URL_PATTERN, baseUrl,
-//                        userCredentials.getActivateToken());
-                String activateUrl = String.format(ACTIVATE_PAGE_PATTERN, baseUrl,
+                String activateUrl = String.format(ACTIVATE_URL_PATTERN, baseUrl,
                         userCredentials.getActivateToken());
+//                String activateUrl = String.format(ACTIVATE_PAGE_PATTERN, baseUrl,
+//                        userCredentials.getActivateToken());
                 mailService.sendActivationEmail(activateUrl, email);
             } else {
                 throw new ThingsboardException("User is already active!", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
