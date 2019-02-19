@@ -65,6 +65,9 @@ public class AuthController extends BaseController {
     @Autowired
     private MailService mailService;
 
+    public static final String CREATE_PASSWORD_URI = "/setPassword";//前端用户设置密码页面
+    public static final String LOGIN_URL_PATTERN = "%s/login";
+
     @PreAuthorize("isAuthenticated()")
     @RequestMapping(value = "/auth/user", method = RequestMethod.GET)
     public @ResponseBody User getUser() throws ThingsboardException {
@@ -103,7 +106,8 @@ public class AuthController extends BaseController {
         HttpStatus responseStatus;
         UserCredentials userCredentials = userService.findUserCredentialsByActivateToken(TenantId.SYS_TENANT_ID, activateToken);
         if (userCredentials != null) {
-            String createURI = "/login/createPassword";
+//            String createURI = "/login/createPassword";
+            String createURI = CREATE_PASSWORD_URI;
             try {
                 URI location = new URI(createURI + "?activateToken=" + activateToken);
                 headers.setLocation(location);
@@ -141,7 +145,8 @@ public class AuthController extends BaseController {
             @RequestParam(value = "resetToken") String resetToken) {
         HttpHeaders headers = new HttpHeaders();
         HttpStatus responseStatus;
-        String resetURI = "/login/resetPassword";
+//        String resetURI = "/login/resetPassword";
+        String resetURI = CREATE_PASSWORD_URI;
         UserCredentials userCredentials = userService.findUserCredentialsByResetToken(TenantId.SYS_TENANT_ID, resetToken);
         if (userCredentials != null) {
             try {
@@ -173,7 +178,8 @@ public class AuthController extends BaseController {
             UserPrincipal principal = new UserPrincipal(UserPrincipal.Type.USER_NAME, user.getEmail());
             SecurityUser securityUser = new SecurityUser(user, credentials.isEnabled(), principal);
             String baseUrl = constructBaseUrl(request);
-            String loginUrl = String.format("%s/login", baseUrl);
+//            String loginUrl = String.format("%s/login", baseUrl);
+            String loginUrl = String.format(LOGIN_URL_PATTERN, baseUrl);
             String email = user.getEmail();
 
             try {
@@ -214,7 +220,8 @@ public class AuthController extends BaseController {
                 UserPrincipal principal = new UserPrincipal(UserPrincipal.Type.USER_NAME, user.getEmail());
                 SecurityUser securityUser = new SecurityUser(user, userCredentials.isEnabled(), principal);
                 String baseUrl = constructBaseUrl(request);
-                String loginUrl = String.format("%s/login", baseUrl);
+//                String loginUrl = String.format("%s/login", baseUrl);
+                String loginUrl = String.format(LOGIN_URL_PATTERN, baseUrl);
                 String email = user.getEmail();
                 mailService.sendPasswordWasResetEmail(loginUrl, email);
 
