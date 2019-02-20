@@ -44,6 +44,7 @@ public class CustomerAndAssets extends Customer {
 		this.country = customer.country;
 		this.email = customer.email;
 		this.phone = customer.phone;
+		this.createdTime = customer.createdTime;
 		//search_text
 		this.state = customer.state;
 		this.setTenantId(customer.getTenantId());
