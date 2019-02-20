@@ -37,7 +37,7 @@ function processData(option, params, res){
     }
 
     let config = {
-        width: params.chartWidth   ? params.chartHeight * 100 : 500, // Image width, type is number.
+        width: params.chartWidth   ? params.chartWidth  * 100 : 500, // Image width, type is number.
         height: params.chartHeight ? params.chartHeight * 100 : 400, // Image height, type is number.
         option: option, // Echarts configuration, type is Object.
         //If the path  is not set, return the Buffer of image.

@@ -106,7 +106,8 @@ function postTemplates(assetID, resp, req, res) {
   var formData = {
     file: fs.createReadStream(fileInfo.path),
   };
-  let host = 'http://sm.schdri.com:80/';
+
+  let host = util.getFSVR()
   let uploadFileHost = host + 'api/file/upload/';
   request.post({ url: uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
@@ -116,7 +117,6 @@ function postTemplates(assetID, resp, req, res) {
       logger.log('info', 'Upload successful!  Server responded with:', body);
       if (JSON.parse(body).success) {
         // 保存到属性表
-        // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
         let url = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
         let bodyData = JSON.parse(body)
         let str = [{
@@ -197,7 +197,7 @@ function processDeleteReq(assetID, resp, req, res) {
 
   if (find && template_url) {
     // 从文件服务器删除
-    let host = util.getFSVR(); //'http://sm.schdri.com:80/';
+    let host = util.getFSVR();
     let deleteFileHost = host + 'api/file/delete/';
     let filePath = template_url.substr(host.length);
     request.post({ url: deleteFileHost, form: { fileId: filePath } }, function (err, httpResponse, body) {
