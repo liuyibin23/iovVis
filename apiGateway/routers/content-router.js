@@ -51,6 +51,7 @@ router.get('/:id', async function (req, res) {
             "X-Authorization": token
         }
     }).then((resp) => {
+        res.header("Content-Type", 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
         util.responData(200, resp.data, res);
     }).catch((err) => {
         util.responErrorMsg(err, res);
