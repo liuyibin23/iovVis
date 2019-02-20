@@ -130,9 +130,6 @@ router.delete('/:id', async function (req, res) {
 
 // 保存到属性表
 function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, req, res, token) {
-  // let host = 'http://sm.schdri.com:80/';
-  // http://cf.beidouapp.com:8080/api/plugins/telemetry/ASSET/265c7510-1df4-11e9-b372-db8be707c5f4/SERVER_SCOPE
-
   //接口因权限问题修改，需要根据assetId查询tenantId
   let urlGetTenant = util.getAPI() + `asset/${assetID}`;
   axios.get(urlGetTenant, {
@@ -179,7 +176,7 @@ async function generateReports(assetId, hisReprtsData, reportFilePath, req, res,
   var formData = {
     file: fs.createReadStream(reportFilePath),
   };
-  let host = 'http://sm.schdri.com:80/';
+  let host = util.getFSVR();
   let uploadFileHost = host + 'api/file/upload/';
   request.post({ url: uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
@@ -238,7 +235,7 @@ function processDeleteReq(assetID, resp, req, res, token) {
 
   if (find && report_url) {
     // 从文件服务器删除
-    let host = util.getFSVR(); //'http://sm.schdri.com:80/';
+    let host = util.getFSVR();
     let deleteFileHost = host + 'api/file/delete/';
     let filePath = report_url.substr(host.length);
     request.post({ url: deleteFileHost, form: { fileId: filePath } }, function (err, httpResponse, body) {
@@ -271,9 +268,6 @@ function processDeleteReq(assetID, resp, req, res, token) {
           }).catch(err => {
             util.responErrorMsg(err, res);
           });
-
-
-
         }
       }
     })

@@ -1,4 +1,5 @@
 const axios = require('axios');
+const util = require('../../util/utils');
 
 var option = {
     backgroundColor: '#2c343c',
@@ -72,7 +73,7 @@ var chart_pie = {
 	version: '1.0.0',
 
     fillData: async function(params, token, res, callback) {
-        let apiUrl = `http://cf.beidouapp.com:8080/api/plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
+        let apiUrl = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`
         await axios.get(apiUrl, { headers: { "X-Authorization": token } })
         .then((resp) => {
             let data = resp.data.crackWidth;
