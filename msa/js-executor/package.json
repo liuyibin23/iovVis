@@ -7,7 +7,7 @@
   "bin": "server.js",
   "scripts": {
     "build-proto": "pbjs -t static-module -w commonjs -o ./api/jsinvoke.proto.js ../../application/src/main/proto/jsinvoke.proto",
-    "install": "npm run build-proto && pkg -t node8-linux-x64,node8-win-x64 --out-path ./target . && node --unsafe-prem install.js",
+    "install": "npm run build-proto && pkg -t node8-linux-x64,node8-win-x64 --out-path ./target . && node install.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "npm run build-proto && nodemon server.js",
     "start-prod": "npm run build-proto && NODE_ENV=production nodemon server.js"
