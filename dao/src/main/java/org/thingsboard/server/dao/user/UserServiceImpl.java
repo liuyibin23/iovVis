@@ -219,7 +219,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public TextPageData<User> findCustomerUsers(TenantId tenantId, CustomerId customerId, TextPageLink pageLink) {
-        log.trace("Executing findCustomerUsers, tenantId [{}], customerId [{}], pageLink [{}]", tenantId, customerId, pageLink);
+        log.trace("Executing findUsersByTenantIdAndCustomerId, tenantId [{}], customerId [{}], pageLink [{}]", tenantId, customerId, pageLink);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         validateId(customerId, "Incorrect customerId " + customerId);
         validatePageLink(pageLink, "Incorrect page link " + pageLink);
@@ -230,32 +230,33 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public TextPageData<User> findCustomerUsers(CustomerId customerId, TextPageLink pageLink) {
-        log.trace("Executing findCustomerUsers, customerId [{}], pageLink [{}]", customerId, pageLink);
+        log.trace("Executing findUsersByTenantIdAndCustomerId, customerId [{}], pageLink [{}]", customerId, pageLink);
         validateId(customerId, "Incorrect customerId " + customerId);
         validatePageLink(pageLink, "Incorrect page link " + pageLink);
         List<User> users = userDao.findCustomerUsers(customerId.getId(), pageLink);
         return new TextPageData<>(users, pageLink);
     }
 
-    @Override
-    public List<User> findUsers() {
-        return userDao.findUsers();
-    }
+//    @Override
+//    public List<User> findUsers() {
+//        return userDao.findUsers();
+//    }
 
     @Override
-    public List<User> findCustomerUsers(CustomerId customerId) {
-        log.trace("Executing findCustomerUsers, customerId [{}]", customerId);
+    public TextPageData<User> findUsersByTenantIdAndCustomerId(TenantId tenantId,CustomerId customerId, TextPageLink pageLink) {
+        log.trace("Executing findUsersByTenantIdAndCustomerId, customerId [{}]", customerId);
         validateId(customerId, "Incorrect customerId " + customerId);
 
-        List<User> users = userDao.findCustomerUsers(customerId.getId());
-        return users;
+        List<User> users = userDao.findUsersByTenantIdAndCustomerId(tenantId.getId(),customerId.getId(),pageLink);
+        return new TextPageData<>(users, pageLink);
     }
 
     @Override
-    public List<User> findTenantUsers(TenantId tenantId) {
+    public TextPageData<User> findTenantUsers(TenantId tenantId, TextPageLink pageLink) {
         log.trace("Executing findTenantUsers, TenantId [{}]", tenantId);
         validateId(tenantId, "Incorrect tenantId " + tenantId);
-        return userDao.findUsersByTenantId(tenantId.getId());
+        List<User> users = userDao.findUsersByTenantId(tenantId.getId(),pageLink);
+        return new TextPageData<>(users, pageLink);
     }
 
     @Override

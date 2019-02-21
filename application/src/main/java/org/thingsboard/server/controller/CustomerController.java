@@ -260,20 +260,19 @@ public class CustomerController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'SYS_ADMIN')")
 	@RequestMapping(value = "/currentUser/customers", method = RequestMethod.GET)
 	@ResponseBody
-	public List<CustomerExInfo> getCustomers() throws ThingsboardException {
-		List<CustomerExInfo> retInfo = new ArrayList<>();
+	public TextPageData<CustomerExInfo> getCurrentUserCustomers(@RequestParam int limit,
+																@RequestParam(required = false) String textSearch,
+																@RequestParam(required = false) String idOffset,
+																@RequestParam(required = false) String textOffset) throws ThingsboardException {
+		TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 		switch (getCurrentUser().getAuthority()){
 			case SYS_ADMIN:
-				retInfo.addAll(customerService.findCustomerExinfos());
-				break;
+				return checkNotNull(customerService.findCustomerExInfos(pageLink));
 			case TENANT_ADMIN:
-				retInfo.addAll(customerService.findCustomerByTenantIdExinfos(getCurrentUser().getTenantId()));
-				break;
-				default:
-					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+				return checkNotNull(customerService.findCustomerExInfosByTenantId(getTenantId(), pageLink));
+			default:
+				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 		}
-
-		return retInfo;
 
 	}
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
@@ -313,7 +312,7 @@ public class CustomerController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/customersAndAssets", params = {"limit"}, method = RequestMethod.GET)
 	@ResponseBody
-	public List<CustomerAndAssets> getCustomersAndAssets(@RequestParam int limit,
+	public TextPageData<CustomerAndAssets> getCustomersAndAssets(@RequestParam int limit,
 														 @RequestParam(required = false) String tenantIdStr,
 														 @RequestParam(required = false) String textSearch,
 														 @RequestParam(required = false) String idOffset,
@@ -331,8 +330,7 @@ public class CustomerController extends BaseController {
 						TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 
 						customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(tenantId, pageLink));
-					}
-					else {
+					} else {
 						customerTextPageData = checkNotNull(customerService.findCustomers(pageLink));
 					}
 					break;
@@ -341,10 +339,10 @@ public class CustomerController extends BaseController {
 					break;
 				case CUSTOMER_USER:
 					customerTextPageData = checkNotNull(customerService.findCustomersByTenantId(getCurrentUser().getTenantId(), pageLink));
-					List<Customer> customerList = new ArrayList<>();
+					List<Customer> customerList;
 					customerList = customerTextPageData.getData().stream().filter(customer -> customerId.equals(customer.getId())).collect(Collectors.toList());
 					customerList.stream().forEach(customer -> {retObj.add(new CustomerAndAssets(customer,assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()));});
-					return retObj;
+					return new TextPageData<>(retObj,pageLink);
 				default:
 						throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 			}
@@ -352,7 +350,7 @@ public class CustomerController extends BaseController {
 			customerTextPageData.getData().forEach(customer -> {
 				retObj.add(new CustomerAndAssets(customer,assetService.findAssetExInfoByTenantAndCustomer(customer.getTenantId(),customer.getId(),new TextPageLink(Integer.MAX_VALUE)).getData()));
 			});
-			return retObj;
+			return new TextPageData<>(retObj,pageLink);
 
 		} catch (Exception e) {
 			throw handleException(e);
