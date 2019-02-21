@@ -469,7 +469,8 @@ public class AssetController extends BaseController {
 							tmpNode.put("alarmTime",alarm.getStartTs());
 							tmpNode.put("alarmLevel",alarm.getSeverity().toString());
 							tmpNode.put("alarmStatus",alarm.getStatus().toString());
-							tmpNode.put("additionalinfo",alarm.getDetails().toString());
+//							tmpNode.put("additionalinfo",alarm.getDetails().toString());
+							tmpNode.set("additionalinfo",alarm.getDetails());
 							tmpNode.put("alarmStartTime",alarm.getStartTs());
 							tmpNode.put("alarmEndTime",alarm.getEndTs());
 							arrayNode.add(tmpNode);
