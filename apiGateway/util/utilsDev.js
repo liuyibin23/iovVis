@@ -2,8 +2,8 @@
 const axios = require('axios')
 
 //const API = 'http://cf.beidouapp.com:8080/api/';
-const API = '//http://ignss.kmbdtx.com:6103/api/';
-const fileSVR = '//http://ignss.kmbdtx.com:6103/';
+const API = 'http://ignss.kmbdtx.com:6103/api/';
+const fileSVR = 'http://ignss.kmbdtx.com:6103/';
 // var API = 'http://192.168.1.76:8080/api/';
 
 
