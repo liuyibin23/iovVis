@@ -16,9 +16,10 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -49,6 +50,7 @@ import org.thingsboard.server.service.security.model.SecurityUser;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -381,22 +383,52 @@ public class AssetController extends BaseController {
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
 	@RequestMapping(value = "/currentUser/assetsAlarm", method = RequestMethod.GET)
 	@ResponseBody
-	public String getAssetsAlarmAndAttributes() throws ThingsboardException, IOException {
+	public JsonNode getAssetsAlarmAndAttributes(@RequestParam(required = false) String tenantIdStr,
+												@RequestParam(required = false) String customerIdStr) throws ThingsboardException, IOException {
 		List<Asset> assetList;
 		ObjectMapper retObj = new ObjectMapper();
 		ArrayNode arrayNode = retObj.createArrayNode();
 
-		TenantId tenantId = getCurrentUser().getTenantId();
+		TenantId tenantId ;//= getCurrentUser().getTenantId();
+		CustomerId customerId;
+
+		if(tenantIdStr != null && !tenantIdStr.trim().isEmpty()){
+			tenantId = new TenantId(UUID.fromString(tenantIdStr));
+		}else {
+			tenantId = getTenantId();
+		}
+
+		if(customerIdStr != null && !customerIdStr.trim().isEmpty()){
+			customerId = new CustomerId(UUID.fromString(customerIdStr));
+		}else{
+			customerId = getCurrentUser().getCustomerId();
+		}
+
 		//获取asset列表
 		switch (getCurrentUser().getAuthority()){
 			case CUSTOMER_USER:
-				assetList = checkNotNull(assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId()));
+				checkCustomerId(customerId);
+				assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
 				break;
 			case SYS_ADMIN:
-				assetList = checkNotNull(assetService.findAssets());
+				if(!customerId.isNullUid()){
+					checkCustomerId(tenantId,customerId);
+					assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
+				} else if(!tenantId.isNullUid()){
+					checkTenantId(tenantId);
+					assetList = checkNotNull(assetService.findAssetsByTenantId(tenantId));
+				} else {
+					assetList = checkNotNull(assetService.findAssets());
+				}
 				break;
 			case TENANT_ADMIN:
-				assetList = checkNotNull(assetService.findAssetsByTenantId(getCurrentUser().getTenantId()));
+				checkTenantId(tenantId);
+				if(!customerId.isNullUid()){
+					checkCustomerId(customerId);
+					assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
+				} else {
+					assetList = checkNotNull(assetService.findAssetsByTenantId(tenantId));
+				}
 				break;
 			default:
 				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
@@ -437,7 +469,7 @@ public class AssetController extends BaseController {
 							tmpNode.put("alarmTime",alarm.getStartTs());
 							tmpNode.put("alarmLevel",alarm.getSeverity().toString());
 							tmpNode.put("alarmStatus",alarm.getStatus().toString());
-							tmpNode.put("additional_info",alarm.getDetails().toString());
+							tmpNode.put("additionalinfo",alarm.getDetails().toString());
 							tmpNode.put("alarmStartTime",alarm.getStartTs());
 							tmpNode.put("alarmEndTime",alarm.getEndTs());
 							arrayNode.add(tmpNode);
@@ -445,12 +477,7 @@ public class AssetController extends BaseController {
 						});
 					});
 			});
-
-
-
-
-
-		return retObj.writeValueAsString(arrayNode);
+		return arrayNode;
 	}
 
 	/**
