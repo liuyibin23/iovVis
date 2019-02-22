@@ -15,11 +15,11 @@
  */
 package org.thingsboard.server.controller;
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -47,7 +47,6 @@ import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -384,13 +383,16 @@ public class AssetController extends BaseController {
 	@RequestMapping(value = "/currentUser/assetsAlarm", method = RequestMethod.GET)
 	@ResponseBody
 	public JsonNode getAssetsAlarmAndAttributes(@RequestParam(required = false) String tenantIdStr,
-												@RequestParam(required = false) String customerIdStr) throws ThingsboardException, IOException {
+												@RequestParam(required = false) String customerIdStr,
+												@RequestParam(required = false) String assetIdStr
+												) throws ThingsboardException {
 		List<Asset> assetList;
 		ObjectMapper retObj = new ObjectMapper();
 		ArrayNode arrayNode = retObj.createArrayNode();
 
-		TenantId tenantId ;//= getCurrentUser().getTenantId();
+		TenantId tenantId;//= getCurrentUser().getTenantId();
 		CustomerId customerId;
+		AssetId assetId;
 
 		if(tenantIdStr != null && !tenantIdStr.trim().isEmpty()){
 			tenantId = new TenantId(UUID.fromString(tenantIdStr));
@@ -403,6 +405,12 @@ public class AssetController extends BaseController {
 		}else{
 			customerId = getCurrentUser().getCustomerId();
 		}
+		if(null != assetIdStr && !assetIdStr.trim().isEmpty()){
+			assetId = new AssetId(UUID.fromString(assetIdStr));
+		}else {
+			assetId = null;
+		}
+
 
 		//获取asset列表
 		switch (getCurrentUser().getAuthority()){
@@ -434,7 +442,9 @@ public class AssetController extends BaseController {
 				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 		}
 		//获取设备列表
-		assetList.forEach(asset -> {
+		assetList.stream()
+				.filter(asset ->  assetId!=null?(assetId.getId().equals(asset.getId().getId())?true:false):true )
+				.forEach(asset -> {
 			relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON)
 					.stream()
 					.filter(entityRelation -> {	if(entityRelation.getTo().getEntityType() == EntityType.DEVICE) return true; else return false;})
