@@ -23,6 +23,7 @@ import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
@@ -72,6 +73,10 @@ public interface AssetService {
     ListenableFuture<List<Asset>> findAssetsByTenantIdCustomerIdAndIdsAsync(TenantId tenantId, CustomerId customerId, List<AssetId> assetIds);
 
     void unassignCustomerAssets(TenantId tenantId, CustomerId customerId);
+
+    ListenableFuture<List<Asset>> findAssetsByDeviceId(TenantId tenantId, DeviceId deviceId);
+
+    ListenableFuture<List<Asset>> findAssetsByQueryWithOutTypeFilter(TenantId tenantId, AssetSearchQuery query);
 
     ListenableFuture<List<Asset>> findAssetsByQuery(TenantId tenantId, AssetSearchQuery query);
 

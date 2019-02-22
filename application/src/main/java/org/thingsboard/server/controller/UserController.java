@@ -103,11 +103,23 @@ public class UserController extends BaseController {
         try {
             UserId userId = new UserId(toUUID(strUserId));
             SecurityUser authUser = getCurrentUser();
+			User retUser;
             if (authUser.getAuthority() == Authority.CUSTOMER_USER && !authUser.getId().equals(userId)) {
                 throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
                         ThingsboardErrorCode.PERMISSION_DENIED);
             }
-            return checkUserId(userId);
+			retUser = checkUserId(userId);
+
+            switch (retUser.getAuthority()){
+				case CUSTOMER_USER:
+					retUser.setCustomerName(customerService.findCustomerById(retUser.getTenantId(),retUser.getCustomerId()).getName());
+				case TENANT_ADMIN:
+					retUser.setTenantName(tenantService.findTenantById(retUser.getTenantId()).getName());
+				case SYS_ADMIN:
+					default:
+						break;
+			}
+            return retUser;
         } catch (Exception e) {
             throw handleException(e);
         }
