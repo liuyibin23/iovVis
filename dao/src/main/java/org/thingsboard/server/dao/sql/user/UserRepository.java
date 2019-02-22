@@ -67,7 +67,7 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 
 
 	@Query("SELECT u FROM UserEntity u WHERE" +
-			" LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))" +
+			" LOWER(u.searchText) LIKE LOWER(CONCAT('%',:searchText, '%'))" +
 			"AND u.id > :idOffset ORDER BY u.id")
 	List<UserEntity> findUsers( @Param("idOffset") String idOffset,
 							  @Param("searchText") String searchText,
@@ -82,10 +82,24 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 	@Query("SELECT u FROM UserEntity u ")
 	List<UserEntity> findAllUsers();
 
-	@Query("SELECT u FROM UserEntity u WHERE u.customerId = :customerId")
-	List<UserEntity> findUsersByCustomerId(@Param("customerId") String customerId);
+	@Query("SELECT u FROM UserEntity u WHERE " +
+			"u.tenantId = :tenantId " +
+			"AND u.customerId = :customerId " +
+			"AND LOWER(u.searchText) LIKE LOWER(CONCAT('%',:searchText, '%'))" +
+			"AND u.id > :idOffset ORDER BY u.id")
+	List<UserEntity> findUsersByTenantAndCustomerId(@Param("tenantId") String tenantId,
+													@Param("customerId") String customerId,
+													@Param("idOffset") String idOffset,
+													@Param("searchText") String searchText,
+													Pageable pageable);
 
-	@Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId")
-	List<UserEntity> findUsersByTenantId(@Param("tenantId") String tenantId);
+	@Query("SELECT u FROM UserEntity u WHERE " +
+			"u.tenantId = :tenantId " +
+			"AND LOWER(u.searchText) LIKE LOWER(CONCAT('%',:searchText, '%'))" +
+			"AND u.id > :idOffset ORDER BY u.id")
+	List<UserEntity> findUsersByTenantId(@Param("tenantId") String tenantId,
+										 @Param("idOffset") String idOffset,
+										 @Param("searchText") String searchText,
+										 Pageable pageable);
 
 }
