@@ -33,15 +33,13 @@ import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
@@ -288,7 +286,41 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	}
 
 	@Override
+	public ListenableFuture<List<Asset>> findAssetsByDeviceId(TenantId tenantId, DeviceId deviceId){
+		AssetSearchQuery query = new AssetSearchQuery();
+		RelationsSearchParameters parameters = new RelationsSearchParameters(deviceId,EntitySearchDirection.TO,1);
+		query.setParameters(parameters);
+		query.setRelationType(EntityRelation.CONTAINS_TYPE);
+		return findAssetsByQueryWithOutTypeFilter(tenantId,query);
+	}
+
+	@Override
+	public ListenableFuture<List<Asset>> findAssetsByQueryWithOutTypeFilter(TenantId tenantId, AssetSearchQuery query){
+		return innerFindAssetsByQuery(tenantId,query);
+	}
+
+	@Override
 	public ListenableFuture<List<Asset>> findAssetsByQuery(TenantId tenantId, AssetSearchQuery query) {
+//		ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
+//		ListenableFuture<List<Asset>> assets = Futures.transformAsync(relations, r -> {
+//			EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
+//			List<ListenableFuture<Asset>> futures = new ArrayList<>();
+//			for (EntityRelation relation : r) {
+//				EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
+//				if (entityId.getEntityType() == EntityType.ASSET) {
+//					futures.add(findAssetByIdAsync(tenantId, new AssetId(entityId.getId())));
+//				}
+//			}
+//			return Futures.successfulAsList(futures);
+//		});
+		ListenableFuture<List<Asset>> assets = innerFindAssetsByQuery(tenantId,query);
+		assets = Futures.transform(assets, assetList ->
+				assetList == null ? Collections.emptyList() : assetList.stream().filter(asset -> query.getAssetTypes().contains(asset.getType())).collect(Collectors.toList())
+		);
+		return assets;
+	}
+
+	private ListenableFuture<List<Asset>> innerFindAssetsByQuery(TenantId tenantId, AssetSearchQuery query){
 		ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
 		ListenableFuture<List<Asset>> assets = Futures.transformAsync(relations, r -> {
 			EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
@@ -301,9 +333,6 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 			}
 			return Futures.successfulAsList(futures);
 		});
-		assets = Futures.transform(assets, assetList ->
-				assetList == null ? Collections.emptyList() : assetList.stream().filter(asset -> query.getAssetTypes().contains(asset.getType())).collect(Collectors.toList())
-		);
 		return assets;
 	}
 

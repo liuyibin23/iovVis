@@ -288,43 +288,47 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Override
     public ListenableFuture<List<Device>> findDevicesByQueryWithOutTypeFilter(TenantId tenantId, DeviceSearchQuery query) {
-        ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
-        ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
-            EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
-            List<ListenableFuture<Device>> futures = new ArrayList<>();
-            for (EntityRelation relation : r) {
-                EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
-                if (entityId.getEntityType() == EntityType.DEVICE) {
-                    futures.add(findDeviceByIdAsync(tenantId, new DeviceId(entityId.getId())));
-                }
-            }
-            return Futures.successfulAsList(futures);
-        });
-
-        return devices;
+        return innnerfindDevicesByQuery(tenantId,query);
     }
 
     @Override
     public ListenableFuture<List<Device>> findDevicesByQuery(TenantId tenantId, DeviceSearchQuery query) {
-        ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
-        ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
-            EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
-            List<ListenableFuture<Device>> futures = new ArrayList<>();
-            for (EntityRelation relation : r) {
-                EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
-                if (entityId.getEntityType() == EntityType.DEVICE) {
-                    futures.add(findDeviceByIdAsync(tenantId, new DeviceId(entityId.getId())));
-                }
-            }
-            return Futures.successfulAsList(futures);
-        });
-
+//        ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
+//        ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
+//            EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
+//            List<ListenableFuture<Device>> futures = new ArrayList<>();
+//            for (EntityRelation relation : r) {
+//                EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
+//                if (entityId.getEntityType() == EntityType.DEVICE) {
+//                    futures.add(findDeviceByIdAsync(tenantId, new DeviceId(entityId.getId())));
+//                }
+//            }
+//            return Futures.successfulAsList(futures);
+//        });
+        ListenableFuture<List<Device>> devices = innnerfindDevicesByQuery(tenantId,query);
         devices = Futures.transform(devices, new Function<List<Device>, List<Device>>() {
             @Nullable
             @Override
             public List<Device> apply(@Nullable List<Device> deviceList) {
                 return deviceList == null ? Collections.emptyList() : deviceList.stream().filter(device -> query.getDeviceTypes().contains(device.getType())).collect(Collectors.toList());
             }
+        });
+
+        return devices;
+    }
+
+    private ListenableFuture<List<Device>> innnerfindDevicesByQuery(TenantId tenantId, DeviceSearchQuery query){
+        ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
+        ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
+            EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
+            List<ListenableFuture<Device>> futures = new ArrayList<>();
+            for (EntityRelation relation : r) {
+                EntityId entityId = direction == EntitySearchDirection.FROM ? relation.getTo() : relation.getFrom();
+                if (entityId.getEntityType() == EntityType.DEVICE) {
+                    futures.add(findDeviceByIdAsync(tenantId, new DeviceId(entityId.getId())));
+                }
+            }
+            return Futures.successfulAsList(futures);
         });
 
         return devices;
