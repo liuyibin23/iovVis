@@ -3,23 +3,12 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const util = require('../util/utils');
+const fs = require('fs');
 
-var schema = require('./schema');
-var graphql = require('graphql');
+const graphQLDispatch = require('./GraphQL/graphQL-dispatch');
 
 async function excuteGraphQL(req, res) {
-    let graphQL = req.query.graphQL;
-    if (graphQL) {
-        let query = 'query ' + graphQL;
-        // execute GraphQL!
-        graphql.graphql(schema, query, req)
-        .then((result) => {
-            util.responData(200, result.data, res)
-        })
-        .catch(err => { 
-            util.responErrorMsg(err, res);
-        });
-    }
+    graphQLDispatch.dispatchGraphQL(req, res);
 }
 
 // define the home page route
@@ -42,16 +31,27 @@ router.post('/:id', async function (req, res) {
     res.status(200).json({code:200,message:'not support this time!'});
 })
 
+
 router.get('/:id', async function (req, res) {
     let token = req.headers['x-authorization'];
     // download file
-    let downloadFileHost = req.params.id;
+    let downloadFileHost = util.getFSVR() + req.params.id;
     axios.get(downloadFileHost, {
         headers: {
             "X-Authorization": token
-        }
+        },
+        responseType: 'arraybuffer'
     }).then((resp) => {
         res.header("Content-Type", 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+
+        // fs.writeFile("test2.docx", resp.data , "binary", function (err) {
+        //     if (err) {
+        //         console.log("保存失败");
+        //     }
+        
+        //      console.log("保存成功"+resp.data.length);
+        // });
+    
         util.responData(200, resp.data, res);
     }).catch((err) => {
         util.responErrorMsg(err, res);

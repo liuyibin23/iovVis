@@ -51,6 +51,37 @@ async function getWarningStatus(req, res) {
     util.responErrorMsg(err, res);
   });
 }
+
+// 添加additionalInfo 属性
+async function postAsset(assetID, token, args, res){
+  // GET
+  let getapi = util.getAPI() + `assets?assetIds=${assetID}`;
+  await axios.get(getapi, {
+      headers: {
+        "X-Authorization": token
+      }
+  })
+  .then((resp) => {
+    let pdata = resp.data[0];
+    pdata.additionalInfo = args;
+
+    let post_api = util.getAPI() +　`asset?tenantIdStr=${pdata.id.id}`;
+    axios.post(post_api, pdata, {
+      headers: {
+        "X-Authorization": token
+      }
+    }).then((resp) => {
+      util.responData(util.CST.OK200, util.CST.MSG200, res);
+    })
+    .catch((err) => {
+      util.responErrorMsg(err, res);
+    }); 
+  })
+  .catch((err) => {
+    util.responErrorMsg(err, res);
+  });
+}
+
 //设置预警状态
 async function postWarningStatus(req, res) {
   let assetID = req.params.assetId;
@@ -63,7 +94,8 @@ async function postWarningStatus(req, res) {
     }
   })
     .then((resp) => {
-      util.responData(util.CST.OK200, util.CST.MSG200, res);
+      // post asset
+      postAsset(assetID, token, req.query, res);
     })
     .catch((err) => {
       util.responErrorMsg(err, res);
