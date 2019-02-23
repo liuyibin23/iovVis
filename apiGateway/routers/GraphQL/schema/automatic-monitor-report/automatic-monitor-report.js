@@ -1,6 +1,6 @@
-
+// 自动监测报表
 const axios = require('axios');
-const util = require('../util/utils');
+const util = require('../../../../util/utils');
 var path = require('path'); //系统路径模块
 var fs = require('fs'); //文件模块
 
@@ -35,31 +35,8 @@ function getMonitorItemIdxByCode(code, monitorItem){
   return -1;
 }
 
-// 获取检测项目及测点数据
+// 获取监测项目及测点数据
 async function getMonitorData(req, assetId){
-
-  //  let data = [
-  //   {
-  //     monitorItem: '桥面',
-  //     sensorType: '位移传感器',
-  //     unit: '米',
-  //     measurePointCnt: 10
-  //   },
-  //   {
-  //     monitorItem: '桥墩',
-  //     sensorType: '温度传感器',
-  //     unit: '度',
-  //     measurePointCnt: 6
-  //   },
-  //   {
-  //     monitorItem: assetId.assetId,
-  //     sensorType: '温度传感器',
-  //     unit: '度',
-  //     measurePointCnt: 20
-  //   }
-  // ];
-  // return data;
-
   let data = [];
   var file = path.join('public/monitorItem.json'); 
   //读取json文件
@@ -131,17 +108,9 @@ async function getMonitorData(req, assetId){
 
 const queryObj = new GraphQLObjectType({
 name: 'MonitorItemAndItemQuery',
-description: 'a hello world demo',
+description: '监测项目及测点布置',
 fields: {
-    // hello: {
-    //     name: 'a hello world query',
-    //     description: 'a hello world demo',
-    //     type: GraphQLString,
-    //     resolve(parentValue, args, request) {
-    //         return '测试数据接口Demo';
-    //     }
-    // },
-    monitorData: {
+    autoMonitorData: {
       type: new GraphQLList(MonitorItemAndItem),
       args: {
         // 资产ID
