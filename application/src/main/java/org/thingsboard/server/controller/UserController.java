@@ -349,26 +349,37 @@ public class UserController extends BaseController {
             @RequestParam(required = false) String idOffset,
             @RequestParam(required = false) String textOffset) throws ThingsboardException {
         checkParameter("customerId", strCustomerId);
+		TextPageData<User> retobj = null;
         try {
             CustomerId customerId = new CustomerId(toUUID(strCustomerId));
 
             TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 
             if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-                return checkNotNull(userService.findCustomerUsers(customerId, pageLink));
+				retobj = checkNotNull(userService.findCustomerUsers(customerId, pageLink));
             } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
                 checkCustomerId(customerId);
                 TenantId tenantId = getCurrentUser().getTenantId();
-                return checkNotNull(userService.findCustomerUsers(tenantId, customerId, pageLink));
+				retobj = checkNotNull(userService.findCustomerUsers(tenantId, customerId, pageLink));
             } else if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
                 if (customerId.equals(getCurrentUser().getCustomerId())){
-                    return checkNotNull(userService.findCustomerUsers(getCurrentUser().getTenantId(), customerId, pageLink));
+					retobj = checkNotNull(userService.findCustomerUsers(getCurrentUser().getTenantId(), customerId, pageLink));
                 }
             }
-            throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
         } catch (Exception e) {
             throw handleException(e);
         }
+		if (retobj.getData().size() > 0) {
+			List<User> tmp = new ArrayList<>();
+			retobj.getData().stream().forEach(user -> {
+				UserCredentials userCredentials = userService.findUserCredentialsByUserId(null, user.getId());
+				user.setActivation(userCredentials.isEnabled());
+				tmp.add(user);
+			});
+			return new TextPageData<User>(tmp, retobj.getNextPageLink(), retobj.hasNext());
+		}
+		else
+			return retobj;
     }
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
