@@ -85,6 +85,7 @@ public class PatrolRecordEntity implements ToData<PatrolRecord> {
 		record.setInfo(info);
 		record.setRecordType(recodeType);
 		record.setOriginator(EntityIdFactory.getByTypeAndUuid(originatorType, UUIDConverter.fromString(originatorId)));
+		record.setCreatedTime(UUIDs.unixTimestamp(UUIDConverter.fromString(id)));
 
 		return record;
 	}

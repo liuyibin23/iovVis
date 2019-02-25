@@ -58,6 +58,19 @@ public class DeviceShareAttrib implements Serializable {
 	//弹性模量	共享属性
 	@JsonProperty("elastic_modulus")
 	private String elasticModulus;
-	//参数配置	共享属性
-	private String param;
+	//监测项	共享属性
+	@JsonProperty("moniteritem")
+	private String moniterItem;
+	//技术参数配置	共享属性
+	private String typeParam;
+
+	//生产厂商	客户端属性
+	private String manufacturer;
+	//型号	客户端属性
+	private String model;
+	//识别码	客户端属性
+	private String sn;
+	//端口	客户端属性
+	private Integer port;
+
 }

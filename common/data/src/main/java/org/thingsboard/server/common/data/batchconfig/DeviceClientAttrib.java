@@ -14,14 +14,8 @@ import java.io.Serializable;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceClientAttrib  implements Serializable {
-	//设备类型	客户端属性
-	private Integer type;
-	//生产厂商	客户端属性
-	private String manufacturer;
-	//型号	客户端属性
-	private String model;
-	//识别码	客户端属性
-	private String sn;
-	//端口	客户端属性
-	private Integer port;
+
+
+	//参数配置	客户端属性
+	private String param;
 }

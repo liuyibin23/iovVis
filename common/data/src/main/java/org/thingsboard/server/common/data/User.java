@@ -39,6 +39,7 @@ public class User extends SearchTextBasedWithAdditionalInfo<UserId> implements H
     private String lastName;
     private String tenantName;
     private String customerName;
+    private Boolean isActivation;
 
     public User() {
         super();
@@ -56,6 +57,7 @@ public class User extends SearchTextBasedWithAdditionalInfo<UserId> implements H
         this.authority = user.getAuthority();
         this.firstName = user.getFirstName();
         this.lastName = user.getLastName();
+        this.isActivation = user.getActivation();
     }
 
     public TenantId getTenantId() {
@@ -112,7 +114,15 @@ public class User extends SearchTextBasedWithAdditionalInfo<UserId> implements H
         this.lastName = lastName;
     }
 
-    @Override
+	public Boolean getActivation() {
+		return isActivation;
+	}
+
+	public void setActivation(Boolean activation) {
+		isActivation = activation;
+	}
+
+	@Override
     public String getSearchText() {
 
         return Optional.ofNullable(firstName).orElse(email);
