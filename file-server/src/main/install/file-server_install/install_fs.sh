@@ -1,3 +1,4 @@
+#!/bin/bash
 cd ./fastdfs
 sh fdfsdockerinstall.sh
 cd ../file-server-api
