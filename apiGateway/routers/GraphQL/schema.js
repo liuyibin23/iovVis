@@ -145,7 +145,7 @@ async function getVehicleLoadStatsData(req, assetId){
 }
 
 // 获取数据
-async function getCrackMonitoInfoStatsData(req, assetId){
+async function getCrackMonitorInfoStatsData(req, assetId){
   let data = [
     {no:1, monitorName:'裂缝发展自动监测统计表测试数据 底层数据API还未实现', initialValue:'10', preMonitorValue:'10', NowMonitorValue:'15', changeValue:'1', rateOfChange:'10%', warningLevel:'蓝色'},
     {no:2, monitorName:'裂缝发展自动监测统计表测试数据 底层数据API还未实现', initialValue:'20', preMonitorValue:'12', NowMonitorValue:'15', changeValue:'1', warningLevel:'12%', warningLevel:'黄色'},
@@ -270,8 +270,8 @@ async function getCrackMonitoInfoStatsData(req, assetId){
 });
 
  // 裂缝发展自动监测统计表
- const crackMonitoInfoStats = new GraphQLObjectType({
-  name: 'crackMonitoInfoStats',
+ const crackMonitorInfoStats = new GraphQLObjectType({
+  name: 'crackMonitorInfoStats',
   fields: {
     // 序号
     no: {
@@ -422,14 +422,14 @@ fields: {
       }
     },
     //裂缝计信息汇总
-    crackMonitoInfoStatsData: {
-      type: new GraphQLList(crackMonitoInfoStats),
+    crackMonitorInfoStatsData: {
+      type: new GraphQLList(crackMonitorInfoStats),
       args: {
         // 资产ID
         assetId: { type: GraphQLString }
       },
       resolve: (req, assetId) => {
-        return getCrackMonitoInfoStatsData(req, assetId);
+        return getCrackMonitorInfoStatsData(req, assetId);
       }
     },
     crackMeterInfoStatsData: {
