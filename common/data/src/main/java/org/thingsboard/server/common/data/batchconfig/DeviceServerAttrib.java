@@ -23,7 +23,8 @@ public class DeviceServerAttrib  implements Serializable {
 	//设备id	服务器属性
 	//设备名称
 	private String name;
-	//锚点	服务器属性
-	private String anchor;
+
+	//设备类型	服务器属性
+	private String type;
 
 }
