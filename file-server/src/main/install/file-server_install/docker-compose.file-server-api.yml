@@ -1,0 +1,20 @@
+version: '3.5'
+services:
+  file-server:
+    build: ./file-server-api
+    image: beidouapp/file-server
+    container_name: file-server
+    restart: always
+    ports:
+      - 8266:8266
+    volumes:
+      - ../file-server/config:/usr/share/file-server/bin/config
+    depends_on:
+      - tracker
+      - storage
+    networks:
+      - custom_net
+networks:
+  custom_net:
+    external:
+      name: fastdfs_net

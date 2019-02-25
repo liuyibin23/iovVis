@@ -1,0 +1,2 @@
+FROM morunchang/fastdfs
+EXPOSE 22122 23000 8888
