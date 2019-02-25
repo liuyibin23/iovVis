@@ -20,7 +20,7 @@ import java.util.concurrent.ExecutionException;
 public class PatrolRecordController  extends BaseController{
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-	@RequestMapping(value = "/patrolRecord", method = RequestMethod.POST)
+	@RequestMapping(value = "/currentUser/patrolRecord", method = RequestMethod.POST)
 	@ResponseBody
 	PatrolRecord savePatrolRecord(@RequestBody PatrolRecord saveRequest) throws ThingsboardException {
 		try {
