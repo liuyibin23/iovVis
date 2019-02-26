@@ -15,10 +15,8 @@
  */
 package org.thingsboard.server.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,16 +34,13 @@ import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
-import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
-import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
@@ -387,7 +382,7 @@ public class AssetController extends BaseController {
 	public List<AlarmExInfo> getAssetsAlarmAndAttributes(@RequestParam(required = false) String tenantIdStr,
 														 @RequestParam(required = false) String customerIdStr,
 														 @RequestParam(required = false) String assetIdStr,
-														 @RequestParam(required = false) String strDeviceName
+														 @RequestParam(required = false) String deviceNameStr
 												) throws ThingsboardException {
 		List<Asset> assetList;
 		ObjectMapper retObj = new ObjectMapper();
@@ -422,8 +417,8 @@ public class AssetController extends BaseController {
 			case CUSTOMER_USER:
 				checkCustomerId(customerId);
 				assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
-				if(strDeviceName != null){
-					deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%", customerId);
+				if(deviceNameStr != null){
+					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%", customerId);
 				}
 				break;
 			case SYS_ADMIN:
@@ -436,8 +431,8 @@ public class AssetController extends BaseController {
 				} else {
 					assetList = checkNotNull(assetService.findAssets());
 				}
-				if(strDeviceName != null) {
-					deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%");
+				if(deviceNameStr != null) {
+					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%");
 				}
 				break;
 			case TENANT_ADMIN:
@@ -448,15 +443,15 @@ public class AssetController extends BaseController {
 				} else {
 					assetList = checkNotNull(assetService.findAssetsByTenantId(tenantId));
 				}
-				if(strDeviceName != null) {
-					deviceList = deviceService.findDevicesByName("%" + strDeviceName + "%", tenantId);
+				if(deviceNameStr != null) {
+					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%", tenantId);
 				}
 				break;
 			default:
 				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 		}
 
-		if(strDeviceName != null){
+		if(deviceNameStr != null){
 			deviceList.stream().forEach(device -> {
 				alarms.addAll(alarmService.findAlarmByOriginator(device.getId()));
 			});
