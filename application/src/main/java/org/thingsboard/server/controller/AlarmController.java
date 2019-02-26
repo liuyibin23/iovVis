@@ -317,48 +317,4 @@ public class AlarmController extends BaseController {
 		}
 	}
 
-	private List<AlarmExInfo> fillAlarmExInfo(List<Alarm> alarmList) throws ThingsboardException {
-		checkNotNull(alarmList);
-		List<AlarmExInfo> retList = new ArrayList<>();
-
-		alarmList.stream().forEach(alarm -> {
-			AlarmExInfo tmpInfo = new AlarmExInfo();
-			tmpInfo.setAlarmId(alarm.getId().toString());
-			tmpInfo.setAlarmLevel(alarm.getSeverity().name());
-			tmpInfo.setAlarmStatus(alarm.getStatus().name());
-			tmpInfo.setAlarmTime(alarm.getStartTs());
-			tmpInfo.setAlarmStartTime(alarm.getStartTs());
-			tmpInfo.setAlarmEndTime(alarm.getEndTs());
-
-			if (null != alarm.getOriginator()){
-				if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){
-					Device device = deviceService.findDeviceById(null,new DeviceId(alarm.getOriginator().getId()));
-					if (null != device){
-						tmpInfo.setDeviceName(device.getName());
-						tmpInfo.setDeviceType(device.getType());
-						tmpInfo.setAdditionalInfo(alarm.getDetails());
-					}
-					DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
-					if (null != deviceAttributes.getMeasureid()){
-						tmpInfo.setMeasureid(deviceAttributes.getMeasureid());
-					}
-					List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,device.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
-					for (EntityRelation entityRelation : tmpEntityRelationList){
-						if (entityRelation.getFrom().getEntityType() == EntityType.ASSET){
-							Asset tmpAsset = assetService.findAssetById(null,new AssetId(entityRelation.getFrom().getId()));
-							if (null != tmpAsset){
-								tmpInfo.setAssetName(tmpAsset.getName());
-								break;
-							}
-						}
-					}
-
-				}
-			}
-			retList.add(tmpInfo);
-
-		});
-		return retList;
-	}
-
 }
