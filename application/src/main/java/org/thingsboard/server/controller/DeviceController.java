@@ -636,7 +636,7 @@ public class DeviceController extends BaseController {
             }
         } else if(customerId != null && customerId.getId() != CustomerId.NULL_UUID){
             if (type != null && type.trim().length() > 0){
-                deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndType(tenantId,type, pageLink)).getData();
+                deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerIdAndType(tenantId,customerId,type, pageLink)).getData();
             } else {
                 deviceList = checkNotNull(deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId,pageLink)).getData();
             }
