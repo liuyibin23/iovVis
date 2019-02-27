@@ -15,14 +15,16 @@
  */
 package org.thingsboard.rule.engine.action;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Data;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.thingsboard.rule.engine.api.NodeConfiguration;
 import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 import org.thingsboard.server.common.data.task.TaskKind;
 
 @Data
 public class TbCreateTaskNodeConfiguration extends TbAbstractTaskNodeConfiguration implements NodeConfiguration<TbCreateTaskNodeConfiguration> {
-
 
     @Override
     public TbCreateTaskNodeConfiguration defaultConfiguration() {

@@ -107,4 +107,6 @@ public interface UserService {
 	* @return: java.util.List<org.thingsboard.server.common.data.User>
 	*/
 	List<User> findUsersByFirstNameLike(String firstName);
+
+	User findFirstUserByCustomerId(CustomerId customerId);
 }

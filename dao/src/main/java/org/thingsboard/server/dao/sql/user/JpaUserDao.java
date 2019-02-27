@@ -171,4 +171,9 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 								Objects.toString(pageLink.getTextSearch(), ""),
 								new PageRequest(0, pageLink.getLimit())));
 	}
+
+	@Override
+	public User findFirstUserByCustomerId(UUID customerId) {
+		return userRepository.findFirstByCustomerId(fromTimeUUID(customerId)).toData();
+	}
 }

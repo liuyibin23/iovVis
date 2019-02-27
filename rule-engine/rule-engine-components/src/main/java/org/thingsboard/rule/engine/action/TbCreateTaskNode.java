@@ -15,30 +15,22 @@
  */
 package org.thingsboard.rule.engine.action;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.base.Function;
-import com.google.common.util.concurrent.Futures;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 import org.thingsboard.rule.engine.api.RuleNode;
 import org.thingsboard.rule.engine.api.TbContext;
 import org.thingsboard.rule.engine.api.TbNodeConfiguration;
 import org.thingsboard.rule.engine.api.TbNodeException;
 import org.thingsboard.rule.engine.api.util.TbNodeUtils;
-import org.thingsboard.server.common.data.UUIDConverter;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmStatus;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.id.UserId;
+import org.thingsboard.server.common.data.Device;
+import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.asset.Asset;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.plugin.ComponentType;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.common.msg.TbMsg;
-import sun.security.krb5.Config;
-
-import java.util.UUID;
 
 @Slf4j
 @RuleNode(
@@ -53,8 +45,8 @@ import java.util.UUID;
                         "Message payload can be accessed via <code>msg</code> property. For example <code>'temperature = ' + msg.temperature ;</code>. " +
                         "Message metadata can be accessed via <code>metadata</code> property. For example <code>'name = ' + metadata.customerName;</code>.",
         uiResources = {"static/rulenode/rulenode-core-config.js"},
-        configDirective = "tbActionNodeCreateTaskConfig", //todo 适配UI
-        icon = "notifications_active" //todo 修改icon
+        configDirective = "tbActionNodeCreateTaskConfig",
+        icon = "schedule"
 )
 public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfiguration> {
 
@@ -75,35 +67,52 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
 
     private ListenableFuture<TaskResult> createNewTask(TbContext ctx, TbMsg msg) {
         return ctx.getDbCallbackExecutor().executeAsync(() -> {
-            Task task = buildTask(msg);
+            EntityId originatorId = msg.getOriginator();
+
+            TenantId tenantId = new TenantId(EntityId.NULL_UUID);
+            CustomerId customerId = new CustomerId(EntityId.NULL_UUID);
+            UserId userId = new UserId(EntityId.NULL_UUID);
+            String entityName = "";
+
+            if (originatorId.getEntityType() == EntityType.DEVICE) {
+                Device device = ctx.getDeviceService().findDeviceById(null, new DeviceId(originatorId.getId()));
+                tenantId = device.getTenantId();
+                customerId = device.getCustomerId();
+                entityName = device.getName();
+            } else if (originatorId.getEntityType() == EntityType.ASSET) {
+                Asset asset = ctx.getAssetService().findAssetById(null, new AssetId(originatorId.getId()));
+                tenantId = asset.getTenantId();
+                customerId = asset.getCustomerId();
+                entityName = asset.getName();
+            } else {
+                throw new IllegalArgumentException(String.format(" [%s] not supported entity type, must be %s and %s.",
+                        originatorId.getEntityType(), EntityType.ASSET, EntityType.DEVICE));
+            }
+
+            if (customerId != null && !customerId.isNullUid()) {
+                userId = ctx.getUserService().findFirstUserByCustomerId(customerId).getId();
+            }
+
+            Task task = Task.builder()
+                    .tenantId(tenantId)
+                    .customerId(customerId)
+                    .userId(userId)
+                    .taskStatus(TaskStatus.ACTIVE_UNACK)
+                    .taskKind(config.getTaskKind())
+                    .startTs(System.currentTimeMillis())
+                    .taskName(entityName + "巡检任务")
+                    .originator(originatorId)
+//                    .additionalInfo(new ObjectMapper().readTree(msg.getData()))
+                    .build();
+            ctx.getTaskService().createOrUpdateTask(task);
             return new TaskResult(true, false, false, task);
         });
     }
 
     private ListenableFuture<TaskResult> updateTask(TbContext ctx, TbMsg msg, Task task) {
         return ctx.getDbCallbackExecutor().executeAsync(() -> {
-            modifyTask(task, msg);
             ctx.getTaskService().createOrUpdateTask(task);
             return new TaskResult(false, true, false, task);
         });
-    }
-
-    private Task buildTask(TbMsg msg) {
-        return Task.builder()
-                .tenantId(new TenantId(UUID.fromString(config.getTenantId())))
-                .customerId(new CustomerId(UUID.fromString(config.getCustomerId())))
-                .userId(new UserId(UUID.fromString(config.getUserId())))
-                .originator(msg.getOriginator())
-                .taskStatus(TaskStatus.ACTIVE_UNACK)
-                .additionalInfo(config.getAdditionalInfo())
-                .build();
-    }
-
-    private void modifyTask(Task task, TbMsg msg) {
-        task.setTaskKind(config.getTaskKind());
-        task.setAdditionalInfo(config.getAdditionalInfo());
-        task.setTenantId(new TenantId(UUID.fromString(config.getTenantId())));
-        task.setCustomerId(new CustomerId(UUID.fromString(config.getCustomerId())));
-        task.setUserId(new UserId(UUID.fromString(config.getUserId())));
     }
 }
