@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ./fastdfs_distributed_deployment
 sh fdfsdockerinstall.sh
-cd ../file-server-api-disribute
+cd ../file-server-api-distribute
 sh installFileServerApi.sh
 cd ..
 docker-compose -f docker-compose.fastdfs.yml -f docker-compose.api.yml up -d
