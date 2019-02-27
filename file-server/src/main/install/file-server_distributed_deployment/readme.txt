@@ -1,0 +1,4 @@
+此部署文件用于双机冗余部署。
+需要提前安装docker和docker compose环境。
+file-server.env中的TRACKER_IP，TRACKER_IP1分别为两台冗余部署服务器的ip，部署前按实际情况修改。
+部署时将此文件夹拷贝到合适路径下，执行install_fs.sh脚本完成自动部署安装。

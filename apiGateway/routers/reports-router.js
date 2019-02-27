@@ -129,7 +129,7 @@ router.delete('/:id', async function (req, res) {
 })
 
 // 保存到属性表
-function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, req, res, token) {
+function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, fileID, req, res, token) {
   //接口因权限问题修改，需要根据assetId查询tenantId
   let urlGetTenant = util.getAPI() + `asset/${assetID}`;
   axios.get(urlGetTenant, {
@@ -143,7 +143,8 @@ function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, req, r
       "report_name": reportInfo.report_name,
       "report_type": reportInfo.report_type,
       "report_date": reportInfo.report_date,
-      "report_url": urlPath
+      "report_url": urlPath,
+      "fileID":fileID
     }];
 
     hisReprtsData.data.forEach(info => {
@@ -189,7 +190,7 @@ async function generateReports(assetId, hisReprtsData, reportFilePath, req, res,
         let bodyData = JSON.parse(body)
         let urlPath = host + bodyData.fileId;
         // 保存到属性表
-        saveAssetSeverScope(hisReprtsData, assetId, req.body, urlPath, req, res, token);
+        saveAssetSeverScope(hisReprtsData, assetId, req.body, urlPath, bodyData.fileId, req, res, token);
       }
       else {
         util.responData(501, '报表文件上传失败。', res);
