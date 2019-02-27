@@ -74,7 +74,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>copy-jar</id>
+                        <id>copy-jar-install</id>
                         <phase>package</phase>
                         <goals>
                             <goal>copy</goal>
@@ -89,6 +89,24 @@
                                 </artifactItem>
                             </artifactItems>
                             <outputDirectory>${project.build.directory}/install/file-server_install/file-server-api</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-jar-distribute-install</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>${project.artifactId}</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>${project.packaging}</type>
+                                </artifactItem>
+                            </artifactItems>
+                            <outputDirectory>${project.build.directory}/install/file-server_distributed_deployment/file-server-api-distribute</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
