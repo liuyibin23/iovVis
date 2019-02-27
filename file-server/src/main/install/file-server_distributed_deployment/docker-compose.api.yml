@@ -1,0 +1,12 @@
+version: '3'
+services:
+  file-server:
+    build: .
+    image: beidouapp/file-server
+    container_name: file-server
+    restart: always
+    network_mode: host
+    volumes:
+      - ../file-server/config:/usr/share/file-server/bin/config
+    env_file:
+      - file-server.env

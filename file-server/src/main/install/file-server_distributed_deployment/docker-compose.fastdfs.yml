@@ -1,0 +1,28 @@
+version: '3'
+services:
+  tracker:
+    build: .
+    image: lyb/fastdfs
+    container_name: tracker
+    restart: always
+    hostname: tracker
+    network_mode: host
+    command: sh tracker.sh
+  storage:
+    image: lyb/fastdfs
+    container_name: storage
+    restart: always
+    hostname: storage
+    network_mode: host
+    volumes:
+      - ../fastdfs/data:/data/fast_data/data
+      - ../fastdfs/nginx/nginx.conf:/etc/nginx/conf/nginx.conf
+    env_file:
+      - file-server.env
+    environment:
+#      - TRACKER_IP=192.168.1.12:22122
+#      - TRACKER_IP1=192.168.1.14:22122
+      - GROUP_NAME=group1
+    depends_on:
+      - tracker
+    command: sh storage.sh
