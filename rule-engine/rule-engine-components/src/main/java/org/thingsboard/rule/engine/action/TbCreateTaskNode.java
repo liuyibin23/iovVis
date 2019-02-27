@@ -47,9 +47,9 @@ import java.util.UUID;
         configClazz = TbCreateTaskNodeConfiguration.class,
         nodeDescription = "Create or Update Task",
         nodeDetails =
-                "Details - JS function that creates JSON object based on incoming message. This object will be added into Alarm.details field.\n" +
+                "Details - \n" +
                         "Node output:\n" +
-                        "If alarm was not created, original message is returned. Otherwise new Message returned with type 'ALARM', Alarm object in 'msg' property and 'matadata' will contains one of those properties 'isNewAlarm/isExistingAlarm'. " +
+                        "If task was not created, original message is returned. Otherwise new Message returned with type 'TASK', Task object in 'msg' property and 'matadata' will contains one of those properties 'isNewTask/isExistingTask'. " +
                         "Message payload can be accessed via <code>msg</code> property. For example <code>'temperature = ' + msg.temperature ;</code>. " +
                         "Message metadata can be accessed via <code>metadata</code> property. For example <code>'name = ' + metadata.customerName;</code>.",
         uiResources = {"static/rulenode/rulenode-core-config.js"},

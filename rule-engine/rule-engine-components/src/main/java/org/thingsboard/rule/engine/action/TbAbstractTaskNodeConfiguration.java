@@ -24,8 +24,8 @@ public abstract class TbAbstractTaskNodeConfiguration {
     private String tenantId;
     private String customerId;
     private String userId;
-    private String originatorId;
-    private String originatorType;
+//    private String originatorId;
+//    private String originatorType;
     private TaskKind taskKind;
     private JsonNode additionalInfo;
 }
