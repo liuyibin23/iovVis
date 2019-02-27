@@ -108,14 +108,12 @@ var chart_area = {
             .then((resp) => {
                 let data = resp.data.crackWidth;
                 if (data) {
-                    callback(option, params, res);
+                    
                 }
-                else {
-                    callback(null, params, res);
-                }
+                callback(option, params, res);
             })
             .catch((err) => {
-                callback(null, params, res);
+                callback(option, params, res);
             });
     }
 }
