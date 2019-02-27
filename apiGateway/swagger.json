@@ -385,11 +385,18 @@
             "name": "type",
             "in": "path",
             "required": true,
-            "description": "图标类型。",
+            "description": "图表类型。",
             "enum": [
-              "area",
-              "pie"
+              "折线图",
+              "柱状图"
             ],
+            "type": "string"
+          },
+          {
+            "name": "chart_name",
+            "in": "query",
+            "required": true,
+            "description": "图表名称。",
             "type": "string"
           },
           {
