@@ -1,11 +1,16 @@
 // const url   = require("url");
 const axios = require('axios')
 
-//const API = 'http://cf.beidouapp.com:8080/api/';
 const API = 'http://sm.schdri.com/api/';
 const fileSVR = 'http://sm.schdri.com:80/';
 // var API = 'http://192.168.1.76:8080/api/';
 
+// web socket timeout
+const wsTimeOut = 10 * 1000;  // 10s
+
+function getWsTimeout(){
+    return wsTimeOut;
+}
 
 function getAPI() {
     return API;
@@ -101,3 +106,4 @@ exports.getAPI = getAPI;
 exports.getFSVR = getFSVR;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
+exports.getWsTimeout = getWsTimeout;

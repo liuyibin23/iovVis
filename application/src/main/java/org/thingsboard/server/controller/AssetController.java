@@ -388,7 +388,7 @@ public class AssetController extends BaseController {
 		ObjectMapper retObj = new ObjectMapper();
 		ArrayNode arrayNode = retObj.createArrayNode();
 		List<Alarm> alarms = new ArrayList<>();
-		List<Device> deviceList = null;
+		List<Device> deviceList = new ArrayList<>();
 
 		TenantId tenantId;//= getCurrentUser().getTenantId();
 		CustomerId customerId;
@@ -451,18 +451,27 @@ public class AssetController extends BaseController {
 				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
 		}
 
-		if(deviceNameStr != null){
+		if(deviceNameStr != null && assetId == null){
 			deviceList.stream().forEach(device -> {
 				alarms.addAll(alarmService.findAlarmByOriginator(device.getId()));
 			});
 		} else {
+		    final List<Device> deviceListFinal = deviceList;
 			//获取设备列表
 			assetList.stream()
 					.filter(asset ->  assetId!=null?(assetId.getId().equals(asset.getId().getId())?true:false):true )
 					.forEach(asset -> {
 						relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON)
 								.stream()
-								.filter(entityRelation -> {	if(entityRelation.getTo().getEntityType() == EntityType.DEVICE) return true; else return false;})
+								.filter(entityRelation -> {
+//								    if(entityRelation.getTo().getEntityType() == EntityType.DEVICE) return true; else return false;
+								    if(entityRelation.getTo().getEntityType() == EntityType.DEVICE ){
+                                        return deviceListFinal.size() == 0 ||
+                                                deviceListFinal.stream().anyMatch(item->item.getId().getId().equals(entityRelation.getTo().getId()));
+                                    }else{
+								        return false;
+                                    }
+								})
 								.forEach(entityRelation -> {
 									Device deviceTmp = deviceService.findDeviceById(tenantId,new DeviceId(entityRelation.getTo().getId()));
 
