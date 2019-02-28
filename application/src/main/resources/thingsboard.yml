@@ -124,7 +124,7 @@ cassandra:
   # Thingsboard keyspace name
   keyspace_name: "${CASSANDRA_KEYSPACE_NAME:thingsboard}"
   # Specify node list
-  url: "${CASSANDRA_URL:192.168.1.233:9042}"
+  url: "${CASSANDRA_URL:192.168.1.12:9042}"
   # Enable/disable secure connection
   ssl: "${CASSANDRA_USE_SSL:false}"
   # Enable/disable JMX
@@ -142,9 +142,9 @@ cassandra:
   # Credential parameters #
   credentials: "${CASSANDRA_USE_CREDENTIALS:true}"
   # Specify your username
-  username: "${CASSANDRA_USERNAME:shj}"
+  username: "${CASSANDRA_USERNAME:cas}"
   # Specify your password
-  password: "${CASSANDRA_PASSWORD:123456}"
+  password: "${CASSANDRA_PASSWORD:beidouapp@cas}"
 
   # Cassandra cluster connection socket parameters #
   socket:
@@ -321,9 +321,9 @@ spring:
     database-platform: "${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.PostgreSQLDialect}"
   datasource:
     driverClassName: "${SPRING_DRIVER_CLASS_NAME:org.postgresql.Driver}"
-    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.233:5432/thingsboard}"
-    username: "${SPRING_DATASOURCE_USERNAME:shj}"
-    password: "${SPRING_DATASOURCE_PASSWORD:123456}"
+    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.12:5432/thingsboard}"
+    username: "${SPRING_DATASOURCE_USERNAME:postgres}"
+    password: "${SPRING_DATASOURCE_PASSWORD:beidouapp@psql}"
 
 # Audit log parameters
 audit_log:
