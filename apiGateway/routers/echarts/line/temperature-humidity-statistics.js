@@ -130,19 +130,24 @@ function processData(res, params, callback){
     }
 
     callback(option, params, res);
+
+    //console.log('end getData');
 }
 
 async function getData(idx, dataType, params, token, res, callback){
-    let interval = 3600 * 1000;
+    //console.log('start getData:' + idx);
+    let interval = 10 * 1000;
     let limit    = 1000;
     let keyValue = (dataType == DataTypeTemperature) ? '温度' : '湿度';
-    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=${aggList[idx]}`;
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
+     + `&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=${aggList[idx]}`;
     api = encodeURI(api);
     //console.log(api);
 
-    axios.get(api, {
+    await axios.get(api, {
         headers: { "X-Authorization": token }
       }).then(response => {
+        //console.log('idx:' + idx + ' return:' + retCnt);
         retCnt++;
         allData[idx] = (idx < 3) ? response.data.温度 :response.data.湿度;
 
@@ -153,7 +158,7 @@ async function getData(idx, dataType, params, token, res, callback){
       }).catch(err => {
         if (!respHasSend) {
             respHasSend = true;
-            //util.responErrorMsg(err, res);
+            console.log("err" + err);
             processData(res, params, callback);
         }
       });   
@@ -165,6 +170,7 @@ var chart_area = {
 
     fillData: async function (params, token, res, callback) {
         respHasSend = false;
+        retCnt = 0;
         for (var i = 0; i < MAX_DATA; i++){
             
             let dataType = (i < 3) ? DataTypeTemperature : DataTypeHumidity;
