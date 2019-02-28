@@ -15,17 +15,10 @@
  */
 package org.thingsboard.rule.engine.action;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.Data;
 import org.thingsboard.server.common.data.task.TaskKind;
 
 @Data
 public abstract class TbAbstractTaskNodeConfiguration {
-    private String tenantId;
-    private String customerId;
-    private String userId;
-//    private String originatorId;
-//    private String originatorType;
     private TaskKind taskKind;
-    private JsonNode additionalInfo;
 }

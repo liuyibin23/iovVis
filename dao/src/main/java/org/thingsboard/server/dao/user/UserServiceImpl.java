@@ -297,6 +297,12 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         return userDao.findUsersByFirstNameLike(firstName);
     }
 
+
+    @Override
+    public User findFirstUserByCustomerId(CustomerId customerId) {
+        return userDao.findFirstUserByCustomerId(customerId.getId());
+    }
+
     private DataValidator<User> userValidator =
             new DataValidator<User>() {
                 @Override

@@ -102,4 +102,5 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 										 @Param("searchText") String searchText,
 										 Pageable pageable);
 
+	UserEntity findFirstByCustomerId(String customerId);
 }

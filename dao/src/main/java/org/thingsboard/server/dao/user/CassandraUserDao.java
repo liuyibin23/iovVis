@@ -147,5 +147,8 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
         return null;
     }
 
-
+    @Override
+    public User findFirstUserByCustomerId(UUID customerId) {
+        return null;
+    }
 }

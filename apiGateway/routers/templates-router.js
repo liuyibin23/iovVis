@@ -121,7 +121,8 @@ function postTemplates(assetID, resp, req, res) {
         let bodyData = JSON.parse(body)
         let str = [{
           "template_name": req.body.template_name,
-          "template_url": host + bodyData.fileId
+          "template_url": host + bodyData.fileId,
+          "fileId":bodyData.fileId
         }];
 
           // 遍历，查找TEMPLATES属性
