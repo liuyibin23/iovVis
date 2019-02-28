@@ -24,6 +24,14 @@ public interface IFsService {
     FileResponseData uploadFile(String base64, HttpServletRequest request);
 
     /**
+     * 字符串文件上传
+     * @param content
+     * @param request
+     * @return
+     */
+    FileResponseData uploadFile(String content, String fileExtension, HttpServletRequest request);
+
+    /**
      * 删除文件
      * @param fileId
      * @param request

@@ -77,6 +77,32 @@ public class FsServiceImpl implements IFsService{
     }
 
     /**
+     * 字符串文件上传
+     * @param content
+     * @param request
+     * @return
+     */
+    @Override
+    public FileResponseData uploadFile(String content, String fileExtension, HttpServletRequest request) {
+        FileResponseData responseData = new FileResponseData();
+        try{
+            String fileId = dfsClient.uploadFileWithStr(content,fileExtension);
+
+            responseData.setFileId(fileId);
+            responseData.setFileType(fileExtension);
+
+            responseData.setHttpUrl(fileServerAddr+"/"+ fileId);
+        } catch (FastDFSException e) {
+            e.printStackTrace();
+            e.printStackTrace();
+            responseData.setSuccess(false);
+            responseData.setCode(e.getCode());
+            responseData.setMessage(e.getMessage());
+        }
+        return responseData;
+    }
+
+    /**
      * 删除文件
      * @param fileId
      * @param request

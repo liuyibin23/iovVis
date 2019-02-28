@@ -16,6 +16,7 @@ import javax.servlet.MultipartConfigElement;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,6 +60,17 @@ public class FastDFSClientWrapper {
      */
     public String uploadFileWithBase64(String base64) throws FastDFSException {
         return upload(base64);
+    }
+
+    /**
+     * 字符串文件上传
+     * @param content
+     * @param fileExtension
+     * @return  返回上传成功后的文件id
+     * @throws FastDFSException
+     */
+    public String uploadFileWithStr(String content, String fileExtension) throws FastDFSException {
+        return upload(content,fileExtension);
     }
 
     /**
@@ -106,6 +118,25 @@ public class FastDFSClientWrapper {
         String base64Body = base64Array[1];
         String fileName = "image."+suffix;
         return upload(new ByteArrayInputStream(Base64.decodeBase64(base64Body)), fileName);
+    }
+
+    /**
+     * 上传字符串生成一个文件保存
+     * @param content   文件内容
+     * @param fileExtension 保存文件的后缀
+     * @return
+     */
+    private String upload(String content, String fileExtension) throws FastDFSException {
+        if(org.apache.commons.lang3.StringUtils.isBlank(content)){
+            throw new FastDFSException(ErrorCode.FILE_ISNULL.CODE, ErrorCode.FILE_ISNULL.MESSAGE);
+        }
+        if(org.apache.commons.lang3.StringUtils.isBlank(fileExtension)){
+            throw new FastDFSException(ErrorCode.FILE_TYPE_ERROR_DOC.CODE, ErrorCode.FILE_TYPE_ERROR_DOC.MESSAGE);
+        }
+        byte[] buff = content.getBytes(Charset.forName("UTF-8"));
+        String fileName = "file." + fileExtension;
+        ByteArrayInputStream stream = new ByteArrayInputStream(buff);
+        return upload(stream,fileName);
     }
 
     /**
