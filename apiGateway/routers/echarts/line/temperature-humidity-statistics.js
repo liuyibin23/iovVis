@@ -1,6 +1,5 @@
 const axios = require('axios');
-const util = require('../../../util/utils');
-const WebSocket = require('ws');
+const util  = require('../../../util/utils');
 /*
 温度/湿度统计
 单个传感器
@@ -22,9 +21,9 @@ let option = {
     },
     legend: {
         data:['最高温度', '平均温度', '最低温度', '最高湿度', '平均湿度', '最低湿度'],
-        orient: 'vertical',
-        x:'80%',
-        y:'10%',
+        //orient: 'vertical',
+        x:'center',
+        y:'top',
         backgroundColor: '#eee',
         borderColor: 'rgba(178,34,34,0.8)',
         borderWidth: 2
@@ -51,8 +50,8 @@ let option = {
         },
       {
          type : 'value',
-             min:0,
-             max:100,
+            // min:0,
+            // max:100,
             axisLabel : {
                 formatter: '{value} %'
             }
@@ -107,8 +106,57 @@ let option = {
     ]
 };
 
-function random(lower, upper) {
-	return Math.floor(Math.random() * (upper - lower+1)) + lower;
+const DataTypeTemperature = 0;   // 温度
+const DataTypeHumidity    = 1;   // 湿度
+
+var allData = [];
+var MAX_DATA = 6;
+var aggList = ['MAX', 'AVG', 'MIN', 'MAX', 'AVG', 'MIN'];
+var retCnt = 0;
+var respHasSend = 0;
+
+function processData(res, params, callback){
+    if (allData[0]){
+        for (let i = 0; i < allData[0].length; i++) {                    
+            for (let idx = 0; idx < MAX_DATA; idx++) {
+                if (allData[idx] && allData[idx][i]) {
+                    val = Number.parseFloat(allData[idx][i].value);
+                    option.series[idx].data.push(val);
+                }
+            }
+
+            option.xAxis[0].data.push(i);
+        }
+    }
+
+    callback(option, params, res);
+}
+
+async function getData(idx, dataType, params, token, res, callback){
+    let interval = 3600 * 1000;
+    let limit    = 1000;
+    let keyValue = (dataType == DataTypeTemperature) ? '温度' : '湿度';
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=${aggList[idx]}`;
+    api = encodeURI(api);
+    //console.log(api);
+
+    axios.get(api, {
+        headers: { "X-Authorization": token }
+      }).then(response => {
+        retCnt++;
+        allData[idx] = (idx < 3) ? response.data.温度 :response.data.湿度;
+
+        if (retCnt == MAX_DATA){
+            console.log('all data receive');
+            processData(res, params, callback);
+        }
+      }).catch(err => {
+        if (!respHasSend) {
+            respHasSend = true;
+            //util.responErrorMsg(err, res);
+            processData(res, params, callback);
+        }
+      });   
 }
 
 var chart_area = {
@@ -116,54 +164,11 @@ var chart_area = {
     version: '1.0.0',
 
     fillData: async function (params, token, res, callback) {
-        tk = token.substr(7);
-        const webSocket = new WebSocket('ws://cf.beidouapp.com:8080/api/ws/plugins/telemetry?token=' + tk);
-        
-        var receiveMessage = false;
-        webSocket.onopen = function open() {
-            console.log('webSocket connected!');
-
-            var cmd_sub = {
-                tsSubCmds: [],
-                historyCmds: [
-                    {
-                    "entityType": "DEVICE",
-                    "entityId": params.devid, //A监测点
-                    "keys": '温度',
-                    "startTs": params.startTime,  //距离1970年1月1日零点的毫秒数
-                    "endTs": params.endTime,
-                    "interval": 1000,			//分组间隔1000毫秒
-                    //"limit": 500,
-                    //"cmdId": 13,
-                    "agg": "MAX"
-                    }
-                ],
-                attrSubCmds: []
-            };
-            var data = JSON.stringify(cmd_sub);
-            webSocket.send(data);
-        };
-        webSocket.onmessage = function incoming(event) {
-            receiveMessage = true;
-            var obj = JSON.parse(event.data);
-            console.log(event.data);
-            // console.log('cmdChannel: %d',obj.subscriptionId, obj.data);
-            callback(option, params, res);
-        };
-        webSocket.onclose = function close(){
-            console.log('webSocket closed!');
-        };
-
-        webSocket.onerror = function error(msg){
-            console.log('webSocket errr!');
-        }
-
-        setTimeout(timerfun, util.getWsTimeout());
-        function timerfun() {
-            //console.log('>>>>>Message is sent: ' + receiveMessage);
-            if (!receiveMessage) {
-                callback(option, params, res);
-            }            
+        respHasSend = false;
+        for (var i = 0; i < MAX_DATA; i++){
+            
+            let dataType = (i < 3) ? DataTypeTemperature : DataTypeHumidity;
+            getData(i, dataType, params, token, res, callback);
         }
     }
 }
