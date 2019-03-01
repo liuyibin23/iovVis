@@ -1,0 +1,22 @@
+create_order.json为规则链初始化顺序定义模板。
+因为各规则链中存在依赖关系，所以需要按指定顺序新建规则链。
+导出的规则链json模板中如存在 ruleChainConnections 项，需要在该项中的additionalInfo中添加ruleChainName项，用于指明依赖关系。
+例如：
+    "ruleChainConnections": [
+          {
+            "fromIndex": 2,
+            "targetRuleChainId": {
+              "entityType": "RULE_CHAIN",
+              "id": "67c0b4c0-1102-11e9-bae8-7562662cc4ee"
+            },
+            "additionalInfo": {
+              "layoutX": 354,
+              "layoutY": 330,
+              "ruleChainNodeId": "rule-chain-node-15",
+    		  "ruleChainName": "MQTT_ENGINE_BUS"
+            },
+            "type": "Post telemetry"
+          }
+        ]
+上例中，指明该规则链依赖于名称为 MQTT_ENGINE_BUS 的规则链。
+如各规则链不存在依赖关系，则不需要create_order.json文件。
