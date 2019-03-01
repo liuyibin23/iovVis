@@ -269,6 +269,16 @@ CREATE TABLE IF NOT EXISTS patrol_record (
     recode_type varchar(255),
     info varchar
 );
+CREATE TABLE IF NOT EXISTS warnings_event_record (
+  id varchar(31) NOT NULL PRIMARY KEY,
+	tenant_id varchar(31),
+	customer_id varchar(31),
+	user_id varchar(31),
+	asset_id varchar(31),
+	record_ts bigint,
+  record_type varchar(255),
+  info varchar
+);
 CREATE TABLE IF NOT EXISTS ts_hour_value_statistic (
     entity_type varchar(255) NOT NULL,
     entity_id varchar(31) NOT NULL,
