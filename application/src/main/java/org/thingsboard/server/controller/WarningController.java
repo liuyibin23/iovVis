@@ -25,6 +25,38 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api")
 public class WarningController extends BaseController {
+
+	/** 
+	* @Description: 1.2.6.3 查询预警操作记录
+	* @Author: ShenJi
+	* @Date: 2019/3/1 
+	* @Param: [assetIdStr] 
+	* @return: java.util.List<org.thingsboard.server.common.data.warnings.WarningsRecord>
+	*/ 
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/getWarningEventRecord", method = RequestMethod.GET)
+	@ResponseBody
+	public List<WarningsRecord> checkWarnings(@RequestParam String assetIdStr) throws ThingsboardException {
+		if (assetIdStr == null)
+			throw new ThingsboardException(ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		Asset asset = assetService.findAssetById(getCurrentUser().getTenantId(),new AssetId(UUID.fromString(assetIdStr)));
+		if (asset == null)
+			throw new ThingsboardException("Asset non-existent",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+			case TENANT_ADMIN:
+				if (!asset.getTenantId().equals(getCurrentUser().getTenantId()))
+					throw new ThingsboardException("Asset non-existent.",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+			case CUSTOMER_USER:
+				if (!asset.getCustomerId().equals(getCurrentUser().getCustomerId()))
+					throw new ThingsboardException("Asset non-existent.",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+				default:
+		}
+		return null;
+	}
 	/**
 	* @Description: 1.2.6.2 添加预警操作记录
 	* @Author: ShenJi
