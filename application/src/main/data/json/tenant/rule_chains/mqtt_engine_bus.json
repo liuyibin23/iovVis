@@ -1,0 +1,277 @@
+{
+  "ruleChain": {
+    "additionalInfo": null,
+    "name": "MQTT_ENGINE_BUS",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null
+  },
+  "metadata": {
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "layoutX": 325,
+          "layoutY": 153
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetOriginatorFieldsNode",
+        "name": "telemetry_dev_id",
+        "debugMode": false,
+        "configuration": {
+          "fieldsMapping": {
+            "id": "dev_id"
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 969,
+          "layoutY": 149
+        },
+        "type": "org.thingsboard.rule.engine.mqtt.TbMqttNode",
+        "name": "EAI_BUS",
+        "debugMode": false,
+        "configuration": {
+          "topicPattern": "v1/devices/me/telemetry/${dev_id}",
+          "host": "192.168.1.20",
+          "port": 1883,
+          "connectTimeoutSec": 10,
+          "clientId": null,
+          "cleanSession": true,
+          "ssl": false,
+          "credentials": {
+            "type": "anonymous"
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 645,
+          "layoutY": 152
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "switch by dev_id",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var devids = [\"280f1810-1104-11e9-bae8-7562662cc4ee\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\"];\n/*device ids array*/\n\nvar result = devids.filter(function(el) {\n    return el === metadata.dev_id;});\nvar subscribed = result.length > 0;\nif(subscribed)\n    return true;\nelse\n    return false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 975,
+          "layoutY": 374
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "create ALARM",
+        "debugMode": true,
+        "configuration": {
+          "alarmType": "General Alarm",
+          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
+          "severity": "INDETERMINATE",
+          "propagate": true
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 349,
+          "layoutY": 377
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "alarm_rules_computation",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var ruleTables = {\n    \"280f1810-1104-11e9-bae8-7562662cc4ee\":\"msg.crackWidth > 10\",\n    \"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"msg.wave.some(function(it,ind){if(/*S*/it > 2/*E*/) return 1;});\"\n};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 351,
+          "layoutY": 526
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "sensor_related_bridge",
+        "debugMode": true,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 976,
+          "layoutY": 527
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "asset",
+        "debugMode": true,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 651,
+          "layoutY": 527
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "bridge_warning",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\nmsg.bridge_warning_level = 'RED';\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 649,
+          "layoutY": 452
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "outlier",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "return {msg: msg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 975,
+          "layoutY": 452
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "saveOuterlier",
+        "debugMode": false,
+        "configuration": {
+          "defaultTTL": 0
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 464,
+          "layoutY": 263
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "alarm_rules_computation",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var ruleTables = {\n    \"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"msg.crackDeepth > 0.3\"\n};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 751,
+          "layoutY": 260
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "传感量所属资产",
+        "debugMode": true,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 1071,
+          "layoutY": 260
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "saveOuterlier",
+        "debugMode": true,
+        "configuration": {
+          "defaultTTL": 0
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 1,
+        "type": "True"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 3,
+        "type": "True"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 5,
+        "type": "True"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 8,
+        "type": "True"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 7,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 9,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 10,
+        "toIndex": 11,
+        "type": "True"
+      },
+      {
+        "fromIndex": 11,
+        "toIndex": 12,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": [
+      {
+        "fromIndex": 0,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "071b5610-1d97-11e9-b372-db8be707c5f4"
+        },
+        "additionalInfo": {
+          "layoutX": 100,
+          "layoutY": 384,
+          "ruleChainNodeId": "rule-chain-node-15",
+          "ruleChainName": "CONFIG_ALARM_RULE"
+        },
+        "type": "Success"
+      }
+    ]
+  }
+}

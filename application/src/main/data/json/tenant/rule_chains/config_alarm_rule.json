@@ -1,0 +1,237 @@
+{
+  "ruleChain": {
+    "additionalInfo": null,
+    "name": "CONFIG_ALARM_RULE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null
+  },
+  "metadata": {
+    "firstNodeIndex": 1,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "layoutX": 958,
+          "layoutY": 149
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "创建一级告警",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "General Alarm",
+          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
+          "severity": "INDETERMINATE",
+          "propagate": true
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 307,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "一级告警规则配置",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var ruleTables = {\"280f1810-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:10, max:20};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:2, max:25};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"4f8b4b50-167e-11e9-95df-819fb12c2a0b\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:5.01, max:10.99};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"fb61bc00-1711-11e9-860f-856e86c94b8e\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:15, max:24};/*E*/if(it < thd.min || it > thd.max) return 1;});\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif (ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 176,
+          "layoutY": 640
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "outlier",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "return {msg: msg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 174,
+          "layoutY": 569
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "saveOuterlier",
+        "debugMode": false,
+        "configuration": {
+          "defaultTTL": 0
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 632,
+          "layoutY": 378
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "传感量所属资产",
+        "debugMode": false,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 959,
+          "layoutY": 482
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "更新资产预警属性",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 958,
+          "layoutY": 376
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "严重超标黄色预警",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\nmsg.asset_warning_level = 'YELLOW';\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 959,
+          "layoutY": 256,
+          "description": "严重超标的指标"
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "创建二级告警",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "General Alarm",
+          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
+          "severity": "WARNING",
+          "propagate": true
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 572,
+          "layoutY": 259
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "二级告警规则配置",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var ruleTables = {\"22222\":\"JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > 0/*E*/) return 1;});\",\"280f1810-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:20, max:35};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:3, max:33};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"4f8b4b50-167e-11e9-95df-819fb12c2a0b\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:11.11, max:22.22};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"fb61bc00-1711-11e9-860f-856e86c94b8e\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:13, max:22};/*E*/if(it < thd.min || it > thd.max) return 1;});\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 634,
+          "layoutY": 37
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "传感量所属资产",
+        "debugMode": true,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 954,
+          "layoutY": 37
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
+        "name": "saveOuterlier",
+        "debugMode": true,
+        "configuration": {
+          "defaultTTL": 0
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 1,
+        "toIndex": 0,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 8,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 9,
+        "type": "True"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 5,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 4,
+        "type": "True"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 7,
+        "type": "True"
+      },
+      {
+        "fromIndex": 9,
+        "toIndex": 10,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": [
+      {
+        "fromIndex": 8,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "9f845d70-1d97-11e9-b372-db8be707c5f4"
+        },
+        "additionalInfo": {
+          "layoutX": 198,
+          "layoutY": 372,
+          "ruleChainNodeId": "rule-chain-node-13",
+          "description": "预警规则处理流程",
+          "ruleChainName": "CONFIG_WARNING_RULE"
+        },
+        "type": "False"
+      }
+    ]
+  }
+}

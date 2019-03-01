@@ -1,0 +1,18 @@
+[
+  {
+    "rule_chain_template_name":"config_warning_rule",
+	"order":"1"
+  },
+  {
+    "rule_chain_template_name":"config_alarm_rule",
+	"order":"2"
+  },
+  {
+    "rule_chain_template_name":"mqtt_engine_bus",
+	"order":"3"
+  },
+  {
+    "rule_chain_template_name":"root_rule_chain",
+	"order":"4"
+  }
+]

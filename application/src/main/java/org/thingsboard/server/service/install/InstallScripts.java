@@ -34,6 +34,7 @@ import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -60,6 +61,7 @@ public class InstallScripts {
     public static final String RULE_CHAINS_DIR = "rule_chains";
     public static final String WIDGET_BUNDLES_DIR = "widget_bundles";
     public static final String DASHBOARDS_DIR = "dashboards";
+    public static final String RULE_CHAIN_CREATE_ORDER_JSON = "create_order";
 
     public static final String JSON_EXT = ".json";
 
@@ -104,6 +106,66 @@ public class InstallScripts {
     }
 
     public void createDefaultRuleChains(TenantId tenantId) throws IOException {
+        Path widgetBundlesDir = Paths.get(getDataDir(), JSON_DIR, TENANT_DIR, RULE_CHAINS_DIR,RULE_CHAIN_CREATE_ORDER_JSON + JSON_EXT);
+        File createOrderFile = widgetBundlesDir.toFile();
+        if(createOrderFile.exists() && createOrderFile.isFile()){
+            createDefaultRuleChainsWithCreateOrder(tenantId,createOrderFile);
+        } else {
+            createDefaultRuleChainsWithOutCreateOrder(tenantId);
+        }
+    }
+
+    /**
+     * 有规则链加载顺序json时创建规则链
+     * @param tenantId
+     * @throws IOException
+     */
+    private void createDefaultRuleChainsWithCreateOrder(TenantId tenantId,File createOrderFile) throws IOException{
+        JsonNode createOrderJson = objectMapper.readTree(createOrderFile);
+        if(createOrderJson.isArray()){
+            String[] ruleChainJsons = new String[createOrderJson.size()];
+            createOrderJson.forEach(item->{
+                String name = item.get("rule_chain_template_name").asText();
+                int order = item.get("order").asInt();
+                ruleChainJsons[order - 1] = name;
+            });
+            for (String ruleChainFileName:ruleChainJsons) {
+                Path path = Paths.get(getDataDir(), JSON_DIR, TENANT_DIR, RULE_CHAINS_DIR,ruleChainFileName + JSON_EXT);
+                try {
+                    JsonNode ruleChainJson = objectMapper.readTree(path.toFile());
+                    RuleChain ruleChain = objectMapper.treeToValue(ruleChainJson.get("ruleChain"), RuleChain.class);
+                    RuleChainMetaData ruleChainMetaData = objectMapper.treeToValue(ruleChainJson.get("metadata"), RuleChainMetaData.class);
+
+                    ruleChain.setTenantId(tenantId);
+                    ruleChain = ruleChainService.saveRuleChain(ruleChain);
+
+                    ruleChainMetaData.setRuleChainId(ruleChain.getId());
+                    if(ruleChainMetaData.getRuleChainConnections()!= null && ruleChainMetaData.getRuleChainConnections().size() >0){
+                        ruleChainMetaData.getRuleChainConnections().forEach(item ->{
+                            String ruleChainName = item.getAdditionalInfo().get("ruleChainName").asText();
+                            RuleChain ruleChain1 = ruleChainService.findRuleChainsByTenantIdAndTextSearch(tenantId,ruleChainName).get(0);
+                            item.setTargetRuleChainId(ruleChain1.getId());
+                        });
+                    }
+
+                    ruleChainService.saveRuleChainMetaData(new TenantId(EntityId.NULL_UUID), ruleChainMetaData);
+                } catch (Exception e) {
+                    log.error("Unable to load rule chain from json: [{}]", path.toString());
+                    throw new RuntimeException("Unable to load rule chain from json", e);
+                }
+            }
+        } else {
+            log.error("createOrder.json is error");
+            throw new RuntimeException("createOrder.json is error");
+        }
+    }
+
+    /**
+     * 没有规则链加载顺序json时创建规则链（原有方式）
+     * @param tenantId
+     * @throws IOException
+     */
+    private void createDefaultRuleChainsWithOutCreateOrder(TenantId tenantId) throws IOException {
         Path tenantChainsDir = getTenantRuleChainsDir();
         try (DirectoryStream<Path> dirStream = Files.newDirectoryStream(tenantChainsDir, path -> path.toString().endsWith(InstallScripts.JSON_EXT))) {
             dirStream.forEach(
