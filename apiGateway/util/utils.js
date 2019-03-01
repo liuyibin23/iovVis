@@ -1,16 +1,11 @@
 // const url   = require("url");
 const axios = require('axios')
 
-const API = 'http://sm.schdri.com/api/';
+const API = 'http://ignss.kmbdtx.com:6104/api/';
+//const API = 'http://sm.schdri.com/api/';
 const fileSVR = 'http://sm.schdri.com:80/';
 // var API = 'http://192.168.1.76:8080/api/';
 
-// web socket timeout
-const wsTimeOut = 10 * 1000;  // 10s
-
-function getWsTimeout(){
-    return wsTimeOut;
-}
 
 function getAPI() {
     return API;
@@ -18,6 +13,7 @@ function getAPI() {
 function getFSVR() {
     return fileSVR;
 }
+
 async function getSync(url, data, tok) {
     try {
         let res = await axios.get(url, data);
@@ -106,4 +102,3 @@ exports.getAPI = getAPI;
 exports.getFSVR = getFSVR;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
-exports.getWsTimeout = getWsTimeout;

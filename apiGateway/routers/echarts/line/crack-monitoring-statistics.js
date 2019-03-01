@@ -63,73 +63,75 @@ let option = {
     ]
 };
 
+var allData = [];
+var MAX_DATA = 3;
+var aggList = ['MAX', 'AVG', 'MIN'];
+var retCnt = 0;
+var respHasSend = 0;
+
+function processData(res, params, callback){
+    if (allData[0]){
+        for (let i = 0; i < allData[0].length; i++) {                    
+            for (let idx = 0; idx < MAX_DATA; idx++) {
+                if (allData[idx] && allData[idx][i]) {
+                    val = Number.parseFloat(allData[idx][i].value);
+                    option.series[idx].data.push(val);
+                }
+            }
+
+            option.xAxis[0].data.push(i);
+        }
+    }
+
+    callback(option, params, res);
+}
+
+async function getData(idx, dataType, params, token, res, callback){
+    let interval = 10 * 1000;
+    let limit    = 1000;
+    let keyValue = 'crackWidth';   // 裂缝宽度
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
+     + `&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=${aggList[idx]}`;
+    api = encodeURI(api);
+    //console.log(api);
+
+    axios.get(api, {
+        headers: { "X-Authorization": token }
+      }).then(response => {
+        retCnt++;
+        allData[idx] = response.data.crackWidth;
+
+        if (retCnt == MAX_DATA){
+            console.log('all data receive');
+            processData(res, params, callback);
+        }
+      }).catch(err => {
+        if (!respHasSend) {
+            respHasSend = true;
+            //util.responErrorMsg(err, res);
+            processData(res, params, callback);
+        }
+      });   
+}
+
+function resetPreData(){
+    respHasSend = false;
+    retCnt = 0;
+    option.xAxis[0].data = [];
+    for (let idx = 0; idx < MAX_DATA; idx++) {
+        option.series[idx].data = [];
+    }
+}
+
 var chart_area = {
     name: 'chart_data',
     version: '1.0.0',
 
     fillData: async function (params, token, res, callback) {
-        var receiveMessage = false;
-        tk = token.substr(7);
-        const webSocket = new WebSocket('ws://cf.beidouapp.com:8080/api/ws/plugins/telemetry?token=' + tk);
-        webSocket.onopen = function open() {
-            console.log('webSocket connected!');
-
-            var cmd_sub = {
-                tsSubCmds: [],
-                historyCmds: [
-                    {
-                    "entityType": "DEVICE",
-                    "entityId": params.devid, //A监测点
-                    "keys": 'crackWidth',
-                    "startTs": params.startTime,  //距离1970年1月1日零点的毫秒数
-                    "endTs": params.endTime,
-                    "interval": 5000,			//分组间隔1000毫秒
-                    //"limit": 500,
-                    //"cmdId": 13,
-                    "agg": "AVG"
-                    }
-                ],
-                attrSubCmds: []
-            };
-            var data = JSON.stringify(cmd_sub);
-            webSocket.send(data);
-        };
-
-        webSocket.onmessage = function incoming(event) {
-            receiveMessage = true;
-            var obj = JSON.parse(event.data);
-            if (obj.data.crackWidth){
-                let data = obj.data.crackWidth;
-                data.forEach((element, index, data) => {
-                    var val = Math.round(Number.parseFloat(element[1]) * 100) / 100;
-
-                    // 最大裂缝
-                    option.series[0].data.push(val);
-                    // 平均裂缝
-                    option.series[1].data.push(val - 20);
-                    // 最小裂缝
-                    option.series[2].data.push(val - 40);
-
-                    option.xAxis[0].data.push(index);
-                }); 
-            }
-            
-            callback(option, params, res);
-        };
-        webSocket.onclose = function close(){
-            console.log('webSocket closed!');
-        };
-
-        webSocket.onerror = function error(msg){
-            console.log('webSocket errr!');
-        }
-        
-        setTimeout(timerfun, util.getWsTimeout());
-        function timerfun() {
-            //console.log('>>>>>Message is sent: ' + receiveMessage);
-            if (!receiveMessage) {
-                callback(option, params, res);
-            }            
+        resetPreData();
+        for (var i = 0; i < MAX_DATA; i++){
+            dataType = 'crackWidth';
+            getData(i, dataType, params, token, res, callback);
         }
     }
 }
