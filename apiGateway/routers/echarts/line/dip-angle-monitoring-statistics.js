@@ -105,13 +105,22 @@ async function getData(idx, dataType, params, token, res, callback){
       });   
 }
 
+function resetPreData(){
+    respHasSend = false;
+    retCnt = 0;
+    option.xAxis[0].data = [];
+    for (let idx = 0; idx < MAX_DATA; idx++) {
+        option.series[idx].data = [];
+    }
+}
+
 var chart_area = {
     name: 'chart_data',
     version: '1.0.0',
 
     fillData: async function (params, token, res, callback) {
-        respHasSend = false;
-        retCnt = 0;
+        resetPreData();
+        
         for (var i = 0; i < MAX_DATA; i++){
             dataType = '倾角';
             getData(i, dataType, params, token, res, callback);
