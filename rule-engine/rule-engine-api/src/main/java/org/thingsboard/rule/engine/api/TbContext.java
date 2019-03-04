@@ -34,6 +34,7 @@ import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.timeseries.TimeseriesService;
 import org.thingsboard.server.dao.user.UserService;
+import org.thingsboard.server.dao.warnings.WarningsRecordService;
 
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
@@ -92,6 +93,8 @@ public interface TbContext {
     EntityViewService getEntityViewService();
 
     TaskService getTaskService();
+
+    WarningsRecordService getWarningService();
 
     ListeningExecutor getJsExecutor();
 

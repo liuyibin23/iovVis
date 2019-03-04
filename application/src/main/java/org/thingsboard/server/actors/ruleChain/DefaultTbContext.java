@@ -52,6 +52,7 @@ import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.timeseries.TimeseriesService;
 import org.thingsboard.server.dao.user.UserService;
+import org.thingsboard.server.dao.warnings.WarningsRecordService;
 import org.thingsboard.server.service.script.RuleNodeJsScriptEngine;
 import scala.concurrent.duration.Duration;
 
@@ -236,6 +237,11 @@ class DefaultTbContext implements TbContext {
     @Override
     public TaskService getTaskService() {
         return mainCtx.getTaskService();
+    }
+
+    @Override
+    public WarningsRecordService getWarningService() {
+        return mainCtx.getWarningsRecordService();
     }
 
     @Override
