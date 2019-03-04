@@ -3,18 +3,16 @@ const util = require('../../../util/utils');
 
 let option = {
     title : {
-         text: '车辆荷载自动监测数据_柱状_车重',
+         text: '车辆荷载自动监测数据车重',
          x: 'center',
          y:'bottom'
      },
      legend: {
-         data:['车重 > 50T', '20T < 车重 < 50T', '车重 < 20T'],
-             orient: 'vertical',
-        x:'85%',
-         y:'10%',
-         backgroundColor: '#eee',
-         borderColor: 'rgba(178,34,34,0.8)',
-         borderWidth: 2
+         data:['车重 > 44T', '24T < 车重 < 44T', '7.5T < 车重 < 24T', '2.5T < 车重 < 7.5T', '车重 < 2.5T'],
+         orient: 'vertical',
+         x:'80%',
+         y:'top',
+         borderWidth: 1
      },
      toolbox: {
          show : false
@@ -22,7 +20,7 @@ let option = {
      xAxis : [
          {
              type : 'category',
-             data : ['1','2','3','4','5','6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18',]
+             data : []
          }
      ],
      yAxis : [
@@ -35,48 +33,129 @@ let option = {
      ],
      series : [
          {
-             name:'20T < 车重 < 50T',
+             name:'车重 < 2.5T',
              type:'bar',
              stack: '总量',
             // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-             data:[20000, 10000, 10000, 20000, 20000, 20000, 10000, 10000, 20000, 20000, 20000,10000, 10000, 20000, 20000, 20000]
+             data:[]
          },
          {
-             name:'车重 < 20T',
-             type:'bar',
-             stack: '总量',
-             data:[5000, 5000, 5000, 8000, 8000, 8000, 5000, 5000, 5000, 8000, 8000, 8000,5000, 5000, 5000, 8000, 8000, 8000]
+            name:'2.5T < 车重 < 7.5T',
+            type:'bar',
+            stack: '总量',
+             data:[]
          },
          {
-             name:'车重 > 50T',
-             type:'bar',
-               barWidth:25,
-             stack: '总量',
+            name:'7.5T < 车重 < 24T',
+            type:'bar',
+            stack: '总量',
           
              //itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-             data:[3000,5000, 5000, 3000,3000,3000, 8000, 8000, 5000, 5000, 5000, 8000, 8000, 8000, 8000, 5000, 5000, 5000, 8000, 8000, ]
-         }
+             data:[]
+         },
+         {
+            name:'24T < 车重 < 44T',
+            type:'bar',
+            stack: '总量',
+           // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            data:[]
+        },
+        {
+            name:'车重 > 44T',
+            type:'bar',
+            stack: '总量',
+            barCateGoryGap:20,
+           // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            data:[]
+        }
      ]
  };
                      
+ var allData = [];
+ var MAX_DATA = 1;
+ var retCnt = 0;
+ var respHasSend = 0;
+ 
+ function processData(res, params, callback){ 
+     callback(option, params, res);
+ }
+ 
+ async function getData(idx, dataType, params, token, res, callback){
+     let keyValue = 'Type1,Type2,Type3,Type4,Type5';   //
+     let limit    = 100000;
+     let interval = 60 * 1000;
+     let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
+      + `&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=COUNT`;
+     api = encodeURI(api);
+     //console.log(api);
+ 
+     axios.get(api, {
+         headers: { "X-Authorization": token }
+       }).then(response => {
+         retCnt++;
+         allData[idx] = response.data;
+ 
+         if (retCnt == MAX_DATA){
+             console.log('all data receive');
+            
+             //
+             let type1 = response.data.Type1;
+             let type2 = response.data.Type2;
+             let type3 = response.data.Type3;
+
+             let typeList = [response.data.Type1, response.data.Type2, response.data.Type3, response.data.Type4, response.data.Type5];
+
+             let max_idx = 0;
+             for (let i = 0; i < typeList.length; i++){
+                let type = typeList[i];
+                if (type){
+                    let idx = 0;
+                    type.forEach(data => {
+                        if (idx > 10){                       
+                            option.series[i].barWidth = 20;
+                        }
+                        option.series[i].data[idx++] = Number.parseFloat(data.value);
+                    });
                     
-var chart_area = {
-    name: 'chart_data',
-    version: '1.0.0',
-    fillData: async function (params, token, res, callback) {
-        
-        let apiUrl = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
-        axios.get(apiUrl, { headers: { "X-Authorization": token } })
-            .then((resp) => {
-                let data = resp.data.crackWidth;
-                if (data) {
-                    
-                }
-                callback(option, params, res);
-            })
-            .catch((err) => {
-                callback(option, params, res);
-            });
-    }
-}
-module.exports = chart_area;
+                    if (idx > max_idx)
+                        max_idx = idx;
+                }   
+             }
+
+             for (let i = 0; i < max_idx; i++){
+                option.xAxis[0].data.push(i);
+             }
+
+             processData(res, params, callback);
+         }
+       }).catch(err => {
+         if (!respHasSend) {
+             respHasSend = true;
+             //util.responErrorMsg(err, res);
+             processData(res, params, callback);
+         }
+       });   
+ }
+ 
+ function resetPreData(){
+     respHasSend = false;
+     retCnt = 0;
+     option.xAxis[0].data = [];
+     for (let idx = 0; idx < MAX_DATA; idx++) {
+         option.series[idx].data = [];
+     }
+ }
+ 
+ var chart_area = {
+     name: 'chart_data',
+     version: '1.0.0',
+ 
+     fillData: async function (params, token, res, callback) {
+         resetPreData();
+         for (var i = 0; i < MAX_DATA; i++){
+             dataType = '震动';
+             getData(i, dataType, params, token, res, callback);
+         }
+     }
+ }
+ module.exports = chart_area;
