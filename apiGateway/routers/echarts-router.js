@@ -7,6 +7,7 @@ const vibration_monitoring_statistics_line     = require('./echarts/line/vibrati
 const crack_monitoring_statistics_line         = require('./echarts/line/crack-monitoring-statistics');
 const dip_angle_monitoring_statistics_line     = require('./echarts/line/dip-angle-monitoring-statistics');
 const cable_force_monitoring_statistics_line   = require('./echarts/line/cable-force-monitoring-statistics');
+const deformation_monitoring_statistics_line   = require('./echarts/line/deformation-monitoring-statistics');
 const stress_strain_monitoring_statistics_line = require('./echarts/line/stress-strain-monitoring-statistics');
 
 // Bar
@@ -79,6 +80,7 @@ function generateChart(req, res){
     chartLineMap.set('裂缝监测数据统计',     crack_monitoring_statistics_line); 
     chartLineMap.set('倾角自动监测数据统计', dip_angle_monitoring_statistics_line);
     chartLineMap.set('索力自动监测数据统计', cable_force_monitoring_statistics_line);
+    chartLineMap.set('变形自动监测数据统计', deformation_monitoring_statistics_line);
     chartLineMap.set('应力应变监测数据统计', stress_strain_monitoring_statistics_line);
 
     // 柱状图绑定
