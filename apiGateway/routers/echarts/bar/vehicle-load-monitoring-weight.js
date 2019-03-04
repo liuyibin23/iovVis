@@ -79,13 +79,45 @@ let option = {
  function processData(res, params, callback){ 
      callback(option, params, res);
  }
+
+ /**
+ * 普通数组快速排序
+ *
+ * @param arr Array 数字数组
+ * @param dir asc升序、desc降序
+ *
+ * @example:
+ * sort([1,4,2,5])
+ * sort([1,4,2,5],'asc')
+ * sort([1,4,2,5],'desc')
+ */
+function sort(arr, dir){
+    dir=dir||'asc';
+    if (arr.length == 0) return [];
+
+    var left = new Array();
+    var right = new Array();
+    var pivot = arr[0];
+
+    if(dir==='asc'){//升序
+        for (var i = 1; i < arr.length; i++) {
+            arr[i] < pivot ? left.push(arr[i]): right.push(arr[i]);
+        }
+    }else{//降序
+        for (var i = 1; i < arr.length; i++) {
+            arr[i] > pivot ? left.push(arr[i]): right.push(arr[i]);
+        }
+    }
+    return sort(left,dir).concat(pivot, sort(right,dir));
+}
  
  async function getData(idx, dataType, params, token, res, callback){
      let keyValue = 'Type1,Type2,Type3,Type4,Type5';   //
-     let limit    = 100000;
-     let interval = 60 * 1000;
+     let interval = 10 * 60 * 1000;
+     let limit = (params.endTime - params.startTime) / 1000.0 + 2;
+     let filter = `&interval=${interval}&agg=COUNT`;
      let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
-      + `&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=COUNT`;
+      + `&startTs=${params.startTime}&endTs=${params.endTime}&limit=${limit}${filter}`;
      api = encodeURI(api);
      //console.log(api);
  
@@ -97,28 +129,51 @@ let option = {
  
          if (retCnt == MAX_DATA){
              console.log('all data receive');
-            
-             //
-             let type1 = response.data.Type1;
-             let type2 = response.data.Type2;
-             let type3 = response.data.Type3;
 
-             let typeList = [response.data.Type1, response.data.Type2, response.data.Type3, response.data.Type4, response.data.Type5];
+            let typeList = [response.data.Type1, response.data.Type2, response.data.Type3, response.data.Type4, response.data.Type5];
+            var timeMap = new Map();
+            for (let i = 0; i < typeList.length; i++){
+                let type = typeList[i];
+                if (type){
+                    for (let i = 0; i < type.length; i++){
+                        let data = type[i];
+                        timeMap.set(data.ts, 1);
+                    }
+                }
+            }
 
-             let max_idx = 0;
+            let tsArry = [];
+            let idx = 0;
+            timeMap.forEach(function(value, key) {  
+               tsArry[idx++] = key;  
+            });
+
+            let newArray = sort(tsArry, 'asc');
+
+            let max_idx = timeMap.size;
+            console.log('max idx=' + max_idx);
+
+            // sort and remap
+            timeMap.clear();
+            for (var i = 0; i < newArray.length; i++){
+                timeMap.set(newArray[i], i);
+            }
+
              for (let i = 0; i < typeList.length; i++){
                 let type = typeList[i];
                 if (type){
-                    let idx = 0;
-                    type.forEach(data => {
-                        if (idx > 10){                       
-                            option.series[i].barWidth = 20;
+                    // init
+                    for (let j = 0; j < max_idx; j++){
+                        option.series[i].data[j] = 0;
+                    }
+                    for (let j = 0; j < max_idx; j++){
+                        if (type[j] && type[j].ts) {
+                            let val = timeMap.get(type[j].ts);
+                            if (val != -1){
+                                option.series[i].data[val] = Number.parseFloat(type[j].value);
+                            } 
                         }
-                        option.series[i].data[idx++] = Number.parseFloat(data.value);
-                    });
-                    
-                    if (idx > max_idx)
-                        max_idx = idx;
+                    }
                 }   
              }
 
