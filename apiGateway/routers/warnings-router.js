@@ -2,6 +2,7 @@ const express = require('express');
 const axios = require('axios');
 const util = require('../util/utils');
 const logger = require('../util/logger');
+const qs = require('qs')
 const router = express.Router();
 
 // define warnings route
@@ -73,12 +74,14 @@ async function postAsset(assetID, token, args, res) {
       }).then((resp) => {
         // 添加预警操作记录
         let api = util.getAPI() + 'currentUser/setWarningEventRecord';
-        const params = new URLSearchParams();
-        params.append('warningsInfo', '设置资产预警状态');
-        params.append('warningsType', '设置资产预警状态');
-        params.append('assetIdStr', assetID);
 
-        axios.post(api, params, {
+        let params = {
+          warningsInfo:'设置资产预警状态',
+          warningsType:'设置资产预警状态',
+          assetIdStr:assetID
+        };
+
+        axios.post(api, qs.stringify(params), {
           headers: { "X-Authorization": token }
         }).then(resp => {
           //返回成功
@@ -315,12 +318,14 @@ async function postWarningRules(req, res) {
                       }).then(resp => {
                            // 添加预警操作记录
                           let api = util.getAPI() + 'currentUser/setWarningEventRecord';
-                          const params = new URLSearchParams();
-                          params.append('warningsInfo', '设置资产预警规则');
-                          params.append('warningsType', '设置资产预警规则');
-                          params.append('assetIdStr', assetID);
-
-                          axios.post(api, params, {
+                          
+                          let params = {
+                            warningsInfo:'设置资产预警规则',
+                            warningsType:'设置资产预警规则',
+                            assetIdStr:assetID
+                          };
+                          
+                          axios.post(api, qs.stringify(params), {
                             headers: { "X-Authorization": token }
                           }).then(resp => {
                             //返回成功
