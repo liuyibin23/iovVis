@@ -1,7 +1,7 @@
 {
 	"serverCfg":{
-		"API":"http://ignss.kmbdtx.com:6104/api/",
-		"fileSVR":"http://sm.schdri.com:80/",
-		"mqttBackendBUS":"cf.beidouapp.com:9008"
+		"API":"http://sm.schdri.com/api/",
+		"fileSVR":"http://sm.schdri.com/",
+		"mqttBackendBUS":"sm.schdri.com:9009"
 	}
 }
