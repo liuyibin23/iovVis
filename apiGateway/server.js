@@ -15,7 +15,7 @@ const alarmsRouter = require('./routers/alarms-router');
 const warningsRouter = require('./routers/warnings-router');
 const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
-
+const util = require('./util/utils');
 const VERSION = '1.0.0';
 
 let app = express();
@@ -26,26 +26,33 @@ let options = {
   };
 
 const root = path.join(__dirname, '/public');
-app.use('/config', express.static(root));  
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
-app.use(cors());
-app.use(tokenVerify());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+let ret = util.loadCfg('config.json');
+if (ret) {
+  app.use('/config', express.static(root));  
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument,options));
+  app.use(cors());
+  app.use(tokenVerify());
+  app.use(bodyParser.json());
+  app.use(bodyParser.urlencoded({ extended: false }));
 
 
-app.use('/api/v1/templates', templatesRouter);
-app.use('/api/v1/reports', reportsRouter);
-app.use('/api/v1/rules/alarms', alarmsRouter);
-app.use('/api/v1/echarts', echartsRouter);
-app.use('/api/v1/tables', contentRouter);
-app.use('/api/v1/content', contentRouter);
-app.use('/api/v1/warnings', warningsRouter);
-app.use('/api/v1/rules/warnings', warningsRouter);
-app.use(defaultRouter);
-app.use(errHandler);
+  app.use('/api/v1/templates', templatesRouter);
+  app.use('/api/v1/reports', reportsRouter);
+  app.use('/api/v1/rules/alarms', alarmsRouter);
+  app.use('/api/v1/echarts', echartsRouter);
+  app.use('/api/v1/tables', contentRouter);
+  app.use('/api/v1/content', contentRouter);
+  app.use('/api/v1/warnings', warningsRouter);
+  app.use('/api/v1/rules/warnings', warningsRouter);
+  app.use(defaultRouter);
+  app.use(errHandler);
 
-logger.log('info', 'API Gateway version: %s', VERSION);
-logger.log('info', 'Simple API Gateway run on localhost:%d', port);
+  logger.log('info', 'API Gateway version: %s', VERSION);
+  logger.log('info', 'Simple API Gateway run on localhost:%d', port);
 
-app.listen(port);
+  app.listen(port);
+}
+else {
+  logger.log('info', 'API Gateway version: %s', VERSION);
+  logger.log('error', 'API Gateway load cfg file [config.json] failed.');
+}

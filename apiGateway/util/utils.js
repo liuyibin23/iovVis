@@ -1,17 +1,40 @@
 // const url   = require("url");
-const axios = require('axios')
+const axios = require('axios');
+var path = require('path'); //系统路径模块
+var fs = require('fs'); //文件模块
+const logger = require('./logger');
 
-//const API = 'http://ignss.kmbdtx.com:6104/api/';
-const API = 'http://sm.schdri.com/api/';
-const fileSVR = 'http://sm.schdri.com:80/';
-// var API = 'http://192.168.1.76:8080/api/';
+var gCfg = null;
 
+function loadCfg(filePath){
+    let data = [];
+    var file = path.join(filePath); 
+
+    try {
+        //读取json文件
+        var cfg = fs.readFileSync(file, 'utf-8');
+        var cfgInfo = JSON.parse(cfg);
+
+        if (cfgInfo.serverCfg) {
+            gCfg = cfgInfo.serverCfg;
+            return true;
+        }
+    } catch(err){
+        console.log(err.message);
+        logger.log('error', err.message);
+        return false;
+    }
+}
 
 function getAPI() {
-    return API;
+    return gCfg.API;
 }
 function getFSVR() {
-    return fileSVR;
+    return gCfg.fileSVR;
+}
+
+function getBackendBUS(){
+    return gCfg.mqttBackendBUS;
 }
 
 async function getSync(url, data, tok) {
@@ -98,7 +121,9 @@ exports.CST = Object.freeze({
 });
 exports.getSync = getSync;
 exports.postSync = postSync;
+exports.getBackendBUS = getBackendBUS;
 exports.getAPI = getAPI;
 exports.getFSVR = getFSVR;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
+exports.loadCfg = loadCfg;
