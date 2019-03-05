@@ -53,33 +53,46 @@ async function getWarningStatus(req, res) {
 }
 
 // 添加additionalInfo 属性
-async function postAsset(assetID, token, args, res){
+async function postAsset(assetID, token, args, res) {
   // GET
   let getapi = util.getAPI() + `assets?assetIds=${assetID}`;
   await axios.get(getapi, {
-      headers: {
-        "X-Authorization": token
-      }
+    headers: {
+      "X-Authorization": token
+    }
   })
-  .then((resp) => {
-    let pdata = resp.data[0];
-    pdata.additionalInfo = args;
+    .then((resp) => {
+      let pdata = resp.data[0];
+      pdata.additionalInfo = args;
 
-    let post_api = util.getAPI() +　`asset?tenantIdStr=${pdata.id.id}`;
-    axios.post(post_api, pdata, {
-      headers: {
-        "X-Authorization": token
-      }
-    }).then((resp) => {
-      util.responData(util.CST.OK200, util.CST.MSG200, res);
-    })
-    .catch((err) => {
+      let post_api = util.getAPI() + `asset?tenantIdStr=${pdata.id.id}`;
+      axios.post(post_api, pdata, {
+        headers: {
+          "X-Authorization": token
+        }
+      }).then((resp) => {
+        // 添加预警操作记录
+        let api = util.getAPI() + 'currentUser/setWarningEventRecord';
+        const params = new URLSearchParams();
+        params.append('warningsInfo', '设置资产预警规则');
+        params.append('warningsType', '设置资产预警规则');
+        params.append('assetIdStr', assetID);
+
+        axios.post(api, params, {
+          headers: { "X-Authorization": token }
+        }).then(resp => {
+          //返回成功
+          util.responData(util.CST.OK200, util.CST.MSG200, res);
+        }).catch(err => {
+          //通过资产ID获取信息失败
+          util.responErrorMsg(err, res);
+        });
+      }).catch((err) => {
+        util.responErrorMsg(err, res);
+      });
+    }).catch((err) => {
       util.responErrorMsg(err, res);
-    }); 
-  })
-  .catch((err) => {
-    util.responErrorMsg(err, res);
-  });
+    });
 }
 
 //设置预警状态
@@ -300,26 +313,9 @@ async function postWarningRules(req, res) {
                         headers: { "X-Authorization": token },
                         params: { "tenantIdStr": TID }
                       }).then(resp => {
-                        // 添加预警操作记录
-                        let api = util.getAPI() + 'currentUser/setWarningEventRecord';
-                        const params = new URLSearchParams();
-                        params.append('warningsInfo', '设置资产预警规则');
-                        params.append('warningsType', '设置资产预警规则');
-                        params.append('assetIdStr', assetID);
-                        
-                        axios.post(api, params, {
-                          headers: { "X-Authorization": token }
-                        }).then(resp => {
-                          //返回成功
-                          util.responData(util.CST.OK200, util.CST.MSG200, res);
-                        }).catch(err => {
-                          //通过资产ID获取信息失败
-                          util.responErrorMsg(err, res);
-                        });                        
-                      }).catch(err => {
-                        //post资产ID更新资产失败
-                        util.responErrorMsg(err, res);
-                      });
+                        //返回成功
+                        util.responData(util.CST.OK200, util.CST.MSG200, res);
+                      })
                     }).catch(err => {
                       //通过资产ID获取信息失败
                       util.responErrorMsg(err, res);
