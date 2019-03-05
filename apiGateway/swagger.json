@@ -35,6 +35,10 @@
     {
       "name": "预警",
       "description": "设施预警"
+    },
+    {
+      "name": "虚拟设备",
+      "description": "创建虚拟设备"
     }
   ],
   "paths": {
@@ -740,6 +744,41 @@
         "responses": {
           "200": {
             "$ref": "#/responses/Standard200OkResponse"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/virtualDevice/{virtual_name}": {
+      "post": {
+        "tags": [
+          "虚拟设备"
+        ],
+        "summary": "创建虚拟设备",
+        "description": "创建虚拟设备",
+        "parameters": [
+          {
+            "name": "virtual_name",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "虚拟设备名称。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "创建虚拟设备",
+            "schema": {
+              "type": "object"
+            }
           },
           "401": {
             "$ref": "#/responses/Standard401ErrorResponse"

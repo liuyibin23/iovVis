@@ -13,6 +13,7 @@ const echartsRouter = require('./routers/echarts-router');
 const contentRouter =  require('./routers/content-router');
 const alarmsRouter = require('./routers/alarms-router');
 const warningsRouter = require('./routers/warnings-router');
+const virtualDeviceRouter = require('./routers/virtual-device-router');
 const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
 const util = require('./util/utils');
@@ -44,6 +45,7 @@ if (ret) {
   app.use('/api/v1/content', contentRouter);
   app.use('/api/v1/warnings', warningsRouter);
   app.use('/api/v1/rules/warnings', warningsRouter);
+  app.use('/api/v1/virtualDevice', virtualDeviceRouter);
   app.use(defaultRouter);
   app.use(errHandler);
 
