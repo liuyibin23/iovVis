@@ -23,7 +23,11 @@ function postMetaData(ruleMeta, token, res){
         {
             headers: { "X-Authorization": token }
         }).then(resp => {
-            util.responData(util.CST.OK200, util.CST.MSG200, res);
+            let respData = {
+                'deviceToken':virtual_dev_tok,
+                'mqttBackendBUS':util.getBackendBUS()
+            };
+            util.responData(util.CST.OK200, respData, res);
         }).catch(err =>{
             util.responErrorMsg(err, res);
         });
@@ -82,7 +86,7 @@ function modifyMetaData(ruleMeta, token, res){
     }
 }
 
-function updateRuleChain(virtual_dev_tok, token, res) {
+function updateRuleChain(token, res) {
     // 获取规则链
     let getRuleChainApi = util.getAPI() + 'ruleChains';
     axios.get(getRuleChainApi,
@@ -135,9 +139,9 @@ router.post('/:id', async function (req, res) {
                 {
                     headers: { "X-Authorization": token }
                 }).then(resp => {
-                    let virtual_dev_tok = resp.data.credentialsId;
+                    virtual_dev_tok = resp.data.credentialsId;
                     console.log(virtual_dev_tok);
-                    updateRuleChain(virtual_dev_tok, token, res);
+                    updateRuleChain(token, res);
                 }).catch(err => {
                     util.responErrorMsg(err, res);
                 });
