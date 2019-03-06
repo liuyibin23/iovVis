@@ -1,5 +1,6 @@
-const axios = require('axios');
-const util  = require('../../../util/utils');
+const charCfg = require('../../echarts/chartConfig');
+const common = require('./common-line');
+
 /*
 温度/湿度统计
 单个传感器
@@ -24,9 +25,9 @@ let option = {
         //orient: 'vertical',
         x:'center',
         y:'top',
-        backgroundColor: '#eee',
-        borderColor: 'rgba(178,34,34,0.8)',
-        borderWidth: 2
+        //backgroundColor: '#eee',
+        //borderColor: 'rgba(178,34,34,0.8)',
+        borderWidth: 1
     },
     toolbox: {
         show : false
@@ -50,8 +51,8 @@ let option = {
         },
       {
          type : 'value',
-            // min:0,
-            // max:100,
+            min:0,
+            max:100,
             axisLabel : {
                 formatter: '{value} %'
             }
@@ -106,84 +107,14 @@ let option = {
     ]
 };
 
-const DataTypeTemperature = 0;   // 温度
-const DataTypeHumidity    = 1;   // 湿度
-
-var allData = [];
-var MAX_DATA = 6;
-var aggList = ['MAX', 'AVG', 'MIN', 'MAX', 'AVG', 'MIN'];
-var retCnt = 0;
-var respHasSend = 0;
-
-function processData(res, params, callback){
-    if (allData[0]){
-        for (let i = 0; i < allData[0].length; i++) {                    
-            for (let idx = 0; idx < MAX_DATA; idx++) {
-                if (allData[idx] && allData[idx][i]) {
-                    val = Number.parseFloat(allData[idx][i].value);
-                    option.series[idx].data.push(val);
-                }
-            }
-
-            option.xAxis[0].data.push(i);
-        }
-    }
-
-    callback(option, params, res);
-
-    //console.log('end getData');
-}
-
-async function getData(idx, dataType, params, token, res, callback){
-    //console.log('start getData:' + idx);
-    let interval = 10 * 1000;
-    let limit    = 1000;
-    let keyValue = (dataType == DataTypeTemperature) ? '温度' : '湿度';
-    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
-     + `&startTs=${params.startTime}&endTs=${params.endTime}&interval=${interval}&limit=${limit}&agg=${aggList[idx]}`;
-    api = encodeURI(api);
-    //console.log(api);
-
-    await axios.get(api, {
-        headers: { "X-Authorization": token }
-      }).then(response => {
-        //console.log('idx:' + idx + ' return:' + retCnt);
-        retCnt++;
-        allData[idx] = (idx < 3) ? response.data.温度 :response.data.湿度;
-
-        if (retCnt == MAX_DATA){
-            console.log('all data receive');
-            processData(res, params, callback);
-        }
-      }).catch(err => {
-        if (!respHasSend) {
-            respHasSend = true;
-            console.log("err" + err);
-            processData(res, params, callback);
-        }
-      });   
-}
-
-function resetPreData(){
-    respHasSend = false;
-    retCnt = 0;
-    option.xAxis[0].data = [];
-    for (let idx = 0; idx < MAX_DATA; idx++) {
-        option.series[idx].data = [];
-    }
-}
-
 var chart_area = {
     name: 'chart_data',
     version: '1.0.0',
 
-    fillData: async function (params, token, res, callback) {
-        resetPreData();
-        for (var i = 0; i < MAX_DATA; i++){
-            
-            let dataType = (i < 3) ? DataTypeTemperature : DataTypeHumidity;
-            getData(i, dataType, params, token, res, callback);
-        }
+    fillData: function (params, token, res, calllback) {
+        plotCfg = charCfg.getCfgParams(params.chart_name, 'LINE');
+        common.resetPreData(option, plotCfg.maxCnt);
+        common.getData(plotCfg, option, params, token, res);
     }
 }
 module.exports = chart_area;
