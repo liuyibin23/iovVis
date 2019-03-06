@@ -1,24 +1,19 @@
 package org.thingsboard.server.controller;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.alarmstatistics.*;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.dao.alarm.AlarmService;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -95,18 +90,63 @@ public class AlarmStatisticsController extends BaseController {
                                                                 @PathVariable String entityId,
                                                                 @RequestParam Long startTime,
                                                                 @RequestParam Long endTime) throws ThingsboardException {
-        checkEntityType(entityType, Lists.newArrayList(EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE));
+        checkEntityType(entityType, Lists.newArrayList(EntityType.PROJECT, EntityType.ROAD, EntityType.TUNNEL, EntityType.SLOPE, EntityType.BRIDGE, EntityType.ALL));
         checkTimePeriod(startTime, endTime);
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
-            AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
-                    .pageLink(pageLink)
-                    .entityType(entityType)
-                    .entityId(entityId)
-                    .build();
-            return alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query);
+            if (!EntityType.ALL.equals(entityType)){
+                TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
+                AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
+                        .pageLink(pageLink)
+                        .entityType(entityType)
+                        .entityId(entityId)
+                        .build();
+                return alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query);
+            }
+			AlarmHandledCountInfo sum = AlarmHandledCountInfo.builder().alarmCount(new AlarmHandledCount()).endTime(endTime)
+					.startTime(startTime).entityId(entityId)
+					.entityName(entityId).entityType(entityType).build();
+
+            List<AlarmHandledCountInfo> countInfoList = new ArrayList<>();
+            List<Asset> assetList = new ArrayList<>();
+            switch (getCurrentUser().getAuthority()){
+                case SYS_ADMIN:
+                    assetList = assetService.findAssets();
+                    break;
+                case TENANT_ADMIN:
+                    assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
+                    break;
+                case CUSTOMER_USER:
+                    assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
+                    break;
+            }
+            if (null != assetList){
+            	if (assetList.size() > 0) {
+            		assetList.stream().forEach(asset -> {
+						TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
+						AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
+								.pageLink(pageLink)
+								.entityType(EntityType.PROJECT)
+								.entityId(asset.getId().getId().toString())
+								.build();
+						countInfoList.add(alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query));
+					});
+				}
+				if (countInfoList.size() > 0){
+            		countInfoList.stream().forEach(info -> {
+						AlarmHandledCount tmp = sum.getAlarmCount();
+            			sum.setAlarmCount(tmp.add(info.getAlarmCount()));
+            			sum.setStartTime(info.getStartTime());
+            			sum.setEndTime(info.getEndTime());
+
+					});
+				}
+				return sum;
+			}
+			return sum;
+
+
         } catch (Exception e) {
             throw handleException(e);
         }

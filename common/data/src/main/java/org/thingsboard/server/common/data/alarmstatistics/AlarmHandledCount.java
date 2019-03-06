@@ -24,6 +24,19 @@ public class AlarmHandledCount {
     private int totalAlarmCount;
     private int createdOfToday;
 
+    public AlarmHandledCount add(AlarmHandledCount add){
+        unackedOverdue += add.getUnackedOverdue();
+        ackedOverdue += add.getAckedOverdue();
+        clearedOverdue += add.getClearedOverdue();
+        unackedWithinDue += add.getUnackedWithinDue();
+        ackedWithinDue += add.getAckedWithinDue();
+        clearedWithinDue += add.getClearedWithinDue();
+        totalAlarmCount += add.getTotalAlarmCount();
+        createdOfToday += add.getCreatedOfToday();
+
+        return this;
+    }
+
     public int unackedOverduePlus(int count) {
         unackedOverdue += count;
         return unackedOverdue;
