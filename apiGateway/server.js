@@ -45,7 +45,8 @@ if (ret) {
   app.use('/api/v1/content', contentRouter);
   app.use('/api/v1/warnings', warningsRouter);
   app.use('/api/v1/rules/warnings', warningsRouter);
-  app.use('/api/v1/virtualDevice', virtualDeviceRouter);
+  app.use('/api/v1/virtualDevice/create', virtualDeviceRouter);
+  app.use('/api/v1/virtualDevice/config', virtualDeviceRouter);
   app.use(defaultRouter);
   app.use(errHandler);
 

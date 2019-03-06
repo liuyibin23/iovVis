@@ -757,7 +757,7 @@
         }
       }
     },
-    "/virtualDevice/{virtual_name}": {
+    "/virtualDevice/create/{virtualName}": {
       "post": {
         "tags": [
           "虚拟设备"
@@ -766,7 +766,7 @@
         "description": "创建虚拟设备",
         "parameters": [
           {
-            "name": "virtual_name",
+            "name": "virtualName",
             "in": "path",
             "type": "string",
             "required": true,
@@ -776,6 +776,48 @@
         "responses": {
           "200": {
             "description": "创建虚拟设备",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/virtualDevice/config/{deviceId}": {
+      "post": {
+        "tags": [
+          "虚拟设备"
+        ],
+        "summary": "配置虚拟设备",
+        "description": "配置虚拟设备",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "设备ID。"
+          },
+          {
+            "name": "otherDeviceId",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "其他设备ID列表"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "配置虚拟设备",
             "schema": {
               "type": "object"
             }
