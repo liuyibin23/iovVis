@@ -29,4 +29,6 @@ public interface VassetAttrKVService {
 	List<ComposeAssetAttrKV> findByComposekey(String attrKey1, String attrKey2);
 
 	List<ComposeAssetAttrKV> findByTenantIdAndComposekey(String tenantId, String attrKey1, String attrKey2);
+
+	List<ComposeAssetAttrKV> findByCustomerIdAndComposekey(String tenantId, String attrKey1, String attrKey2);
 }

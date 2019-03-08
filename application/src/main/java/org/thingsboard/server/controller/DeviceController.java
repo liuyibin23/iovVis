@@ -139,6 +139,13 @@ public class DeviceController extends BaseController {
         }
     }
 
+    /**
+    * @Description: 新建或修改设备
+    * @Author: ShenJi
+    * @Date: 2019/3/6
+    * @Param: [device, tenantIdStr]
+    * @return: org.thingsboard.server.common.data.Device
+    */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/device", method = RequestMethod.POST)
     @ResponseBody
@@ -287,6 +294,13 @@ public class DeviceController extends BaseController {
         }
     }
 
+    /**
+    * @Description: 将设备分配给用户
+    * @Author: ShenJi
+    * @Date: 2019/3/6
+    * @Param: [strCustomerId, strDeviceId, tenantIdStr]
+    * @return: org.thingsboard.server.common.data.Device
+    */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/customer/{customerId}/device/{deviceId}", method = RequestMethod.POST)
     @ResponseBody

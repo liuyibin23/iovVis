@@ -83,4 +83,13 @@ public class VassetAttrKVServiceImpl implements VassetAttrKVService {
 		).collect(Collectors.toList());
 		return kvs;
 	}
+
+	@Override
+	public List<ComposeAssetAttrKV> findByCustomerIdAndComposekey(String customerId, String attrKey1, String attrKey2) {
+		List<ComposeAssetAttrKV> kvs =  composeAssetAttrKVJpaRepository.findByCustomerIdAndComposekey(customerId,attrKey1,attrKey2);
+		kvs = kvs.stream().peek(
+				item-> item.setEntityId(UUIDConverter.fromString(item.getEntityId()).toString())
+		).collect(Collectors.toList());
+		return kvs;
+	}
 }

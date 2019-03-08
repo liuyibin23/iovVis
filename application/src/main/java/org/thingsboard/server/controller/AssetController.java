@@ -532,10 +532,15 @@ public class AssetController extends BaseController {
 	@ResponseBody
 	public List<ComposeAssetAttrKV> getComposeAttrKV(@RequestParam String attrKey1,
 													 @RequestParam String attrKey2) throws ThingsboardException {
-		if (getTenantId().isNullUid()){
-			return vassetAttrKVService.findByComposekey(attrKey1,attrKey2);
-		} else{
-			return vassetAttrKVService.findByTenantIdAndComposekey(UUIDConverter.fromTimeUUID(getTenantId().getId()),attrKey1,attrKey2);
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				return vassetAttrKVService.findByComposekey(attrKey1,attrKey2);
+			case TENANT_ADMIN:
+				return vassetAttrKVService.findByTenantIdAndComposekey(UUIDConverter.fromTimeUUID(getCurrentUser().getTenantId().getId()),attrKey1,attrKey2);
+			case CUSTOMER_USER:
+				return vassetAttrKVService.findByCustomerIdAndComposekey(UUIDConverter.fromTimeUUID(getCurrentUser().getCustomerId().getId()),attrKey1,attrKey2);
+			default:
+					return null;
 		}
 	}
 
