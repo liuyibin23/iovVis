@@ -3,10 +3,6 @@ package org.thingsboard.server.common.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.thingsboard.server.common.data.kv.KvEntry;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -22,5 +18,6 @@ public class DeviceForDisplay {
 	private String moniteritem;
 	private String deviceName;
 	private String description;
+	private Boolean active;
 
 }

@@ -23,6 +23,8 @@ public class DeviceAttributesEntity {
 	private String deviceName;
 	@Column(name = "description")
 	private String description;
+	@Column(name = "active")
+	private Boolean active;
 
 	public String getEntityId() {
 		return entityId;
@@ -78,5 +80,13 @@ public class DeviceAttributesEntity {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Boolean getActive() {
+		return active;
+	}
+
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 }

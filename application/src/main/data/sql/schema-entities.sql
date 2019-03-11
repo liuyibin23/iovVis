@@ -339,7 +339,12 @@ CREATE OR REPLACE VIEW device_attributes AS
 	CASE attribute_kv.attribute_key
 		WHEN 'description'::text THEN attribute_kv.str_v
 		ELSE NULL::character varying
-	END::text) AS description
+	END::text) AS description,
+	bool_or(
+	CASE attribute_kv.attribute_key
+		WHEN 'active'::text THEN attribute_kv.bool_v
+		ELSE false::boolean
+	END::boolean) AS active
    FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'DEVICE'::text
   GROUP BY attribute_kv.entity_id;

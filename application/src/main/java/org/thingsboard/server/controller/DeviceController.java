@@ -748,6 +748,7 @@ public class DeviceController extends BaseController {
 				tmp.setMoniteritem(deviceAttributesEntity.getMoniteritem());
 				tmp.setDeviceName(deviceAttributesEntity.getDeviceName());
 				tmp.setDescription(deviceAttributesEntity.getDescription());
+				tmp.setActive(deviceAttributesEntity.getActive());
 			}
 
 
