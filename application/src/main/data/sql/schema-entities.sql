@@ -34,7 +34,8 @@ CREATE TABLE IF NOT EXISTS alarm (
     start_ts bigint,
     status varchar(255),
     tenant_id varchar(31),
-    type varchar(255)
+    type varchar(255),
+    alarm_count bigint
 );
 
 CREATE TABLE IF NOT EXISTS asset (

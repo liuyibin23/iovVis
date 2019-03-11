@@ -795,6 +795,7 @@ public abstract class BaseController {
             tmpInfo.setAlarmTime(alarm.getStartTs());
             tmpInfo.setAlarmStartTime(alarm.getStartTs());
             tmpInfo.setAlarmEndTime(alarm.getEndTs());
+            tmpInfo.setAlarmCount(alarm.getAlarmCount());
 
             if (null != alarm.getOriginator()){
                 if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){

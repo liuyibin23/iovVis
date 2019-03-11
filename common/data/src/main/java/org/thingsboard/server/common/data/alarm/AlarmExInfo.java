@@ -20,6 +20,7 @@ public class AlarmExInfo {
 	private Long alarmTime;
 	private String alarmLevel;
 	private String alarmStatus;
+	private Long alarmCount;
 	@JsonProperty("additional_info")
 	private transient JsonNode additionalInfo;
 }

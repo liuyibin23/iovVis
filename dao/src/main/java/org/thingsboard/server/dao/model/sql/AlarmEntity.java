@@ -92,6 +92,9 @@ public final class AlarmEntity extends BaseSqlEntity<Alarm> implements BaseEntit
     @Column(name = ALARM_CLEAR_TS_PROPERTY)
     private Long clearTs;
 
+    @Column(name = "alarm_count")
+    private long alarmCount;
+
     @Type(type = "json")
     @Column(name = ModelConstants.ASSET_ADDITIONAL_INFO_PROPERTY)
     private JsonNode details;
@@ -122,6 +125,7 @@ public final class AlarmEntity extends BaseSqlEntity<Alarm> implements BaseEntit
         this.ackTs = alarm.getAckTs();
         this.clearTs = alarm.getClearTs();
         this.details = alarm.getDetails();
+        this.alarmCount = alarm.getAlarmCount();
     }
 
     @Override
@@ -141,6 +145,7 @@ public final class AlarmEntity extends BaseSqlEntity<Alarm> implements BaseEntit
         alarm.setAckTs(ackTs);
         alarm.setClearTs(clearTs);
         alarm.setDetails(details);
+        alarm.setAlarmCount(alarmCount);
         return alarm;
     }
 
