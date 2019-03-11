@@ -10,16 +10,14 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetWarningsInfo;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.id.WarningsId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.warnings.WarningsRecord;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.service.DataValidator;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -44,19 +42,20 @@ public class WarningController extends BaseController {
 			throw new ThingsboardException("Asset non-existent",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
 		switch (getCurrentUser().getAuthority()){
 			case SYS_ADMIN:
-				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+				return findUserName(warningsRecordService.findWarningByAssetId(asset.getId().getId()));
 			case TENANT_ADMIN:
 				if (!asset.getTenantId().equals(getCurrentUser().getTenantId()))
 					throw new ThingsboardException("Asset non-existent.",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
-				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+				return findUserName(warningsRecordService.findWarningByAssetId(asset.getId().getId()));
 			case CUSTOMER_USER:
 				if (!asset.getCustomerId().equals(getCurrentUser().getCustomerId()))
 					throw new ThingsboardException("Asset non-existent.",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
-				return warningsRecordService.findWarningByAssetId(asset.getId().getId());
+				return findUserName(warningsRecordService.findWarningByAssetId(asset.getId().getId()));
 				default:
 		}
 		return null;
 	}
+
 	/**
 	* @Description: 1.2.6.2 添加预警操作记录
 	* @Author: ShenJi
@@ -169,7 +168,25 @@ public class WarningController extends BaseController {
 
 		return retAssetWarningsList;
 	}
-
+	/**
+	 * @Description: 查询用户名
+	 * @Author: ShenJi
+	 * @Date: 2019/3/11
+	 * @Param: [recordList]
+	 * @return: java.util.List<org.thingsboard.server.common.data.warnings.WarningsRecord>
+	 */
+	private List<WarningsRecord> findUserName(List<WarningsRecord> recordList){
+		recordList.stream().forEach(record->{
+			Optional<UserId> op = Optional.of(record.getUserId());
+			if (op.isPresent()){
+				Optional<String> opUserName = Optional.ofNullable(userService.findUserById(null,op.get()).getFirstName());
+				if (opUserName.isPresent()){
+					record.setUserName(opUserName.get());
+				}
+			}
+		});
+		return recordList;
+	}
 	/**
 	 * @Description: 预警操作记录校验
 	 * @Author: ShenJi

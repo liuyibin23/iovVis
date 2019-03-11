@@ -16,6 +16,7 @@ public class WarningsRecord extends BaseData<WarningsId> implements HasTenantId,
 	private TenantId tenantId;
 	private CustomerId customerId;
 	private UserId	userId;
+	private String userName;
 	private AssetId assetId;
 	private String info;
 	private String recordType;
