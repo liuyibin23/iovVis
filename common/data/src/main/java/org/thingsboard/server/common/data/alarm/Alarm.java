@@ -43,6 +43,7 @@ public class Alarm extends BaseData<AlarmId> implements HasName, HasTenantId {
     private long endTs;
     private long ackTs;
     private long clearTs;
+    private long alarmCount;
     private transient JsonNode details;
     private boolean propagate;
 
@@ -68,6 +69,7 @@ public class Alarm extends BaseData<AlarmId> implements HasName, HasTenantId {
         this.clearTs = alarm.getClearTs();
         this.details = alarm.getDetails();
         this.propagate = alarm.isPropagate();
+        this.alarmCount = alarm.getAlarmCount();
     }
 
     @Override

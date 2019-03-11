@@ -120,6 +120,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             if (alarm.getId() == null) {
                 Alarm existing = alarmDao.findLatestByOriginatorAndType(alarm.getTenantId(), alarm.getOriginator(), alarm.getType()).get();
                 if (existing == null || existing.getStatus().isCleared()) {
+                    alarm.setAlarmCount(0);
                     return createAlarm(alarm);
                 } else {
                     return updateAlarm(existing, alarm);
@@ -794,6 +795,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         existing.setSeverity(alarm.getSeverity());
         existing.setDetails(alarm.getDetails());
         existing.setPropagate(existing.isPropagate() || alarm.isPropagate());
+        existing.setAlarmCount(existing.getAlarmCount()+1);
         return existing;
     }
 
