@@ -38,11 +38,20 @@ function getMonitorItemIdxByCode(code, monitorItem){
 
 // 获取监测项目及测点数据
 async function getMonitorData(req, assetId){
-  let data = [];
+  var data = [];
   var file = path.join('public/monitorItem.json'); 
   //读取json文件
   var monitorItem = fs.readFileSync(file, 'utf-8');
   var jsonMonitorItem = JSON.parse(monitorItem);
+  
+  var file_unit = path.join('public/unit.json');
+  var unitItem = fs.readFileSync(file_unit, 'utf-8');
+  var jsonUnitItem = JSON.parse(unitItem);
+  var unitMap = new Map();
+  jsonUnitItem.forEach(element => {
+      unitMap.set(element.name, element.unit);
+  });
+
 
   let token = req.headers['x-authorization'];
   let getDeviceByAssetIdAPI = util.getAPI() + `currentUser/getDeviceByAssetId?assetId=${assetId.assetId}`;
@@ -69,7 +78,11 @@ async function getMonitorData(req, assetId){
               if (-1 != idx) {
                 data[idx].measurePointCnt += 1;
               } else {
-                let _dt = {monitorItem:monitorItemName, sensorType:info.device.type, unit:'度', measurePointCnt:1};
+                let unit = unitMap.get(info.device.type);
+                if (!unit) {
+                  unit = "";
+                }
+                let _dt = {monitorItem:monitorItemName, sensorType:info.device.type, unit:unit, measurePointCnt:1};
                 data.push(_dt);
               }
             }
@@ -78,7 +91,7 @@ async function getMonitorData(req, assetId){
       }
     })
     .catch((err) => {
-      util.responErrorMsg(err, res);
+      console.log(err);
     });
 
     return data;
