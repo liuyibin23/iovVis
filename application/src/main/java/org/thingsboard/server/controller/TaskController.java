@@ -126,11 +126,14 @@ public class TaskController extends BaseController {
 			List<Task> retTask = new ArrayList<>();
 			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
 			checkAlarmId(alarmId);
+			log.error("alarmId : " + alarmId);
 			Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByToAndType(null, alarmId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON));
 			if (optionalEntityRelations.isPresent()) {
 				if (optionalEntityRelations.get().size() > 0){
+					log.error("relation size: " + optionalEntityRelations.get().size());
 					for (EntityRelation relation : optionalEntityRelations.get()) {
 						if (relation.getFrom().getEntityType() == EntityType.TASK) {
+							log.error("relation : " + relation.getFrom().getId());
 							Optional<Task> op = Optional.ofNullable(taskService.findTaskById(relation.getFrom().getId()));
 							if (op.isPresent()) {
 								Task tmpTask = op.get();
