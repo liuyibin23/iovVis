@@ -128,17 +128,20 @@ public class TaskController extends BaseController {
 			checkAlarmId(alarmId);
 			Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByToAndType(null, alarmId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON));
 			if (optionalEntityRelations.isPresent()) {
-				for (EntityRelation relation : optionalEntityRelations.get()) {
-					if (relation.getFrom().getEntityType() == EntityType.TASK) {
-						Optional<Task> op = Optional.ofNullable(taskService.findTaskById(relation.getFrom().getId()));
-						if (op.isPresent()) {
-							Task tmpTask = op.get();
-							tmpTask.setAlarmId(alarmId);
-							retTask.add(tmpTask);
-						}
+				if (optionalEntityRelations.get().size() > 0){
+					for (EntityRelation relation : optionalEntityRelations.get()) {
+						if (relation.getFrom().getEntityType() == EntityType.TASK) {
+							Optional<Task> op = Optional.ofNullable(taskService.findTaskById(relation.getFrom().getId()));
+							if (op.isPresent()) {
+								Task tmpTask = op.get();
+								tmpTask.setAlarmId(alarmId);
+								retTask.add(tmpTask);
+							}
 
+						}
 					}
 				}
+
 			}
 
 			return getTasksNameInfo(retTask);
