@@ -48,7 +48,8 @@ function getData(plotCfg, option, params, token, res){
         let interval = plotCfg.interval;
         if (diff / interval > 700) {
             console.log("time too long > 700.  %f", diff / interval);
-            processData(option, params, plotCfg.maxCnt, res);
+            let allData = [];
+            processData(option, params, allData, plotCfg.maxCnt, res);
             return;
         }
 

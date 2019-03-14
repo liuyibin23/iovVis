@@ -11,17 +11,32 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AlarmCount {
+    /**
+     * 状态为 unclear + unack 的资产数量
+     */
     private int unacked = 0;
+    /**
+     * 状态为 unclear + ack 的资产数量
+     */
     private int acked = 0;
+    /**
+     * 状态为 clear 的资产数量
+     */
     private int cleared = 0;
+    /**
+     * 本月有新增告警的资产数
+     */
     private int createdOfMonth = 0;
+    /**
+     * 今日有新增告警的资产数
+     */
     private int createdOfToday = 0;
     /**
      * 资产总数量
      */
     private int entityTotalCount = 0;
     /**
-     * 正在告警的资产数量
+     * 正在告警（未clear）的资产数量
      */
     private int alarmingEntityCount = 0;
     /**
