@@ -1,216 +1,163 @@
 const axios = require('axios');
 const util = require('../../../util/utils');
+const charCfg = require('../../echarts/chartConfig');
 
 let option = {
-    title : {
-         text: '车辆荷载自动监测数据车重',
-         x: 'center',
-         y:'bottom'
-     },
-     legend: {
-         data:['车重 > 44T', '24T < 车重 < 44T', '7.5T < 车重 < 24T', '2.5T < 车重 < 7.5T', '车重 < 2.5T'],
-         orient: 'vertical',
-         x:'80%',
-         y:'top',
-         borderWidth: 1
-     },
-     toolbox: {
-         show : false
-     },
-     xAxis : [
-         {
-             type : 'category',
-             data : []
-         }
-     ],
-     yAxis : [
-         {
-                type : 'value',
-           axisLabel : {
-                 formatter: '{value} 辆'
-             }
-         }
-     ],
-     series : [
-         {
-             name:'车重 < 2.5T',
-             type:'bar',
-             stack: '总量',
+    title: {
+        text: '车辆荷载自动监测数据车重',
+        x: 'center',
+        y: 'bottom'
+    },
+    legend: {
+        data: ['车重 > 44T', '24T < 车重 < 44T', '7.5T < 车重 < 24T', '2.5T < 车重 < 7.5T', '车重 < 2.5T'],
+        //orient: 'vertical',
+        x: 'center',
+        y: 'top',
+        borderWidth: 1
+    },
+    toolbox: {
+        show: false
+    },
+    xAxis: [
+        {
+            type: 'category',
+            data: []
+        }
+    ],
+    yAxis: [
+        {
+            type: 'value',
+            axisLabel: {
+                formatter: '{value} 辆'
+            }
+        }
+    ],
+    series: [
+        {
+            name: '车重 < 2.5T',
+            type: 'bar',
+            stack: '总量',
             // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-             data:[]
-         },
-         {
-            name:'2.5T < 车重 < 7.5T',
-            type:'bar',
-            stack: '总量',
-             data:[]
-         },
-         {
-            name:'7.5T < 车重 < 24T',
-            type:'bar',
-            stack: '总量',
-          
-             //itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-             data:[]
-         },
-         {
-            name:'24T < 车重 < 44T',
-            type:'bar',
-            stack: '总量',
-           // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-            data:[]
+            data: []
         },
         {
-            name:'车重 > 44T',
-            type:'bar',
+            name: '2.5T < 车重 < 7.5T',
+            type: 'bar',
             stack: '总量',
-            barCateGoryGap:20,
-           // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-            data:[]
-        }
-     ]
- };
-                     
- var allData = [];
- var MAX_DATA = 1;
- var retCnt = 0;
- var respHasSend = 0;
- 
- function processData(res, params, callback){ 
-     callback(option, params, res);
- }
+            data: []
+        },
+        {
+            name: '7.5T < 车重 < 24T',
+            type: 'bar',
+            stack: '总量',
 
- /**
- * 普通数组快速排序
- *
- * @param arr Array 数字数组
- * @param dir asc升序、desc降序
- *
- * @example:
- * sort([1,4,2,5])
- * sort([1,4,2,5],'asc')
- * sort([1,4,2,5],'desc')
- */
-function sort(arr, dir){
-    dir=dir||'asc';
-    if (arr.length == 0) return [];
-
-    var left = new Array();
-    var right = new Array();
-    var pivot = arr[0];
-
-    if(dir==='asc'){//升序
-        for (var i = 1; i < arr.length; i++) {
-            arr[i] < pivot ? left.push(arr[i]): right.push(arr[i]);
+            //itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            data: []
+        },
+        {
+            name: '24T < 车重 < 44T',
+            type: 'bar',
+            stack: '总量',
+            // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            data: []
+        },
+        {
+            name: '车重 > 44T',
+            type: 'bar',
+            stack: '总量',
+            barCateGoryGap: 20,
+            // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
+            data: []
         }
-    }else{//降序
-        for (var i = 1; i < arr.length; i++) {
-            arr[i] > pivot ? left.push(arr[i]): right.push(arr[i]);
-        }
+    ]
+};
+
+function getChartData(params, plotCfg, token, res, callback){
+    let grounCnt = plotCfg.groupInfo.length;
+    let loopCnt = (params.endTime - params.startTime) / plotCfg.interval;
+    /*
+    // 阈值分组参数
+    let ySeries = [
+        [0,   2.5],
+        [2.5, 7.5],
+        [7.5, 24],
+        [24,  44],
+        [44,  999]
+    ];*/
+    let ySeries = [];
+    for (let i = 0; i < grounCnt; i++) {
+        let cfg = plotCfg.groupInfo[i];
+        ySeries.push([cfg.min, cfg.max]);
     }
-    return sort(left,dir).concat(pivot, sort(right,dir));
+
+    /*
+    // 时间分组参数
+    let timeSeries =[
+        [1548950556000, 1548950756000],
+        [1548950756000, 1548950956000],
+        [1548950956000, 1548951156000],
+        [1548951156000, 1548951356000],
+        [1548951356000, 1548951556000]
+    ];
+    */
+    let timeSeries = [];
+    // 按时间段拆分成多个组 多少个柱状
+    let startTimeFloat = Number.parseFloat(params.startTime);
+    for (let j = 0; j < loopCnt; j++) {        
+        let startTime = startTimeFloat + j * plotCfg.interval;
+        let endTime   = startTime + plotCfg.interval;
+        timeSeries.push([startTime, endTime]);
+    }
+
+
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/counts/timeseries?key=${plotCfg.keys}&tsIntervals=${JSON.stringify(timeSeries)}&valueIntervals=${JSON.stringify(ySeries)}&dataType=LONG`;
+    api = encodeURI(api);
+
+    axios.get(api, {
+        headers: { "X-Authorization": token }
+    }).then(resp => {
+        let data = resp.data;
+
+        // 分组处理
+        for (let i = 0; i < loopCnt; i++) {
+            option.xAxis[0].data.push(i + 1);
+        }
+
+        for (let i = 0; i < data.length; i++){
+            let col_data = data[i];
+
+            for (let j = 0; j < col_data.length; j++){
+                option.series[j].data[i] = col_data[j];
+            }
+        }
+        
+        callback(option, params, res);
+    }).catch(err =>{
+        console.log(err);
+        callback(option, params, res);
+    });
 }
- 
- async function getData(idx, dataType, params, token, res, callback){
-     let keyValue = 'Type1,Type2,Type3,Type4,Type5';   //
-     let interval = 10 * 60 * 1000;
-     let limit = (params.endTime - params.startTime) / 1000.0 + 2;
-     let filter = `&interval=${interval}&agg=COUNT`;
-     let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
-      + `&startTs=${params.startTime}&endTs=${params.endTime}&limit=${limit}${filter}`;
-     api = encodeURI(api);
-     //console.log(api);
- 
-     axios.get(api, {
-         headers: { "X-Authorization": token }
-       }).then(response => {
-         retCnt++;
-         allData[idx] = response.data;
- 
-         if (retCnt == MAX_DATA){
-             console.log('all data receive');
 
-            let typeList = [response.data.Type1, response.data.Type2, response.data.Type3, response.data.Type4, response.data.Type5];
-            var timeMap = new Map();
-            for (let i = 0; i < typeList.length; i++){
-                let type = typeList[i];
-                if (type){
-                    for (let i = 0; i < type.length; i++){
-                        let data = type[i];
-                        timeMap.set(data.ts, 1);
-                    }
-                }
-            }
+function resetPreData() {
+    respHasSend = false;
+    retCnt = 0;
+    option.xAxis[0].data = [];
+    let len = option.series.length;
+    for (let idx = 0; idx < len; idx++) {
+        option.series[idx].data = [];
+    }
+}
 
-            let tsArry = [];
-            let idx = 0;
-            timeMap.forEach(function(value, key) {  
-               tsArry[idx++] = key;  
-            });
+var chart_area = {
+    name: 'chart_data',
+    version: '1.0.0',
 
-            let newArray = sort(tsArry, 'asc');
+    fillData: async function (params, token, res, callback) {
+        resetPreData();
+        
+        var plotCfg = charCfg.getCfgParams(params.chart_name, 'Bar');
 
-            let max_idx = timeMap.size;
-            console.log('max idx=' + max_idx);
-
-            // sort and remap
-            timeMap.clear();
-            for (var i = 0; i < newArray.length; i++){
-                timeMap.set(newArray[i], i);
-            }
-
-             for (let i = 0; i < typeList.length; i++){
-                let type = typeList[i];
-                if (type){
-                    // init
-                    for (let j = 0; j < max_idx; j++){
-                        option.series[i].data[j] = 0;
-                    }
-                    for (let j = 0; j < max_idx; j++){
-                        if (type[j] && type[j].ts) {
-                            let val = timeMap.get(type[j].ts);
-                            if (val != -1){
-                                option.series[i].data[val] = Number.parseFloat(type[j].value);
-                            } 
-                        }
-                    }
-                }   
-             }
-
-             for (let i = 0; i < max_idx; i++){
-                option.xAxis[0].data.push(i);
-             }
-
-             processData(res, params, callback);
-         }
-       }).catch(err => {
-         if (!respHasSend) {
-             respHasSend = true;
-             //util.responErrorMsg(err, res);
-             processData(res, params, callback);
-         }
-       });   
- }
- 
- function resetPreData(){
-     respHasSend = false;
-     retCnt = 0;
-     option.xAxis[0].data = [];
-     for (let idx = 0; idx < MAX_DATA; idx++) {
-         option.series[idx].data = [];
-     }
- }
- 
- var chart_area = {
-     name: 'chart_data',
-     version: '1.0.0',
- 
-     fillData: async function (params, token, res, callback) {
-         resetPreData();
-         for (var i = 0; i < MAX_DATA; i++){
-             dataType = '震动';
-             getData(i, dataType, params, token, res, callback);
-         }
-     }
- }
- module.exports = chart_area;
+        getChartData(params, plotCfg, token, res, callback);
+    }
+}
+module.exports = chart_area;
