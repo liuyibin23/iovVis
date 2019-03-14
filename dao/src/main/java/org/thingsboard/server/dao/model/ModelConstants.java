@@ -396,6 +396,8 @@ public class ModelConstants {
             new String[]{sum(LONG_VALUE_COLUMN), sum(DOUBLE_VALUE_COLUMN)});
     protected static final String[] AVG_AGGREGATION_COLUMNS = SUM_AGGREGATION_COLUMNS;
 
+    public static final String ALLOW_FILTERING = "ALLOW FILTERING";
+
     public static String min(String s) {
         return "min(" + s + ")";
     }
