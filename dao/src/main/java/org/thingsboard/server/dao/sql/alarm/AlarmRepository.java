@@ -20,6 +20,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.dao.model.sql.AlarmEntity;
 import org.thingsboard.server.dao.util.SqlDao;
 
@@ -42,6 +43,7 @@ public interface AlarmRepository extends CrudRepository<AlarmEntity, String> {
             "AND a.originatorType = :entityType ORDER BY a.type ASC, a.id DESC")
     List<AlarmEntity> findAlarmEntitiesByOriginatorIdAndOrderByOriginatorType(@Param("originatorId") String originatorId,
                                                                               @Param("entityType") EntityType entityType);
+    List<AlarmEntity> findAlarmEntitiesByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus);
 
     AlarmEntity findAlarmEntitiesById(String alarmId);
 

@@ -39,7 +39,9 @@ import org.thingsboard.server.dao.sql.JpaAbstractDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by Valerii Sosliuk on 5/19/2017.
@@ -142,6 +144,11 @@ public class JpaAlarmDao extends JpaAbstractDao<AlarmEntity, Alarm> implements A
         List<Object[]> results = alarmRepository.findAlarmDevicesCountByTenantIdAndCustomerId(UUIDConverter.fromTimeUUID(tenantId.getId()),
                     UUIDConverter.fromTimeUUID(customerId.getId()),startTs,endTs);
         return objQueryResultsToType(results);
+    }
+
+    @Override
+    public List<Alarm> findAlarmEntitiesByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus) {
+        return DaoUtil.convertDataList(alarmRepository.findAlarmEntitiesByOriginatorTypeAndStatus(entityType,alarmStatus));
     }
 
     private List<AlarmDevicesCount> objQueryResultsToType(List<Object[]> results){

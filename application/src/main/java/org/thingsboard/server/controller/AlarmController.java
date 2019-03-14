@@ -16,50 +16,92 @@
 package org.thingsboard.server.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.EntityIdFactory;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.common.data.relation.EntityRelation;
-import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
-import org.thingsboard.server.common.data.relation.RelationTypeGroup;
-import org.thingsboard.server.common.data.task.Task;
-import org.thingsboard.server.dao.alarm.AlarmService;
-import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
+import org.thingsboard.server.common.data.security.Authority;
 
-import javax.management.relation.RelationType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class AlarmController extends BaseController {
 
 	public static final String ALARM_ID = "alarmId";
 
+
+	/**
+	* @Description: 获取所有告警等级
+	* @Author: ShenJi
+	* @Date: 2019/3/14
+	* @Param: []
+	* @return: java.util.List<org.thingsboard.server.common.data.alarm.AlarmLevel>
+	*/
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/getAlarmLevel", method = RequestMethod.GET)
+	@ResponseBody
+	public List<AlarmLevel> getAlarmLevel(@RequestParam String strAssetId) throws ThingsboardException {
+		List<AlarmLevel> retList = new ArrayList<>();
+
+		Authority authority = getCurrentUser().getAuthority();
+		CustomerId customerId = getCurrentUser().getCustomerId();
+		TenantId tenantId = getCurrentUser().getTenantId();
+
+		Asset asset = checkAssetId(new AssetId(UUID.fromString(strAssetId)));
+		switch (authority){
+			case CUSTOMER_USER:
+				if (!asset.getCustomerId().equals(getCurrentUser().getCustomerId())){
+					throw new ThingsboardException("Asset not exit!",ThingsboardErrorCode.INVALID_ARGUMENTS);
+				}
+				break;
+			case TENANT_ADMIN:
+				if (!asset.getTenantId().equals(getCurrentUser().getTenantId())){
+					throw new ThingsboardException("Asset not exit!",ThingsboardErrorCode.INVALID_ARGUMENTS);
+				}
+				break;
+		}
+
+		Optional<List<Alarm>> optionalAlarms = Optional.ofNullable(alarmService.findAlarmByOriginatorTypeAndStatus(EntityType.DEVICE,AlarmStatus.ACTIVE_UNACK));
+		if (!optionalAlarms.isPresent()){
+			return retList;
+		}
+
+		optionalAlarms.get().stream().forEach(alarm -> {
+			Optional<Device> optionalDevice = Optional.ofNullable(deviceService.findDeviceById(null,new DeviceId(alarm.getOriginator().getId())));
+			if (!optionalDevice.isPresent()){
+				log.error("Device not find " + alarm.getOriginator().getId().toString() + "!");
+				return ;
+			}
+			switch (authority){
+				case CUSTOMER_USER:
+					if (!optionalDevice.get().getCustomerId().equals(customerId))
+						return ;
+				case TENANT_ADMIN:
+					if (!optionalDevice.get().getTenantId().equals(tenantId))
+						return ;
+					break;
+			}
+			retList.add(AlarmLevel.builder().deviceId(optionalDevice.get().getId()).severity(alarm.getSeverity()).build());
+		});
+
+		return retList;
+	}
 	/**
 	* @Description: 1.2.5.7 告警处理
 	* @Author: ShenJi

@@ -37,17 +37,11 @@ import org.thingsboard.server.dao.util.NoSqlDao;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static com.datastax.driver.core.querybuilder.QueryBuilder.eq;
 import static com.datastax.driver.core.querybuilder.QueryBuilder.select;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_BY_ID_VIEW_NAME;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_COLUMN_FAMILY_NAME;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_ORIGINATOR_ID_PROPERTY;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_ORIGINATOR_TYPE_PROPERTY;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_TENANT_ID_PROPERTY;
-import static org.thingsboard.server.dao.model.ModelConstants.ALARM_TYPE_PROPERTY;
+import static org.thingsboard.server.dao.model.ModelConstants.*;
 
 @Component
 @Slf4j
@@ -147,6 +141,12 @@ public class CassandraAlarmDao extends CassandraAbstractModelDao<AlarmEntity, Al
 
     @Override
     public List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Alarm> findAlarmEntitiesByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus) {
         //todo cassandra
         return null;
     }

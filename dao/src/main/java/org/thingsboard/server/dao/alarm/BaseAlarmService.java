@@ -581,6 +581,11 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         return alarmDao.findAlarmDevicesCountByTenantIdAndCustomerId(tenantId, customerId, startTs, endTs);
     }
 
+    @Override
+    public List<Alarm> findAlarmByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus) {
+        return alarmDao.findAlarmEntitiesByOriginatorTypeAndStatus(entityType,alarmStatus);
+    }
+
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {
         TimePageLink nextPageLink = new TimePageLink(100, startTime, endTime);
         boolean hasNext = true;
