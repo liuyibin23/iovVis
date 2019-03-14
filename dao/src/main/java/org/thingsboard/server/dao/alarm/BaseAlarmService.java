@@ -678,6 +678,9 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         try {
             int unackCount = alarmCount.getUnacked();
             int ackCount = alarmCount.getAcked();
+            int clearCount = alarmCount.getCleared();
+            int todayCount = alarmCount.getCreatedOfToday();
+            int monthCount = alarmCount.getCreatedOfMonth();
 
             AlarmQuery nextQuery = new AlarmQuery(query);
             TimePageLink nextPageLink = query.getPageLink();
@@ -721,6 +724,26 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             //ack的数量或者unack的数量增加，说明当前asset存在unclear（未处理）的告警，那么统计计数+1
             if(alarmCount.getUnacked() > unackCount || alarmCount.getAcked()> ackCount) {
                 alarmCount.alarmingEntityCountPlus(1);
+            }
+
+            if(alarmCount.getAcked() > ackCount) {
+                alarmCount.setAcked(ackCount+1);
+            }
+
+            if(alarmCount.getUnacked() > unackCount) {
+                alarmCount.setUnacked(unackCount+1);
+            }
+
+            if(alarmCount.getCleared() > clearCount) {
+                alarmCount.setCleared(clearCount+1);
+            }
+
+            if(alarmCount.getCreatedOfToday() > todayCount) {
+                alarmCount.setCreatedOfToday(todayCount+1);
+            }
+
+            if(alarmCount.getCreatedOfMonth() > monthCount) {
+                alarmCount.setCreatedOfMonth(monthCount+1);
             }
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to statistics alarm count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
