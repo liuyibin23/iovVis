@@ -18,7 +18,6 @@ package org.thingsboard.server.dao.alarm;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -27,7 +26,6 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageData;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by ashvayka on 11.05.17.
@@ -130,4 +128,6 @@ public interface AlarmService {
     List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId, long startTs, long endTs);
 
     List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs);
+
+    List<Alarm> findAlarmByOriginatorTypeAndStatus(EntityType entityType,AlarmStatus alarmStatus);
 }

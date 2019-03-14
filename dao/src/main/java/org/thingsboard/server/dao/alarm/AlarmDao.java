@@ -16,6 +16,7 @@
 package org.thingsboard.server.dao.alarm;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
@@ -23,7 +24,6 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.dao.Dao;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -50,4 +50,6 @@ public interface AlarmDao extends Dao<Alarm> {
     List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId,long startTs, long endTs);
 
     List<AlarmDevicesCount> findAlarmDevicesCountByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, long startTs, long endTs);
+
+    List<Alarm> findAlarmEntitiesByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus);
 }
