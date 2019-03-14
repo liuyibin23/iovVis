@@ -122,6 +122,46 @@ async function postWarningStatus(req, res) {
     });
 }
 
+function getConfigRules(assetID, ruleID, token, res){
+  let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
+  //获取预警规则链的meta数据
+  axios.get(url, {
+    headers: {
+      "X-Authorization": token
+    }
+  }).then(resp => {
+    let nodes = resp.data.nodes;
+    //获取预警规则
+    let js1 = '';
+    for (let node of nodes) {
+      if (node.name === util.CFG.WARN_NODE_RULE)
+        js1 = node.configuration.jsScript;
+    }
+    if (js1 !== '') {
+      let jsScript = js1;
+      var index = jsScript.indexOf('/* warning rule tables */');
+      eval(jsScript.substr(0, index));
+      if (typeof ruleTables !== 'undefined') {
+        let rules = ruleTables[assetID];
+        if (rules) {
+          util.responData(util.CST.OK200, rules, res);
+        }
+        else {
+          util.responData(util.CST.ERR404, util.CST.MSG404, res);
+        }
+        delete ruleTables; // clear the enviroment variable, only for eval case.
+      }
+    } else {
+      //没找到指定名称的规则节点
+      util.responData(util.CST.ERR404, util.CST.MSG404, res);
+    }
+  }).catch(err => {
+    //获取规则链metaData出现问题
+    logger.log('error', 'Cannot get rulechain meta data.');
+    util.responErrorMsg(err, res);
+  });
+}
+
 //从规则引擎获取资产的预警规则
 async function getWarningRules(req, res) {
   let assetID = req.params.assetId;
@@ -151,44 +191,8 @@ async function getWarningRules(req, res) {
     }).then(resp => {
       let ruleChain = resp.data;
       if (ruleChain) {
-        ruleID = ruleChain[0].id;
-        let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
-        //获取预警规则链的meta数据
-        axios.get(url, {
-          headers: {
-            "X-Authorization": token
-          }
-        }).then(resp => {
-          let nodes = resp.data.nodes;
-          //获取预警规则
-          let js1 = '';
-          for (let node of nodes) {
-            if (node.name === util.CFG.WARN_NODE_RULE)
-              js1 = node.configuration.jsScript;
-          }
-          if (js1 !== '') {
-            let jsScript = js1;
-            var index = jsScript.indexOf('/* warning rule tables */');
-            eval(jsScript.substr(0, index));
-            if (typeof ruleTables !== 'undefined') {
-              let rules = ruleTables[assetID];
-              if (rules) {
-                util.responData(util.CST.OK200, rules, res);
-              }
-              else {
-                util.responData(util.CST.ERR404, util.CST.MSG404, res);
-              }
-              delete ruleTables; // clear the enviroment variable, only for eval case.
-            }
-          } else {
-            //没找到指定名称的规则节点
-            util.responData(util.CST.ERR404, util.CST.MSG404, res);
-          }
-        }).catch(err => {
-          //获取规则链metaData出现问题
-          logger.log('error', 'Cannot get rulechain meta data.');
-          util.responErrorMsg(err, res);
-        });
+        let ruleID = ruleChain[0].id;
+        getConfigRules(assetID, ruleID, token, res);
       } else {
         //规则链返回值格式不对
         logger.log('error', 'Got rulechain, but response data is wrong.');
@@ -204,6 +208,102 @@ async function getWarningRules(req, res) {
     logger.log('error', 'Cannot get tenantId by assetId.');
     util.responErrorMsg(err, res);
   });
+}
+
+function updateAssetInfo(assetID, WarningRule, tenantId, token, req, res){
+  let url = util.getAPI() + `asset/${assetID}`;
+  axios.get(url, {
+    headers: {
+      "X-Authorization": token
+    }
+  }).then(resp => {
+    //添加addinfo后更新资产信息
+    url = util.getAPI() + `asset`;
+    let data = resp.data;
+    data.additionalInfo = {
+      WarningRule
+    };
+    axios.post(url, (data), {
+      headers: { "X-Authorization": token },
+      params: { "tenantIdStr": tenantId }
+    }).then(resp => {
+      // 添加预警操作记录
+      addWarningOperatorRecord(assetID, req.body, '设置资产预警规则', token, res);
+    })
+  }).catch(err => {
+    //通过资产ID获取信息失败
+    util.responErrorMsg(err, res);
+  });
+}
+
+function configruleChains(assetID, nodes, ruleMeta, WarningRule, tenantId, token, req, res){
+  let js1, js2, index1 = -1, index2 = -1;
+  for (let index in nodes) {
+    if (nodes[index].name === util.CFG.WARN_NODE_RULE) {
+      //预警规则设置节点
+      js1 = nodes[index].configuration.jsScript;
+      index1 = index;
+    } else if (nodes[index].name === util.CFG.WARN_NODE_ALARM_DEV) {
+      //获取所有规则需要的属性
+      js2 = nodes[index].configuration.latestTsKeyNames;
+      index2 = index;
+    }
+  }
+  //js1,js2都需要被找到并赋值
+  if (typeof js1 !== 'undefined' && typeof js2 !== 'undefined') {
+    let jsScript = js1;
+    let index = jsScript.indexOf('/* warning rule tables */');
+    eval(jsScript.substr(0, index));
+    if (typeof ruleTables !== 'undefined') {
+      ruleTables[assetID] = WarningRule;
+      //遍历新的ruleTables，把devId全部整理出来
+      let allDevIds = new Set();
+      let keys = Object.keys(ruleTables);
+      keys.forEach(it => {
+        let rule = ruleTables[it];
+        let bRules = rule['blueRules'];
+        let oRules = rule['orangeRules'];
+        bRules.forEach(element => {
+          let ids = element.andRule;
+          ids.forEach(el => {
+            allDevIds.add(el);
+          });
+        });
+        oRules.forEach(element => {
+          let ids = element.andRule;
+          ids.forEach(el => {
+            allDevIds.add(el);
+          });
+        });
+      });
+      js2 = [...allDevIds];
+      js1 = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js1.substr(index);
+      nodes[index1].configuration.jsScript = js1;
+      nodes[index2].configuration.latestTsKeyNames = js2;
+      delete ruleTables;
+      //post写库
+      let url = util.getAPI() + 'ruleChain/metadata';
+      //1.写入规则链
+      axios.post(url, (ruleMeta), {
+        headers: { "X-Authorization": token }
+      }).then(response => {
+        if (response.status == 200) {
+          //2.写入资产的addinfo（失败的情况不考虑）
+          //WarningRule, assetID, TID
+          //通过资产ID获取资产信息
+          updateAssetInfo(assetID, WarningRule, tenantId, token, req, res);
+        }
+        else {
+          //
+          logger.log('error', 'FIXME: why should I go here?')
+          util.responData(util.CST.ERR404, util.CST.MSG404, res);
+        }
+      }).catch(err => {
+        util.responErrorMsg(err, res);
+      })
+
+    }
+  }
 }
 
 //POST更新规则引擎中指定资产的预警规则，并把该规则存入资产表的addtionalInfo
@@ -249,95 +349,7 @@ async function postWarningRules(req, res) {
           if (ruleMeta) {
             //获取现存的预警规则相关的两个规则链节点
             let nodes = ruleMeta.nodes;
-            let js1, js2, index1 = -1, index2 = -1;
-            for (let index in nodes) {
-              if (nodes[index].name === util.CFG.WARN_NODE_RULE) {
-                //预警规则设置节点
-                js1 = nodes[index].configuration.jsScript;
-                index1 = index;
-              } else if (nodes[index].name === util.CFG.WARN_NODE_ALARM_DEV) {
-                //获取所有规则需要的属性
-                js2 = nodes[index].configuration.latestTsKeyNames;
-                index2 = index;
-              }
-            }
-            //js1,js2都需要被找到并赋值
-            if (typeof js1 !== 'undefined' && typeof js2 !== 'undefined') {
-              let jsScript = js1;
-              let index = jsScript.indexOf('/* warning rule tables */');
-              eval(jsScript.substr(0, index));
-              if (typeof ruleTables !== 'undefined') {
-                ruleTables[assetID] = WarningRule;
-                //遍历新的ruleTables，把devId全部整理出来
-                let allDevIds = new Set();
-                let keys = Object.keys(ruleTables);
-                keys.forEach(it => {
-                  let rule = ruleTables[it];
-                  let bRules = rule['blueRules'];
-                  let oRules = rule['orangeRules'];
-                  bRules.forEach(element => {
-                    let ids = element.andRule;
-                    ids.forEach(el => {
-                      allDevIds.add(el);
-                    });
-                  });
-                  oRules.forEach(element => {
-                    let ids = element.andRule;
-                    ids.forEach(el => {
-                      allDevIds.add(el);
-                    });
-                  });
-                });
-                js2 = [...allDevIds];
-                js1 = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + js1.substr(index);
-                nodes[index1].configuration.jsScript = js1;
-                nodes[index2].configuration.latestTsKeyNames = js2;
-                delete ruleTables;
-                //post写库
-                let url = util.getAPI() + 'ruleChain/metadata';
-                //1.写入规则链
-                axios.post(url, (ruleMeta), {
-                  headers: { "X-Authorization": token }
-                }).then(response => {
-                  if (response.status == 200) {
-                    //2.写入资产的addinfo（失败的情况不考虑）
-                    //WarningRule, assetID, TID
-                    //通过资产ID获取资产信息
-                    url = util.getAPI() + `asset/${assetID}`;
-                    axios.get(url, {
-                      headers: {
-                        "X-Authorization": token
-                      }
-                    }).then(resp => {
-                      //添加addinfo后更新资产信息
-                      url = util.getAPI() + `asset`;
-                      let data = resp.data;
-                      data.additionalInfo = {
-                        WarningRule
-                      };
-                      axios.post(url, (data), {
-                        headers: { "X-Authorization": token },
-                        params: { "tenantIdStr": TID }
-                      }).then(resp => {
-                        // 添加预警操作记录
-                        addWarningOperatorRecord(assetID, req.body, '设置资产预警规则', token, res);
-                      })
-                    }).catch(err => {
-                      //通过资产ID获取信息失败
-                      util.responErrorMsg(err, res);
-                    });
-                  }
-                  else {
-                    //
-                    logger.log('error', 'FIXME: why should I go here?')
-                    util.responData(util.CST.ERR404, util.CST.MSG404, res);
-                  }
-                }).catch(err => {
-                  util.responErrorMsg(err, res);
-                })
-
-              }
-            }
+            configruleChains(assetID, nodes, ruleMeta, WarningRule, tenantId, token,  req, res);
           }
           // util.responData(511, 'CONFIG_ALARM_RULE规则链MetaData获取失败。' , res);
         }).catch(err => {
