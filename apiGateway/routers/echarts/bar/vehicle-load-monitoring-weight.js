@@ -11,7 +11,7 @@ let option = {
         data: ['车重 > 44T', '24T < 车重 < 44T', '7.5T < 车重 < 24T', '2.5T < 车重 < 7.5T', '车重 < 2.5T'],
         //orient: 'vertical',
         x: 'center',
-        y: 'top',
+        y: '2%',
         borderWidth: 1
     },
     toolbox: {

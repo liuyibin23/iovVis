@@ -9,9 +9,9 @@ let option = {
      },
      legend: {
          data:['车速 < 80Km/h', '80Km/h < 车速 < 120Km/h', '车速 > 120Km/h'],
-             orient: 'vertical',
-         x:'82%',
-         y:'10%',
+         //orient: 'vertical',
+         x:'center',
+         y:'2%',
          backgroundColor: '#eee',
          borderColor: 'rgba(178,34,34,0.8)',
          borderWidth: 2

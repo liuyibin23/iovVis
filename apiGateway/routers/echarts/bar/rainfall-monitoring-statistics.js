@@ -3,7 +3,7 @@ const charCfg = require('../../echarts/chartConfig');
 
 let option = {
     title: {
-        text: '自动监测数据_柱状_降雨量',
+        text: '自动监测数据降雨量',
         x: 'center',
         y: 'bottom'
     },

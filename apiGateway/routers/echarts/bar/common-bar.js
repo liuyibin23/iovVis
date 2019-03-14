@@ -41,8 +41,22 @@ function getData(plotCfg, option, params, token, res){
     for (let i = 0; i < grounCnt; i++) {
         let cfg = plotCfg.groupInfo[i];
         ySeries.push([cfg.min, cfg.max]);
-    }
 
+        let name = "";
+        // 特殊处理
+        if (cfg.max == 99999){
+            name = `${plotCfg.keys} > ${cfg.min}`;
+        }
+        else
+        {
+            name = `${cfg.min} < ${plotCfg.keys} < ${cfg.max}`;
+        }
+        
+
+        option.series[i].name = name;
+        option.legend.data[i] = name;
+    }
+    option.title.text = plotCfg.title;
     /*
     // 时间分组参数
     let timeSeries =[
