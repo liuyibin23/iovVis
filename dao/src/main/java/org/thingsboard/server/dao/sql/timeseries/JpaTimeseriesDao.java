@@ -32,13 +32,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.kv.Aggregation;
-import org.thingsboard.server.common.data.kv.BaseReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
-import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
-import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.StringDataEntry;
-import org.thingsboard.server.common.data.kv.TsKvEntry;
+import org.thingsboard.server.common.data.kv.*;
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.model.sql.TsKvEntity;
 import org.thingsboard.server.dao.model.sql.TsKvLatestCompositeKey;
@@ -108,6 +102,12 @@ public class JpaTimeseriesDao extends JpaAbstractDaoListeningExecutorService imp
                 insertService = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
                 break;
         }
+    }
+
+    @Override
+    public ListenableFuture<List<TsKvEntry>> findCountAsync(TenantId tenantId, EntityId entityId, List<IntervalTsKvQuery> queries) {
+        //todo 时间序列目前只适用于cassandra
+        return null;
     }
 
     @Override

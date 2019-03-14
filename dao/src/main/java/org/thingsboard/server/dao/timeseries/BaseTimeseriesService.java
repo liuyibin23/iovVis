@@ -27,11 +27,7 @@ import org.thingsboard.server.common.data.EntityView;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.EntityViewId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.kv.Aggregation;
-import org.thingsboard.server.common.data.kv.BaseReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
-import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.TsKvEntry;
+import org.thingsboard.server.common.data.kv.*;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.service.Validator;
@@ -61,6 +57,14 @@ public class BaseTimeseriesService implements TimeseriesService {
 
     @Autowired
     private EntityViewService entityViewService;
+
+    @Override
+    public ListenableFuture<List<TsKvEntry>> findCount(TenantId tenantId, EntityId entityId, List<IntervalTsKvQuery> queries) {
+        validate(entityId);
+//        queries.forEach(this::validate);
+
+        return timeseriesDao.findCountAsync(tenantId, entityId, queries);
+    }
 
     @Override
     public ListenableFuture<List<TsKvEntry>> findAll(TenantId tenantId, EntityId entityId, List<ReadTsKvQuery> queries) {
