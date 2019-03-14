@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,6 +28,7 @@ import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import joptsimple.internal.Rows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,18 +36,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.kv.Aggregation;
-import org.thingsboard.server.common.data.kv.BaseReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
-import org.thingsboard.server.common.data.kv.BooleanDataEntry;
-import org.thingsboard.server.common.data.kv.DataType;
-import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
-import org.thingsboard.server.common.data.kv.DoubleDataEntry;
-import org.thingsboard.server.common.data.kv.KvEntry;
-import org.thingsboard.server.common.data.kv.LongDataEntry;
-import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.StringDataEntry;
-import org.thingsboard.server.common.data.kv.TsKvEntry;
+import org.thingsboard.server.common.data.kv.*;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.nosql.CassandraAbstractAsyncDao;
 import org.thingsboard.server.dao.util.NoSqlTsDao;
@@ -107,6 +97,8 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
     private PreparedStatement deleteStmt;
     private PreparedStatement deletePartitionStmt;
 
+    private PreparedStatement countStmt;
+
     private boolean isInstall() {
         return environment.acceptsProfiles("install");
     }
@@ -131,6 +123,24 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
         super.stopExecutor();
     }
 
+
+    @Override
+    public ListenableFuture<List<TsKvEntry>> findCountAsync(TenantId tenantId, EntityId entityId, List<IntervalTsKvQuery> queries) {
+        List<ListenableFuture<List<TsKvEntry>>> futures = queries.stream().map(query -> findCountAsync(tenantId, entityId, query)).collect(Collectors.toList());
+        return Futures.transform(Futures.allAsList(futures), new Function<List<List<TsKvEntry>>, List<TsKvEntry>>() {
+            @Nullable
+            @Override
+            public List<TsKvEntry> apply(@Nullable List<List<TsKvEntry>> results) {
+                if (results == null || results.isEmpty()) {
+                    return null;
+                }
+                return results.stream()
+                        .flatMap(List::stream)
+                        .collect(Collectors.toList());
+            }
+        }, readResultsProcessingExecutor);
+    }
+
     @Override
     public ListenableFuture<List<TsKvEntry>> findAllAsync(TenantId tenantId, EntityId entityId, List<ReadTsKvQuery> queries) {
         List<ListenableFuture<List<TsKvEntry>>> futures = queries.stream().map(query -> findAllAsync(tenantId, entityId, query)).collect(Collectors.toList());
@@ -146,6 +156,28 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
                         .collect(Collectors.toList());
             }
         }, readResultsProcessingExecutor);
+    }
+
+    private ListenableFuture<List<TsKvEntry>> findCountAsync(TenantId tenantId, EntityId entityId, IntervalTsKvQuery query) {
+        long minPartition = toPartitionTs(query.getStartTs());
+        long maxPartition = toPartitionTs(query.getEndTs());
+        final ListenableFuture<List<Long>> partitionsListFuture = getPartitionsFuture(tenantId, query, entityId, minPartition, maxPartition);
+        final SimpleListenableFuture<List<TsKvEntry>> resultFuture = new SimpleListenableFuture<>();
+
+        Futures.addCallback(partitionsListFuture, new FutureCallback<List<Long>>() {
+            @Override
+            public void onSuccess(@Nullable List<Long> partitions) {
+                CountQueryCursor cursor = new CountQueryCursor(entityId.getEntityType().name(), entityId.getId(), query, partitions);
+                findCountAsyncSequentially(tenantId, cursor, query, resultFuture);
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                log.error("[{}][{}] Failed to fetch partitions for interval {}-{}", entityId.getEntityType().name(), entityId.getId(), toPartitionTs(query.getStartTs()), toPartitionTs(query.getEndTs()), t);
+            }
+        }, readResultsProcessingExecutor);
+
+        return resultFuture;
     }
 
 
@@ -178,7 +210,7 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
         return tsFormat.getTruncateUnit().equals(TsPartitionDate.EPOCH_START);
     }
 
-    private ListenableFuture<List<Long>> getPartitionsFuture(TenantId tenantId, ReadTsKvQuery query, EntityId entityId, long minPartition, long maxPartition) {
+    private ListenableFuture<List<Long>> getPartitionsFuture(TenantId tenantId, TsKvQuery query, EntityId entityId, long minPartition, long maxPartition) {
         if (isFixedPartitioning()) { //no need to fetch partitions from DB
             return Futures.immediateFuture(FIXED_PARTITION);
         }
@@ -211,6 +243,54 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
     private long toPartitionTs(long ts) {
         LocalDateTime time = LocalDateTime.ofInstant(Instant.ofEpochMilli(ts), ZoneOffset.UTC);
         return tsFormat.truncatedTo(time).toInstant(ZoneOffset.UTC).toEpochMilli();
+    }
+
+    private void findCountAsyncSequentially(TenantId tenantId, final CountQueryCursor cursor, final IntervalTsKvQuery query, final SimpleListenableFuture<List<TsKvEntry>> resultFuture) {
+        if (!cursor.hasNextPartition()) {
+            resultFuture.set(cursor.getData());
+        } else {
+            PreparedStatement proto = getCountStmt(query.getDataType());
+            BoundStatement stmt = proto.bind();
+            stmt.setString(0, cursor.getEntityType());
+            stmt.setUUID(1, cursor.getEntityId());
+            stmt.setString(2, cursor.getKey());
+            stmt.setLong(3, cursor.getNextPartition());
+            stmt.setLong(4, cursor.getStartTs());
+            stmt.setLong(5, cursor.getEndTs());
+
+            if (query.getDataType() == DataType.LONG) {
+                LongIntervalTsKvQuery longIntervalTsKvQuery = (LongIntervalTsKvQuery) query;
+                stmt.setLong(6, longIntervalTsKvQuery.getFloorV());
+                stmt.setLong(7, longIntervalTsKvQuery.getCeilV());
+            } else if (query.getDataType() == DataType.DOUBLE) {
+                DoubleIntervalTsKvQuery doubleIntervalTsKvQuery = (DoubleIntervalTsKvQuery) query;
+                stmt.setDouble(6, doubleIntervalTsKvQuery.getFloorV());
+                stmt.setDouble(7, doubleIntervalTsKvQuery.getCeilV());
+            }
+
+            Futures.addCallback(executeAsyncRead(tenantId, stmt), new FutureCallback<ResultSet>() {
+                @Override
+                public void onSuccess(@Nullable ResultSet result) {
+                    List<TsKvEntry> entries = new ArrayList<>();
+                    if(result!=null){
+                        List<Row> rows = result.all();
+                        if (!rows.isEmpty()) {
+                            rows.forEach(row -> {
+                                TsKvEntry entry = new BasicTsKvEntry(query.getStartTs(), new LongDataEntry(query.getKey(), row.getLong(0)));
+                                entries.add(entry);
+                            });
+                        }
+                    }
+                    cursor.addData(entries);
+                    findCountAsyncSequentially(tenantId, cursor, query, resultFuture);
+                }
+
+                @Override
+                public void onFailure(Throwable t) {
+                    log.error("[{}][{}] Failed to fetch data for query {}-{}", stmt, t);
+                }
+            }, readResultsProcessingExecutor);
+        }
     }
 
     private void findAllAsyncSequentiallyWithLimit(TenantId tenantId, final TsKvQueryCursor cursor, final SimpleListenableFuture<List<TsKvEntry>> resultFuture) {
@@ -274,6 +354,8 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
                     stmt.setLong(3, partition);
                     stmt.setLong(4, startTs);
                     stmt.setLong(5, endTs);
+
+
                     log.debug(GENERATED_QUERY_FOR_ENTITY_TYPE_AND_ENTITY_ID, stmt, entityId.getEntityType(), entityId.getId());
                     futures.add(executeAsyncRead(tenantId, stmt));
                 }
@@ -787,6 +869,22 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
                     "AND " + ModelConstants.ENTITY_ID_COLUMN + EQUALS_PARAM);
         }
         return findAllLatestStmt;
+    }
+
+    private PreparedStatement getCountStmt(DataType type) {
+        if (countStmt == null) {
+            countStmt = prepare(SELECT_PREFIX +
+                    ModelConstants.count(getColumnName(type)) + " " +
+                    "FROM " + ModelConstants.TS_KV_CF + " " +
+                    "WHERE " + ModelConstants.ENTITY_TYPE_COLUMN + EQUALS_PARAM +
+                    "AND " + ModelConstants.ENTITY_ID_COLUMN + EQUALS_PARAM +
+                    "AND " + ModelConstants.KEY_COLUMN + EQUALS_PARAM +
+                    "AND " + ModelConstants.PARTITION_COLUMN + EQUALS_PARAM +
+                    "AND " + ModelConstants.TS_COLUMN + " >= ? " + "AND " + ModelConstants.TS_COLUMN + " < ? " +
+                    "AND " + getColumnName(type) + " >= ? " + "AND " + getColumnName(type) + " < ?" + " " +
+                    ModelConstants.ALLOW_FILTERING);
+        }
+        return countStmt;
     }
 
     private static String getColumnName(DataType type) {

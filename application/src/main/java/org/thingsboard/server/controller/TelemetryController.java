@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,8 @@
 package org.thingsboard.server.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.stomp.Reactor2StompCodec;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,21 +48,7 @@ import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
-import org.thingsboard.server.common.data.kv.Aggregation;
-import org.thingsboard.server.common.data.kv.AttributeKey;
-import org.thingsboard.server.common.data.kv.AttributeKvEntry;
-import org.thingsboard.server.common.data.kv.BaseAttributeKvEntry;
-import org.thingsboard.server.common.data.kv.BaseDeleteTsKvQuery;
-import org.thingsboard.server.common.data.kv.BaseReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
-import org.thingsboard.server.common.data.kv.BooleanDataEntry;
-import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
-import org.thingsboard.server.common.data.kv.DoubleDataEntry;
-import org.thingsboard.server.common.data.kv.KvEntry;
-import org.thingsboard.server.common.data.kv.LongDataEntry;
-import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
-import org.thingsboard.server.common.data.kv.StringDataEntry;
-import org.thingsboard.server.common.data.kv.TsKvEntry;
+import org.thingsboard.server.common.data.kv.*;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.msg.cluster.SendToClusterMsg;
 import org.thingsboard.server.common.transport.adaptor.JsonConverter;
@@ -74,6 +63,8 @@ import org.thingsboard.server.service.telemetry.exception.UncheckedApiException;
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.transaction.xa.XAResource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -202,8 +193,97 @@ public class TelemetryController extends BaseController {
                 });
     }
 
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/{entityType}/{entityId}/counts/timeseries", method = RequestMethod.GET)
+    @ResponseBody
+    public DeferredResult<ResponseEntity> getCountsTimeseries(
+            @PathVariable("entityType") String entityType, @PathVariable("entityId") String entityIdStr,
+            @RequestParam(name = "key") String key,
+            @RequestParam(name = "dataType") DataType dataType,
+            @RequestParam(name = "tsIntervals") String tsIntervals,
+            @RequestParam(name = "valueIntervals") String valueIntervals
+    ) throws ThingsboardException {
+        if (dataType != DataType.DOUBLE && dataType != DataType.LONG) {
+            throw handleException(new IllegalArgumentException(String.format("%s is not supported! Must be [%s, %s].", dataType, DataType.LONG, DataType.DOUBLE)));
+        }
+
+        return accessValidator.validateEntityAndCallback(getCurrentUser(), entityType, entityIdStr,
+                (result, tenantId, entityId) -> {
+                    List<IntervalTsKvQuery> queries = new ArrayList<>();
+                    int tsIntervalCount = 0;
+                    int valueIntervalCount = 0;
+                    try {
+                        ObjectMapper mapper = new ObjectMapper();
+                        final JsonNode xJsonNode = mapper.readTree(tsIntervals);
+                        tsIntervalCount = xJsonNode.size();
+                        final JsonNode yJsonNode = mapper.readTree(valueIntervals);
+                        valueIntervalCount = yJsonNode.size();
+
+                        xJsonNode.forEach(xInterval -> {
+                            Long startTs = xInterval.get(0).longValue();
+                            Long endTs = xInterval.get(1).longValue();
+                            yJsonNode.forEach(valueInterval -> {
+                                IntervalTsKvQuery intervalTsKvQuery = null;
+                                if (dataType == DataType.LONG) {
+                                    long vFloor = valueInterval.get(0).longValue();
+                                    long vCeil = valueInterval.get(1).longValue();
+                                    intervalTsKvQuery = new BaseLongIntervalTsKvQuery(key, startTs, endTs, vFloor, vCeil, dataType);
+                                } else if (dataType == DataType.DOUBLE) {
+                                    double vFloor = valueInterval.get(0).doubleValue();
+                                    double vCeil = valueInterval.get(1).doubleValue();
+                                    intervalTsKvQuery = new BaseDoubleIntervalTsKvQuery(key, startTs, endTs, vFloor, vCeil, dataType);
+                                }
+
+                                if (intervalTsKvQuery != null) {
+                                    queries.add(intervalTsKvQuery);
+                                }
+                            });
+                        });
+                    } catch (IOException e) {
+                        handleException(new RuntimeException("tsIntervals " + tsIntervals + " or valueIntervals " + valueIntervals + " is wrong form.", e));
+                    }
+
+                    Futures.addCallback(tsService.findCount(tenantId, entityId, queries), getCountResultCallback(tsIntervalCount, valueIntervalCount, result));
+                });
+    }
+
+    /**
+     * 返回的数据集为二维数据：
+     * [
+     *  [1_1, 1_2 ... 1_y],  //第1个时间区间，值域区间从低到高(1..y)的count值
+     *  ...
+     *  [x_1, x_2 ... x_y]   //第x个时间区间...
+     * ]
+     */
+    private FutureCallback<List<TsKvEntry>> getCountResultCallback(final int tsIntervalCount, final int valueIntervalCount, final DeferredResult<ResponseEntity> response) {
+        return new FutureCallback<List<TsKvEntry>>() {
+            @Override
+            public void onSuccess(List<TsKvEntry> data) {
+                List<List<Long>> result = new ArrayList<>(tsIntervalCount);
+                int y = 0;
+                List<Long> counts = new ArrayList<>(valueIntervalCount);
+                for (TsKvEntry entry : data) {
+                    if (y % valueIntervalCount == 0) {
+                        counts = new ArrayList<>(valueIntervalCount);
+                        result.add(counts);
+                    }
+                    counts.add(entry.getLongValue().get());
+                    y++;
+                }
+                response.setResult(new ResponseEntity<>(result, HttpStatus.OK));
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                log.error("Failed to fetch historical data", e);
+                AccessValidator.handleError(e, response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        };
+    }
+
     /**
      * 获取设备指定时间段数据统计按小时分布
+     *
      * @param tenantIdStr
      * @param customerIdStr
      * @param entityId
@@ -215,54 +295,54 @@ public class TelemetryController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/timeseries/statistic", method = RequestMethod.GET)
     @ResponseBody
-    public List<Long> getTsStatisticsValue(@RequestParam(name = "tenantId",required = false)String tenantIdStr,
-                                           @RequestParam(name = "customerId" ,required = false)String customerIdStr,
-                                           @RequestParam(name = "entityId",required = false)String entityId,
+    public List<Long> getTsStatisticsValue(@RequestParam(name = "tenantId", required = false) String tenantIdStr,
+                                           @RequestParam(name = "customerId", required = false) String customerIdStr,
+                                           @RequestParam(name = "entityId", required = false) String entityId,
                                            @RequestParam(name = "startTs") Long startTs,
                                            @RequestParam(name = "endTs") Long endTs) throws ThingsboardException {
 
         //entityId参数存在则直接查询指定设备，忽略其他筛选条件
-        if(entityId != null && !EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId).isNullUid() ){
-            return tsHourValueStatisticService.findTsHoursByEntityId(EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(),entityId),
-                                                                    startTs,endTs);
-        } else{
+        if (entityId != null && !EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(), entityId).isNullUid()) {
+            return tsHourValueStatisticService.findTsHoursByEntityId(EntityIdFactory.getByTypeAndId(EntityType.DEVICE.name(), entityId),
+                    startTs, endTs);
+        } else {
 
-            TenantId tenantId ;
+            TenantId tenantId;
             CustomerId customerId;
 
-            if(tenantIdStr == null || tenantIdStr.trim().isEmpty()){
-                tenantId =  null;
-            } else{
+            if (tenantIdStr == null || tenantIdStr.trim().isEmpty()) {
+                tenantId = null;
+            } else {
                 tenantId = new TenantId(UUIDConverter.fromString(tenantIdStr));
             }
-            if(customerIdStr == null || customerIdStr.trim().isEmpty()){
+            if (customerIdStr == null || customerIdStr.trim().isEmpty()) {
                 customerId = null;
             } else {
                 customerId = new CustomerId(UUIDConverter.fromString(customerIdStr));
             }
 
             SecurityUser currentUser = getCurrentUser();
-            if(currentUser.getAuthority() == Authority.SYS_ADMIN){
-                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
-            } else if(currentUser.getAuthority() == Authority.TENANT_ADMIN){
-                if(tenantId != null){
-                    checkTenantId(tenantId);
-                }else{
-                    tenantId = currentUser.getTenantId();
-                }
-                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
-            } else if(currentUser.getAuthority() == Authority.CUSTOMER_USER){
-                if(tenantId != null){
+            if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
+                return getTsStatisticsValue(tenantId, customerId, startTs, endTs);
+            } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
+                if (tenantId != null) {
                     checkTenantId(tenantId);
                 } else {
                     tenantId = currentUser.getTenantId();
                 }
-                if(customerId != null){
+                return getTsStatisticsValue(tenantId, customerId, startTs, endTs);
+            } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
+                if (tenantId != null) {
+                    checkTenantId(tenantId);
+                } else {
+                    tenantId = currentUser.getTenantId();
+                }
+                if (customerId != null) {
                     checkCustomerId(customerId);
                 } else {
                     customerId = currentUser.getCustomerId();
                 }
-                return getTsStatisticsValue(tenantId,customerId,startTs,endTs);
+                return getTsStatisticsValue(tenantId, customerId, startTs, endTs);
             }
             throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 
@@ -270,13 +350,13 @@ public class TelemetryController extends BaseController {
 
     }
 
-    private List<Long> getTsStatisticsValue(TenantId tenantId,CustomerId customerId,Long startTs,Long endTs) throws ThingsboardException {
-        if(tenantId != null && customerId != null){
-            return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs,endTs);
-        } else if(tenantId != null && customerId==null){
-            return tsHourValueStatisticService.findTsHoursByTenantId(EntityType.DEVICE, tenantId, startTs,endTs);
-        } else if(tenantId==null && customerId == null){
-            return tsHourValueStatisticService.findTsHours(EntityType.DEVICE,startTs,endTs);
+    private List<Long> getTsStatisticsValue(TenantId tenantId, CustomerId customerId, Long startTs, Long endTs) throws ThingsboardException {
+        if (tenantId != null && customerId != null) {
+            return tsHourValueStatisticService.findTsHoursByTenantIdAndCustomerId(EntityType.DEVICE, tenantId, customerId, startTs, endTs);
+        } else if (tenantId != null && customerId == null) {
+            return tsHourValueStatisticService.findTsHoursByTenantId(EntityType.DEVICE, tenantId, startTs, endTs);
+        } else if (tenantId == null && customerId == null) {
+            return tsHourValueStatisticService.findTsHours(EntityType.DEVICE, startTs, endTs);
         } else {
             return new ArrayList<>();
         }
@@ -296,10 +376,10 @@ public class TelemetryController extends BaseController {
     @ResponseBody
     public DeferredResult<ResponseEntity> saveEntityAttributesV1(@PathVariable("entityType") String entityType, @PathVariable("entityId") String entityIdStr,
                                                                  @PathVariable("scope") String scope,
-																 @RequestBody JsonNode request) throws ThingsboardException {
+                                                                 @RequestBody JsonNode request) throws ThingsboardException {
         EntityId entityId = EntityIdFactory.getByTypeAndId(entityType, entityIdStr);
-        if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
-			DeferredResult<ResponseEntity> response = new DeferredResult<>();
+        if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
+            DeferredResult<ResponseEntity> response = new DeferredResult<>();
  /*       	if (tenantIdStr == null){
 				response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
 				return response;
@@ -308,20 +388,19 @@ public class TelemetryController extends BaseController {
 			checkTenantId(tenantIdTmp);
 			TenantId tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 */
-			if (request.isObject()) {
-				List<AttributeKvEntry> attributes = extractRequestAttributes(request);
-				if (attributes.isEmpty()) {
-					return getImmediateDeferredResult("No attributes data found in request body!", HttpStatus.BAD_REQUEST);
-				}
-				attributesService.saveAttributes(null,entityId,scope,attributes);
-				response.setResult(new ResponseEntity(HttpStatus.OK));
-				return response;
-			}
-			response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
-			return response;
-		}
-		else
-        	return saveAttributes(getTenantId(), entityId, scope, request);
+            if (request.isObject()) {
+                List<AttributeKvEntry> attributes = extractRequestAttributes(request);
+                if (attributes.isEmpty()) {
+                    return getImmediateDeferredResult("No attributes data found in request body!", HttpStatus.BAD_REQUEST);
+                }
+                attributesService.saveAttributes(null, entityId, scope, attributes);
+                response.setResult(new ResponseEntity(HttpStatus.OK));
+                return response;
+            }
+            response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
+            return response;
+        } else
+            return saveAttributes(getTenantId(), entityId, scope, request);
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")

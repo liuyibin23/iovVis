@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.kv.DeleteTsKvQuery;
+import org.thingsboard.server.common.data.kv.IntervalTsKvQuery;
 import org.thingsboard.server.common.data.kv.ReadTsKvQuery;
 import org.thingsboard.server.common.data.kv.TsKvEntry;
 
@@ -34,6 +35,8 @@ public interface TimeseriesDao {
     ListenableFuture<TsKvEntry> findLatest(TenantId tenantId, EntityId entityId, String key);
 
     ListenableFuture<List<TsKvEntry>> findAllLatest(TenantId tenantId, EntityId entityId);
+
+    ListenableFuture<List<TsKvEntry>> findCountAsync(TenantId tenantId, EntityId entityId, List<IntervalTsKvQuery> queries);
 
     ListenableFuture<Void> save(TenantId tenantId, EntityId entityId, TsKvEntry tsKvEntry, long ttl);
 
