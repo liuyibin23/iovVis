@@ -1,6 +1,5 @@
 package org.thingsboard.server.dao.task;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import org.thingsboard.server.dao.user.UserDao;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -114,14 +112,9 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
      */
     private List<Task> findTaskAlarm(List<Task> tasks) {
         tasks.forEach(t -> {
-            try {
-                relationDao.findAllByFrom(null, t.getId(), RelationTypeGroup.COMMON).get().stream()
-                        .findFirst()
-                        .ifPresent(entityRelation -> t.setAlarmId(entityRelation.getTo()));
-            } catch (InterruptedException | ExecutionException e) {
-                log.warn("find alarm of task failed. Task is: {}", t);
-                e.printStackTrace();
-            }
+            relationService.findByFrom(null, t.getId(), RelationTypeGroup.COMMON).stream()
+                    .findFirst()
+                    .ifPresent(entityRelation -> t.setAlarmId(entityRelation.getTo()));
         });
         return tasks;
     }
@@ -166,18 +159,13 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
             throw new IllegalArgumentException(String.format("request alarm not exist! Raw alarm id is: %s", entityId.getId()));
         }
 
-        ListenableFuture<List<EntityRelation>> relations = relationDao.findAllByFrom(null, task.getId(), RelationTypeGroup.COMMON);
+        List<EntityRelation> relations = relationService.findByFrom(null, task.getId(), RelationTypeGroup.COMMON);
         boolean createNecessary = true;
-        try {
-            List<EntityRelation> entityRelations = relations.get();
-            createNecessary = entityRelations.stream().noneMatch(p -> p.getFrom().getId().toString().equals(task.getId().getId().toString()));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        createNecessary = relations.stream().noneMatch(p -> p.getFrom().getId().toString().equals(task.getId().getId().toString()));
 
         if (createNecessary) {
             EntityRelation relation = new EntityRelation(task.getId(), task.getAlarmId(), EntityRelation.CONTAINS_TYPE);
-            if (!relationDao.saveRelation(null, relation)) {
+            if (!relationService.saveRelation(null, relation)) {
                 log.error("bind task to alarm failed. Raw task info: {}", task);
                 throw new RuntimeException("bind task to alarm failed. Raw task is: " + task);
             }
