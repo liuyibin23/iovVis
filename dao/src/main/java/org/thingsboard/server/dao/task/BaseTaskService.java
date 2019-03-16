@@ -215,7 +215,6 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
                         if (t == null) {
                             throw new DataValidationException("Task is non-existent Task Id!");
                         }
-
                     }
                 }
             };

@@ -224,4 +224,22 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
         return null;
     }
 
+    @Override
+    public List<Device> findDevices() {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Device> findDevicesByTenandId(UUID tenantId) {
+        //todo cassandra
+        return null;
+    }
+
+    @Override
+    public List<Device> findDevicesByCustomerId(UUID customerId) {
+        //todo cassandra
+        return null;
+    }
+
 }

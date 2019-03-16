@@ -15,8 +15,6 @@
  */
 package org.thingsboard.server.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,12 +28,10 @@ import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
@@ -46,6 +42,7 @@ import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -384,12 +381,9 @@ public class AssetController extends BaseController {
 														 @RequestParam(required = false) String assetIdStr,
 														 @RequestParam(required = false) String deviceNameStr
 												) throws ThingsboardException {
-		List<Asset> assetList;
-		ObjectMapper retObj = new ObjectMapper();
-		ArrayNode arrayNode = retObj.createArrayNode();
-		List<Alarm> alarms = new ArrayList<>();
 		List<Device> deviceList = new ArrayList<>();
-
+		List<Alarm> alarms = null;
+		Optional<List<Device>> optionalDeviceList = Optional.ofNullable(null);
 		TenantId tenantId;//= getCurrentUser().getTenantId();
 		CustomerId customerId;
 		AssetId assetId;
@@ -397,13 +391,13 @@ public class AssetController extends BaseController {
 		if(tenantIdStr != null && !tenantIdStr.trim().isEmpty()){
 			tenantId = new TenantId(UUID.fromString(tenantIdStr));
 		}else {
-			tenantId = getTenantId();
+			tenantId = null;
 		}
 
 		if(customerIdStr != null && !customerIdStr.trim().isEmpty()){
 			customerId = new CustomerId(UUID.fromString(customerIdStr));
 		}else{
-			customerId = getCurrentUser().getCustomerId();
+			customerId = null;
 		}
 		if(null != assetIdStr && !assetIdStr.trim().isEmpty()){
 			assetId = new AssetId(UUID.fromString(assetIdStr));
@@ -411,113 +405,125 @@ public class AssetController extends BaseController {
 			assetId = null;
 		}
 
-
-		//获取asset列表
-		switch (getCurrentUser().getAuthority()){
-			case CUSTOMER_USER:
-				checkCustomerId(customerId);
-				assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
-				if(deviceNameStr != null){
-					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%", customerId);
-				}
-				break;
-			case SYS_ADMIN:
-				if(!customerId.isNullUid()){
-					checkCustomerId(tenantId,customerId);
-					assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
-				} else if(!tenantId.isNullUid()){
-					checkTenantId(tenantId);
-					assetList = checkNotNull(assetService.findAssetsByTenantId(tenantId));
-				} else {
-					assetList = checkNotNull(assetService.findAssets());
-				}
-				if(deviceNameStr != null) {
-					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%");
-				}
-				break;
-			case TENANT_ADMIN:
-				checkTenantId(tenantId);
-				if(!customerId.isNullUid()){
-					checkCustomerId(customerId);
-					assetList = checkNotNull(assetService.findAssetsByCustomerId(customerId));
-				} else {
-					assetList = checkNotNull(assetService.findAssetsByTenantId(tenantId));
-				}
-				if(deviceNameStr != null) {
-					deviceList = deviceService.findDevicesByName("%" + deviceNameStr + "%", tenantId);
-				}
-				break;
-			default:
-				throw new ThingsboardException(ThingsboardErrorCode.ITEM_NOT_FOUND);
-		}
-
-		if(deviceNameStr != null && assetId == null){
-			deviceList.stream().forEach(device -> {
-				alarms.addAll(alarmService.findAlarmByOriginator(device.getId()));
-			});
+		//按设备搜索
+		if (deviceNameStr != null && !deviceNameStr.trim().isEmpty()){
+			optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByName("%" + deviceNameStr + "%"));
+			if (!optionalDeviceList.isPresent()){
+				return null;
+			}
 		} else {
-		    final List<Device> deviceListFinal = deviceList;
-			//获取设备列表
-			assetList.stream()
-					.filter(asset ->  assetId!=null?(assetId.getId().equals(asset.getId().getId())?true:false):true )
-					.forEach(asset -> {
-						relationService.findByFromAndType(tenantId,asset.getId(),"Contains",RelationTypeGroup.COMMON)
-								.stream()
-								.filter(entityRelation -> {
-//								    if(entityRelation.getTo().getEntityType() == EntityType.DEVICE) return true; else return false;
-								    if(entityRelation.getTo().getEntityType() == EntityType.DEVICE ){
-                                        return deviceListFinal.size() == 0 ||
-                                                deviceListFinal.stream().anyMatch(item->item.getId().getId().equals(entityRelation.getTo().getId()));
-                                    }else{
-								        return false;
-                                    }
-								})
-								.forEach(entityRelation -> {
-									Device deviceTmp = deviceService.findDeviceById(tenantId,new DeviceId(entityRelation.getTo().getId()));
-
-									//获取设备是否告警
-
-									List<Alarm> alarmTmp = alarmService.findAlarmByOriginator(deviceTmp.getId());
-									//生成返回数据
-//						alarmTmp.forEach(alarm -> {
-//							ObjectNode tmpNode = retObj.createObjectNode();
-//							tmpNode.put("alarmId",alarm.getId().toString());
-//
-//							tmpNode.put("assetName",asset.getName());
-//
-//							DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(deviceTmp.getId().getId()));
-//							if (null != deviceAttributes.getMeasureid())
-//								tmpNode.put("measureid",deviceAttributes.getMeasureid());
-//
-//							tmpNode.put("deviceName",deviceTmp.getName());
-//							tmpNode.put("deviceType",deviceTmp.getType());
-//
-//							try {
-//								List<AttributeKvEntry> attributeKvEntries = attributesService.findAll(tenantId,deviceTmp.getId(),"CLIENT_SCOPE").get();
-//								attributeKvEntries.stream().filter(attributeKvEntry -> attributeKvEntry.getKey().equals("model"))
-//										.forEach(attributeKvEntry -> {tmpNode.put("model",attributeKvEntry.getValueAsString());});
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//							}
-//
-//							tmpNode.put("alarmTime",alarm.getStartTs());
-//							tmpNode.put("alarmLevel",alarm.getSeverity().toString());
-//							tmpNode.put("alarmStatus",alarm.getStatus().toString());
-////							tmpNode.put("additionalinfo",alarm.getDetails().toString());
-//							tmpNode.set("additionalinfo",alarm.getDetails());
-//							tmpNode.put("alarmStartTime",alarm.getStartTs());
-//							tmpNode.put("alarmEndTime",alarm.getEndTs());
-//							arrayNode.add(tmpNode);
-//
-//
-//						});
-									alarms.addAll(alarmTmp);
-								});
-					});
+			switch (getCurrentUser().getAuthority()) {
+				case SYS_ADMIN:
+					optionalDeviceList = Optional.ofNullable(deviceService.findDevices());
+					break;
+				case TENANT_ADMIN:
+					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByTenantId(tenantId));
+					break;
+				case CUSTOMER_USER:
+					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByCustomerId(customerId));
+					break;
+			}
 		}
-
-//		return arrayNode;
+		for (Device device:optionalDeviceList.get()){
+			switch (getCurrentUser().getAuthority()){
+				case SYS_ADMIN:
+					if (customerId != null){
+						if (device.getCustomerId().equals(customerId)){
+							if (assetId != null){
+								if (checkDeviceBelongAsset(assetId,device.getId()))
+									deviceList.add(device);
+							} else
+								deviceList.add(device);
+						}
+						break;
+					} else
+					if (tenantId != null){
+						if (device.getTenantId().equals(tenantId)){
+							if (assetId != null){
+								if (checkDeviceBelongAsset(assetId,device.getId()))
+									deviceList.add(device);
+							} else
+								deviceList.add(device);
+						}
+						break;
+					} else {
+						deviceList.add(device);
+					}
+					break;
+				case TENANT_ADMIN:
+					if (customerId != null){
+						if (device.getCustomerId().equals(customerId)){
+							if (assetId != null){
+								if (checkDeviceBelongAsset(assetId,device.getId()))
+									deviceList.add(device);
+							} else
+								deviceList.add(device);
+						}
+						break;
+					}
+					if (device.getTenantId().equals(getTenantId())){
+						if (assetId != null){
+							if (checkDeviceBelongAsset(assetId,device.getId()))
+								deviceList.add(device);
+						} else
+							deviceList.add(device);
+					}
+					break;
+				case CUSTOMER_USER:
+					if (device.getCustomerId().equals(getCurrentUser())){
+						if (assetId != null){
+							if (checkDeviceBelongAsset(assetId,device.getId()))
+								deviceList.add(device);
+						} else
+							deviceList.add(device);
+					}
+					break;
+			}
+		}
+		alarms = getAlarmsByDevice(deviceList);
 		return fillAlarmExInfo(alarms);
+
+	}
+	private Boolean checkDeviceBelongAsset(AssetId assetId,DeviceId deviceId){
+		Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByToAndType(null,
+				EntityIdFactory.getByTypeAndUuid(deviceId.getEntityType(),deviceId.getId()),"Contains",RelationTypeGroup.COMMON));
+		if (optionalEntityRelations.isPresent()) {
+			for (EntityRelation entityRelation:optionalEntityRelations.get()){
+				if (entityRelation.getFrom().equals(EntityIdFactory.getByTypeAndUuid(assetId.getEntityType(),assetId.getId()))){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	private List<Device> getDevicesByAsset(List<Asset> assetList){
+		List<Device> retList = new ArrayList<>();
+		assetList.stream().forEach(asset -> {
+			Optional<List<EntityRelation>> optionalEntityRelationList = Optional.ofNullable(relationService.findByFromAndType(
+					asset.getTenantId(),asset.getId(),"Contains",RelationTypeGroup.COMMON));
+			if (optionalEntityRelationList.isPresent()){
+				optionalEntityRelationList.get().stream()
+						.filter(r -> EntityType.DEVICE.equals(r.getTo().getEntityType()))
+				.forEach(r->{
+					Optional<Device> optionalDevice = Optional.ofNullable(deviceService.findDeviceById(asset.getTenantId(),new DeviceId(r.getTo().getId())));
+					if (optionalDevice.isPresent()){
+						retList.add(optionalDevice.get());
+					}
+				});
+			}
+		});
+
+		return retList;
+	}
+	private List<Alarm> getAlarmsByDevice(List<Device> deviceList){
+		List<Alarm> retList = new ArrayList<>();
+		deviceList.stream().forEach(device -> {
+			Optional<List<Alarm>> optionalAlarmsList = Optional.ofNullable(alarmService.findAlarmByOriginator(device.getId()));
+			if (optionalAlarmsList.isPresent()){
+				retList.addAll(optionalAlarmsList.get());
+			}
+		});
+		return retList;
 	}
 
 	/**

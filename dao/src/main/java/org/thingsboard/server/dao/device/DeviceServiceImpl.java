@@ -29,19 +29,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
-import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.DeviceId;
+import org.thingsboard.server.common.data.id.EntityId;
+import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
-import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.common.data.security.DeviceCredentialsType;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
-import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
@@ -54,10 +55,7 @@ import java.util.stream.Collectors;
 import static org.thingsboard.server.common.data.CacheConstants.DEVICE_CACHE;
 import static org.thingsboard.server.dao.DaoUtil.toUUIDs;
 import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID;
-import static org.thingsboard.server.dao.service.Validator.validateId;
-import static org.thingsboard.server.dao.service.Validator.validateIds;
-import static org.thingsboard.server.dao.service.Validator.validatePageLink;
-import static org.thingsboard.server.dao.service.Validator.validateString;
+import static org.thingsboard.server.dao.service.Validator.*;
 
 @Service
 @Slf4j
@@ -364,6 +362,21 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     @Override
     public List<Device> findDevicesByName(String deviceName, CustomerId customerId) {
         return deviceDao.findDevicesByNameAndCustomerId(deviceName,customerId.getId());
+    }
+
+    @Override
+    public List<Device> findDevices() {
+        return deviceDao.findDevices();
+    }
+
+    @Override
+    public List<Device> findDevicesByTenantId(TenantId tenandId) {
+        return deviceDao.findDevicesByTenandId(tenandId.getId());
+    }
+
+    @Override
+    public List<Device> findDevicesByCustomerId(CustomerId customerId) {
+        return deviceDao.findDevicesByCustomerId(customerId.getId());
     }
 
     private DataValidator<Device> deviceValidator =
