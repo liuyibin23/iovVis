@@ -165,9 +165,13 @@ public class TaskController extends BaseController {
 			if (null != task.getOriginator()) {
 				if (task.getOriginator().getEntityType() == EntityType.DEVICE) {
 					DeviceId deviceId = new DeviceId(task.getOriginator().getId());
-					Optional<String> op = Optional.ofNullable(deviceService.findDeviceById(null, deviceId).getName());
-					if (op.isPresent())
-						task.setOriginatorName(op.get());
+					Optional<Device> opdevice = Optional.ofNullable(deviceService.findDeviceById(null, deviceId));
+					if (opdevice.isPresent()){
+						Optional<String> op = Optional.ofNullable(opdevice.get().getName());
+						if (op.isPresent())
+							task.setOriginatorName(op.get());
+					}
+
 				}
 			}
 		});
