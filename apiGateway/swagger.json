@@ -936,7 +936,8 @@
       "type": "object",
       "properties": {
         "Key": {
-          "type": "string"
+          "type": "string",
+          "example": "温度"
         },
         "IndeterminateRules": {
           "$ref": "#/definitions/IndeterminateRules"
