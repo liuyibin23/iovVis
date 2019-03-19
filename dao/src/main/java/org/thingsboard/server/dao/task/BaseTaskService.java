@@ -1,35 +1,29 @@
 package org.thingsboard.server.dao.task;
 
-import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.Tenant;
-import org.thingsboard.server.common.data.User;
+import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.id.UserId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.dao.alarm.AlarmDao;
+import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.customer.CustomerDao;
+import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.exception.DataValidationException;
-import org.thingsboard.server.dao.relation.RelationDao;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserDao;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Slf4j
@@ -52,7 +46,12 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     private AlarmDao alarmDao;
 
     @Autowired
-    private RelationDao relationDao;
+    private DeviceService deviceService;
+
+    @Autowired
+	private AssetService assetService;
+
+
 
     @Override
     public Task createOrUpdateTask(Task task) {
@@ -114,14 +113,9 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
      */
     private List<Task> findTaskAlarm(List<Task> tasks) {
         tasks.forEach(t -> {
-            try {
-                relationDao.findAllByFrom(null, t.getId(), RelationTypeGroup.COMMON).get().stream()
-                        .findFirst()
-                        .ifPresent(entityRelation -> t.setAlarmId(entityRelation.getTo()));
-            } catch (InterruptedException | ExecutionException e) {
-                log.warn("find alarm of task failed. Task is: {}", t);
-                e.printStackTrace();
-            }
+            relationService.findByFrom(null, t.getId(), RelationTypeGroup.COMMON).stream()
+                    .findFirst()
+                    .ifPresent(entityRelation -> t.setAlarmId(entityRelation.getTo()));
         });
         return tasks;
     }
@@ -166,18 +160,13 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
             throw new IllegalArgumentException(String.format("request alarm not exist! Raw alarm id is: %s", entityId.getId()));
         }
 
-        ListenableFuture<List<EntityRelation>> relations = relationDao.findAllByFrom(null, task.getId(), RelationTypeGroup.COMMON);
+        List<EntityRelation> relations = relationService.findByFrom(null, task.getId(), RelationTypeGroup.COMMON);
         boolean createNecessary = true;
-        try {
-            List<EntityRelation> entityRelations = relations.get();
-            createNecessary = entityRelations.stream().noneMatch(p -> p.getFrom().getId().toString().equals(task.getId().getId().toString()));
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        }
+        createNecessary = relations.stream().noneMatch(p -> p.getFrom().getId().toString().equals(task.getId().getId().toString()));
 
         if (createNecessary) {
             EntityRelation relation = new EntityRelation(task.getId(), task.getAlarmId(), EntityRelation.CONTAINS_TYPE);
-            if (!relationDao.saveRelation(null, relation)) {
+            if (!relationService.saveRelation(null, relation)) {
                 log.error("bind task to alarm failed. Raw task info: {}", task);
                 throw new RuntimeException("bind task to alarm failed. Raw task is: " + task);
             }
@@ -227,7 +216,34 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
                         if (t == null) {
                             throw new DataValidationException("Task is non-existent Task Id!");
                         }
-
+                    }
+                    if (task.getOriginator() != null){
+						switch (task.getOriginator().getEntityType()) {
+							case ASSET:
+								Asset asset = assetService.findAssetById(null,new AssetId(task.getOriginator().getId()));
+								if (asset == null){
+									throw new DataValidationException("Asset is non-existent id: "+task.getOriginator().getId()+" !");
+								}
+								if (task.getCustomerId() != null & task.getTenantId() != null ){
+									if (!asset.getTenantId().equals(task.getTenantId()) || !asset.getCustomerId().equals(task.getCustomerId())){
+										throw new DataValidationException("asset not allow this tenant or customer!");
+									}
+								}
+								break;
+							case DEVICE:
+								Device device = deviceService.findDeviceById(null,new DeviceId(task.getOriginator().getId()));
+								if (device == null){
+									throw new DataValidationException("Device is non-existent id: "+task.getOriginator().getId()+" !");
+								}
+								if (task.getCustomerId() != null & task.getTenantId() != null){
+									if (!device.getTenantId().equals(task.getTenantId()) || !device.getCustomerId().equals(task.getCustomerId())){
+										throw new DataValidationException("device not allow this tenant or customer!");
+									}
+								}
+								break;
+							default:
+								throw new DataValidationException("Originator not supper "+task.getOriginator().getEntityType()+" !");
+						}
                     }
                 }
             };

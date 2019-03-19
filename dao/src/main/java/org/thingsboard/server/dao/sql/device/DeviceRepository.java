@@ -19,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.util.SqlDao;
 
@@ -93,7 +92,8 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
     @Query("SELECT DISTINCT d.type FROM DeviceEntity d WHERE d.tenantId = :tenantId")
     List<String> findTenantDeviceTypes(@Param("tenantId") String tenantId);
 
-    DeviceEntity findByTenantIdAndName(String tenantId, String name);
+    DeviceEntity findFirstByTenantIdAndName(String tenantId, String name);
+
 
     List<DeviceEntity> findDevicesByTenantIdAndCustomerIdAndIdIn(String tenantId, String customerId, List<String> deviceIds);
 
@@ -104,4 +104,7 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
     List<DeviceEntity> findAllByNameLikeAndTenantId(String deviceName,String tenantId);
 
     List<DeviceEntity> findAllByNameLikeAndCustomerId(String deviceName,String customerId);
+    List<DeviceEntity> findAllBy();
+    List<DeviceEntity> findAllByTenantId(String tenandId);
+    List<DeviceEntity> findAllByCustomerId(String customerId);
 }

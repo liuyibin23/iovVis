@@ -22,7 +22,6 @@ import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.dao.Dao;
-import org.thingsboard.server.dao.model.sql.DeviceEntity;
 
 import java.util.List;
 import java.util.Optional;
@@ -150,4 +149,7 @@ public interface DeviceDao extends Dao<Device> {
 
     List<Device> findDevicesByNameAndTenantId(String deviceName,UUID tenantId);
     List<Device> findDevicesByNameAndCustomerId(String deviceName,UUID customerId);
+    List<Device> findDevices();
+    List<Device> findDevicesByTenandId(UUID tenantId);
+    List<Device> findDevicesByCustomerId(UUID customerId);
 }

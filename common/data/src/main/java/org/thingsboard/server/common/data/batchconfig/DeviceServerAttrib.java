@@ -20,11 +20,6 @@ public class DeviceServerAttrib  implements Serializable {
 	private String measureid;
 	//模型名	服务器属性
 	private String bimid;
-	//设备id	服务器属性
-	//设备名称
-	private String name;
-
-	//设备类型	服务器属性
-	private String type;
-
+	//技术参数配置	服务器属性
+	private String typeParam;
 }

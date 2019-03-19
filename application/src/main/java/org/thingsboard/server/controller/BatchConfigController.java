@@ -83,16 +83,17 @@ public class BatchConfigController extends BaseController {
 			if (a == null) {
 				throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
 			}
+
 			devicesSaveRequest.forEach((deviceInfo) -> {
 
 				String uidStr = assetId + "|" + deviceInfo.getDeviceShareAttrib().getIp() + "|" + deviceInfo.getDeviceShareAttrib().getChannel();
-				deviceInfo.getDeviceServerAttrib().setName(uidStr.hashCode() + "");
-				Device device = deviceService.findDeviceByTenantIdAndName(a.getTenantId(), deviceInfo.getDeviceServerAttrib().getName());
+				deviceInfo.getDeviceShareAttrib().setName(uidStr.hashCode() + "");
+				Device device = deviceService.findDeviceByTenantIdAndName(a.getTenantId(), deviceInfo.getDeviceShareAttrib().getName());
 				//region 如果设备不存在，创建设备
 				if (device == null) {
 					device = new Device();
-					device.setName(deviceInfo.getDeviceServerAttrib().getName());
-					device.setType(deviceInfo.getDeviceShareAttrib().getSensorType());
+					device.setName(deviceInfo.getDeviceShareAttrib().getName());
+					device.setType(deviceInfo.getDeviceShareAttrib().getType());
 					try {
 						device.setTenantId(a.getTenantId());
 						device.setCustomerId(a.getCustomerId());

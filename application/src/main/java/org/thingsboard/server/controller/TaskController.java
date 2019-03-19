@@ -126,19 +126,25 @@ public class TaskController extends BaseController {
 			List<Task> retTask = new ArrayList<>();
 			AlarmId alarmId = new AlarmId(toUUID(strAlarmId));
 			checkAlarmId(alarmId);
+			log.error("alarmId : " + alarmId);
 			Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByToAndType(null, alarmId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON));
 			if (optionalEntityRelations.isPresent()) {
-				for (EntityRelation relation : optionalEntityRelations.get()) {
-					if (relation.getFrom().getEntityType() == EntityType.TASK) {
-						Optional<Task> op = Optional.ofNullable(taskService.findTaskById(relation.getFrom().getId()));
-						if (op.isPresent()) {
-							Task tmpTask = op.get();
-							tmpTask.setAlarmId(alarmId);
-							retTask.add(tmpTask);
-						}
+				if (optionalEntityRelations.get().size() > 0){
+					log.error("relation size: " + optionalEntityRelations.get().size());
+					for (EntityRelation relation : optionalEntityRelations.get()) {
+						if (relation.getFrom().getEntityType() == EntityType.TASK) {
+							log.error("relation : " + relation.getFrom().getId());
+							Optional<Task> op = Optional.ofNullable(taskService.findTaskById(relation.getFrom().getId()));
+							if (op.isPresent()) {
+								Task tmpTask = op.get();
+								tmpTask.setAlarmId(alarmId);
+								retTask.add(tmpTask);
+							}
 
+						}
 					}
 				}
+
 			}
 
 			return getTasksNameInfo(retTask);
@@ -159,9 +165,13 @@ public class TaskController extends BaseController {
 			if (null != task.getOriginator()) {
 				if (task.getOriginator().getEntityType() == EntityType.DEVICE) {
 					DeviceId deviceId = new DeviceId(task.getOriginator().getId());
-					Optional<String> op = Optional.ofNullable(deviceService.findDeviceById(null, deviceId).getName());
-					if (op.isPresent())
-						task.setOriginatorName(op.get());
+					Optional<Device> opdevice = Optional.ofNullable(deviceService.findDeviceById(null, deviceId));
+					if (opdevice.isPresent()){
+						Optional<String> op = Optional.ofNullable(opdevice.get().getName());
+						if (op.isPresent())
+							task.setOriginatorName(op.get());
+					}
+
 				}
 			}
 		});

@@ -130,7 +130,7 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
 
     @Override
     public Optional<Device> findDeviceByTenantIdAndName(UUID tenantId, String name) {
-        Device device = DaoUtil.getData(deviceRepository.findByTenantIdAndName(fromTimeUUID(tenantId), name));
+        Device device = DaoUtil.getData(deviceRepository.findFirstByTenantIdAndName(fromTimeUUID(tenantId), name));
         return Optional.ofNullable(device);
     }
 
@@ -180,6 +180,21 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
     @Override
     public List<Device> findDevicesByNameAndCustomerId(String deviceName, UUID customerId) {
         return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndCustomerId(deviceName,fromTimeUUID(customerId)));
+    }
+
+    @Override
+    public List<Device> findDevices() {
+        return DaoUtil.convertDataList(deviceRepository.findAllBy());
+    }
+
+    @Override
+    public List<Device> findDevicesByTenandId(UUID tenantId) {
+        return DaoUtil.convertDataList(deviceRepository.findAllByTenantId(fromTimeUUID(tenantId)));
+    }
+
+    @Override
+    public List<Device> findDevicesByCustomerId(UUID customerId) {
+        return DaoUtil.convertDataList(deviceRepository.findAllByCustomerId(fromTimeUUID(customerId)));
     }
 
     private List<EntitySubtype> convertTenantDeviceTypesToDto(UUID tenantId, List<String> types) {

@@ -14,8 +14,9 @@ import java.io.Serializable;
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceClientAttrib  implements Serializable {
-
-
 	//参数配置	客户端属性
 	private String param;
+	//清零平衡值  客户端属性
+	private String balance_clear;
+
 }

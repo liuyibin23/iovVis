@@ -24,7 +24,6 @@ import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
-import org.thingsboard.server.dao.model.sql.DeviceEntity;
 
 import java.util.List;
 
@@ -75,5 +74,8 @@ public interface DeviceService {
     List<Device> findDevicesByName(String deviceName);
     List<Device> findDevicesByName(String deviceName,TenantId tenantId);
     List<Device> findDevicesByName(String deviceName,CustomerId customerId);
+    List<Device> findDevices();
+    List<Device> findDevicesByTenantId(TenantId tenandId);
+    List<Device> findDevicesByCustomerId(CustomerId customerId);
 
 }
