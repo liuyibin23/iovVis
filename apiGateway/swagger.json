@@ -707,7 +707,10 @@
           "200": {
             "description": "返回设备的告警规则。",
             "schema": {
-              "$ref": "#/definitions/AlarmRules"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AlarmRules"
+              }
             }
           },
           "401": {
@@ -737,7 +740,10 @@
             "description": "告警规则分两级。一级触发，创建不确定告警（INDETERMINATE），二级触发创建警告（WARNING）。二级警告触发将导致设备所属资产的属性从蓝色升级为橙色。",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/AlarmRules"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AlarmRules"
+              }
             }
           }
         ],
@@ -929,6 +935,9 @@
     "AlarmRules": {
       "type": "object",
       "properties": {
+        "Key": {
+          "type": "string"
+        },
         "IndeterminateRules": {
           "$ref": "#/definitions/IndeterminateRules"
         },
