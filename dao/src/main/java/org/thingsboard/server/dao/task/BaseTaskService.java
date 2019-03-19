@@ -224,8 +224,8 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
 								if (asset == null){
 									throw new DataValidationException("Asset is non-existent id: "+task.getOriginator().getId()+" !");
 								}
-								if (task.getCustomerId() != null & task.getTenantId() != null){
-									if (asset.getTenantId().equals(task.getTenantId()) && asset.getCustomerId().equals(task.getCustomerId())){
+								if (task.getCustomerId() != null & task.getTenantId() != null ){
+									if (!asset.getTenantId().equals(task.getTenantId()) || !asset.getCustomerId().equals(task.getCustomerId())){
 										throw new DataValidationException("asset not allow this tenant or customer!");
 									}
 								}
@@ -236,7 +236,7 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
 									throw new DataValidationException("Device is non-existent id: "+task.getOriginator().getId()+" !");
 								}
 								if (task.getCustomerId() != null & task.getTenantId() != null){
-									if (device.getTenantId().equals(task.getTenantId()) && device.getCustomerId().equals(task.getCustomerId())){
+									if (!device.getTenantId().equals(task.getTenantId()) || !device.getCustomerId().equals(task.getCustomerId())){
 										throw new DataValidationException("device not allow this tenant or customer!");
 									}
 								}
