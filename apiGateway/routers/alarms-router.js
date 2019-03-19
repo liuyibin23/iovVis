@@ -171,8 +171,8 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     }
   }
 
-  let ruleMapIndeterminateRules = [];
-  let ruleMapWarningRules       = [];
+  let IndeterminateRules = [];
+  let WarningRules       = [];
   if (params.length > 0){
     let i = 0;    
     // [{"Key":"温度","thrd": {"min": 1,"max": 2}},{"Key":"湿度","thrd": {"min": 1,"max": 2}}]
@@ -184,7 +184,7 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
           "max":`${params[i].IndeterminateRules.max}`
         }
       };
-      ruleMapIndeterminateRules.push(_dt);
+      IndeterminateRules.push(_dt);
 
       let _dt2 = {
         "Key":`${params[i].Key}`, 
@@ -193,7 +193,7 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
           "max":`${params[i].WarningRules.max}`
         }
       };
-      ruleMapWarningRules.push(_dt2);
+      WarningRules.push(_dt2);
     }
   }
 
@@ -203,7 +203,16 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let newJs = JSON.stringify(ruleMapIndeterminateRules);
+      let oldCfg = JSON.parse(ruleTables[devID]);
+      for (let i = 0; i < oldCfg.length; i++){
+        for (let j = 0; j < IndeterminateRules.length; j++){
+            if (oldCfg[i].Key === IndeterminateRules[j].Key) {
+                oldCfg[i].IndeterminateRules =  IndeterminateRules[j].IndeterminateRules;
+            }
+        }
+      }     
+
+      let newJs = JSON.stringify(oldCfg);
       ruleTables[devID] = newJs;
       nodes[index1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
@@ -215,7 +224,16 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let newJs = JSON.stringify(ruleMapWarningRules);
+      let oldCfg = JSON.parse(ruleTables[devID]);
+      for (let i = 0; i < oldCfg.length; i++){
+        for (let j = 0; j < WarningRules.length; j++){
+            if (oldCfg[i].Key === WarningRules[j].Key) {
+                oldCfg[i].WarningRules =  WarningRules[j].WarningRules;
+            }
+        }
+      }     
+
+      let newJs = JSON.stringify(oldCfg);
       ruleTables[devID] = newJs;
       nodes[index2].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
