@@ -40,6 +40,8 @@ function getRuleChain(devID, nodes, res){
     else if (node.name === util.CFG.ALARM_NODE_NAME_2)
       js2 = node.configuration.jsScript;
   }
+
+  var allCfg = [];
   if (js1 !== '') {
     let jsScript = js1;
     var index = jsScript.indexOf('/* alarm rule tables */');
@@ -47,15 +49,8 @@ function getRuleChain(devID, nodes, res){
     if (typeof ruleTables !== 'undefined') {
       let cfg = ruleTables[devID];
       if (cfg) {
-        var start_idx = cfg.indexOf('/*S*/');
-        var end_idx = cfg.indexOf('/*E*/');
-        var cfg_rule = cfg.substr(start_idx, end_idx - start_idx);
-        eval(cfg_rule);
-        if (thd) {
-          retCfg.IndeterminateRules.min = thd.min;
-          retCfg.IndeterminateRules.max = thd.max;
-          find = true;
-        }
+        find = true;
+        allCfg = JSON.parse(cfg);
       }
       delete ruleTables; // clear the enviroment variable, only for eval case.
     }
@@ -67,14 +62,16 @@ function getRuleChain(devID, nodes, res){
     if (typeof ruleTables !== 'undefined') {
       let cfg = ruleTables[devID];
       if (cfg) {
-        var start_idx = cfg.indexOf('/*S*/');
-        var end_idx = cfg.indexOf('/*E*/');
-        var cfg_rule = cfg.substr(start_idx, end_idx - start_idx);
-        eval(cfg_rule);
-        if (thd) {
-          retCfg.WarningRules.min = thd.min;
-          retCfg.WarningRules.max = thd.max;
-          find = true;
+        find = true;
+        cfg = JSON.parse(cfg);
+        let i = 0;
+        let j = 0;
+        for (i = 0; i < allCfg.length; i++){
+          for (j = 0; j < cfg.length; j++){
+            if (allCfg[i].Key == cfg[j].Key){
+               allCfg[i].WarningRules = cfg[j].WarningRules;
+            }
+          }
         }
       }
       delete ruleTables; // clear the enviroment variable, only for eval case.
@@ -82,7 +79,7 @@ function getRuleChain(devID, nodes, res){
   }
 
   if (find) {
-    util.responData(util.CST.OK200, retCfg, res);
+    util.responData(util.CST.OK200, allCfg, res);
   }
   else {
     util.responData(util.CST.ERR404, util.CST.MSG404, res);
@@ -161,7 +158,7 @@ function updateDeviceInfo(tenantId, data, WarningRules, IndeterminateRules, toke
   });
 }
 
-function configRuleChain(devID, nodes, WarningRules, IndeterminateRules, ruleMeta, tenantId, token, res){
+function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
   //一级告警规则配置和二级告警配置的获取
   let js1 = '', js2 = '', index1 = -1, index2 = -1;
   for (let index in nodes) {
@@ -173,13 +170,49 @@ function configRuleChain(devID, nodes, WarningRules, IndeterminateRules, ruleMet
       index2 = index;
     }
   }
+
+  let IndeterminateRules = [];
+  let WarningRules       = [];
+  if (params.length > 0){
+    let i = 0;    
+    // [{"Key":"温度","thrd": {"min": 1,"max": 2}},{"Key":"湿度","thrd": {"min": 1,"max": 2}}]
+    for (i = 0; i < params.length; i++){
+      let _dt = {
+        "Key":`${params[i].Key}`, 
+        "IndeterminateRules":{
+          "min":`${params[i].IndeterminateRules.min}`, 
+          "max":`${params[i].IndeterminateRules.max}`
+        }
+      };
+      IndeterminateRules.push(_dt);
+
+      let _dt2 = {
+        "Key":`${params[i].Key}`, 
+        "WarningRules":{
+          "min":`${params[i].WarningRules.min}`, 
+          "max":`${params[i].WarningRules.max}`
+        }
+      };
+      WarningRules.push(_dt2);
+    }
+  }
+
   // 一级告警配置
-  if (js1 !== '') {
+  if (js1 !== '') { 
     let jsScript = js1;
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let newJs = `JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:${IndeterminateRules.min}, max:${IndeterminateRules.max}};/*E*/if(it < thd.min || it > thd.max) return 1;});`;
+      let oldCfg = JSON.parse(ruleTables[devID]);
+      for (let i = 0; i < oldCfg.length; i++){
+        for (let j = 0; j < IndeterminateRules.length; j++){
+            if (oldCfg[i].Key === IndeterminateRules[j].Key) {
+                oldCfg[i].IndeterminateRules =  IndeterminateRules[j].IndeterminateRules;
+            }
+        }
+      }     
+
+      let newJs = JSON.stringify(oldCfg);
       ruleTables[devID] = newJs;
       nodes[index1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
@@ -191,7 +224,16 @@ function configRuleChain(devID, nodes, WarningRules, IndeterminateRules, ruleMet
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let newJs = `JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:${WarningRules.min}, max:${WarningRules.max}};/*E*/if(it < thd.min || it > thd.max) return 1;});`;
+      let oldCfg = JSON.parse(ruleTables[devID]);
+      for (let i = 0; i < oldCfg.length; i++){
+        for (let j = 0; j < WarningRules.length; j++){
+            if (oldCfg[i].Key === WarningRules[j].Key) {
+                oldCfg[i].WarningRules =  WarningRules[j].WarningRules;
+            }
+        }
+      }     
+
+      let newJs = JSON.stringify(oldCfg);
       ruleTables[devID] = newJs;
       nodes[index2].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
@@ -234,8 +276,6 @@ function configRuleChain(devID, nodes, WarningRules, IndeterminateRules, ruleMet
 //POST更新设备的告警规则，并且更新设备表的addtionalInfo，记录该告警规则
 router.post('/:id', async function (req, res) {
   let devID = req.params.id;
-  let IndeterminateRules = req.body.IndeterminateRules;
-  let WarningRules = req.body.WarningRules;
   let token = req.headers['x-authorization'];
   let TID = '';
 
@@ -273,7 +313,7 @@ router.post('/:id', async function (req, res) {
           let ruleMeta = resp.data;
           if (ruleMeta) {
             let nodes = ruleMeta.nodes;
-            configRuleChain(devID, nodes, WarningRules, IndeterminateRules, ruleMeta, TID, token, res);
+            configRuleChain(devID, nodes, req.body, ruleMeta, TID, token, res);
           }
           // util.responData(511, 'CONFIG_ALARM_RULE规则链MetaData获取失败。' , res);
         }).catch(err => {
