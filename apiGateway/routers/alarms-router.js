@@ -203,17 +203,33 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let oldCfg = JSON.parse(ruleTables[devID]);
-      for (let i = 0; i < oldCfg.length; i++){
-        for (let j = 0; j < IndeterminateRules.length; j++){
-            if (oldCfg[i].Key === IndeterminateRules[j].Key) {
-                oldCfg[i].IndeterminateRules =  IndeterminateRules[j].IndeterminateRules;
-            }
-        }
-      }     
+      if (ruleTables[devID]) {
+        let oldCfg = JSON.parse(ruleTables[devID]);
+        let newCfg = oldCfg;
 
-      let newJs = JSON.stringify(oldCfg);
-      ruleTables[devID] = newJs;
+        // 使用最新的值去匹配旧值，不存在就新加一条
+        for (let i = 0; i < IndeterminateRules.length; i++){
+          let find = 0;
+          for (let j = 0; j < oldCfg.length; j++){
+            // 找到 修改阈值
+            if (oldCfg[i].Key === IndeterminateRules[j].Key) {
+              find = 1;
+              newCfg[i].IndeterminateRules =  IndeterminateRules[j].IndeterminateRules;
+            }
+          } 
+
+          // 没找到 就新加一条
+          if (!find) {
+            newCfg.push(IndeterminateRules[i]);
+          }
+        }
+        ruleTables[devID] = JSON.stringify(newCfg);;
+      }
+      else{
+        // 不存在添加
+        ruleTables[devID] = JSON.stringify(IndeterminateRules);
+      }
+          
       nodes[index1].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
     }
@@ -224,17 +240,34 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     let index = jsScript.indexOf('/* alarm rule tables */');
     eval(jsScript.substr(0, index));
     if (typeof ruleTables !== 'undefined') {
-      let oldCfg = JSON.parse(ruleTables[devID]);
-      for (let i = 0; i < oldCfg.length; i++){
-        for (let j = 0; j < WarningRules.length; j++){
-            if (oldCfg[i].Key === WarningRules[j].Key) {
-                oldCfg[i].WarningRules =  WarningRules[j].WarningRules;
-            }
-        }
-      }     
+      if (ruleTables[devID]) {
+        let oldCfg = JSON.parse(ruleTables[devID]);
+        let newCfg = oldCfg;
 
-      let newJs = JSON.stringify(oldCfg);
-      ruleTables[devID] = newJs;
+        // 使用最新的值去匹配旧值，不存在就新加一条
+        for (let i = 0; i < WarningRules.length; i++){
+          let find = 0;
+          for (let j = 0; j < oldCfg.length; j++){
+            // 找到 修改阈值
+            if (oldCfg[i].Key === WarningRules[j].Key) {
+              find = 1;
+              newCfg[i].WarningRules =  WarningRules[j].WarningRules;
+            }
+          } 
+
+          // 没找到 就新加一条
+          if (!find) {
+            newCfg.push(WarningRules[i]);
+          }
+        }
+        ruleTables[devID] = JSON.stringify(newCfg);;
+      }
+      else {
+        // 不存在添加
+        ruleTables[devID] = JSON.stringify(WarningRules);
+      }
+
+      
       nodes[index2].configuration.jsScript = "var ruleTables = " + JSON.stringify(ruleTables) + ";\n" + jsScript.substr(index);
       delete ruleTables;
     }
