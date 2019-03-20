@@ -130,7 +130,7 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
 
     @Override
     public Optional<Device> findDeviceByTenantIdAndName(UUID tenantId, String name) {
-        Device device = DaoUtil.getData(deviceRepository.findByTenantIdAndName(fromTimeUUID(tenantId), name));
+        Device device = DaoUtil.getData(deviceRepository.findFirstByTenantIdAndName(fromTimeUUID(tenantId), name));
         return Optional.ofNullable(device);
     }
 

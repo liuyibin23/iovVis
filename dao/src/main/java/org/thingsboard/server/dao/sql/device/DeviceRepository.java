@@ -92,7 +92,8 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
     @Query("SELECT DISTINCT d.type FROM DeviceEntity d WHERE d.tenantId = :tenantId")
     List<String> findTenantDeviceTypes(@Param("tenantId") String tenantId);
 
-    DeviceEntity findByTenantIdAndName(String tenantId, String name);
+    DeviceEntity findFirstByTenantIdAndName(String tenantId, String name);
+
 
     List<DeviceEntity> findDevicesByTenantIdAndCustomerIdAndIdIn(String tenantId, String customerId, List<String> deviceIds);
 
