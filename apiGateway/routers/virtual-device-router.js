@@ -91,7 +91,7 @@ function modifyMetaData(ruleMeta, deviceIdList, token, res) {
 
 function updateRuleChain(deviceIdList, token, res) {
     // 获取规则链
-    let getRuleChainApi = util.getAPI() + 'ruleChains';
+    let getRuleChainApi = util.getAPI() + 'currentUser/ruleChains';
     axios.get(getRuleChainApi,
         {
             headers: { "X-Authorization": token },
@@ -103,7 +103,7 @@ function updateRuleChain(deviceIdList, token, res) {
             //根据规则链编号获取规则链中存储的meta数据
             let ruleChain = resp.data;
             if (ruleChain) {
-                ruleID = ruleChain.data[0].id;
+                ruleID = ruleChain[0].id;
                 let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
                 axios.get(url, {
                     headers: {
