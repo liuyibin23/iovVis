@@ -12,7 +12,8 @@
             // "program": "${workspaceFolder}\\reporter\\server.js"
             // "program": "${workspaceFolder}\\test\\tsReport.js"
             // "program": "${workspaceFolder}\\test\\tsAlarmAndWarning.js"
-            "program": "${workspaceFolder}\\test\\warningRules.js"
+            // "program": "${workspaceFolder}\\test\\warningRules.js"
+            "program": "${workspaceFolder}\\test\\testRestApi.js"
         }
     ]
 }

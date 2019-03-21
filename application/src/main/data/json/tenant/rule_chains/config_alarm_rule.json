@@ -34,7 +34,7 @@
         "name": "一级告警规则配置",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var ruleTables = {\"280f1810-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:10, max:20};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:2, max:25};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"4f8b4b50-167e-11e9-95df-819fb12c2a0b\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:5.01, max:10.99};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"fb61bc00-1711-11e9-860f-856e86c94b8e\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:15, max:24};/*E*/if(it < thd.min || it > thd.max) return 1;});\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif (ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+          "jsScript": "var ruleTables = {\"ee679a10-4a10-11e9-9b2f-958f6c774891\":\"[{\\\"Key\\\":\\\"温度\\\",\\\"IndeterminateRules\\\":{\\\"min\\\":\\\"1\\\",\\\"max\\\":\\\"2\\\"}},{\\\"Key\\\":\\\"湿度\\\",\\\"IndeterminateRules\\\":{\\\"min\\\":\\\"5\\\",\\\"max\\\":\\\"9\\\"}}]\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif (ruleTables.hasOwnProperty(dev_id)) {\n    var cfg = JSON.parse(ruleTables[dev_id]);\n\n    for (var i = 0; i < cfg.length; i++) {\n        if (msg.hasOwnProperty(cfg[i].Key)) {\n            var val = msg[cfg[i].Key];\n            if ((val < cfg[i].IndeterminateRules.min) || (val > cfg[i].IndeterminateRules.max)) {\n                return true;\n            }\n        }\n    }\n    return false;\n} else {\n    return false;\n}"
         }
       },
       {
@@ -134,7 +134,7 @@
         "name": "二级告警规则配置",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var ruleTables = {\"22222\":\"JSON.parse(msg.waves).some(function(it,ind){if(/*S*/Math.abs(it) > 0/*E*/) return 1;});\",\"280f1810-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:20, max:35};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:3, max:33};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"4f8b4b50-167e-11e9-95df-819fb12c2a0b\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:11.11, max:22.22};/*E*/if(it < thd.min || it > thd.max) return 1;});\",\"fb61bc00-1711-11e9-860f-856e86c94b8e\":\"JSON.parse(msg.waves).some(function(it,ind){/*S*/var thd={min:13, max:22};/*E*/if(it < thd.min || it > thd.max) return 1;});\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
+          "jsScript": "var ruleTables = {\"ee679a10-4a10-11e9-9b2f-958f6c774891\":\"[{\\\"Key\\\":\\\"温度\\\",\\\"WarningRules\\\":{\\\"min\\\":\\\"3\\\",\\\"max\\\":\\\"10\\\"}},{\\\"Key\\\":\\\"湿度\\\",\\\"WarningRules\\\":{\\\"min\\\":\\\"30\\\",\\\"max\\\":\\\"40\\\"}}]\"};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif (ruleTables.hasOwnProperty(dev_id)) {\n    var cfg = JSON.parse(ruleTables[dev_id]);\n\n    for (var i = 0; i < cfg.length; i++) {\n        if (msg.hasOwnProperty(cfg[i].Key)) {\n            var val = msg[cfg[i].Key];\n            if ((val < cfg[i].WarningRules.min) || (val > cfg[i].WarningRules.max)) {\n                return true;\n            }\n        }\n    }\n    return false;\n} else {\n    return false;\n}"
         }
       },
       {
@@ -226,9 +226,9 @@
         "additionalInfo": {
           "layoutX": 198,
           "layoutY": 372,
-          "ruleChainNodeId": "rule-chain-node-13",
+          "ruleChainNodeId": "rule-chain-node-14",
           "description": "预警规则处理流程",
-          "ruleChainName": "CONFIG_WARNING_RULE"
+		  "ruleChainName": "CONFIG_WARNING_RULE"
         },
         "type": "False"
       }

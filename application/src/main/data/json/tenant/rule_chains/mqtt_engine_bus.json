@@ -34,8 +34,8 @@
         "debugMode": false,
         "configuration": {
           "topicPattern": "v1/devices/me/telemetry/${dev_id}",
-          "host": "192.168.1.20",
-          "port": 1883,
+          "host": "cf.beidouapp.com",
+          "port": 9008,
           "connectTimeoutSec": 10,
           "clientId": null,
           "cleanSession": true,
@@ -54,7 +54,7 @@
         "name": "switch by dev_id",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var devids = [\"280f1810-1104-11e9-bae8-7562662cc4ee\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\"];\n/*device ids array*/\n\nvar result = devids.filter(function(el) {\n    return el === metadata.dev_id;});\nvar subscribed = result.length > 0;\nif(subscribed)\n    return true;\nelse\n    return false;"
+          "jsScript": "var devids = [\"280f1810-1104-11e9-bae8-7562662cc4ee\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\",\"280f1810-1104-11e9-bae8-7562662cc4ee\"];\n/*device ids array*/\n\nvar result = devids.filter(function(el) {\n    return el === metadata.dev_id;});\nvar subscribed = result.length > 0;\nif(subscribed)\n    return true;\nelse\n    return false;"
         }
       },
       {
@@ -268,7 +268,7 @@
           "layoutX": 100,
           "layoutY": 384,
           "ruleChainNodeId": "rule-chain-node-15",
-          "ruleChainName": "CONFIG_ALARM_RULE"
+		  "ruleChainName": "CONFIG_ALARM_RULE"
         },
         "type": "Success"
       }

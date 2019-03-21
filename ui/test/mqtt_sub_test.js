@@ -24,8 +24,8 @@
 
 const mqtt = require('mqtt');
 const token = 'GbGuHQkbgeQcAoFd3GLF';   //A监测点
-var client = mqtt.connect('mqtt://cf.beidouapp.com:9008');
-
+// var client = mqtt.connect('mqtt://cf.beidouapp.com:9008');
+var client = mqtt.connect('mqtt://192.168.1.20');
 client.on('connect', function () {
 	console.log('connected');
 	client.subscribe('v1/devices/me/telemetry/+');
