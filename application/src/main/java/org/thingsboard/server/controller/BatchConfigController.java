@@ -15,9 +15,6 @@ import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
-import org.thingsboard.server.common.data.batchconfig.DeviceClientAttrib;
-import org.thingsboard.server.common.data.batchconfig.DeviceServerAttrib;
-import org.thingsboard.server.common.data.batchconfig.DeviceShareAttrib;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
@@ -245,39 +242,12 @@ public class BatchConfigController extends BaseController {
 				.forEach((relation) -> {
 					DeviceAutoLogon deviceAutoLogon = new DeviceAutoLogon();
 					try {
-						Map<String, Object> clientMap = new HashMap<>();
-						List<AttributeKvEntry> attributeKvEntries = attributesService.findAll(tenantId, relation.getTo(), "CLIENT_SCOPE").get();
-						attributeKvEntries.forEach((attributeKvEntry -> {
-							clientMap.put(attributeKvEntry.getKey(), attributeKvEntry.getValue().toString());
-						}));
-						deviceAutoLogon.setDeviceClientAttrib(MAPPER.readValue(MAPPER.writeValueAsString(clientMap), DeviceClientAttrib.class));
-
-						attributeKvEntries = attributesService.findAll(tenantId, relation.getTo(), "SERVER_SCOPE").get();
-						Map<String, Object> serverMap = new HashMap<>();
-						attributeKvEntries.forEach((attributeKvEntry -> {
-							serverMap.put(attributeKvEntry.getKey(), attributeKvEntry.getValue().toString());
-						}));
-						deviceAutoLogon.setDeviceServerAttrib(MAPPER.readValue(MAPPER.writeValueAsString(serverMap), DeviceServerAttrib.class));
-
-						attributeKvEntries = attributesService.findAll(tenantId, relation.getTo(), "SHARED_SCOPE").get();
-						Map<String, Object> shareMap = new HashMap<>();
-						attributeKvEntries.forEach((attributeKvEntry -> {
-							shareMap.put(attributeKvEntry.getKey(), attributeKvEntry.getValue().toString());
-						}));
-						deviceAutoLogon.setDeviceShareAttrib(MAPPER.readValue(MAPPER.writeValueAsString(shareMap), DeviceShareAttrib.class));
-						if ( null == deviceAutoLogon.getDeviceShareAttrib().getToken()){
-							DeviceShareAttrib tmp = deviceAutoLogon.getDeviceShareAttrib();
-							tmp.setToken(new String(deviceCredentialsService.findDeviceCredentialsByDeviceId(null,new DeviceId(relation.getTo().getId())).getCredentialsId()));
-							deviceAutoLogon.setDeviceShareAttrib(tmp);
+						Optional<Device> optionalDevice = Optional.ofNullable(deviceService.findDeviceById(null,new DeviceId(relation.getTo().getId())));
+						if (!optionalDevice.isPresent()){
+							return;
 						}
-						if ( deviceAutoLogon.getDeviceShareAttrib().getToken().isEmpty()){
-							deviceAutoLogon.getDeviceShareAttrib().setToken(deviceCredentialsService.findDeviceCredentialsByDeviceId(null,new DeviceId(relation.getTo().getId())).getCredentialsId());
-						}
-
-						deviceAutoLogon.setSystemDeviceId(relation.getTo().getId().toString());
-
+						deviceBaseAttributeService.findDeviceAttribute(optionalDevice.get());
 						ret.add(deviceAutoLogon);
-
 					} catch (Exception e) {
 						log.info("Get device client attrib error:" + relation.getTo().getId());
 						e.printStackTrace();

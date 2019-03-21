@@ -84,6 +84,8 @@ import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 import org.thingsboard.server.exception.ThingsboardErrorResponseHandler;
 import org.thingsboard.server.service.component.ComponentDiscoveryService;
+import org.thingsboard.server.service.device.DeviceBaseAttributeService;
+import org.thingsboard.server.service.device.DeviceCheckService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.state.DeviceStateService;
 import org.thingsboard.server.service.telemetry.TelemetrySubscriptionService;
@@ -175,6 +177,12 @@ public abstract class BaseController {
 
     @Autowired
 	protected DeviceAttributesService deviceAttributesService;
+
+    @Autowired
+    protected DeviceCheckService deviceCheckService;
+
+    @Autowired
+    protected DeviceBaseAttributeService deviceBaseAttributeService;
 
     @Autowired
     protected PatrolRecordService patrolRecordService;
