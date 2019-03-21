@@ -35,6 +35,7 @@ import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.alarm.AlarmInfo;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
@@ -827,6 +828,20 @@ public abstract class BaseController {
         });
         return retList;
     }
+    /** 
+    * @Description: 计算设备特征值
+    * @Author: ShenJi
+    * @Date: 2019/3/21 
+    * @Param: [assetId, deviceIp, deviceChannle] 
+    * @return: java.lang.String
+    */ 
+    protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle){
+        return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode()+"";
+    }
+    protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
+        return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),deviceAutoLogon.getDeviceShareAttrib().getChannel());
+    }
+
 
 
 }

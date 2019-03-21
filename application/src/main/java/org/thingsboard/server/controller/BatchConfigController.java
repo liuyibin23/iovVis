@@ -85,9 +85,7 @@ public class BatchConfigController extends BaseController {
 			}
 
 			devicesSaveRequest.forEach((deviceInfo) -> {
-
-				String uidStr = assetId + "|" + deviceInfo.getDeviceShareAttrib().getIp() + "|" + deviceInfo.getDeviceShareAttrib().getChannel();
-				deviceInfo.getDeviceShareAttrib().setName(uidStr.hashCode() + "");
+				deviceInfo.getDeviceShareAttrib().setName(calculateDeviceCode(assetId,deviceInfo));
 				Device device = deviceService.findDeviceByTenantIdAndName(a.getTenantId(), deviceInfo.getDeviceShareAttrib().getName());
 				//region 如果设备不存在，创建设备
 				if (device == null) {
