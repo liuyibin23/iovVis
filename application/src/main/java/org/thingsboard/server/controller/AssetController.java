@@ -15,7 +15,10 @@
  */
 package org.thingsboard.server.controller;
 
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -26,13 +29,16 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
+import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
@@ -44,6 +50,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @RestController
@@ -51,6 +59,7 @@ import java.util.stream.Collectors;
 public class AssetController extends BaseController {
 
 	public static final String ASSET_ID = "assetId";
+	private ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/asset/{assetId}", method = RequestMethod.GET)
@@ -133,18 +142,22 @@ public class AssetController extends BaseController {
 	public void deleteAsset(@PathVariable(ASSET_ID) String strAssetId ,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
 		checkParameter(ASSET_ID, strAssetId);
 		try {
+			AssetId assetId = new AssetId(toUUID(strAssetId));
 			TenantId tenantId;
 			if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
-				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+//				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
+				TenantId tenantIdTmp = tenantIdStr != null ? new TenantId(toUUID(tenantIdStr)):assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
 				checkTenantId(tenantIdTmp);
 				tenantId = tenantService.findTenantById(tenantIdTmp).getId();
 			} else {
 				tenantId = getTenantId();
 			}
-			AssetId assetId = new AssetId(toUUID(strAssetId));
+
 
 			Asset asset = checkAssetId(tenantId,assetId);
+			deleteDevicesBelongToAsset(tenantId, assetId).get();//级联删除此Asset下的devices
 			assetService.deleteAsset(tenantId, assetId);
+
 
 			logEntityAction(assetId, asset,
 					asset.getCustomerId(),
@@ -157,6 +170,22 @@ public class AssetController extends BaseController {
 					ActionType.DELETED, e, strAssetId);
 			throw handleException(e);
 		}
+	}
+
+	/**
+	 * 删除属于指定Asset的Devices
+	 * @param tenantId
+	 * @param assetId
+	 */
+	private ListenableFuture<Void> deleteDevicesBelongToAsset(TenantId tenantId,AssetId assetId){
+		DeviceSearchQuery query = new DeviceSearchQuery();
+		RelationsSearchParameters parameters = new RelationsSearchParameters(assetId,EntitySearchDirection.FROM,1);
+		query.setParameters(parameters);
+		query.setRelationType(EntityRelation.CONTAINS_TYPE);
+		ListenableFuture<List<Device>> deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId,query);
+		return Futures.transform(Futures.transformAsync(deviceList,devices ->executorService.submit(()->{
+			assert devices != null;
+			devices.forEach(device -> deviceService.deleteDevice(tenantId,device.getId()));})), result->null);
 	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
