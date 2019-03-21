@@ -125,8 +125,7 @@ function createVirtualDevice(virtualName, token, res) {
     let api = util.getAPI() + 'device';
     axios.post(api, {
         name: virtualName,
-        type: "虚拟设备",
-        additionalInfo: { description: "虚拟设备，用于现场传感数据的复杂解算。" }
+        type: "虚拟设备"
     },
         {
             headers: { "X-Authorization": token }
