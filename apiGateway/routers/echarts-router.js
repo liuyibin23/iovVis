@@ -16,6 +16,10 @@ const vehicle_load_monitoring_weight_bar       = require('./echarts/bar/vehicle-
 const vehicle_load_monitoring_speed_bar        = require('./echarts/bar/vehicle-load-monitoring-speed');
 const rainfall_monitoring_statistics_bar       = require('./echarts/bar/rainfall-monitoring-statistics');
 
+// Pie
+const vehicle_load_monitoring_weight_pie       = require('./echarts/pie/vehicle-load-monitoring-weight');
+const vehicle_load_monitoring_speed_pie        = require('./echarts/pie/vehicle-load-monitoring-speed');
+
 const node_echarts = require('node-echarts');
 const util = require('../util/utils');
 const logger = require('../util/logger');
@@ -90,11 +94,17 @@ function generateChart(req, res){
     chartBarMap.set('车辆荷载自动监测数据车速',   vehicle_load_monitoring_speed_bar);
     chartBarMap.set('自动监测数据降雨量',        rainfall_monitoring_statistics_bar);
 
+    var charPieMap = new Map();
+    charPieMap.set('车辆荷载自动监测数据车重',   vehicle_load_monitoring_weight_pie);
+    charPieMap.set('车辆荷载自动监测数据车速',   vehicle_load_monitoring_speed_pie);
+
     let cfg = null;
     if (type == '折线图'){
         cfg = chartLineMap.get(params.chart_name);
     } else if (type == '柱状图') {
         cfg = chartBarMap.get(params.chart_name);
+    } else if (type == "饼图"){
+        cfg = charPieMap.get(params.chart_name);
     }
 
     if (cfg){

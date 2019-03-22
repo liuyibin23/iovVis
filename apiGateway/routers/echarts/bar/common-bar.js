@@ -27,7 +27,7 @@ function SendPngResponse(option, params, res){
 
 function getData(plotCfg, option, params, token, res){    
     let grounCnt = plotCfg.groupInfo.length;
-    let loopCnt = (params.endTime - params.startTime) / plotCfg.interval;
+    let loopCnt =  Math.ceil((params.endTime - params.startTime) / plotCfg.interval);
     /*
     // 阈值分组参数
     let ySeries = [
@@ -42,19 +42,18 @@ function getData(plotCfg, option, params, token, res){
         let cfg = plotCfg.groupInfo[i];
         ySeries.push([cfg.min, cfg.max]);
 
-        let name = "";
-        // 特殊处理
-        if (cfg.max == 99999){
-            name = `${plotCfg.keys} > ${cfg.min}`;
-        }
-        else
-        {
-            name = `${cfg.min} < ${plotCfg.keys} < ${cfg.max}`;
-        }
-        
+        // let name = "";
+        // // 特殊处理
+        // if (cfg.max == 99999){
+        //     name = `${plotCfg.keys} > ${cfg.min}`;
+        // }
+        // else
+        // {
+        //     name = `${cfg.min} < ${plotCfg.keys} < ${cfg.max}`;
+        // }
 
-        option.series[i].name = name;
-        option.legend.data[i] = name;
+        // option.series[i].name = name;
+        // option.legend.data[i] = name;
     }
     option.title.text = plotCfg.title;
     /*
@@ -84,19 +83,56 @@ function getData(plotCfg, option, params, token, res){
         headers: { "X-Authorization": token }
     }).then(resp => {
         let data = resp.data;
+        let idx = plotCfg.separateGroupIdx;
+        
+        // 计算百分比
+        if (plotCfg.groupType == "PERCENT"){
+            loopCnt = loopCnt > 7 ? 7 : loopCnt;
 
-        // 分组处理
-        for (let i = 0; i < loopCnt; i++) {
-            option.xAxis[0].data.push(i + 1);
-        }
+            // 分组处理
+            for (let i = 0; i < loopCnt; i++) {
+                option.xAxis[0].data.push(i + 1);
 
-        for (let i = 0; i < data.length; i++){
-            let col_data = data[i];
+                let cnt_over = 0;
+                let cnt_sum = 0;
+                for (let j = 0; j < resp.data[0].length; j++){
+                    let value =  resp.data[i][j];
+                    cnt_sum += value;
+                    if (j >= 1) {
+                        cnt_over += value;
+                    }
+                }
 
-            for (let j = 0; j < col_data.length; j++){
-                option.series[j].data[i] = col_data[j];
+                // 计算百分比  超重车占一天车总数的百分比
+                let percent = cnt_over / cnt_sum * 100;
+                option.series[0].data[i] = percent * 100;
             }
         }
+        else {
+            // 分组处理
+            for (let i = 0; i < loopCnt; i++) {
+                option.xAxis[0].data.push(i + 1);
+            }
+            
+            for (let i = 0; i < data.length; i++){
+                let col_data = data[i];
+
+                for (let j = 0; j < col_data.length; j++){
+                    option.series[j].data[i] = col_data[j];
+                }
+            }
+        }
+
+        
+        
+
+        // for (let i = 0; i < data.length; i++){
+        //     let col_data = data[i];
+
+        //     for (let j = 0; j < col_data.length; j++){
+        //         option.series[j].data[i] = col_data[j];
+        //     }
+        // }
         
         SendPngResponse(option, params, res);
     }).catch(err =>{
