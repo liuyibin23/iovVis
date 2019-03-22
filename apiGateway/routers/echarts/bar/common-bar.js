@@ -105,7 +105,7 @@ function getData(plotCfg, option, params, token, res){
 
                 // 计算百分比  超重车占一天车总数的百分比
                 let percent = cnt_over / cnt_sum * 100;
-                option.series[0].data[i] = percent * 100;
+                option.series[0].data[i] = percent;
             }
         }
         else {

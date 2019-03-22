@@ -61,8 +61,8 @@
 	"Bar":{
 		"车辆荷载自动监测数据车重":{
 			"comment":"动态称重系统",
-			"interval":3600000,
-			"keys":"总重",
+			"interval":200000,
+			"keys":"总重_avg",
 			"title":"一周重车数量",
 			"groupType":"PERCENT",
 			"groupInfo":[
@@ -72,8 +72,8 @@
 		},
 		"车辆荷载自动监测数据车速":{
 			"comment":"动态称重系统",
-			"interval":3600000,
-			"keys":"速度",
+			"interval":200000,
+			"keys":"速度_avg",
 			"title":"一周超速车辆统计",
 			"groupType":"COUNT",
 			"groupInfo":[
@@ -96,8 +96,8 @@
 	"Pie":{
 		"车辆荷载自动监测数据车重":{
 			"comment":"动态称重系统",
-			"interval":3600000,
-			"keys":"总重",
+			"interval":200000,
+			"keys":"总重_avg",
 			"title":"重车车重分布",
 			"unit":"t",
 			"groupInfo":[
@@ -110,8 +110,8 @@
 		},
 		"车辆荷载自动监测数据车速":{
 			"comment":"动态称重系统",
-			"interval":3600000,
-			"keys":"速度",
+			"interval":200000,
+			"keys":"速度_avg",
 			"title":"车速分布统计",
 			"unit":"km/h",
 			"groupInfo":[
