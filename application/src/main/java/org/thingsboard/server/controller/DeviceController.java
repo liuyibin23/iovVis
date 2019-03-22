@@ -17,6 +17,7 @@ package org.thingsboard.server.controller;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import lombok.extern.log4j.Log4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,7 @@ import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.AlarmDevicesCount;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -37,10 +39,12 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
+import org.thingsboard.server.dao.exception.DatabaseException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttrKV;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
+import org.thingsboard.server.service.device.DeviceCheckService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.telemetry.AttributeData;
 import org.thingsboard.server.service.telemetry.DeviceAndAttributeKv;
@@ -48,6 +52,7 @@ import org.thingsboard.server.service.telemetry.DeviceAndAttributeKv;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -55,9 +60,11 @@ import static org.thingsboard.server.controller.AssetController.ASSET_ID;
 
 @RestController
 @RequestMapping("/api")
+@Log4j
 public class DeviceController extends BaseController {
 
     public static final String DEVICE_ID = "deviceId";
+
 
     /** 
     * @Description: 1.2.7.16 跟据基础设施ID查询所有设备以及所有设备属性
@@ -138,19 +145,18 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
-
-    /**
-    * @Description: 新建或修改设备
-    * @Author: ShenJi
-    * @Date: 2019/3/6
-    * @Param: [device, tenantIdStr]
-    * @return: org.thingsboard.server.common.data.Device
-    */
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/device", method = RequestMethod.POST)
-    @ResponseBody
-    public Device saveDevice(@RequestBody Device device,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
-        try {
+	/**
+	 * @Description: 新建或修改设备
+	 * @Author: ShenJi
+	 * @Date: 2019/3/6
+	 * @Param: [device, tenantIdStr]
+	 * @return: org.thingsboard.server.common.data.Device
+	 */
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/device", method = RequestMethod.POST)
+	@ResponseBody
+	public Device saveDevice(@RequestBody Device device,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
+		try {
 			if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)){
 				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
 				checkTenantId(tenantIdTmp);
@@ -160,17 +166,93 @@ public class DeviceController extends BaseController {
 				device.setTenantId(getCurrentUser().getTenantId());
 			}
 
-            if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
-                if (device.getId() == null || device.getId().isNullUid() ||
-                        device.getCustomerId() == null || device.getCustomerId().isNullUid()) {
-                    throw new ThingsboardException("You don't have permission to perform this operation!",
-                            ThingsboardErrorCode.PERMISSION_DENIED);
-                } else {
-                    checkCustomerId(device.getCustomerId());
-                }
-            }
+			if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
+				if (device.getId() == null || device.getId().isNullUid() ||
+						device.getCustomerId() == null || device.getCustomerId().isNullUid()) {
+					throw new ThingsboardException("You don't have permission to perform this operation!",
+							ThingsboardErrorCode.PERMISSION_DENIED);
+				} else {
+					checkCustomerId(device.getCustomerId());
+				}
+			}
+
+			Device savedDevice = checkNotNull(deviceService.saveDevice(device));
+
+			actorService
+					.onDeviceNameOrTypeUpdate(
+							savedDevice.getTenantId(),
+							savedDevice.getId(),
+							savedDevice.getName(),
+							savedDevice.getType());
+
+			logEntityAction(savedDevice.getId(), savedDevice,
+					savedDevice.getCustomerId(),
+					device.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
+
+			if (device.getId() == null) {
+				deviceStateService.onDeviceAdded(savedDevice);
+			} else {
+				deviceStateService.onDeviceUpdated(savedDevice);
+			}
+			return savedDevice;
+		} catch (Exception e) {
+			logEntityAction(emptyId(EntityType.DEVICE), device,
+					null, device.getId() == null ? ActionType.ADDED : ActionType.UPDATED, e);
+			throw handleException(e);
+		}
+	}
+
+    /**
+    * @Description: 新建或修改设备
+    * @Author: ShenJi
+    * @Date: 2019/3/6
+    * @Param: [device, tenantIdStr]
+    * @return: org.thingsboard.server.common.data.Device
+    */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
+    @RequestMapping(value = "/currentUser/device", method = RequestMethod.POST)
+    @ResponseBody
+    public Device saveCurrentUserDevice(@RequestBody Device device,
+										@RequestParam String tenantIdStr,
+										@RequestParam String assetIdStr,
+										@RequestParam String deviceIpStr,
+										@RequestParam String deviceChannleStr) throws ThingsboardException {
+        try {
+
+			Optional<Tenant> optionalTenant = Optional.ofNullable(tenantService.findTenantById(new TenantId(UUID.fromString(tenantIdStr))));
+			if (!optionalTenant.isPresent()){
+				throw new DatabaseException("Tenant not exit!" + tenantIdStr);
+			}
+			Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(optionalTenant.get().getId(),new AssetId(UUID.fromString(assetIdStr))));
+			if (!optionalAsset.isPresent()){
+				throw new DatabaseException("Asset not exit!" + assetIdStr);
+			}
+
+
+
+			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannleStr);
+			if(deviceCheckService.checkDeviceCode(deviceCode)){
+				device.setId(new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
+			}
+			device.setTenantId(new TenantId(UUID.fromString(tenantIdStr)));
 
             Device savedDevice = checkNotNull(deviceService.saveDevice(device));
+			EntityId entityIdFreom =  EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(),optionalAsset.get().getUuidId());
+			EntityId entityIdTo =  EntityIdFactory.getByTypeAndUuid(savedDevice.getId().getEntityType(),savedDevice.getUuidId());
+			EntityRelation entityRelation = new EntityRelation(entityIdFreom,entityIdTo,"Contains");
+
+			if(!relationService.saveRelation(savedDevice.getTenantId(),entityRelation)){
+				log.error("Create device and asset relation error");
+				throw new ThingsboardException("Create device and asset relation error",ThingsboardErrorCode.GENERAL);
+			}
+
+			DeviceAutoLogon deviceAutoLogon = deviceBaseAttributeService.findDeviceAttribute(savedDevice);
+			deviceAutoLogon.getDeviceShareAttrib().setIp(deviceIpStr);
+			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannleStr);
+			deviceBaseAttributeService.saveDeviceAttribute(savedDevice,deviceAutoLogon);
+
+			deviceCheckService.reflashDeviceCodeMap();
+
 
             actorService
                     .onDeviceNameOrTypeUpdate(

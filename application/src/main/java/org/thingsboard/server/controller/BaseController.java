@@ -35,6 +35,7 @@ import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.alarm.AlarmInfo;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
@@ -83,6 +84,8 @@ import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 import org.thingsboard.server.exception.ThingsboardErrorResponseHandler;
 import org.thingsboard.server.service.component.ComponentDiscoveryService;
+import org.thingsboard.server.service.device.DeviceBaseAttributeService;
+import org.thingsboard.server.service.device.DeviceCheckService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.state.DeviceStateService;
 import org.thingsboard.server.service.telemetry.TelemetrySubscriptionService;
@@ -174,6 +177,12 @@ public abstract class BaseController {
 
     @Autowired
 	protected DeviceAttributesService deviceAttributesService;
+
+    @Autowired
+    protected DeviceCheckService deviceCheckService;
+
+    @Autowired
+    protected DeviceBaseAttributeService deviceBaseAttributeService;
 
     @Autowired
     protected PatrolRecordService patrolRecordService;
@@ -841,6 +850,20 @@ public abstract class BaseController {
         });
         return retList;
     }
+    /** 
+    * @Description: 计算设备特征值
+    * @Author: ShenJi
+    * @Date: 2019/3/21 
+    * @Param: [assetId, deviceIp, deviceChannle] 
+    * @return: java.lang.String
+    */ 
+    protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle){
+        return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode()+"";
+    }
+    protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
+        return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),deviceAutoLogon.getDeviceShareAttrib().getChannel());
+    }
+
 
 
 }
