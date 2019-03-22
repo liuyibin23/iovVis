@@ -1,14 +1,14 @@
-const charCfg = require('../../echarts/chartConfig');
+const charCfg = require('../chartConfig');
 const common = require('./common-line');
 
 let option = {
     title : {
-        text: '应力应变监测数据统计分析',
+        text: '应力监测数据统计分析',
         x: 'center',
         y:'bottom'
     },
     legend: {
-        data:['最大应变', '平均应变', '最小应变'],
+        data:['最大应力', '平均应力', '最小应力'],
         //orient: 'vertical',
         x:'center',
         y:'top',
@@ -33,23 +33,23 @@ let option = {
          	//min:-72,
         	//max:60,
             axisLabel : {
-                formatter: '{value} Mp'
+                formatter: '{value} N'
             }
         }
     ],
     series : [
         {
-            name:'最大应变',
+            name:'最大应力',
             type:'line',
             data:[]
         },
       	{
-            name:'平均应变',
+            name:'平均应力',
             type:'line',
             data:[]
         },
       	{
-            name:'最小应变',
+            name:'最小应力',
             type:'line',
             data:[]
         }

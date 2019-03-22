@@ -1,14 +1,14 @@
-const charCfg = require('../../echarts/chartConfig');
+const charCfg = require('../chartConfig');
 const common = require('./common-line');
 
 let option = {
     title : {
-        text: '倾角自动监测数据统计分析',
+        text: '应变监测数据统计分析',
         x: 'center',
         y:'bottom'
     },
     legend: {
-        data:['最大倾角', '平均倾角', '最小倾角'],
+        data:['最大应变', '平均应变', '最小应变'],
         //orient: 'vertical',
         x:'center',
         y:'top',
@@ -28,26 +28,28 @@ let option = {
         }
     ],
     yAxis : [
-        {
+       {
             type : 'value',
+         	//min:-72,
+        	//max:60,
             axisLabel : {
-                formatter: '{value} °'
+                formatter: '{value} με'
             }
         }
     ],
     series : [
         {
-            name:'最大倾角',
+            name:'最大应变',
             type:'line',
             data:[]
         },
       	{
-            name:'平均倾角',
+            name:'平均应变',
             type:'line',
             data:[]
         },
       	{
-            name:'最小倾角',
+            name:'最小应变',
             type:'line',
             data:[]
         }

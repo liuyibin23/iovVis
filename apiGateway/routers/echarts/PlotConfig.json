@@ -5,47 +5,62 @@
 		{
 			"interval":5000,
 			"maxCnt":6,
-			"keys":"温度_max,温度_avg,温度_min,湿度_max,湿度_avg,湿度_min"
+			"keys":"温度_max,温度_avg,温度_min,湿度_max,湿度_avg,湿度_min",
+			"comment":"温湿度计"
 		},
 		"相对位移监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"位移_max,位移_avg,位移_min"
+			"keys":"位移量_max,位移量_avg,位移量_min",
+			"comment":"位移计"
 		},
 		"裂缝监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"裂缝_max,裂缝_avg,裂缝_min"
+			"keys":"裂缝值_max,裂缝值_avg,裂缝值_min",
+			"comment":"振弦式裂缝计"
 		},
-		"应力应变监测数据统计":
+		"应力监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"应力应变_max,应力应变_avg,应力应变_min"
+			"keys":"力_max,力_avg,力_min",
+			"comment":"钢筋计"
+		},
+		"应变监测数据统计":
+		{
+			"interval":5000,
+			"maxCnt":3,
+			"keys":"微应变_max,微应变_avg,微应变_min",
+			"comment":"振弦式应变计"
 		},
 		"变形自动监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"变形_max,变形_avg,变形_min"
+			"keys":"位移量_max,位移量_avg,位移量_min",
+			"comment":"静力水准仪"
 		},
 		"倾角自动监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"倾角_max,倾角_avg,倾角_min"
+			"keys":"倾角_max,倾角_avg,倾角_min",
+			"comment":"倾角计"
 		},
 		"索力自动监测数据统计":
 		{
 			"interval":5000,
 			"maxCnt":3,
-			"keys":"索力_max,索力_avg,索力_min"
+			"keys":"索力_max,索力_avg,索力_min",
+			"comment":"索力计"
 		}
 	},
 	"Bar":{
 		"车辆荷载自动监测数据车重":{
+			"comment":"动态称重系统",
 			"interval":3600000,
 			"keys":"总重",
 			"title":"一周重车数量",
@@ -56,6 +71,7 @@
 				]
 		},
 		"车辆荷载自动监测数据车速":{
+			"comment":"动态称重系统",
 			"interval":3600000,
 			"keys":"速度",
 			"title":"一周超速车辆统计",
@@ -66,6 +82,7 @@
 				]
 		},
 		"自动监测数据降雨量":{
+			"comment":"雨量计",
 			"interval":7200000,
 			"keys":"降雨量",
 			"title":"自动监测数据降雨量",
@@ -78,6 +95,7 @@
 	},
 	"Pie":{
 		"车辆荷载自动监测数据车重":{
+			"comment":"动态称重系统",
 			"interval":3600000,
 			"keys":"总重",
 			"title":"重车车重分布",
@@ -91,6 +109,7 @@
 				]
 		},
 		"车辆荷载自动监测数据车速":{
+			"comment":"动态称重系统",
 			"interval":3600000,
 			"keys":"速度",
 			"title":"车速分布统计",
