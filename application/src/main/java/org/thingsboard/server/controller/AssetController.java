@@ -25,6 +25,8 @@ import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmExInfo;
+import org.thingsboard.server.common.data.alarm.AlarmInfo;
+import org.thingsboard.server.common.data.alarm.AlarmQuery;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
@@ -35,6 +37,8 @@ import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.page.TimePageData;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -409,7 +413,7 @@ public class AssetController extends BaseController {
 														 @RequestParam(required = false) String customerIdStr,
 														 @RequestParam(required = false) String assetIdStr,
 														 @RequestParam(required = false) String deviceNameStr
-												) throws ThingsboardException {
+												) throws ThingsboardException, ExecutionException, InterruptedException {
 		List<Device> deviceList = new ArrayList<>();
 		List<Alarm> alarms = null;
 		Optional<List<Device>> optionalDeviceList = Optional.ofNullable(null);
@@ -440,77 +444,162 @@ public class AssetController extends BaseController {
 			if (!optionalDeviceList.isPresent()){
 				return null;
 			}
-		} else {
-			switch (getCurrentUser().getAuthority()) {
-				case SYS_ADMIN:
-					optionalDeviceList = Optional.ofNullable(deviceService.findDevices());
-					break;
-				case TENANT_ADMIN:
-					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByTenantId(tenantId));
-					break;
-				case CUSTOMER_USER:
-					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByCustomerId(customerId));
-					break;
+			for (Device device : optionalDeviceList.get()) {
+				switch (getCurrentUser().getAuthority()) {
+					case SYS_ADMIN:
+						if (customerId != null) {
+							if (device.getCustomerId().equals(customerId)) {
+								if (assetId != null) {
+									if (checkDeviceBelongAsset(assetId, device.getId()))
+										deviceList.add(device);
+								} else
+									deviceList.add(device);
+							}
+							break;
+						} else if (tenantId != null) {
+							if (device.getTenantId().equals(tenantId)) {
+								if (assetId != null) {
+									if (checkDeviceBelongAsset(assetId, device.getId()))
+										deviceList.add(device);
+								} else
+									deviceList.add(device);
+							}
+							break;
+						} else {
+							deviceList.add(device);
+						}
+						break;
+					case TENANT_ADMIN:
+						if (customerId != null) {
+							if (device.getCustomerId().equals(customerId)) {
+								if (assetId != null) {
+									if (checkDeviceBelongAsset(assetId, device.getId()))
+										deviceList.add(device);
+								} else
+									deviceList.add(device);
+							}
+							break;
+						}
+						if (device.getTenantId().equals(getTenantId())) {
+							if (assetId != null) {
+								if (checkDeviceBelongAsset(assetId, device.getId()))
+									deviceList.add(device);
+							} else
+								deviceList.add(device);
+						}
+						break;
+					case CUSTOMER_USER:
+						if (device.getCustomerId().equals(getCurrentUser())) {
+							if (assetId != null) {
+								if (checkDeviceBelongAsset(assetId, device.getId()))
+									deviceList.add(device);
+							} else
+								deviceList.add(device);
+						}
+						break;
+				}
 			}
-		}
-		for (Device device:optionalDeviceList.get()){
+			//		alarms = getAlarmsByDevice(deviceList);
+			return fillAlarmExInfo(alarms);
+		} else {
+//			switch (getCurrentUser().getAuthority()) {
+//				case SYS_ADMIN:
+//					optionalDeviceList = Optional.ofNullable(deviceService.findDevices());
+//					break;
+//				case TENANT_ADMIN:
+//					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByTenantId(tenantId));
+//					break;
+//				case CUSTOMER_USER:
+//					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByCustomerId(customerId));
+//					break;
+//			}
+			List<Asset> assetList = new ArrayList<>();
 			switch (getCurrentUser().getAuthority()){
 				case SYS_ADMIN:
-					if (customerId != null){
-						if (device.getCustomerId().equals(customerId)){
-							if (assetId != null){
-								if (checkDeviceBelongAsset(assetId,device.getId()))
-									deviceList.add(device);
-							} else
-								deviceList.add(device);
-						}
-						break;
-					} else
-					if (tenantId != null){
-						if (device.getTenantId().equals(tenantId)){
-							if (assetId != null){
-								if (checkDeviceBelongAsset(assetId,device.getId()))
-									deviceList.add(device);
-							} else
-								deviceList.add(device);
-						}
-						break;
-					} else {
-						deviceList.add(device);
-					}
+					assetList = assetService.findAssets();
 					break;
 				case TENANT_ADMIN:
-					if (customerId != null){
-						if (device.getCustomerId().equals(customerId)){
-							if (assetId != null){
-								if (checkDeviceBelongAsset(assetId,device.getId()))
-									deviceList.add(device);
-							} else
-								deviceList.add(device);
-						}
-						break;
-					}
-					if (device.getTenantId().equals(getTenantId())){
-						if (assetId != null){
-							if (checkDeviceBelongAsset(assetId,device.getId()))
-								deviceList.add(device);
-						} else
-							deviceList.add(device);
-					}
+					assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
 					break;
 				case CUSTOMER_USER:
-					if (device.getCustomerId().equals(getCurrentUser())){
-						if (assetId != null){
-							if (checkDeviceBelongAsset(assetId,device.getId()))
-								deviceList.add(device);
-						} else
-							deviceList.add(device);
-					}
+					assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
 					break;
 			}
+			alarms = new ArrayList<>();
+			for (Asset asset : assetList ) {
+				boolean hasNext = true;
+				TimePageLink nextPageLink = new TimePageLink(100);
+				while (hasNext){
+					AlarmQuery nextQuery = new AlarmQuery(asset.getId(), nextPageLink, null, null, false);
+					TimePageData<AlarmInfo> tempPageData =alarmService.findAlarms(getCurrentUser().getTenantId(),nextQuery).get();
+					alarms.addAll(tempPageData.getData());
+					hasNext = tempPageData.hasNext();
+					nextPageLink = tempPageData.getNextPageLink();
+				}
+
+			}
+
+//		alarms = getAlarmsByDevice(deviceList);
+			return fillAlarmExInfo(alarms);
 		}
-		alarms = getAlarmsByDevice(deviceList);
-		return fillAlarmExInfo(alarms);
+//		for (Device device:optionalDeviceList.get()){
+//			switch (getCurrentUser().getAuthority()){
+//				case SYS_ADMIN:
+//					if (customerId != null){
+//						if (device.getCustomerId().equals(customerId)){
+//							if (assetId != null){
+//								if (checkDeviceBelongAsset(assetId,device.getId()))
+//									deviceList.add(device);
+//							} else
+//								deviceList.add(device);
+//						}
+//						break;
+//					} else
+//					if (tenantId != null){
+//						if (device.getTenantId().equals(tenantId)){
+//							if (assetId != null){
+//								if (checkDeviceBelongAsset(assetId,device.getId()))
+//									deviceList.add(device);
+//							} else
+//								deviceList.add(device);
+//						}
+//						break;
+//					} else {
+//						deviceList.add(device);
+//					}
+//					break;
+//				case TENANT_ADMIN:
+//					if (customerId != null){
+//						if (device.getCustomerId().equals(customerId)){
+//							if (assetId != null){
+//								if (checkDeviceBelongAsset(assetId,device.getId()))
+//									deviceList.add(device);
+//							} else
+//								deviceList.add(device);
+//						}
+//						break;
+//					}
+//					if (device.getTenantId().equals(getTenantId())){
+//						if (assetId != null){
+//							if (checkDeviceBelongAsset(assetId,device.getId()))
+//								deviceList.add(device);
+//						} else
+//							deviceList.add(device);
+//					}
+//					break;
+//				case CUSTOMER_USER:
+//					if (device.getCustomerId().equals(getCurrentUser())){
+//						if (assetId != null){
+//							if (checkDeviceBelongAsset(assetId,device.getId()))
+//								deviceList.add(device);
+//						} else
+//							deviceList.add(device);
+//					}
+//					break;
+//			}
+//		}
+
+
 
 	}
 	private Boolean checkDeviceBelongAsset(AssetId assetId,DeviceId deviceId){
