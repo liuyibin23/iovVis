@@ -25,7 +25,16 @@ function loadChartCfg(filePath){
 }
 
 function getCfgParams(chartName, type){
-    let allCfg = (type === 'LINE') ? gCfg.Line : gCfg.Bar;
+    let allCfg = [];
+    if (type === 'LINE') {
+        allCfg = gCfg.Line;
+    }
+    else if (type == 'Bar') {
+        allCfg = gCfg.Bar;
+    }
+    else {
+        allCfg = gCfg.Pie;
+    }
     
     return allCfg[chartName];
 }

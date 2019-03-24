@@ -8,13 +8,18 @@ const crack_monitoring_statistics_line         = require('./echarts/line/crack-m
 const dip_angle_monitoring_statistics_line     = require('./echarts/line/dip-angle-monitoring-statistics');
 const cable_force_monitoring_statistics_line   = require('./echarts/line/cable-force-monitoring-statistics');
 const deformation_monitoring_statistics_line   = require('./echarts/line/deformation-monitoring-statistics');
-const stress_strain_monitoring_statistics_line = require('./echarts/line/stress-strain-monitoring-statistics');
+const stress_monitoring_statistics_line        = require('./echarts/line/stress-monitoring-statistics');
+const strain_monitoring_statistics_line        = require('./echarts/line/strain-monitoring-statistics');
 
 // Bar
 const temperature_humidity_statistics_bar      = require('./echarts/bar/temperature-humidity-statistics.js');
 const vehicle_load_monitoring_weight_bar       = require('./echarts/bar/vehicle-load-monitoring-weight');
 const vehicle_load_monitoring_speed_bar        = require('./echarts/bar/vehicle-load-monitoring-speed');
 const rainfall_monitoring_statistics_bar       = require('./echarts/bar/rainfall-monitoring-statistics');
+
+// Pie
+const vehicle_load_monitoring_weight_pie       = require('./echarts/pie/vehicle-load-monitoring-weight');
+const vehicle_load_monitoring_speed_pie        = require('./echarts/pie/vehicle-load-monitoring-speed');
 
 const node_echarts = require('node-echarts');
 const util = require('../util/utils');
@@ -81,7 +86,8 @@ function generateChart(req, res){
     chartLineMap.set('倾角自动监测数据统计', dip_angle_monitoring_statistics_line);
     chartLineMap.set('索力自动监测数据统计', cable_force_monitoring_statistics_line);
     chartLineMap.set('变形自动监测数据统计', deformation_monitoring_statistics_line);
-    chartLineMap.set('应力应变监测数据统计', stress_strain_monitoring_statistics_line);
+    chartLineMap.set('应力监测数据统计', stress_monitoring_statistics_line);
+    chartLineMap.set('应变监测数据统计', strain_monitoring_statistics_line);
 
     // 柱状图绑定
     var chartBarMap = new Map();
@@ -90,11 +96,17 @@ function generateChart(req, res){
     chartBarMap.set('车辆荷载自动监测数据车速',   vehicle_load_monitoring_speed_bar);
     chartBarMap.set('自动监测数据降雨量',        rainfall_monitoring_statistics_bar);
 
+    var charPieMap = new Map();
+    charPieMap.set('车辆荷载自动监测数据车重',   vehicle_load_monitoring_weight_pie);
+    charPieMap.set('车辆荷载自动监测数据车速',   vehicle_load_monitoring_speed_pie);
+
     let cfg = null;
     if (type == '折线图'){
         cfg = chartLineMap.get(params.chart_name);
     } else if (type == '柱状图') {
         cfg = chartBarMap.get(params.chart_name);
+    } else if (type == "饼图"){
+        cfg = charPieMap.get(params.chart_name);
     }
 
     if (cfg){

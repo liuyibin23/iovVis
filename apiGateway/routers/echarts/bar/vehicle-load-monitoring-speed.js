@@ -5,16 +5,16 @@ let option = {
     title : {
          text: '自动监测数据车速',
          x: 'center',
-         y:'bottom'
+         y:'top'
      },
      legend: {
-         data:['车速 < 80Km/h', '80Km/h < 车速 < 120Km/h', '车速 > 120Km/h'],
+         data:['80以下', '超速'],
          //orient: 'vertical',
          x:'center',
-         y:'2%',
+         y:'bottom',
          backgroundColor: '#eee',
          borderColor: 'rgba(178,34,34,0.8)',
-         borderWidth: 2
+         borderWidth: 1
      },
      toolbox: {
          show : false
@@ -35,25 +35,16 @@ let option = {
      ],
      series : [
         {
-            name:'车速 < 80Km/h',
+            name:'80以下',
             type:'bar',
             stack: '总量',
             data:[]
         },
          {
-             name:'80Km/h < 车速 < 120Km/h',
+             name:'超速',
              type:'bar',
              stack: '总量',
             // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-             data:[]
-         },
-         {
-             name:'车速 > 120Km/h',
-             type:'bar',
-               barWidth:25,
-             stack: '总量',
-          
-             //itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
              data:[]
          }
      ]
