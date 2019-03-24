@@ -46,7 +46,7 @@ let option = {
         {
             type : 'value',
             axisLabel : {
-                formatter: '{value} °C'
+                formatter: '{value} ℃'
             }
         },
       {

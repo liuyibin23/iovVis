@@ -83,56 +83,30 @@ function getData(plotCfg, option, params, token, res){
         headers: { "X-Authorization": token }
     }).then(resp => {
         let data = resp.data;
-        let idx = plotCfg.separateGroupIdx;
-        
-        // 计算百分比
-        if (plotCfg.groupType == "PERCENT"){
-            loopCnt = loopCnt > 7 ? 7 : loopCnt;
 
-            // 分组处理
-            for (let i = 0; i < loopCnt; i++) {
-                option.xAxis[0].data.push(i + 1);
+        // 统计每个区间的总数
+        if (data[0]) {
+            let len = data[0].length;
+            for (let i = 0; i < len; i++){
+                let sum = 0;
+                for (let j = 0; j < loopCnt; j++){
+                    sum += data[j][i];
+                }
 
-                let cnt_over = 0;
-                let cnt_sum = 0;
-                for (let j = 0; j < resp.data[0].length; j++){
-                    let value =  resp.data[i][j];
-                    cnt_sum += value;
-                    if (j >= 1) {
-                        cnt_over += value;
+                if (sum != 0) {
+                    let name = [];
+                    if (plotCfg.groupInfo[i].max == 99999){
+                        name = `${plotCfg.groupInfo[i].min} ${plotCfg.unit}以上`;
+                    }else if (plotCfg.groupInfo[i].min == 0) {
+                        name = `${plotCfg.groupInfo[i].max} ${plotCfg.unit}以下`;
                     }
-                }
-
-                // 计算百分比  超重车占一天车总数的百分比
-                let percent = cnt_over / cnt_sum * 100;
-                option.series[0].data[i] = percent;
+                    else{
+                        name = `${plotCfg.groupInfo[i].min}-${plotCfg.groupInfo[i].max} ${plotCfg.unit}`;
+                    }
+                    option.series[0].data[i] = { value:sum, name:name};
+                }            
             }
-        }
-        else {
-            // 分组处理
-            for (let i = 0; i < loopCnt; i++) {
-                option.xAxis[0].data.push(i + 1);
-            }
-            
-            for (let i = 0; i < data.length; i++){
-                let col_data = data[i];
-
-                for (let j = 0; j < col_data.length; j++){
-                    option.series[j].data[i] = col_data[j];
-                }
-            }
-        }
-
-        
-        
-
-        // for (let i = 0; i < data.length; i++){
-        //     let col_data = data[i];
-
-        //     for (let j = 0; j < col_data.length; j++){
-        //         option.series[j].data[i] = col_data[j];
-        //     }
-        // }
+        }        
         
         SendPngResponse(option, params, res);
     }).catch(err =>{
@@ -142,11 +116,8 @@ function getData(plotCfg, option, params, token, res){
 }
 
 function resetPreData(option, maxCnt){
-    option.xAxis[0].data = [];
-    let len = option.series.length;
-    for (let idx = 0; idx < len; idx++) {
-        option.series[idx].data = [];
-    }
+    let len = option.series[0].data.length;
+    option.series[0].data = [];
 }
 
 exports.resetPreData = resetPreData;
