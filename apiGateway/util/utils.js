@@ -117,7 +117,8 @@ exports.CST = Object.freeze({
     ERR401: 401, MSG401: {message: '无效的api token。'},
     ERR404: 404, MSG404: {message: '访问资源不存在。'},
     ERR510: 510, MSG510: {message: 'CONFIG_ALARM_RULE规则链不存在。'},
-    ERR511: 511, MSG511: {message: 'CONFIG_ALARM_RULE的META值异常。'}
+    ERR511: 511, MSG511: {message: 'CONFIG_ALARM_RULE的META值异常。'},
+    ERR512: 512, MSG512: {message: '设备号对应信息获取失败。'},
 });
 exports.getSync = getSync;
 exports.postSync = postSync;
