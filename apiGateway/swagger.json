@@ -914,10 +914,12 @@
       "description": "一级告警规则（一般）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string",
+          "example": "0.1"
         },
         "max": {
-          "type": "integer"
+          "type": "string",
+          "example": ""
         }
       }
     },
@@ -926,10 +928,12 @@
       "description": "二级告警规则（严重）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string",
+          "example": "3"
         },
         "max": {
-          "type": "integer"
+          "type": "string",
+          "example": "9.9"
         }
       }
     },

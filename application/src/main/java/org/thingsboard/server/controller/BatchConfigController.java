@@ -240,13 +240,13 @@ public class BatchConfigController extends BaseController {
 					return p.getTo().getEntityType() == EntityType.DEVICE;
 				})
 				.forEach((relation) -> {
-					DeviceAutoLogon deviceAutoLogon = new DeviceAutoLogon();
+					DeviceAutoLogon deviceAutoLogon;
 					try {
 						Optional<Device> optionalDevice = Optional.ofNullable(deviceService.findDeviceById(null,new DeviceId(relation.getTo().getId())));
 						if (!optionalDevice.isPresent()){
 							return;
 						}
-						deviceBaseAttributeService.findDeviceAttribute(optionalDevice.get());
+						deviceAutoLogon = deviceBaseAttributeService.findDeviceAttribute(optionalDevice.get());
 						ret.add(deviceAutoLogon);
 					} catch (Exception e) {
 						log.info("Get device client attrib error:" + relation.getTo().getId());

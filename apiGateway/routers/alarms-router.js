@@ -206,15 +206,18 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     if (typeof ruleTables !== 'undefined') {
       if (ruleTables[devID]) {
         let oldCfg = JSON.parse(ruleTables[devID]);
-        let newCfg = oldCfg;
 
+        // 覆盖
+        let newCfg = IndeterminateRules;
+
+        /*
         // 使用最新的值去匹配旧值，不存在就新加一条
         for (let i = 0; i < IndeterminateRules.length; i++){
           let find = 0;
           if (oldCfg[i]){
             for (let j = 0; j < oldCfg.length; j++){
               // 找到 修改阈值
-              if (oldCfg[i].Key === IndeterminateRules[j].Key) {
+              if (IndeterminateRules[j] && (oldCfg[i].Key === IndeterminateRules[j].Key)) {
                 find = 1;
                 newCfg[i].IndeterminateRules =  IndeterminateRules[j].IndeterminateRules;
               }
@@ -226,6 +229,7 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
             newCfg.push(IndeterminateRules[i]);
           }
         }
+        */
         ruleTables[devID] = JSON.stringify(newCfg);;
       }
       else{
@@ -245,15 +249,17 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
     if (typeof ruleTables !== 'undefined') {
       if (ruleTables[devID]) {
         let oldCfg = JSON.parse(ruleTables[devID]);
-        let newCfg = oldCfg;
+        // 覆盖
+        let newCfg = WarningRules;
 
+        /*
         // 使用最新的值去匹配旧值，不存在就新加一条
         for (let i = 0; i < WarningRules.length; i++){
           let find = 0;
           if (oldCfg[i]){
             for (let j = 0; j < oldCfg.length; j++){
               // 找到 修改阈值
-              if (oldCfg[i].Key === WarningRules[j].Key) {
+              if ((WarningRules[j]) && oldCfg[i].Key === WarningRules[j].Key) {
                 find = 1;
                 newCfg[i].WarningRules =  WarningRules[j].WarningRules;
               }
@@ -265,6 +271,7 @@ function configRuleChain(devID, nodes, params, ruleMeta, tenantId, token, res){
             newCfg.push(WarningRules[i]);
           }
         }
+        */
         ruleTables[devID] = JSON.stringify(newCfg);;
       }
       else {

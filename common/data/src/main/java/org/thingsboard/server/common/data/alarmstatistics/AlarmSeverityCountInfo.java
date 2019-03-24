@@ -19,4 +19,5 @@ public class AlarmSeverityCountInfo extends BaseData<AlarmStatisticsId> {
     private EntityType entityType;
     private String entityName;
     private AlarmSeverityCount alarmCount;
+    private Long deviceCount;
 }
