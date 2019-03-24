@@ -499,7 +499,7 @@ public class AssetController extends BaseController {
 						break;
 				}
 			}
-			//		alarms = getAlarmsByDevice(deviceList);
+			alarms = getAlarmsByDevice(deviceList);
 			return fillAlarmExInfo(alarms);
 		} else {
 //			switch (getCurrentUser().getAuthority()) {
