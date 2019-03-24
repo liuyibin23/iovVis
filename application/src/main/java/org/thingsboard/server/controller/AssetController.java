@@ -513,18 +513,69 @@ public class AssetController extends BaseController {
 //					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByCustomerId(customerId));
 //					break;
 //			}
-			List<Asset> assetList = new ArrayList<>();
-			switch (getCurrentUser().getAuthority()){
-				case SYS_ADMIN:
-					assetList = assetService.findAssets();
-					break;
-				case TENANT_ADMIN:
-					assetList = assetService.findAssetsByTenantId(getCurrentUser().getTenantId());
-					break;
-				case CUSTOMER_USER:
-					assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
-					break;
+			if(tenantId == null){
+				tenantId = getTenantId();
 			}
+			if(customerId == null){
+				customerId = getCurrentUser().getCustomerId();
+			}
+			List<Asset> assetList = new ArrayList<>();
+
+			if(tenantId.equals(TenantId.SYS_TENANT_ID)){ //admin
+				if(assetId != null){
+					if(tenantId.equals(TenantId.SYS_TENANT_ID) ){
+						tenantId = assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
+					}
+					Asset asset = assetService.findAssetById(tenantId,assetId);
+					assetList.add(asset);
+				} else {
+					assetList = assetService.findAssets();
+				}
+			} else if(customerId.isNullUid()){//tenant
+				if(assetId != null){
+					Asset asset = assetService.findAssetById(tenantId,assetId);
+					assetList.add(asset);
+				} else {
+					assetList = assetService.findAssetsByTenantId(tenantId);
+				}
+			} else { // customer
+				if(assetId != null){
+					Asset asset = assetService.findAssetById(tenantId,assetId);
+					assetList.add(asset);
+				} else {
+					assetList = assetService.findAssetsByCustomerId(customerId);
+				}
+			}
+
+//			switch (getCurrentUser().getAuthority()){
+//				case SYS_ADMIN:
+//					if(assetId != null){
+//						if(tenantId.equals(TenantId.SYS_TENANT_ID) ){
+//							tenantId = assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
+//						}
+//						Asset asset = assetService.findAssetById(tenantId,assetId);
+//						assetList.add(asset);
+//					} else {
+//						assetList = assetService.findAssets();
+//					}
+//					break;
+//				case TENANT_ADMIN:
+//					if(assetId != null){
+//						Asset asset = assetService.findAssetById(tenantId,assetId);
+//						assetList.add(asset);
+//					} else {
+//						assetList = assetService.findAssetsByTenantId(tenantId);
+//					}
+//					break;
+//				case CUSTOMER_USER:
+//					if(assetId != null){
+//						Asset asset = assetService.findAssetById(tenantId,assetId);
+//						assetList.add(asset);
+//					} else {
+//						assetList = assetService.findAssetsByCustomerId(customerId);
+//					}
+//					break;
+//			}
 			alarms = new ArrayList<>();
 			for (Asset asset : assetList ) {
 				boolean hasNext = true;
