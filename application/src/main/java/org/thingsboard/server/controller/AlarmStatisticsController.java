@@ -4,18 +4,23 @@ import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.DeviceAlarm;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
+import org.thingsboard.server.common.data.id.AssetId;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.EntityIdFactory;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageLink;
+import org.thingsboard.server.common.data.relation.EntityRelation;
+import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.dao.exception.DataValidationException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -81,7 +86,55 @@ public class AlarmStatisticsController extends BaseController {
             throw handleException(e);
         }
     }
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
+	@RequestMapping(path = "/alarm/statistics/handled/{assetId}", method = RequestMethod.GET)
+	@ResponseBody
+	public AlarmMonitorItemCountInfo getAlarmMonitorItemCount(@PathVariable String assetId) throws ThingsboardException {
+    	Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(null,new AssetId(UUID.fromString(assetId))));
+    	if (!optionalAsset.isPresent()){
+    		throw new DataValidationException("Asset not exit");
+		}
+		switch (getCurrentUser().getAuthority()) {
+			case SYS_ADMIN:
+				break;
+			case TENANT_ADMIN:
+				if(!optionalAsset.get().getTenantId().equals(getTenantId()))
+					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+				break;
+			case CUSTOMER_USER:
+				if(!optionalAsset.get().getCustomerId().equals(getCurrentUser().getCustomerId()))
+					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+				break;
+		}
+		List<MonitorItemAlarm> monitorItemAlarmList = new ArrayList<>();
+    	Map<String,Long> monitorCountMap = new HashMap<>();
+		AlarmMonitorItemCountInfo retObj = new AlarmMonitorItemCountInfo();
 
+		List<DeviceAlarm> deviceAlarmList = alarmMonitorItemService.findDeviceAlarmByAssetId(UUIDConverter.fromTimeUUID(optionalAsset.get().getId().getId()));
+
+		//计算monitorItem Type
+    	for (DeviceAlarm deviceAlarm: deviceAlarmList){
+    		if (null == monitorCountMap.get(deviceAlarm.getMoniteritem())){
+				monitorCountMap.put(deviceAlarm.getMoniteritem(),new Long(0));
+			}
+    		monitorCountMap.put(deviceAlarm.getMoniteritem(),monitorCountMap.get(deviceAlarm.getMoniteritem())+1);
+		}
+		for (Map.Entry<String,Long> entry : monitorCountMap.entrySet()){
+			MonitorItemAlarm monitorItemAlarm = new MonitorItemAlarm(entry.getKey(),entry.getValue());
+			monitorItemAlarmList.add(monitorItemAlarm);
+		}
+
+		retObj.setMonitorAlarm(monitorItemAlarmList);
+    	Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByFromAndType(null,EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(),optionalAsset.get().getId().getId()),
+				EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON));
+    	if (!optionalEntityRelations.isPresent()){
+    		retObj.setDeviceCount(new Long(0));
+		}
+		else
+			retObj.setDeviceCount(new Long(optionalEntityRelations.get().stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).count()));
+
+    	return retObj;
+	}
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(path = "/alarm/statistics/handled/{entityType}/{entityId}", method = RequestMethod.GET)

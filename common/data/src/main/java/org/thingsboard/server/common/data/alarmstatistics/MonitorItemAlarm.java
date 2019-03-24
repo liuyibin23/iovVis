@@ -13,3 +13,4 @@ public class MonitorItemAlarm {
 	private String monitorItem;
 	private Long alarmCount;
 }
+

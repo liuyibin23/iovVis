@@ -6,7 +6,7 @@ import org.thingsboard.server.common.data.alarm.AlarmSeverity;
 @Data
 public class DeviceAlarm {
 	private String assetId;
-	private AlarmSeverity severity;
+	private String severity;
 	private String deviceId;
 	private String moniteritem;
 
@@ -14,6 +14,6 @@ public class DeviceAlarm {
 		assetId = new String();
 		deviceId = new String();
 		moniteritem = new String();
-		severity = AlarmSeverity.INDETERMINATE;
+		severity = new String(AlarmSeverity.INDETERMINATE.name());
 	}
 }
