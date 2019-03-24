@@ -28,6 +28,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.alarm.Alarm;
+import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
@@ -39,6 +41,7 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.common.data.security.DeviceCredentialsType;
+import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -82,6 +85,9 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Autowired
     private CacheManager cacheManager;
+
+    @Autowired
+    private AlarmService alarmService;
 
 
     @Override
@@ -157,6 +163,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         if (deviceCredentials != null) {
             deviceCredentialsService.deleteDeviceCredentials(tenantId, deviceCredentials);
         }
+        closeDeletedDeviceAlarm(deviceId);//删除设备时，将设备关联的告警的告警状态全部设置为CLEARED_ACK
         deleteEntityRelations(tenantId, deviceId);
 
         List<Object> list = new ArrayList<>();
@@ -167,6 +174,25 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
         deviceDao.removeById(tenantId, deviceId.getId());
     }
+
+    /**
+     * 删除设备时，将设备关联的告警的告警状态全部设置为CLEARED_ACK
+     * @param deviceId
+     */
+    private void closeDeletedDeviceAlarm(DeviceId deviceId){
+        List<Alarm> alarms = alarmService.findAlarmByOriginator(deviceId);
+        if(alarms != null && alarms.size() > 0){
+            for(Alarm alarm : alarms){
+                Long closeTime = System.currentTimeMillis();
+                alarm.setClearTs(closeTime);
+                alarm.setEndTs(closeTime);
+//                alarm.setDetails(additionalInfo);
+                alarm.setStatus(AlarmStatus.CLEARED_ACK);
+                alarmService.createOrUpdateAlarm(alarm);
+            }
+        }
+    }
+
     @Override
     public TextPageData<Device> findDevices(TextPageLink pageLink) {
         validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
