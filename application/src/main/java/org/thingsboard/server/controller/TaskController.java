@@ -156,12 +156,30 @@ public class TaskController extends BaseController {
 	private List<Task> getTasksNameInfo(List<Task> taskList) throws ThingsboardException {
 		checkNotNull(taskList);
 		taskList.stream().forEach(task -> {
-			if (null != task.getAssetId())
-				task.setAssetName(assetService.findAssetById(null, task.getAssetId()).getName());
-			if (null != task.getUserId())
-				task.setUserFirstName(userService.findUserById(null, task.getUserId()).getFirstName());
-			if (null != task.getCustomerId())
-				task.setCustomerName(customerService.findCustomerById(null, task.getCustomerId()).getName());
+			if (null != task.getAssetId()){
+				Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(null, task.getAssetId()));
+				if (optionalAsset.isPresent())
+					task.setAssetName(optionalAsset.get().getName());
+				else
+					task.setAssetName(new String("Asset deleted"));
+			}
+
+			if (null != task.getUserId()){
+				Optional<User> optionalUser = Optional.ofNullable(userService.findUserById(null, task.getUserId()));
+				if (optionalUser.isPresent())
+					task.setUserFirstName(optionalUser.get().getFirstName());
+				else
+					task.setUserFirstName(new String("User deleted"));
+			}
+
+			if (null != task.getCustomerId()){
+				Optional<Customer> optionalCustomer = Optional.ofNullable(customerService.findCustomerById(null, task.getCustomerId()));
+				if (optionalCustomer.isPresent())
+					task.setCustomerName(optionalCustomer.get().getName());
+				else
+					task.setCustomerName(new String("Customer deleted"));
+			}
+
 			if (null != task.getOriginator()) {
 				if (task.getOriginator().getEntityType() == EntityType.DEVICE) {
 					DeviceId deviceId = new DeviceId(task.getOriginator().getId());
