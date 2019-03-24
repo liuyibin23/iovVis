@@ -113,7 +113,7 @@ router.get('/:id', async function (req, res) {
     }).then(resp => {
       //res.status(200).json({ code: 200, message: 'ok' });
       var ruleChain = resp.data;
-      if (ruleChain) {
+      if (ruleChain && ruleChain.length > 0) {
         ruleID = ruleChain[0].id;
         let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
         //获取告警规则链的meta数据
