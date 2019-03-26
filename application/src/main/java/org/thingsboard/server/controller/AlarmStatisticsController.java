@@ -19,8 +19,10 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -86,6 +88,13 @@ public class AlarmStatisticsController extends BaseController {
             throw handleException(e);
         }
     }
+    /**
+    * @Description: 1.2.10.5 监测项聚合统计
+    * @Author: ShenJi
+    * @Date: 2019/3/25
+    * @Param: [assetId]
+    * @return: org.thingsboard.server.common.data.alarmstatistics.AlarmMonitorItemCountInfo
+    */
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
 	@RequestMapping(path = "/alarm/statistics/handled/{assetId}", method = RequestMethod.GET)
 	@ResponseBody
@@ -109,20 +118,20 @@ public class AlarmStatisticsController extends BaseController {
 		List<MonitorItemAlarm> monitorItemAlarmList = new ArrayList<>();
     	Map<String,Long> monitorCountMap = new HashMap<>();
 		AlarmMonitorItemCountInfo retObj = new AlarmMonitorItemCountInfo();
+		Map<String,Long> monitorDeviceCountMap = new HashMap<>();
 
 		List<DeviceAlarm> deviceAlarmList = alarmMonitorItemService.findDeviceAlarmByAssetId(UUIDConverter.fromTimeUUID(optionalAsset.get().getId().getId()));
 
 		//计算monitorItem Type
     	for (DeviceAlarm deviceAlarm: deviceAlarmList){
+    		if (null == deviceAlarm.getMoniteritem())
+    			continue;
     		if (null == monitorCountMap.get(deviceAlarm.getMoniteritem())){
 				monitorCountMap.put(deviceAlarm.getMoniteritem(),new Long(0));
 			}
     		monitorCountMap.put(deviceAlarm.getMoniteritem(),monitorCountMap.get(deviceAlarm.getMoniteritem())+1);
 		}
-		for (Map.Entry<String,Long> entry : monitorCountMap.entrySet()){
-			MonitorItemAlarm monitorItemAlarm = new MonitorItemAlarm(entry.getKey(),entry.getValue());
-			monitorItemAlarmList.add(monitorItemAlarm);
-		}
+
 
 		retObj.setMonitorAlarm(monitorItemAlarmList);
     	Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByFromAndType(null,EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(),optionalAsset.get().getId().getId()),
@@ -130,8 +139,27 @@ public class AlarmStatisticsController extends BaseController {
     	if (!optionalEntityRelations.isPresent()){
     		retObj.setDeviceCount(new Long(0));
 		}
-		else
+		else{
+    		List<DeviceAttributesEntity> deviceList = new ArrayList<>();
 			retObj.setDeviceCount(new Long(optionalEntityRelations.get().stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).count()));
+			optionalEntityRelations.get().stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).forEach(r->{
+				Optional<DeviceAttributesEntity> optionalDevice = Optional.ofNullable(deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(r.getTo().getId())));
+				if (!optionalDevice.isPresent()){
+					return ;
+				}
+				deviceList.add(optionalDevice.get());
+			});
+
+			monitorDeviceCountMap = deviceList.stream().filter(d->d.getMoniteritem()!=null).collect(Collectors.groupingBy(DeviceAttributesEntity::getMoniteritem,Collectors.counting()));
+
+		}
+
+		for (Map.Entry<String,Long> entry : monitorDeviceCountMap.entrySet()){
+			MonitorItemAlarm monitorItemAlarm = new MonitorItemAlarm(entry.getKey(),entry.getValue(),
+					null!=monitorCountMap.get(entry.getKey())?monitorCountMap.get(entry.getKey()):new Long(0));
+			monitorItemAlarmList.add(monitorItemAlarm);
+		}
+
 
     	return retObj;
 	}
