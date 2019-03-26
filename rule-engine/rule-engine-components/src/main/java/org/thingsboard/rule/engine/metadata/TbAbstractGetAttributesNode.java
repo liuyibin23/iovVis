@@ -100,7 +100,7 @@ public abstract class TbAbstractGetAttributesNode<C extends TbGetAttributesNodeC
                 if (r.getValue() != null) {
                     msg.getMetaData().putValue(r.getKey(), r.getValueAsString());
                 } else {
-                    throw new RuntimeException("[" + r.getKey() + "] telemetry value is not present in the DB!");
+//                    throw new RuntimeException("[" + r.getKey() + "] telemetry value is not present in the DB!");
                 }
             });
             return null;

@@ -24,14 +24,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.thingsboard.rule.engine.api.RpcError;
+import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -42,6 +38,7 @@ import org.thingsboard.server.common.data.id.UUIDBased;
 import org.thingsboard.server.common.data.rpc.RpcRequest;
 import org.thingsboard.server.common.data.rpc.ToDeviceRpcRequestBody;
 import org.thingsboard.server.common.msg.rpc.ToDeviceRpcRequest;
+import org.thingsboard.server.dao.exception.DatabaseException;
 import org.thingsboard.server.service.rpc.DeviceRpcService;
 import org.thingsboard.server.service.rpc.FromDeviceRpcResponse;
 import org.thingsboard.server.service.rpc.LocalRequestMetaData;
@@ -106,6 +103,8 @@ public class RpcController extends BaseController {
 
     private DeferredResult<ResponseEntity> handleDeviceRPCRequest(boolean oneWay, DeviceId deviceId, String requestBody) throws ThingsboardException {
         try {
+            TenantId tenantId = null;
+            final TenantId tenantIdTmp;
             JsonNode rpcRequestBody = jsonMapper.readTree(requestBody);
             RpcRequest cmd = new RpcRequest(rpcRequestBody.get("method").asText(),
                     jsonMapper.writeValueAsString(rpcRequestBody.get("params")));
@@ -114,7 +113,20 @@ public class RpcController extends BaseController {
                 cmd.setTimeout(rpcRequestBody.get("timeout").asLong());
             }
             SecurityUser currentUser = getCurrentUser();
-            TenantId tenantId = currentUser.getTenantId();
+            if (currentUser.getTenantId().equals(TenantId.SYS_TENANT_ID)){
+                Optional<Device> optionalDevice= Optional.ofNullable(deviceService.findDeviceById(null,deviceId));
+                if (!optionalDevice.isPresent()){
+                    throw new DatabaseException("Device not find");
+                }
+                tenantId = optionalDevice.get().getTenantId();
+            }else{
+                 tenantId = currentUser.getTenantId();
+            }
+            tenantIdTmp = tenantId;
+
+
+            //
+
             final DeferredResult<ResponseEntity> response = new DeferredResult<>();
             long timeout = System.currentTimeMillis() + (cmd.getTimeout() != null ? cmd.getTimeout() : DEFAULT_TIMEOUT);
             ToDeviceRpcRequestBody body = new ToDeviceRpcRequestBody(cmd.getMethodName(), cmd.getRequestData());
@@ -122,7 +134,7 @@ public class RpcController extends BaseController {
                 @Override
                 public void onSuccess(@Nullable DeferredResult<ResponseEntity> result) {
                     ToDeviceRpcRequest rpcRequest = new ToDeviceRpcRequest(UUID.randomUUID(),
-                            tenantId,
+                            tenantIdTmp,
                             deviceId,
                             oneWay,
                             timeout,

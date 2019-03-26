@@ -31,19 +31,12 @@ import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.asset.Asset;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.common.data.relation.EntityRelation;
-import org.thingsboard.server.common.data.relation.EntityRelationsQuery;
-import org.thingsboard.server.common.data.relation.EntitySearchDirection;
-import org.thingsboard.server.common.data.relation.RelationTypeGroup;
-import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
+import org.thingsboard.server.common.data.relation.*;
 import org.thingsboard.server.dao.DateAndTimeUtils;
 import org.thingsboard.server.dao.asset.AssetDao;
 import org.thingsboard.server.dao.customer.CustomerDao;
@@ -51,14 +44,17 @@ import org.thingsboard.server.dao.device.DeviceDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entity.EntityService;
 import org.thingsboard.server.dao.exception.DataValidationException;
-import org.thingsboard.server.dao.relation.RelationDao;
+import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -82,7 +78,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     private CustomerDao customerDao;
 
     @Autowired
-    private RelationDao relationDao;
+    private RelationService relationService;
 
     @Autowired
     private AssetDao assetDao;
@@ -426,6 +422,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             AlarmQuery alarmQuery = new AlarmQuery(asset.getId(), new TimePageLink(100), null, null, false);
             AlarmSeverityCount alarmSeverityCount = new AlarmSeverityCount();
             calculateAlarmSeverityCount(alarmSeverityCount, tenantId, alarmQuery);
+            EntityId entityFrom = EntityIdFactory.getByTypeAndUuid(asset.getId().getEntityType(),asset.getId().getId());
+            List<EntityRelation> entityRelationList = relationService.findByFromAndType(tenantId, entityFrom,"Contains",RelationTypeGroup.COMMON);
 
             EntityType entityType = EntityType.UNDEFINED;
             try {
@@ -439,6 +437,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                     .entityId(asset.getId().toString())
                     .entityName(asset.getName())
                     .entityType(entityType)
+                    .deviceCount(entityRelationList.stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).count())
                     .build();
             data.add(alarmSeverityCountInfo);
         });

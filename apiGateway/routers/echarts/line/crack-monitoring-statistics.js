@@ -9,12 +9,12 @@ let option = {
     },
     legend: {
         data:['最大裂缝', '平均裂缝', '最小裂缝'],
-        orient: 'vertical',
-        x:'80%',
-        y:'10%',
+        //orient: 'vertical',
+        x:'center',
+        y:'3%',
         backgroundColor: '#eee',
         borderColor: 'rgba(178,34,34,0.8)',
-        borderWidth: 2
+        borderWidth: 1
     },
     toolbox: {
         show : false

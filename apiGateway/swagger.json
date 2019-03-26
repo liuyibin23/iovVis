@@ -392,7 +392,8 @@
             "description": "图表类型。",
             "enum": [
               "折线图",
-              "柱状图"
+              "柱状图",
+              "饼图"
             ],
             "type": "string"
           },
@@ -913,10 +914,12 @@
       "description": "一级告警规则（一般）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string",
+          "example": "0.1"
         },
         "max": {
-          "type": "integer"
+          "type": "string",
+          "example": ""
         }
       }
     },
@@ -925,10 +928,12 @@
       "description": "二级告警规则（严重）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string",
+          "example": "3"
         },
         "max": {
-          "type": "integer"
+          "type": "string",
+          "example": "9.9"
         }
       }
     },

@@ -8,7 +8,7 @@ let option = {
         y:'bottom'
     },
     legend: {
-        data:['B1'],
+        data:['加速度'],
         //orient: 'vertical',
         x:'center',
         y:'top',
@@ -24,6 +24,9 @@ let option = {
         {
             type : 'category',
             boundaryGap : false,
+            axisLabel:{
+                interval:30,    
+          },
             data : []
         }
     ],
@@ -31,13 +34,13 @@ let option = {
         {
             type : 'value',
             axisLabel : {
-                formatter: '{value} °C'
+                formatter: '{value} m/s^2'
             }
         }
     ],
     series : [
         {
-            name:'B1',
+            name:'加速度',
             type:'line',
           	data:[]
         }
@@ -50,25 +53,26 @@ var retCnt = 0;
 var respHasSend = 0;
 
 function processData(res, params, callback){
-    if (allData[0]){
-        for (let i = 0; i < allData[0].length; i++) {                    
-            for (let idx = 0; idx < MAX_DATA; idx++) {
-                if (allData[idx] && allData[idx][i]) {
-                    val = Number.parseFloat(allData[idx][i].value);
-                    option.series[idx].data.push(val);
-                }
-            }
+    if (allData){
+        for (let i = 0; i < allData.length; i++) {                    
+            val = Number.parseFloat(allData[i].value);
+            option.series[0].data.push(val);
 
             option.xAxis[0].data.push(i);
+        }
+
+        if (allData.length > 100) {
+            option.xAxis[0].axisLabel.interval = Math.ceil(allData.length / 30);
         }
     }
 
     callback(option, params, res);
 }
 
-async function getData(idx, dataType, params, token, res, callback){
-    let keyValue = 'vibration';   // 震动
-    let limit    = 1000;
+async function getData(params, token, res, callback){
+    let keyValue = '加速度_avg';   // 震动
+    let limit    =  Math.ceil((params.endTime - params.startTime) / 1000);
+
     let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
      + `&startTs=${params.startTime}&endTs=${params.endTime}&limit=${limit}`;
     api = encodeURI(api);
@@ -78,7 +82,7 @@ async function getData(idx, dataType, params, token, res, callback){
         headers: { "X-Authorization": token }
       }).then(response => {
         retCnt++;
-        allData[idx] = response.data.vibration;
+        allData = response.data[keyValue];
 
         if (retCnt == MAX_DATA){
             console.log('all data receive');
@@ -108,10 +112,7 @@ var chart_area = {
 
     fillData: async function (params, token, res, callback) {
         resetPreData();
-        for (var i = 0; i < MAX_DATA; i++){
-            dataType = '震动';
-            getData(i, dataType, params, token, res, callback);
-        }
+        getData(params, token, res, callback);
     }
 }
 module.exports = chart_area;

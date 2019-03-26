@@ -7,13 +7,13 @@ let option = {
         x: 'center',
         y: 'bottom'
     },
-    legend: {
-        data: ['车重 > 44T', '24T < 车重 < 44T', '7.5T < 车重 < 24T', '2.5T < 车重 < 7.5T', '车重 < 2.5T'],
-        //orient: 'vertical',
-        x: 'center',
-        y: '2%',
-        borderWidth: 1
-    },
+    // legend: {
+    //     data: ['百分比'],
+    //     //orient: 'vertical',
+    //     x: 'center',
+    //     y: '2%',
+    //     borderWidth: 1
+    // },
     toolbox: {
         show: false
     },
@@ -27,44 +27,16 @@ let option = {
         {
             type: 'value',
             axisLabel: {
-                formatter: '{value} 辆'
+                formatter: '{value} %'
             }
         }
     ],
     series: [
         {
-            name: '车重 < 2.5T',
+            name: '百分比',
             type: 'bar',
-            stack: '总量',
-            // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-            data: []
-        },
-        {
-            name: '2.5T < 车重 < 7.5T',
-            type: 'bar',
-            stack: '总量',
-            data: []
-        },
-        {
-            name: '7.5T < 车重 < 24T',
-            type: 'bar',
-            stack: '总量',
-
-            //itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-            data: []
-        },
-        {
-            name: '24T < 车重 < 44T',
-            type: 'bar',
-            stack: '总量',
-            // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
-            data: []
-        },
-        {
-            name: '车重 > 44T',
-            type: 'bar',
-            stack: '总量',
-            barCateGoryGap: 20,
+            barWidth:35,
+            //stack: '总量',
             // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
             data: []
         }

@@ -56,6 +56,7 @@ import org.thingsboard.server.common.msg.TbMsgDataType;
 import org.thingsboard.server.common.msg.TbMsgMetaData;
 import org.thingsboard.server.common.msg.cluster.SendToClusterMsg;
 import org.thingsboard.server.common.msg.system.ServiceToRuleEngineMsg;
+import org.thingsboard.server.dao.alarm.AlarmMonitorItemService;
 import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.attributes.AttributesService;
@@ -129,6 +130,9 @@ public abstract class BaseController {
 
     @Autowired
     protected AlarmService alarmService;
+
+    @Autowired
+    protected AlarmMonitorItemService alarmMonitorItemService;
 
     @Autowired
     protected DeviceCredentialsService deviceCredentialsService;
@@ -813,12 +817,25 @@ public abstract class BaseController {
                         tmpInfo.setDeviceName(device.getName());
                         tmpInfo.setDeviceType(device.getType());
                         tmpInfo.setAdditionalInfo(alarm.getDetails());
+                        DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
+                        if (null != deviceAttributes.getMeasureid()){
+                            tmpInfo.setMeasureid(deviceAttributes.getMeasureid());
+                        }
+//                        List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,device.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
+//                        for (EntityRelation entityRelation : tmpEntityRelationList){
+//                            if (entityRelation.getFrom().getEntityType() == EntityType.ASSET){
+//                                Asset tmpAsset = assetService.findAssetById(null,new AssetId(entityRelation.getFrom().getId()));
+//                                if (null != tmpAsset){
+//                                    tmpInfo.setAssetName(tmpAsset.getName());
+//                                    break;
+//                                }
+//                            }
+//                        }
+                    } else{
+                        tmpInfo.setDeviceName("Deleted");
+                        tmpInfo.setAdditionalInfo(alarm.getDetails());
                     }
-                    DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
-                    if (null != deviceAttributes.getMeasureid()){
-                        tmpInfo.setMeasureid(deviceAttributes.getMeasureid());
-                    }
-                    List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,device.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
+                    List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,alarm.getId(),"ALARM_ANY",RelationTypeGroup.ALARM);
                     for (EntityRelation entityRelation : tmpEntityRelationList){
                         if (entityRelation.getFrom().getEntityType() == EntityType.ASSET){
                             Asset tmpAsset = assetService.findAssetById(null,new AssetId(entityRelation.getFrom().getId()));
@@ -828,6 +845,7 @@ public abstract class BaseController {
                             }
                         }
                     }
+
 
                 }
             }
