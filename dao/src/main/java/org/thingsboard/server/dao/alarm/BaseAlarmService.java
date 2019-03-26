@@ -361,8 +361,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
     @Override
-    public List<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId ,EntityType type) {
-        log.trace("Executing findAlarmStatisticSeverityCountByType TenantId:[{}], CustomerId:[{}]",tenantId,customerId);
+    public List<AlarmSeverityCountInfo> findAlarmStatisticSeverityCountByType(TenantId tenantId, CustomerId customerId, EntityType type) {
+        log.trace("Executing findAlarmStatisticSeverityCountByType TenantId:[{}], CustomerId:[{}]", tenantId, customerId);
         //1. 找到指定类型的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
@@ -404,7 +404,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     @Override
     public List<AlarmSeverityCountInfo> findAllAlarmStatisticsSeverityCount(TenantId tenantId, CustomerId customerId) {
-        log.trace("Executing findAllAlarmStatisticsSeverityCount TenantId:[{}], CustomerId:[{}]", tenantId,customerId);
+        log.trace("Executing findAllAlarmStatisticsSeverityCount TenantId:[{}], CustomerId:[{}]", tenantId, customerId);
         //1. 找到所有类型的的asset
         //2. 根据asset找到所有alarm
         //3. 统计alarm信息
@@ -430,8 +430,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             EntityType entityType = EntityType.UNDEFINED;
             try {
                 entityType = EntityType.valueOf(asset.getType().toUpperCase());
-            }catch (Exception ex) {
-                log.warn("数据库中存在错误的资产类型：[{}]",asset.getType());
+            } catch (Exception ex) {
+                log.warn("数据库中存在错误的资产类型：[{}]", asset.getType());
             }
 
             AlarmSeverityCountInfo alarmSeverityCountInfo = AlarmSeverityCountInfo.builder()
@@ -531,7 +531,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 cId = customerId.getId();
             }
 
-          List<Asset>  assets =  assetDao.findAllAssetsByTenantIdAndCustomerId(tId,cId);
+            List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerId(tId, cId);
 //            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), entityType.toString(), nextPageLink);
             for (Asset asset : assets) {
                 List<Alarm> alarms = findAllAlarmsByEntityId(tenantId, asset.getId(), startTime, endTime);
@@ -545,8 +545,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                             .entityType(entityType)
                             .alarms(alarms)
                             .build());
-                }catch (Exception ex){
-                    log.warn("数据库中存在错误的资产类型：[{}]",asset.getType());
+                } catch (Exception ex) {
+                    log.warn("数据库中存在错误的资产类型：[{}]", asset.getType());
                 }
 
             }
@@ -583,7 +583,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     @Override
     public List<Alarm> findAlarmByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus) {
-        return alarmDao.findAlarmEntitiesByOriginatorTypeAndStatus(entityType,alarmStatus);
+        return alarmDao.findAlarmEntitiesByOriginatorTypeAndStatus(entityType, alarmStatus);
     }
 
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {
@@ -722,28 +722,28 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             }
 
             //ack的数量或者unack的数量增加，说明当前asset存在unclear（未处理）的告警，那么统计计数+1
-            if(alarmCount.getUnacked() > unackCount || alarmCount.getAcked()> ackCount) {
+            if (alarmCount.getUnacked() > unackCount || alarmCount.getAcked() > ackCount) {
                 alarmCount.alarmingEntityCountPlus(1);
             }
 
-            if(alarmCount.getAcked() > ackCount) {
-                alarmCount.setAcked(ackCount+1);
+            if (alarmCount.getAcked() > ackCount) {
+                alarmCount.setAcked(ackCount + 1);
             }
 
-            if(alarmCount.getUnacked() > unackCount) {
-                alarmCount.setUnacked(unackCount+1);
+            if (alarmCount.getUnacked() > unackCount) {
+                alarmCount.setUnacked(unackCount + 1);
             }
 
-            if(alarmCount.getCleared() > clearCount) {
-                alarmCount.setCleared(clearCount+1);
+            if (alarmCount.getCleared() > clearCount) {
+                alarmCount.setCleared(clearCount + 1);
             }
 
-            if(alarmCount.getCreatedOfToday() > todayCount) {
-                alarmCount.setCreatedOfToday(todayCount+1);
+            if (alarmCount.getCreatedOfToday() > todayCount) {
+                alarmCount.setCreatedOfToday(todayCount + 1);
             }
 
-            if(alarmCount.getCreatedOfMonth() > monthCount) {
-                alarmCount.setCreatedOfMonth(monthCount+1);
+            if (alarmCount.getCreatedOfMonth() > monthCount) {
+                alarmCount.setCreatedOfMonth(monthCount + 1);
             }
         } catch (InterruptedException | ExecutionException e) {
             log.warn("Failed to statistics alarm count .TenantID: [{}], EntityId: [{}].\n Exception info:{}",
@@ -759,19 +759,20 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             boolean hasNext = true;
             while (hasNext) {
                 List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
-                alarms.stream().forEach(alarm -> {
-                    if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
-                        alarmSeverityCount.criticalCountPlus(1);
-                    } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
-                        alarmSeverityCount.majorCountPlus(1);
-                    } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
-                        alarmSeverityCount.minorCountPlus(1);
-                    } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
-                        alarmSeverityCount.warningCountPlus(1);
-                    } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
-                        alarmSeverityCount.indeterminateCountPlus(1);
-                    }
-                });
+                alarms.stream().filter(alarm -> !alarm.getStatus().isCleared())
+                        .forEach(alarm -> {
+                            if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                                alarmSeverityCount.criticalCountPlus(1);
+                            } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                                alarmSeverityCount.majorCountPlus(1);
+                            } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
+                                alarmSeverityCount.minorCountPlus(1);
+                            } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
+                                alarmSeverityCount.warningCountPlus(1);
+                            } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                                alarmSeverityCount.indeterminateCountPlus(1);
+                            }
+                        });
 
                 TimePageData timePageData = new TimePageData<>(alarms, nextPageLink);
                 hasNext = timePageData.hasNext();
@@ -823,7 +824,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         existing.setSeverity(alarm.getSeverity());
         existing.setDetails(alarm.getDetails());
         existing.setPropagate(existing.isPropagate() || alarm.isPropagate());
-        existing.setAlarmCount(existing.getAlarmCount()+1);
+        existing.setAlarmCount(existing.getAlarmCount() + 1);
         return existing;
     }
 
