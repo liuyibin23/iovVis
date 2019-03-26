@@ -3,6 +3,8 @@ const node_echarts = require('node-echarts');
 const util  = require('../../../util/utils');
 const charCfg = require('../../echarts/chartConfig');
 
+var sTime = [];
+
 function SendPngResponse(option, params, res){
     if (!option)
     {
@@ -25,9 +27,13 @@ function SendPngResponse(option, params, res){
     }
 }
 
+
+
+
 function getData(plotCfg, option, params, token, res){    
     let grounCnt = plotCfg.groupInfo.length;
-    let loopCnt =  Math.ceil((params.endTime - params.startTime) / plotCfg.interval);
+    let interval = Number.parseFloat(params.interval) * 1000;
+    let loopCnt =  Math.ceil((params.endTime - params.startTime) / interval);
     /*
     // 阈值分组参数
     let ySeries = [
@@ -70,15 +76,16 @@ function getData(plotCfg, option, params, token, res){
     // 按时间段拆分成多个组 多少个柱状
     let startTimeFloat = Number.parseFloat(params.startTime);
     for (let j = 0; j < loopCnt; j++) {        
-        let startTime = startTimeFloat + j * plotCfg.interval;
-        let endTime   = startTime + plotCfg.interval;
+        let startTime = startTimeFloat + j * interval;
+        let endTime   = startTime + interval;
         timeSeries.push([startTime, endTime]);
     }
 
 
     let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/counts/timeseries?key=${plotCfg.keys}&tsIntervals=${JSON.stringify(timeSeries)}&valueIntervals=${JSON.stringify(ySeries)}&dataType=LONG`;
     api = encodeURI(api);
-
+    sTime = timeSeries;
+    
     axios.get(api, {
         headers: { "X-Authorization": token }
     }).then(resp => {
@@ -91,7 +98,9 @@ function getData(plotCfg, option, params, token, res){
 
             // 分组处理
             for (let i = 0; i < loopCnt; i++) {
-                option.xAxis[0].data.push(i + 1);
+                var dat = new Date(sTime[i][0]);
+                dat = util.dateFormat(dat,'yyyyMMdd');
+                option.xAxis[0].data.push(dat);
 
                 let cnt_over = 0;
                 let cnt_sum = 0;
@@ -109,12 +118,17 @@ function getData(plotCfg, option, params, token, res){
             }
         }
         else {
+            loopCnt = loopCnt > 7 ? 7 : loopCnt;
+
             // 分组处理
-            for (let i = 0; i < loopCnt; i++) {
-                option.xAxis[0].data.push(i + 1);
+            for (let i = 0; i < loopCnt; i++) {                
+                var dat = new Date(sTime[i][0]);
+                dat = util.dateFormat(dat,'yyyyMMdd');
+
+                option.xAxis[0].data.push(dat);
             }
             
-            for (let i = 0; i < data.length; i++){
+            for (let i = 0; i < loopCnt; i++){
                 let col_data = data[i];
 
                 for (let j = 0; j < col_data.length; j++){

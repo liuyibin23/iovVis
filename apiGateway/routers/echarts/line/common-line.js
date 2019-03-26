@@ -34,7 +34,9 @@ function processData(option, params, allData, maxCnt, res){
                 }
             }
 
-            option.xAxis[0].data.push(i);
+            var dat = new Date(allData[0][i].ts);
+            dat = util.dateFormat(dat,'yyyyMMdd');
+            option.xAxis[0].data.push(dat);
         }
     }
 
@@ -45,13 +47,7 @@ function getData(plotCfg, option, params, token, res){
     if (plotCfg)
     {
         let diff = params.endTime - params.startTime;
-        let interval = plotCfg.interval;
-        if (diff / interval > 700) {
-            console.log("time too long > 700.  %f", diff / interval);
-            let allData = [];
-            processData(option, params, allData, plotCfg.maxCnt, res);
-            return;
-        }
+        let interval = Number.parseFloat(params.interval) * 1000;
 
         let keyValue = plotCfg.keys;
         let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
