@@ -27,7 +27,7 @@ function SendPngResponse(option, params, res){
 
 function getData(plotCfg, option, params, token, res){    
     let grounCnt = plotCfg.groupInfo.length;
-    let interval = Number.parseFloat(params.interval);
+    let interval = Number.parseFloat(params.interval) * 1000;
     let loopCnt =  Math.ceil((params.endTime - params.startTime) / interval);
     /*
     // 阈值分组参数
