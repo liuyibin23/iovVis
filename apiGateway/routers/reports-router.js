@@ -144,7 +144,8 @@ function saveAssetSeverScope(hisReprtsData, assetID, reportInfo, urlPath, fileID
       "report_type": reportInfo.report_type,
       "report_date": reportInfo.report_date,
       "report_url": urlPath,
-      "fileID":fileID
+      "fileID":fileID,
+      "operator":reportInfo.operator
     }];
 
     hisReprtsData.data.forEach(info => {

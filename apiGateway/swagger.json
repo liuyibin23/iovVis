@@ -267,6 +267,7 @@
             "name": "report_type",
             "in": "formData",
             "type": "string",
+			"required": true,
             "enum": [
               "日报",
               "周报",
@@ -274,6 +275,13 @@
               "季报"
             ],
             "description": "报表类型。"
+          },
+		  {
+            "name": "operator",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "操作者名字。"
           },
           {
             "name": "report_date",
