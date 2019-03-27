@@ -25,9 +25,13 @@ import org.thingsboard.rule.engine.api.TbNodeException;
 import org.thingsboard.rule.engine.api.util.TbNodeUtils;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.alarm.Alarm;
+import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.plugin.ComponentType;
+import org.thingsboard.server.common.data.relation.EntityRelation;
+import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.common.msg.TbMsg;
@@ -74,11 +78,32 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
             UserId userId = new UserId(EntityId.NULL_UUID);
             String entityName = "";
 
+            //for JIRA_369
+            AssetId assetId = new AssetId(EntityId.NULL_UUID);
+            String assetName = "";
+            AlarmId alarmId = new AlarmId(EntityId.NULL_UUID);
+
+            // 如果上一个Rule_Node是TbAbstractAlarmNode，解析Alarm内容
+            if (msg.getType() == "ALARM") {
+                if (Boolean.parseBoolean(msg.getMetaData().getValue(TbAbstractAlarmNode.IS_NEW_ALARM))) {
+                    Alarm alarm = mapper.readValue(msg.getData(),Alarm.class);
+                    alarmId = alarm.getId();
+                }
+            }
+
             if (originatorId.getEntityType() == EntityType.DEVICE) {
                 Device device = ctx.getDeviceService().findDeviceById(null, new DeviceId(originatorId.getId()));
                 tenantId = device.getTenantId();
                 customerId = device.getCustomerId();
                 entityName = device.getName();
+
+                EntityRelation assetRelation = ctx.getRelationService().findByToAndType(null, originatorId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON).stream()
+                        .filter(rel -> rel.getFrom().getEntityType() == EntityType.ASSET).findFirst().get();
+                if (assetRelation != null) {
+                    assetId = (AssetId) assetRelation.getFrom();
+                    Asset asset = ctx.getAssetService().findAssetById(null, assetId);
+                    assetName = asset.getName();
+                }
             } else if (originatorId.getEntityType() == EntityType.ASSET) {
                 Asset asset = ctx.getAssetService().findAssetById(null, new AssetId(originatorId.getId()));
                 tenantId = asset.getTenantId();
@@ -100,8 +125,11 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
                     .taskStatus(TaskStatus.ACTIVE_UNACK)
                     .taskKind(config.getTaskKind())
                     .startTs(System.currentTimeMillis())
-                    .taskName(entityName + "巡检任务")
+                    .taskName(entityName + "_自动创建")
                     .originator(originatorId)
+                    .assetId(assetId)
+                    .assetName(assetName)
+                    .alarmId(alarmId)
 //                    .additionalInfo(new ObjectMapper().readTree(msg.getData()))
                     .build();
             ctx.getTaskService().createOrUpdateTask(task);

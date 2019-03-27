@@ -29,7 +29,7 @@ public class TbCreateTaskNodeConfiguration extends TbAbstractTaskNodeConfigurati
     @Override
     public TbCreateTaskNodeConfiguration defaultConfiguration() {
         TbCreateTaskNodeConfiguration configuration = new TbCreateTaskNodeConfiguration();
-        configuration.setTaskKind(TaskKind.PATROL);
+        configuration.setTaskKind(TaskKind.ANALYZE); //JIRA_369 PATROL -> ANALYZE
         return configuration;
     }
 }

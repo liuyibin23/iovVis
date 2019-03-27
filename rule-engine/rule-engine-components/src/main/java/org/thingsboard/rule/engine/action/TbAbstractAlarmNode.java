@@ -35,6 +35,8 @@ public abstract class TbAbstractAlarmNode<C extends TbAbstractAlarmNodeConfigura
     static final String IS_EXISTING_ALARM = "isExistingAlarm";
     static final String IS_CLEARED_ALARM = "isClearedAlarm";
 
+    static final String MSG_TYPE = "ALARM";
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     protected C config;
@@ -90,7 +92,7 @@ public abstract class TbAbstractAlarmNode<C extends TbAbstractAlarmNodeConfigura
         } else if (alarmResult.isCleared) {
             metaData.putValue(IS_CLEARED_ALARM, Boolean.TRUE.toString());
         }
-        return ctx.transformMsg(originalMsg, "ALARM", originalMsg.getOriginator(), metaData, data);
+        return ctx.transformMsg(originalMsg, MSG_TYPE, originalMsg.getOriginator(), metaData, data);
     }
 
 
