@@ -5,7 +5,7 @@ let option = {
     title: {
         text: '车辆荷载自动监测数据车重',
         x: 'center',
-        y: 'bottom'
+        y: 'top'
     },
     // legend: {
     //     data: ['百分比'],

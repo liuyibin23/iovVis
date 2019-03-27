@@ -27,7 +27,8 @@ function SendPngResponse(option, params, res){
 
 function getData(plotCfg, option, params, token, res){    
     let grounCnt = plotCfg.groupInfo.length;
-    let loopCnt =  Math.ceil((params.endTime - params.startTime) / plotCfg.interval);
+    let interval = Number.parseFloat(params.interval) * 1000;
+    let loopCnt =  Math.ceil((params.endTime - params.startTime) / interval);
     /*
     // 阈值分组参数
     let ySeries = [
@@ -70,8 +71,8 @@ function getData(plotCfg, option, params, token, res){
     // 按时间段拆分成多个组 多少个柱状
     let startTimeFloat = Number.parseFloat(params.startTime);
     for (let j = 0; j < loopCnt; j++) {        
-        let startTime = startTimeFloat + j * plotCfg.interval;
-        let endTime   = startTime + plotCfg.interval;
+        let startTime = startTimeFloat + j * interval;
+        let endTime   = startTime + interval;
         timeSeries.push([startTime, endTime]);
     }
 

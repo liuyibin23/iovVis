@@ -120,6 +120,24 @@ exports.CST = Object.freeze({
     ERR511: 511, MSG511: {message: 'CONFIG_ALARM_RULE的META值异常。'},
     ERR512: 512, MSG512: {message: '设备号对应信息获取失败。'},
 });
+
+
+function dateFormat(date, fmt) {
+    if (null == date || undefined == date) return '';
+    var o = {
+        "M+": date.getMonth() + 1, //月份
+        "d+": date.getDate(), //日
+        "h+": date.getHours(), //小时
+        "m+": date.getMinutes(), //分
+        "s+": date.getSeconds(), //秒
+        "S": date.getMilliseconds() //毫秒
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (date.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+
 exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getBackendBUS = getBackendBUS;
@@ -128,3 +146,4 @@ exports.getFSVR = getFSVR;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
 exports.loadCfg = loadCfg;
+exports.dateFormat = dateFormat;

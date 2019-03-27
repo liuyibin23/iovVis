@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class MonitorItemAlarm {
 	private String monitorItem;
+	private Long deviceCount;
 	private Long alarmCount;
 }
 
