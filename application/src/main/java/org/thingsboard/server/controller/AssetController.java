@@ -19,6 +19,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -61,6 +62,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class AssetController extends BaseController {
 
 	public static final String ASSET_ID = "assetId";
@@ -559,15 +561,10 @@ public class AssetController extends BaseController {
 		alarmExInfos = fillAlarmExInfo(alarms);
 
         if(StringUtils.isNotEmpty(deviceType)){
-            alarmExInfos = alarmExInfos
-                    .stream()
-                    .filter(alarmExInfo ->
-                    alarmExInfo
-                            .getDeviceType()
-                            .equals(deviceType)
+            alarmExInfos = alarmExInfos.stream().filter(alarmExInfo ->
+                    StringUtils.isNotEmpty(alarmExInfo.getDeviceType())&&alarmExInfo.getDeviceType().equals(deviceType)
             ).collect(Collectors.toList());
         }
-
 
 		return alarmExInfos;
 	}
