@@ -13,6 +13,7 @@ public class AlarmExInfo {
 	private String alarmId;
 	private String assetName;
 	private String measureid;
+	private String deviceId;
 	private String deviceName;
 	private String deviceType;
 	private Long alarmStartTime;
