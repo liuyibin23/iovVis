@@ -25,8 +25,21 @@ function SendPngResponse(option, params, res){
 }
 
 function processData(option, params, allData, maxCnt, res){
-    if (allData[0]){
-        for (let i = 0; i < allData[0].length; i++) {                    
+    // 检查数据有效性
+    let dataValid = false;
+    let chooseIdx = 0;
+    let dataLen = 0;
+    for (let i = 0; i < allData.length; i++){
+        dataLen = allData[i].length;
+        if (dataLen > 0) {
+            dataValid = true;
+            chooseIdx = i;
+            break;
+        }
+    }
+
+    if (dataValid){
+        for (let i = 0; i < dataLen; i++) {                    
             for (let idx = 0; idx < maxCnt; idx++) {
                 if (allData[idx] && allData[idx][i]) {
                     val = Number.parseFloat(allData[idx][i].value);
@@ -34,9 +47,20 @@ function processData(option, params, allData, maxCnt, res){
                 }
             }
 
-            var dat = new Date(allData[0][i].ts);
-            dat = util.dateFormat(dat,'yyyyMMdd');
-            option.xAxis[0].data.push(dat);
+            // 天
+            if (Number.parseInt(params.interval) == 86400) {
+                var dat = new Date(allData[chooseIdx][i].ts);
+                dat = util.dateFormat(dat,'yyyyMMdd');
+                option.xAxis[0].data.push(dat);
+            } else if (Number.parseInt(params.interval) == 86400/2) {
+                var dat = new Date(allData[chooseIdx][i].ts);
+                dat = util.dateFormat(dat,'MMddhhmm');
+                option.xAxis[0].data.push(dat);
+            }  else {
+                var dat = new Date(allData[chooseIdx][i].ts);
+                dat = util.dateFormat(dat,'hhmmss');
+                option.xAxis[0].data.push(dat);
+            }          
         }
     }
 
@@ -62,7 +86,7 @@ function getData(plotCfg, option, params, token, res){
             let keys = plotCfg.keys.split(',');
             let allData = [];
             for (let i = 0; i < plotCfg.maxCnt; i++){
-                allData[i] = response.data[keys[i]];
+                allData[i] = (response.data[keys[i]]) ? response.data[keys[i]] : [];
             }
 
             processData(option, params, allData, plotCfg.maxCnt, res);
