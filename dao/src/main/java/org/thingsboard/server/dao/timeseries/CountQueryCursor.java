@@ -1,6 +1,8 @@
 package org.thingsboard.server.dao.timeseries;
 
 import lombok.Getter;
+import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
+import org.thingsboard.server.common.data.kv.LongDataEntry;
 import org.thingsboard.server.common.data.kv.TsKvEntry;
 import org.thingsboard.server.common.data.kv.TsKvQuery;
 
@@ -13,6 +15,9 @@ import java.util.UUID;
  */
 public class CountQueryCursor extends QueryCursor {
 
+    /**
+     * 只有一个count值，为了符合接口一致性，定义成List
+     */
     @Getter
     private final List<TsKvEntry> data;
 
@@ -21,7 +26,17 @@ public class CountQueryCursor extends QueryCursor {
         this.data = new ArrayList<>();
     }
 
-    public void addData(List<TsKvEntry> newData) {
-        data.addAll(newData);
+    /**
+     * @param newData
+     */
+    public void addData(TsKvEntry newData) {
+        if (data.isEmpty()) {
+            data.add(newData);
+        } else {
+            TsKvEntry oldEntry = data.get(0);
+            Long newCount = oldEntry.getLongValue().get() + newData.getLongValue().get();
+            TsKvEntry newEntry = new BasicTsKvEntry(oldEntry.getTs(), new LongDataEntry(oldEntry.getKey(), newCount));
+            data.set(0, newEntry);
+        }
     }
 }

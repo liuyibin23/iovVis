@@ -281,7 +281,7 @@ public class CassandraBaseTimeseriesDao extends CassandraAbstractAsyncDao implem
                             });
                         }
                     }
-                    cursor.addData(entries);
+                    cursor.addData(entries.get(0));
                     findCountAsyncSequentially(tenantId, cursor, query, resultFuture);
                 }
 
