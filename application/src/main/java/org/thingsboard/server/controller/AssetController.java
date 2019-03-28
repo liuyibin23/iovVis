@@ -19,6 +19,8 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -60,6 +62,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
+@Slf4j
 public class AssetController extends BaseController {
 
 	public static final String ASSET_ID = "assetId";
@@ -412,6 +415,7 @@ public class AssetController extends BaseController {
 	public List<AlarmExInfo> getAssetsAlarmAndAttributes(@RequestParam(required = false) String tenantIdStr,
 														 @RequestParam(required = false) String customerIdStr,
 														 @RequestParam(required = false) String assetIdStr,
+														 @RequestParam(required = false) String deviceType,
 														 @RequestParam(required = false) String deviceNameStr
 												) throws ThingsboardException, ExecutionException, InterruptedException {
 		List<Device> deviceList = new ArrayList<>();
@@ -420,6 +424,7 @@ public class AssetController extends BaseController {
 		TenantId tenantId;//= getCurrentUser().getTenantId();
 		CustomerId customerId;
 		AssetId assetId;
+		List<AlarmExInfo> alarmExInfos;
 
 		if(tenantIdStr != null && !tenantIdStr.trim().isEmpty()){
 			tenantId = new TenantId(UUID.fromString(tenantIdStr));
@@ -500,19 +505,7 @@ public class AssetController extends BaseController {
 				}
 			}
 			alarms = getAlarmsByDevice(deviceList);
-			return fillAlarmExInfo(alarms);
 		} else {
-//			switch (getCurrentUser().getAuthority()) {
-//				case SYS_ADMIN:
-//					optionalDeviceList = Optional.ofNullable(deviceService.findDevices());
-//					break;
-//				case TENANT_ADMIN:
-//					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByTenantId(tenantId));
-//					break;
-//				case CUSTOMER_USER:
-//					optionalDeviceList = Optional.ofNullable(deviceService.findDevicesByCustomerId(customerId));
-//					break;
-//			}
 			if(tenantId == null){
 				tenantId = getTenantId();
 			}
@@ -547,35 +540,6 @@ public class AssetController extends BaseController {
 				}
 			}
 
-//			switch (getCurrentUser().getAuthority()){
-//				case SYS_ADMIN:
-//					if(assetId != null){
-//						if(tenantId.equals(TenantId.SYS_TENANT_ID) ){
-//							tenantId = assetService.findTenantIdByAssetId(assetId,new TextPageLink(100));
-//						}
-//						Asset asset = assetService.findAssetById(tenantId,assetId);
-//						assetList.add(asset);
-//					} else {
-//						assetList = assetService.findAssets();
-//					}
-//					break;
-//				case TENANT_ADMIN:
-//					if(assetId != null){
-//						Asset asset = assetService.findAssetById(tenantId,assetId);
-//						assetList.add(asset);
-//					} else {
-//						assetList = assetService.findAssetsByTenantId(tenantId);
-//					}
-//					break;
-//				case CUSTOMER_USER:
-//					if(assetId != null){
-//						Asset asset = assetService.findAssetById(tenantId,assetId);
-//						assetList.add(asset);
-//					} else {
-//						assetList = assetService.findAssetsByCustomerId(customerId);
-//					}
-//					break;
-//			}
 			alarms = new ArrayList<>();
 			for (Asset asset : assetList ) {
 				boolean hasNext = true;
@@ -591,68 +555,20 @@ public class AssetController extends BaseController {
 			}
 
 //		alarms = getAlarmsByDevice(deviceList);
-			return fillAlarmExInfo(alarms);
+
 		}
-//		for (Device device:optionalDeviceList.get()){
-//			switch (getCurrentUser().getAuthority()){
-//				case SYS_ADMIN:
-//					if (customerId != null){
-//						if (device.getCustomerId().equals(customerId)){
-//							if (assetId != null){
-//								if (checkDeviceBelongAsset(assetId,device.getId()))
-//									deviceList.add(device);
-//							} else
-//								deviceList.add(device);
-//						}
-//						break;
-//					} else
-//					if (tenantId != null){
-//						if (device.getTenantId().equals(tenantId)){
-//							if (assetId != null){
-//								if (checkDeviceBelongAsset(assetId,device.getId()))
-//									deviceList.add(device);
-//							} else
-//								deviceList.add(device);
-//						}
-//						break;
-//					} else {
-//						deviceList.add(device);
-//					}
-//					break;
-//				case TENANT_ADMIN:
-//					if (customerId != null){
-//						if (device.getCustomerId().equals(customerId)){
-//							if (assetId != null){
-//								if (checkDeviceBelongAsset(assetId,device.getId()))
-//									deviceList.add(device);
-//							} else
-//								deviceList.add(device);
-//						}
-//						break;
-//					}
-//					if (device.getTenantId().equals(getTenantId())){
-//						if (assetId != null){
-//							if (checkDeviceBelongAsset(assetId,device.getId()))
-//								deviceList.add(device);
-//						} else
-//							deviceList.add(device);
-//					}
-//					break;
-//				case CUSTOMER_USER:
-//					if (device.getCustomerId().equals(getCurrentUser())){
-//						if (assetId != null){
-//							if (checkDeviceBelongAsset(assetId,device.getId()))
-//								deviceList.add(device);
-//						} else
-//							deviceList.add(device);
-//					}
-//					break;
-//			}
-//		}
 
+		alarmExInfos = fillAlarmExInfo(alarms);
 
+        if(StringUtils.isNotEmpty(deviceType)){
+            alarmExInfos = alarmExInfos.stream().filter(alarmExInfo ->
+                    StringUtils.isNotEmpty(alarmExInfo.getDeviceType())&&alarmExInfo.getDeviceType().equals(deviceType)
+            ).collect(Collectors.toList());
+        }
 
+		return alarmExInfos;
 	}
+
 	private Boolean checkDeviceBelongAsset(AssetId assetId,DeviceId deviceId){
 		Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByToAndType(null,
 				EntityIdFactory.getByTypeAndUuid(deviceId.getEntityType(),deviceId.getId()),"Contains",RelationTypeGroup.COMMON));
