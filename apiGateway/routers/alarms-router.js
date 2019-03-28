@@ -86,54 +86,82 @@ function getRuleChain(devID, nodes, res){
   }
 }
 
+function generateReturnRules(keysInfo, additionalInfo, res){
+  let retInfo = [];
+  if (!additionalInfo){
+    if (keysInfo && keysInfo[0]){
+      let keys = JSON.parse(keysInfo[0].value);
+      
+      for (let i = 0; i < keys.length; i++){
+        let _dt = {
+          "Key": keys[i].name,
+          "IndeterminateRules": {
+            "min": "",
+            "max": ""
+          },
+          "WarningRules": {
+            "min": "",
+            "max": ""
+          }
+        };
+        retInfo.push(_dt);
+      }
+    }
+  }
+  else {
+    let keys = JSON.parse(keysInfo[0].value);            
+    for (let i = 0; i < keys.length; i++){
+      let IndeterminateRules = additionalInfo.IndeterminateRules;
+      let WarningRules       = additionalInfo.WarningRules;
+
+      let _dt = { "Key":"",
+      "IndeterminateRules":"",
+      "WarningRules": ""
+      };
+      for (let j = 0; j < IndeterminateRules.length; j++){
+        if (keys[i].name == IndeterminateRules[i].Key){
+          _dt.Key = keys[i].name;
+          _dt.IndeterminateRules = IndeterminateRules[i].IndeterminateRules;
+          break;
+        }
+      }
+
+      for (let j = 0; j < WarningRules.length; j++){
+        if (keys[i].name == WarningRules[i].Key){
+          _dt.WarningRules = WarningRules[i].WarningRules;
+          break;
+        }
+      }
+      retInfo.push(_dt);
+    }
+  }
+  util.responData(util.CST.OK200, retInfo, res);
+}
+
 //GET获取指定设备号上绑定的告警规则
 router.get('/:id', async function (req, res) {
   var devID = req.params.id;
   let token = req.headers['x-authorization'];
 
-  //接口因权限问题修改，需要根据devID查询tenantId
-  let urlGetTenant = util.getAPI() + `device/${devID}`;
-  axios.get(urlGetTenant, {
+  let api = util.getAPI() + `plugins/telemetry/DEVICE/${devID}/values/attributes/CLIENT_SCOPE`;
+  axios.get(api, {
     headers: {
       "X-Authorization": token
-    }
+    },
+    keys:"phy_qua"
   }).then(resp => {
-    let url = util.getAPI() + `currentUser/ruleChains`;
-    var tenantId = resp.data.tenantId.id;
-    //获取规则链
-    axios.get(url, {
-      headers: {
-        "X-Authorization": token
-      },
-      params: {
-        textSearch: "CONFIG_ALARM_RULE",
-        limit: 1,
-        tenantIdStr: tenantId
-      }
-    }).then(resp => {
-      //res.status(200).json({ code: 200, message: 'ok' });
-      var ruleChain = resp.data;
-      if (ruleChain && ruleChain.length > 0) {
-        ruleID = ruleChain[0].id;
-        let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
-        //获取告警规则链的meta数据
-        axios.get(url, {
-          headers: {
-            "X-Authorization": token
-          }
-        }).then(resp => {
-          let nodes = resp.data.nodes;
-          getRuleChain(devID, nodes, res);
-        }).catch(err => {
-          util.responErrorMsg(err, res);
-        });
-      } else {
-        logger.log('error', util.CST.MSG510);
-        util.responData(util.ERR510, util.MSG510, res);
-      }
-    }).catch(err => {
-      util.responErrorMsg(err, res);
-    });
+      var keysInfo = resp.data;
+      let api = util.getAPI()  + `device/${devID}`;
+      axios.get(api, {
+        headers: {
+          "X-Authorization": token
+        }
+      }).then(resp => {
+        generateReturnRules(keysInfo, resp.data.additionalInfo, res);
+      }).catch(err =>{
+        util.responErrorMsg(err, res);
+      })
+
   }).catch(err => {
     // 由devID查询tenantId出现问题
     // util.responData(util.CST.ERR512, util.CST.MSG512, res);
