@@ -558,9 +558,16 @@ public class AssetController extends BaseController {
 
 		alarmExInfos = fillAlarmExInfo(alarms);
 
-		if(StringUtils.isNotEmpty(deviceType)){
-			alarmExInfos = alarmExInfos.stream().filter(alarmExInfo -> alarmExInfo.getDeviceType().equals(deviceType)).collect(Collectors.toList());
-		}
+        if(StringUtils.isNotEmpty(deviceType)){
+            alarmExInfos = alarmExInfos
+                    .stream()
+                    .filter(alarmExInfo ->
+                    alarmExInfo
+                            .getDeviceType()
+                            .equals(deviceType)
+            ).collect(Collectors.toList());
+        }
+
 
 		return alarmExInfos;
 	}
