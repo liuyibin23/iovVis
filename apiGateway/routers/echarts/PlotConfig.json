@@ -107,6 +107,19 @@
 					{"min":100, "max":120},
 					{"min":120, "max":99999}
 				]
+		},
+		"车辆荷载自动监测数据车型":{
+			"comment":"动态称重系统",
+			"keys":"车型",
+			"title":"一周超速车型统计",
+			"groupInfo":[
+				{"type":"A", "comment":"中小客车"},
+				{"type":"B", "comment":"小型货车"},
+				{"type":"C", "comment":"大客车"},
+				{"type":"D", "comment":"中型货车"},
+				{"type":"E", "comment":"大型货车"},
+				{"type":"F", "comment":"特大型货车"}
+			]
 		}
 	}
   }
