@@ -288,9 +288,9 @@ public class DeviceController extends BaseController {
      * 或者
      * AssetId,DeviceName组合重复（其中AssetId为设备所属的设置AssetId）
      * 则
-     * 返回重复
+     * 返回存在
      * 否则
-     * 返回不重复
+     * 返回不存在
      * @return
      * {
      *   "isExist": false, //设备是否存在
