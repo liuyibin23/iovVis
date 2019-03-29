@@ -89,9 +89,7 @@ function getData(plotCfg, option, params, token, res){
     axios.get(api, {
         headers: { "X-Authorization": token }
     }).then(resp => {
-        let data = resp.data;
-        let idx = plotCfg.separateGroupIdx;
-        
+        let data = resp.data;       
         // 计算百分比
         if (plotCfg.groupType == "PERCENT"){
             loopCnt = loopCnt > 7 ? 7 : loopCnt;
