@@ -52,10 +52,10 @@ var mapFunc = {
         {"name":"应变监测数据统计",     "func":strain_monitoring_statistics_line},
     ],
     "柱状图":[
-        {"name":"温度湿度统计",           "func":temperature_humidity_statistics_bar},
-        {"name":"'温度湿度统计告警",       "func":vehicle_load_monitoring_weight_bar},
-        {"name":"车辆荷载自动监测数据车重", "func":vehicle_load_monitoring_speed_bar},
-        {"name":"车辆荷载自动监测数据车速", "func":rainfall_monitoring_statistics_bar}
+        {"name":"温度湿度统计告警",         "func":temperature_humidity_statistics_bar},
+        {"name":"车辆荷载自动监测数据车重",  "func":vehicle_load_monitoring_weight_bar},
+        {"name":"车辆荷载自动监测数据车速",  "func":vehicle_load_monitoring_speed_bar},
+        {"name":"自动监测数据降雨量",       "func":rainfall_monitoring_statistics_bar}
     ],
     "饼图":[
         {"name":"车辆荷载自动监测数据车重", "func":vehicle_load_monitoring_weight_pie},
