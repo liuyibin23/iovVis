@@ -1,7 +1,7 @@
 const common = require('./common-radar');
 const charCfg = require('../../echarts/chartConfig');
 
-option = {
+let option = {
     title : {
         text: '风速风向图',
       	x:'center',

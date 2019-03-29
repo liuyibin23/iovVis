@@ -1,7 +1,7 @@
 const common = require('./common-pie');
 const charCfg = require('../chartConfig');
 
-option = {
+let option = {
     title : {
            text: '车速分布统计',
            x: 'center',

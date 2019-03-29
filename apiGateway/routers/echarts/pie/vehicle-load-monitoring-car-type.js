@@ -4,7 +4,7 @@ const util  = require('../../../util/utils');
 const axios = require('axios');
 const node_echarts = require('node-echarts');
 
-option = {
+let option = {
     title : {
            text: '车型分布',
            x: 'center',
