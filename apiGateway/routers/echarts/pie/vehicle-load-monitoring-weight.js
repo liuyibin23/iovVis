@@ -23,7 +23,7 @@ var chart_area = {
 
     fillData: async function (params, token, res, callback) {
         plotCfg = charCfg.getCfgParams(params.chart_name, 'Pie');
-        common.resetPreData(option, plotCfg.maxCnt);
+        common.resetPreData(option);
         common.getData(plotCfg, option, params, token, res);
     }
 }

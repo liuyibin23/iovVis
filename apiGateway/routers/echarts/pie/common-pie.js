@@ -116,7 +116,7 @@ function getData(plotCfg, option, params, token, res){
     });
 }
 
-function resetPreData(option, maxCnt){
+function resetPreData(option){
     let len = option.series[0].data.length;
     option.series[0].data = [];
 }

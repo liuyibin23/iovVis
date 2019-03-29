@@ -32,8 +32,11 @@ function getCfgParams(chartName, type){
     else if (type == 'Bar') {
         allCfg = gCfg.Bar;
     }
-    else {
+    else if (type == 'Pie') {
         allCfg = gCfg.Pie;
+    }
+    else if (type == 'Radar'){
+        allCfg = gCfg.Radar;
     }
     
     return allCfg[chartName];
