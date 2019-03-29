@@ -31,14 +31,12 @@ import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.device.DeviceSearchQuery;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
+import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.common.data.security.DeviceCredentialsType;
 import org.thingsboard.server.dao.alarm.AlarmService;
@@ -356,6 +354,15 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         });
 
         return devices;
+    }
+
+    @Override
+    public ListenableFuture<List<Device>> findDevicesByAssetId(AssetId assetId){
+        DeviceSearchQuery query = new DeviceSearchQuery();
+        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId,EntitySearchDirection.FROM,1);
+        query.setParameters(parameters);
+        query.setRelationType(EntityRelation.CONTAINS_TYPE);
+        return findDevicesByQueryWithOutTypeFilter(TenantId.SYS_TENANT_ID,query);
     }
 
     @Override
