@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 @Service
 @Log4j
@@ -36,16 +37,40 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 	@Autowired
 	private RelationService relationService;
 
+	@Autowired
+	private DeviceCheckCache deviceCheckCache;
+
 	@PostConstruct
 	public void init(){
 		deviceHashMap = new HashMap<>();
 		flashDeviceCodeMap();
 	}
+
+	/**
+	 * 	check assetId,deviceIp,deviceChannel查重
+	 */
 	@Override
 	public Boolean checkDeviceCode(String deviceCodeHash) {
 		Optional<String> optionalS = Optional.ofNullable(deviceHashMap.get(deviceCodeHash));
 
-		return optionalS.isPresent()?true:false;
+		return optionalS.isPresent();
+	}
+
+	/**
+	 * 	check assetId,deviceName查重
+	 */
+	@Override
+	public Boolean checkDeviceNameAssetId(String deviceName,AssetId assetId) {
+		Optional<Device> device = deviceCheckCache.getDeviceByDeviceNameAssetId(deviceName,assetId);
+		return device.isPresent();
+	}
+
+	/**
+	 * 移除assetId,deviceName查重的缓存
+	 */
+	@Override
+	public void removeCache(){
+		deviceCheckCache.removeDeviceCache();
 	}
 
 	@Override
