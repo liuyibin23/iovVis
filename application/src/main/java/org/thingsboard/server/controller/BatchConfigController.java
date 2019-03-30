@@ -92,6 +92,7 @@ public class BatchConfigController extends BaseController {
 				if (device == null) {
 					device = new Device();
 					device.setType(deviceInfo.getDeviceShareAttrib().getType());
+					device.setName(deviceInfo.getDeviceShareAttrib().getName());
 					try {
 						device.setTenantId(a.getTenantId());
 						device.setCustomerId(a.getCustomerId());
