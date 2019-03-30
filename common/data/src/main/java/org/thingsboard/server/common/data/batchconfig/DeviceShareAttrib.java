@@ -25,8 +25,7 @@ public class DeviceShareAttrib implements Serializable {
 	private Integer port;
 	//设备token
 	private String token;
-	//设备名称
-	private String name;
+
 	//生产厂商	共享属性
 	private String manufacturer;
 	//型号	客户端属性
