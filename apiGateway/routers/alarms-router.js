@@ -87,17 +87,22 @@ router.get('/:id', async function (req, res) {
     }
   }).then(resp => {
     var keysInfo = resp.data;
-    let api = util.getAPI() + `device/${devID}`;
-    axios.get(api, {
-      headers: {
-        "X-Authorization": token
-      }
-    }).then(resp => {
-      generateReturnRules(keysInfo, resp.data.additionalInfo, res);
-    }).catch(err => {
-      util.responErrorMsg(err, res);
-    })
-
+    if (keysInfo.length == 0)
+    {
+      util.responData(util.CST.ERR404, util.CST.MSG404, res);
+    }
+    else{
+      let api = util.getAPI() + `device/${devID}`;
+      axios.get(api, {
+        headers: {
+          "X-Authorization": token
+        }
+      }).then(resp => {
+        generateReturnRules(keysInfo, resp.data.additionalInfo, res);
+      }).catch(err => {
+        util.responErrorMsg(err, res);
+      })
+    }
   }).catch(err => {
     // 由devID查询tenantId出现问题
     // util.responData(util.CST.ERR512, util.CST.MSG512, res);
