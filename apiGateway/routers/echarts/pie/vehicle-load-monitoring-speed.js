@@ -1,7 +1,7 @@
 const common = require('./common-pie');
 const charCfg = require('../chartConfig');
 
-option = {
+let option = {
     title : {
            text: '车速分布统计',
            x: 'center',
@@ -22,7 +22,7 @@ var chart_area = {
 
     fillData: async function (params, token, res, callback) {
         plotCfg = charCfg.getCfgParams(params.chart_name, 'Pie');
-        common.resetPreData(option, plotCfg.maxCnt);
+        common.resetPreData(option);
         common.getData(plotCfg, option, params, token, res);
     }
 }

@@ -121,6 +121,16 @@
 				{"type":"F", "comment":"特大型货车"}
 			]
 		}
+	},
+	"Radar":{
+		"风速风向自动监测":{
+			"comment":"风速风向仪",
+			"keys":"风速_avg,风向_avg",
+			"title":"风速风向统计",
+			"unit":["m/s", "°"],
+			"groupInfo":[
+				]
+		}
 	}
   }
 }

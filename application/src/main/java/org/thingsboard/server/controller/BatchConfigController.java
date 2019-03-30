@@ -25,6 +25,7 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
 import org.thingsboard.server.common.msg.cluster.SendToClusterMsg;
+import org.thingsboard.server.service.device.DeviceCheckService;
 import org.thingsboard.server.service.security.AccessValidator;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
@@ -74,21 +75,24 @@ public class BatchConfigController extends BaseController {
 	public DeferredResult<ResponseEntity> saveDevices(@PathVariable("assetId") String assetId,
 													  @RequestBody List<DeviceAutoLogon> devicesSaveRequest) {
 		try {
-
 			AssetId aid = new AssetId(UUID.fromString(assetId));
 			Asset a = assetService.findAssetById(null, aid);
 			if (a == null) {
 				throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
 			}
-
 			devicesSaveRequest.forEach((deviceInfo) -> {
-				deviceInfo.getDeviceShareAttrib().setName(calculateDeviceCode(assetId,deviceInfo));
-				Device device = deviceService.findDeviceByTenantIdAndName(a.getTenantId(), deviceInfo.getDeviceShareAttrib().getName());
+				Device device = null;
+				deviceCheckService.reflashDeviceCodeMap();
+				String deviceCode = DeviceCheckService.genDeviceCode(assetId,deviceInfo.getDeviceShareAttrib().getIp(),deviceInfo.getDeviceShareAttrib().getChannel());
+				if(deviceCheckService.checkDeviceCode(deviceCode)){
+					device = deviceService.findDeviceById(null,new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
+				}
+
 				//region 如果设备不存在，创建设备
 				if (device == null) {
 					device = new Device();
-					device.setName(deviceInfo.getDeviceShareAttrib().getName());
 					device.setType(deviceInfo.getDeviceShareAttrib().getType());
+					device.setName(deviceInfo.getDeviceShareAttrib().getName());
 					try {
 						device.setTenantId(a.getTenantId());
 						device.setCustomerId(a.getCustomerId());
@@ -100,23 +104,19 @@ public class BatchConfigController extends BaseController {
 										savedDevice.getId(),
 										savedDevice.getName(),
 										savedDevice.getType());
-
 						logEntityAction(savedDevice.getId(), savedDevice,
 								savedDevice.getCustomerId(),
 								device.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
-
 						if (device.getId() == null) {
 							deviceStateService.onDeviceAdded(savedDevice);
 						} else {
 							deviceStateService.onDeviceUpdated(savedDevice);
 						}
-
 					} catch (ThingsboardException e) {
 						e.printStackTrace();
 						handleException(e);
 					}
 				}
-
 				//endregion
 				//update attrib
 				//region 更新设备属性
@@ -136,7 +136,6 @@ public class BatchConfigController extends BaseController {
 								attributes.add(new BaseAttributeKvEntry(new StringDataEntry(key.toString(), value.toString()), System.currentTimeMillis()));
 							}
 						});
-
 						saveAttributes(a.getTenantId(), entityId, "SERVER_SCOPE", attributes);
 					}
 					else {
