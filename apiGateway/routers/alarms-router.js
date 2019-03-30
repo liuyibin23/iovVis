@@ -148,7 +148,9 @@ router.get('/:id', async function (req, res) {
     headers: {
       "X-Authorization": token
     },
-    keys:"phy_qua"
+    params: {
+      keys:"phy_qua"
+    }
   }).then(resp => {
       var keysInfo = resp.data;
       let api = util.getAPI()  + `device/${devID}`;
