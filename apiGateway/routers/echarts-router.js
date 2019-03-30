@@ -23,7 +23,7 @@ const vehicle_load_monitoring_speed_pie        = require('./echarts/pie/vehicle-
 const vehicle_load_monitoring_car_type_pie     = require('./echarts/pie/vehicle-load-monitoring-car-type');
 
 // Radar
-const wind_speed_and_direction_radar          = require('./echarts/Radar/wind-speed-and-direction');
+const wind_speed_and_direction_radar          = require('./echarts/radar/wind-speed-and-direction');
 
 const node_echarts = require('node-echarts');
 const util = require('../util/utils');
