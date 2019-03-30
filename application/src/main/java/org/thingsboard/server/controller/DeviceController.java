@@ -219,7 +219,7 @@ public class DeviceController extends BaseController {
 										@RequestParam String tenantIdStr,
 										@RequestParam String assetIdStr,
 										@RequestParam String deviceIpStr,
-										@RequestParam String deviceChannleStr) throws ThingsboardException {
+										@RequestParam String deviceChannelStr) throws ThingsboardException {
         try {
 
 			Optional<Tenant> optionalTenant = Optional.ofNullable(tenantService.findTenantById(new TenantId(UUID.fromString(tenantIdStr))));
@@ -233,7 +233,7 @@ public class DeviceController extends BaseController {
 
 
 
-			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannleStr);
+			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr);
 			if(deviceCheckService.checkDeviceCode(deviceCode)){
 				device.setId(new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
 			}
@@ -251,7 +251,7 @@ public class DeviceController extends BaseController {
 
 			DeviceAutoLogon deviceAutoLogon = deviceBaseAttributeService.findDeviceAttribute(savedDevice);
 			deviceAutoLogon.getDeviceShareAttrib().setIp(deviceIpStr);
-			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannleStr);
+			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannelStr);
 			deviceBaseAttributeService.saveDeviceAttribute(savedDevice,deviceAutoLogon);
 
 			deviceCheckService.reflashDeviceCodeMap();
