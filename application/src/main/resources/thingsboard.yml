@@ -449,7 +449,7 @@ transport:
     max_string_value_length: "${JSON_MAX_STRING_VALUE_LENGTH:0}"
   # Local HTTP transport parameters
   http:
-    enabled: "${HTTP_ENABLED:true}"
+    enabled: "${HTTP_ENABLED:false}"
     request_timeout: "${HTTP_REQUEST_TIMEOUT:60000}"
   # Local MQTT transport parameters
   mqtt:
@@ -480,7 +480,7 @@ transport:
   # Local CoAP transport parameters
   coap:
     # Enable/disable coap transport protocol.
-    enabled: "${COAP_ENABLED:true}"
+    enabled: "${COAP_ENABLED:false}"
     bind_address: "${COAP_BIND_ADDRESS:0.0.0.0}"
     bind_port: "${COAP_BIND_PORT:5683}"
     timeout: "${COAP_TIMEOUT:10000}"
