@@ -114,7 +114,7 @@ public class BatchConfigController extends BaseController {
 						}
 					} catch (ThingsboardException e) {
 						e.printStackTrace();
-						handleException(e);
+//						handleException(e);
 					}
 				}
 				//endregion
@@ -176,13 +176,13 @@ public class BatchConfigController extends BaseController {
 				try {
 					relationService.saveRelation(getTenantId(), relation);
 				} catch (ThingsboardException e) {
-					handleException(e);
+					//handleException(e);
 				}
 				//endregion
 			});
 
 		} catch (Exception e) {
-			handleException(e);
+			//handleException(e);
 		}
 		return null;
 	}
