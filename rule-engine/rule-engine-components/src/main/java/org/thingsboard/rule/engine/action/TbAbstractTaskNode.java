@@ -36,7 +36,9 @@ public abstract class TbAbstractTaskNode<C extends TbAbstractTaskNodeConfigurati
     static final String IS_EXISTING_TASK = "isExistingTask";
     static final String IS_CLEARED_TASK = "isClearedTask";
 
-    private final ObjectMapper mapper = new ObjectMapper();
+    static final String MSG_TYPE = "TASK";
+
+    protected final ObjectMapper mapper = new ObjectMapper();
 
     protected C config;
 //    private ScriptEngine buildDetailsJsEngine;
@@ -79,7 +81,7 @@ public abstract class TbAbstractTaskNode<C extends TbAbstractTaskNodeConfigurati
         } else if (taskResult.isCleared) {
             metaData.putValue(IS_CLEARED_TASK, Boolean.TRUE.toString());
         }
-        return ctx.transformMsg(originalMsg, "TASK", originalMsg.getOriginator(), metaData, data);
+        return ctx.transformMsg(originalMsg, MSG_TYPE, originalMsg.getOriginator(), metaData, data);
     }
 
     @Override

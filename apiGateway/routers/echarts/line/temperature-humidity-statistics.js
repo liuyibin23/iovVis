@@ -38,7 +38,7 @@ let option = {
             type : 'category',
             boundaryGap : false,
             axisLabel: {
-                interval:0,//横轴信息全部显示
+                //interval:0,//横轴信息全部显示
                 rotate:30,//
             },
             data : [

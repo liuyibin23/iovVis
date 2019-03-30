@@ -15,6 +15,9 @@
  */
 package org.thingsboard.server.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.log4j.Log4j;
@@ -278,6 +281,54 @@ public class DeviceController extends BaseController {
         }
     }
 
+    /**
+     * 查询某设备是否存在
+     * 查询规则为：
+     * AssetId,DeviceIp,DeviceChannel组合重复（其中AssetId为设备所属的设置AssetId）
+     * 或者
+     * AssetId,DeviceName组合重复（其中AssetId为设备所属的设置AssetId）
+     * 则
+     * 返回存在
+     * 否则
+     * 返回不存在
+     * @return
+     * {
+     *   "isExist": false, //设备是否存在
+     *   "isDevIpChannelExist": false,//AssetId,DeviceIp,DeviceChannel组合查重是否存在
+     *   "isDevNameExist": false    //AssetId,DeviceName组合查重是否存在
+     * }
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN')")
+    @RequestMapping(value = "/currentUser/deviceExist", method = RequestMethod.GET)
+    @ResponseBody
+    public JsonNode checkDeviceIsExist(@RequestParam String assetIdStr,
+                                       @RequestParam String deviceIpStr,
+                                       @RequestParam String deviceChannelStr,
+                                       @RequestParam String deviceName) throws ThingsboardException{
+        try {
+            deviceCheckService.reflashDeviceCodeMap();
+            AssetId assetId = AssetId.fromString(assetIdStr);
+            String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannelStr);
+            ObjectMapper mapper = new ObjectMapper();
+            String isExistKey = "isExist";
+            String isDevIpChannelExistKey = "isDevIpChannelExist";
+            String isDevNameExistKey = "isDevNameExist";
+            ObjectNode resultJson = mapper.createObjectNode();
+            Boolean devIpChannelExist = deviceCheckService.checkDeviceCode(deviceCode);
+            Boolean devNameExist = deviceCheckService.checkDeviceNameAssetId(deviceName,assetId);
+            if(devIpChannelExist||devNameExist){
+                resultJson.put(isExistKey,true);
+            } else {
+                resultJson.put(isExistKey,false);
+            }
+            resultJson.put(isDevIpChannelExistKey,devIpChannelExist);
+            resultJson.put(isDevNameExistKey,devNameExist);
+            return resultJson;
+        } catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
     @RequestMapping(value = "/device/{deviceId}", method = RequestMethod.DELETE)
     @ResponseStatus(value = HttpStatus.OK)
@@ -295,6 +346,8 @@ public class DeviceController extends BaseController {
             DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
             Device device = checkDeviceId(tenantId,deviceId);
             deviceService.deleteDevice(tenantId, deviceId);
+
+            deviceCheckService.removeCache();
 
             logEntityAction(deviceId, device,
                     device.getCustomerId(),

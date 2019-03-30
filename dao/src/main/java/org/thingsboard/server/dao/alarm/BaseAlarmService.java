@@ -472,6 +472,19 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 alarms.forEach(alarm -> {
                     if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
                         alarmHandledCount.createdOfTodayPlus(1);
+
+                        //for JIRA_364
+                        if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                            alarmHandledCount.criticalOfTodayPlus(1);
+                        }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                            alarmHandledCount.majorOfTodayPlus(1);
+                        }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                            alarmHandledCount.minorOfTodayPlus(1);
+                        }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                            alarmHandledCount.warningOfTodayPlus(1);
+                        }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                            alarmHandledCount.indeterminateOfTodayPlus(1);
+                        }
                     }
                     alarmHandledCount.totalAlarmCountPlus(1);
 
@@ -483,6 +496,21 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         } else {
                             alarmHandledCount.unackedWithinDuePlus(1);
                         }
+
+                        //for JIRA_364
+                        if(!alarm.getStatus().isCleared()){
+                            if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                                alarmHandledCount.criticalUnclearedWithinDuePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                                alarmHandledCount.majorUnclearedWithinDuePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                                alarmHandledCount.minorUnclearedWithinDuePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                                alarmHandledCount.warningUnclearedWithinDuePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                                alarmHandledCount.indeterminateUnclearedWithinDuePlus(1);
+                            }
+                        }
                     } else {
                         if (alarm.getStatus().isCleared()) {
                             alarmHandledCount.clearedOverduePlus(1);
@@ -490,6 +518,21 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                             alarmHandledCount.ackedOverduePlus(1);
                         } else {
                             alarmHandledCount.unackedOverduePlus(1);
+                        }
+
+                        //for JIRA_364
+                        if(!alarm.getStatus().isCleared()) {
+                            if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                                alarmHandledCount.criticalUnclearedOverduePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                                alarmHandledCount.majorUnclearedOverduePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                                alarmHandledCount.minorUnclearedOverduePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                                alarmHandledCount.warningUnclearedOverduePlus(1);
+                            }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                                alarmHandledCount.indeterminateUnclearedOverduePlus(1);
+                            }
                         }
                     }
                 });

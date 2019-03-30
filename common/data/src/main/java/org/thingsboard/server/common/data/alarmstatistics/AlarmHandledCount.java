@@ -24,6 +24,25 @@ public class AlarmHandledCount {
     private int totalAlarmCount;
     private int createdOfToday;
 
+    //    CRITICAL, MAJOR, MINOR, WARNING, INDETERMINATE;
+    private int criticalUnclearedOverdue;
+    private int majorUnclearedOverdue;
+    private int minorUnclearedOverdue;
+    private int warningUnclearedOverdue;
+    private int indeterminateUnclearedOverdue;
+
+    private int criticalUnclearedWithinDue;
+    private int majorUnclearedWithinDue;
+    private int minorUnclearedWithinDue;
+    private int warningUnclearedWithinDue;
+    private int indeterminateUnclearedWithinDue;
+
+    private int criticalOfToday;
+    private int majorOfToday;
+    private int minorOfToday;
+    private int warningOfToday;
+    private int indeterminateOfToday;
+
     public AlarmHandledCount add(AlarmHandledCount add){
         unackedOverdue += add.getUnackedOverdue();
         ackedOverdue += add.getAckedOverdue();
@@ -33,6 +52,24 @@ public class AlarmHandledCount {
         clearedWithinDue += add.getClearedWithinDue();
         totalAlarmCount += add.getTotalAlarmCount();
         createdOfToday += add.getCreatedOfToday();
+
+        criticalUnclearedOverdue += add.getCriticalUnclearedOverdue();
+        majorUnclearedOverdue += add.getMajorUnclearedOverdue();
+        minorUnclearedOverdue += add.getMinorUnclearedOverdue();
+        warningUnclearedOverdue += add.getWarningUnclearedOverdue();
+        indeterminateUnclearedOverdue += add.getIndeterminateUnclearedOverdue();
+
+        criticalUnclearedWithinDue += add.getCriticalUnclearedWithinDue();
+        majorUnclearedWithinDue += add.getMajorUnclearedWithinDue();
+        minorUnclearedWithinDue += add.getMinorUnclearedWithinDue();
+        warningUnclearedWithinDue += add.getWarningUnclearedWithinDue();
+        indeterminateUnclearedWithinDue += add.getIndeterminateUnclearedWithinDue();
+
+        criticalOfToday += add.getCriticalOfToday();
+        majorOfToday += add.getMajorOfToday();
+        minorOfToday += add.getMinorOfToday();
+        warningOfToday += add.getWarningOfToday();
+        indeterminateOfToday += add.getIndeterminateOfToday();
 
         return this;
     }
@@ -77,4 +114,78 @@ public class AlarmHandledCount {
         return createdOfToday;
     }
 
+    public int criticalUnclearedOverduePlus(int count){
+        criticalUnclearedOverdue += count;
+        return criticalUnclearedOverdue;
+    }
+
+    public int majorUnclearedOverduePlus(int count){
+        majorUnclearedOverdue += count;
+        return majorUnclearedOverdue;
+    }
+
+    public int minorUnclearedOverduePlus(int count) {
+        minorUnclearedOverdue += count;
+        return minorUnclearedOverdue;
+    }
+
+    public int warningUnclearedOverduePlus(int count){
+        warningUnclearedOverdue += count;
+        return warningUnclearedOverdue;
+    }
+
+    public int indeterminateUnclearedOverduePlus(int count){
+        indeterminateUnclearedOverdue += count;
+        return indeterminateUnclearedOverdue;
+    }
+
+    public int criticalUnclearedWithinDuePlus(int count) {
+        criticalUnclearedWithinDue += count;
+        return criticalUnclearedWithinDue;
+    }
+
+    public int majorUnclearedWithinDuePlus(int count) {
+        majorUnclearedWithinDue += count;
+        return majorUnclearedWithinDue;
+    }
+
+    public int minorUnclearedWithinDuePlus(int count){
+        minorUnclearedWithinDue += count;
+        return minorUnclearedWithinDue;
+    }
+
+    public int indeterminateUnclearedWithinDuePlus(int count) {
+        indeterminateUnclearedWithinDue += count;
+        return indeterminateUnclearedWithinDue;
+    }
+
+    public int warningUnclearedWithinDuePlus(int count) {
+        warningUnclearedWithinDue += count;
+        return warningUnclearedWithinDue;
+    }
+
+    public int criticalOfTodayPlus(int count) {
+        criticalOfToday += count;
+        return criticalOfToday;
+    }
+
+    public int majorOfTodayPlus(int count) {
+        majorOfToday += count;
+        return majorOfToday;
+    }
+
+    public int minorOfTodayPlus(int count) {
+        minorOfToday += count;
+        return minorOfToday;
+    }
+
+    public int warningOfTodayPlus(int count) {
+        warningOfToday += count;
+        return warningOfToday;
+    }
+
+    public int indeterminateOfTodayPlus(int count) {
+        indeterminateOfToday += count;
+        return indeterminateOfToday;
+    }
 }

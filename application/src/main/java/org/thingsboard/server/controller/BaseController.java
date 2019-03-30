@@ -814,6 +814,7 @@ public abstract class BaseController {
                 if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){
                     Device device = deviceService.findDeviceById(null,new DeviceId(alarm.getOriginator().getId()));
                     if (null != device){
+                        tmpInfo.setDeviceId(device.getId().toString());
                         tmpInfo.setDeviceName(device.getName());
                         tmpInfo.setDeviceType(device.getType());
                         tmpInfo.setAdditionalInfo(alarm.getDetails());
@@ -832,6 +833,7 @@ public abstract class BaseController {
 //                            }
 //                        }
                     } else{
+                        tmpInfo.setDeviceId("Deleted");
                         tmpInfo.setDeviceName("Deleted");
                         tmpInfo.setAdditionalInfo(alarm.getDetails());
                     }
