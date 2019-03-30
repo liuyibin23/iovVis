@@ -21,54 +21,74 @@ router.get('/about', function (req, res) {
 
 function generateReturnRules(keysInfo, additionalInfo, res) {
   let retInfo = [];
-  if (!additionalInfo) {
-    if (keysInfo && keysInfo[0]) {
-      let keys = JSON.parse(keysInfo[0].value);
+  
+  // 先处理additionInfo
+  if (additionalInfo){
+    let IndeterminateRules = additionalInfo.IndeterminateRules;
+    let WarningRules = additionalInfo.WarningRules;
 
-      for (let i = 0; i < keys.length; i++) {
-        let _dt = {
-          "Key": keys[i].name,
-          "IndeterminateRules": {
-            "min": "",
-            "max": ""
-          },
-          "WarningRules": {
-            "min": "",
-            "max": ""
-          }
-        };
-        retInfo.push(_dt);
-      }
-    }
-  }
-  else {
-    let keys = JSON.parse(keysInfo[0].value);
-    for (let i = 0; i < keys.length; i++) {
-      let IndeterminateRules = additionalInfo.IndeterminateRules;
-      let WarningRules = additionalInfo.WarningRules;
-
+    for (let i = 0; i < IndeterminateRules.length; i++) {
       let _dt = {
         "Key": "",
         "IndeterminateRules": "",
         "WarningRules": ""
       };
-      for (let j = 0; j < IndeterminateRules.length; j++) {
-        if (keys[i].name == IndeterminateRules[i].Key) {
-          _dt.Key = keys[i].name;
-          _dt.IndeterminateRules = IndeterminateRules[i].IndeterminateRules;
-          break;
-        }
-      }
 
-      for (let j = 0; j < WarningRules.length; j++) {
-        if (keys[i].name == WarningRules[i].Key) {
-          _dt.WarningRules = WarningRules[i].WarningRules;
+      _dt.Key = IndeterminateRules[i].Key;
+      _dt.IndeterminateRules = IndeterminateRules[i].IndeterminateRules;
+
+      // 找匹配的WarningRules
+      for (let j = 0; i < WarningRules.length; j++) {
+        if (_dt.Key == WarningRules[j].Key) {
+          _dt.WarningRules = WarningRules[j].WarningRules;
+          retInfo.push(_dt);
           break;
         }
       }
-      retInfo.push(_dt);
+    }    
+  }
+
+  // 遍历keysInfo 不存在就添加一条空记录
+  if (keysInfo && keysInfo[0]) {
+    let keys = JSON.parse(keysInfo[0].value);
+
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i].name;
+      let _dt = {
+        "Key": key,
+        "IndeterminateRules": {
+          "min": "",
+          "max": ""
+        },
+        "WarningRules": {
+          "min": "",
+          "max": ""
+        }
+      };
+
+      // 如果存在，要剔除重复的
+      if (additionalInfo){
+        let IndeterminateRules = additionalInfo.IndeterminateRules;
+
+        // find
+        let find = false;
+        for (let j = 0; j < IndeterminateRules.length; j++){
+          if (key == IndeterminateRules[j].Key) {
+            find = true;
+            break;
+          }
+        }
+
+        if (!find){
+          retInfo.push(_dt);
+        }
+      } else {
+        // 返回空阈值
+        retInfo.push(_dt);
+      }
     }
   }
+
   util.responData(util.CST.OK200, retInfo, res);
 }
 
@@ -87,12 +107,7 @@ router.get('/:id', async function (req, res) {
     }
   }).then(resp => {
     var keysInfo = resp.data;
-    if (keysInfo.length == 0)
-    {
-      util.responData(util.CST.ERR404, util.CST.MSG404, res);
-    }
-    else{
-      let api = util.getAPI() + `device/${devID}`;
+    let api = util.getAPI() + `device/${devID}`;
       axios.get(api, {
         headers: {
           "X-Authorization": token
@@ -102,7 +117,6 @@ router.get('/:id', async function (req, res) {
       }).catch(err => {
         util.responErrorMsg(err, res);
       })
-    }
   }).catch(err => {
     // 由devID查询tenantId出现问题
     // util.responData(util.CST.ERR512, util.CST.MSG512, res);
