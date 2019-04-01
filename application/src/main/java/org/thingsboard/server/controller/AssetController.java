@@ -218,6 +218,10 @@ public class AssetController extends BaseController {
 
 				assetId = new AssetId(toUUID(strAssetId));
 				checkAssetId(tenantId,assetId);
+				Asset asset = assetService.findAssetById(tenantId,assetId);
+				if(!asset.getCustomerId().isNullUid()){
+					throw new ThingsboardException("Asset is already assign to Customer",ThingsboardErrorCode.GENERAL);
+				}
 				savedAsset = checkNotNull(assetService.assignAssetToCustomer(getTenantId(), assetId, customerId));
 			} else {
 				customerId = new CustomerId(toUUID(strCustomerId));
@@ -225,6 +229,10 @@ public class AssetController extends BaseController {
 
 				assetId = new AssetId(toUUID(strAssetId));
 				checkAssetId(assetId);
+				Asset asset = assetService.findAssetById(getTenantId(),assetId);
+				if(!asset.getCustomerId().isNullUid()){
+					throw new ThingsboardException("Asset is already assign to Customer",ThingsboardErrorCode.GENERAL);
+				}
 				savedAsset = checkNotNull(assetService.assignAssetToCustomer(getTenantId(), assetId, customerId));
 			}
 
