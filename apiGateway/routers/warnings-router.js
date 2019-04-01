@@ -158,7 +158,7 @@ async function getWarningRules(req, res) {
       } 
       
       if (!dataValid){
-        util.responData(util.ERR510, util.MSG510, res);
+        util.responData(util.CST.ERR510, util.CST.MSG510, res);
       }
     }).catch(err => {
       //规则链获取出现问题
