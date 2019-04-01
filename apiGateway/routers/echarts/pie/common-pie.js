@@ -88,6 +88,7 @@ function getData(plotCfg, option, params, token, res){
         // 统计每个区间的总数
         if (data[0]) {
             let len = data[0].length;
+            let idx = 0;
             for (let i = 0; i < len; i++){
                 let sum = 0;
                 for (let j = 0; j < loopCnt; j++){
@@ -104,7 +105,7 @@ function getData(plotCfg, option, params, token, res){
                     else{
                         name = `${plotCfg.groupInfo[i].min}-${plotCfg.groupInfo[i].max} ${plotCfg.unit}`;
                     }
-                    option.series[0].data[i] = { value:sum, name:name};
+                    option.series[0].data[idx++] = { value:sum, name:name};
                 }            
             }
         }        

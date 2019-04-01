@@ -426,13 +426,13 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
                 @Override
                 protected void validateUpdate(TenantId tenantId, Device device) {
-/*                    deviceDao.findDeviceByTenantIdAndName(device.getTenantId().getId(), device.getName()).ifPresent(
+                    deviceDao.findDeviceByTenantIdAndName(device.getTenantId().getId(), device.getName()).ifPresent(
                             d -> {
                                 if (!d.getUuidId().equals(device.getUuidId())) {
                                     throw new DataValidationException("Device with such name already exists!");
                                 }
                             }
-                    );*/
+                    );
                 }
 
                 @Override

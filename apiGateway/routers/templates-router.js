@@ -207,7 +207,8 @@ function processDeleteReq(assetID, resp, req, res) {
       }
       else {
         let result = JSON.parse(body);
-        if (result.success|| result.code ==='error.fastdfs.file_delete_failed') {
+        if (result.success|| result.code ==='error.fastdfs.file_delete_failed'
+        || result.code === 'error.fastdfs.file_not_exist') {
           // 更新删除后的属性
           let val = JSON.stringify(new_value);
           let data = {

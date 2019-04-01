@@ -16,111 +16,6 @@ router.get('/about', function (req, res) {
     res.send('About Virtual Device')
 })
 
-function postMetaData(ruleMeta, token, res) {
-    let postApi = util.getAPI() + 'ruleChain/metadata';
-
-    axios.post(postApi, ruleMeta,
-        {
-            headers: { "X-Authorization": token }
-        }).then(resp => {
-            let respData = {
-                'deviceToken': virtual_dev_tok,
-                'mqttBackendBUS': util.getBackendBUS()
-            };
-            util.responData(util.CST.OK200, respData, res);
-        }).catch(err => {
-            util.responErrorMsg(err, res);
-        });
-}
-
-function modifyMetaData(ruleMeta, deviceIdList, token, res) {
-    if (ruleMeta) {
-        //获取节点
-        let nodes = ruleMeta.nodes;
-        let js1, index1 = -1;
-        let js2, index2 = -1;
-        for (let index in nodes) {
-            if (nodes[index].name === 'switch by dev_id') {
-                //预警规则设置节点
-                js1 = nodes[index].configuration.jsScript;
-                index1 = index;
-            } else if (nodes[index].name === 'EAI_BUS') {
-                index2 = index;
-            }
-        }
-
-        // 找到JS代码 并修改
-        if (js1) {
-            let jsScript = js1;
-            var mapID = new Map();
-            let index = jsScript.indexOf('/*device ids array*/');
-            eval(jsScript.substr(0, index));
-            if (typeof devids !== 'undefined') {
-                // ID踢重
-                deviceIdList.forEach(element => {
-                    mapID.set(element, 1);
-                });
-
-                devids.forEach(element => {
-                    mapID.set(element, 1);
-                });
-
-                var newIDs = new Array();
-                mapID.forEach(function (value, key) {
-                    newIDs.push(key);
-                });
-
-                js1 = "var devids = " + JSON.stringify(newIDs) + ";\n" + js1.substr(index);
-                nodes[index1].configuration.jsScript = js1;
-
-                // 修改MQTT服务地址
-                if (index2 != -1) {
-                    let mqttBus = util.getBackendBUS();
-                    let idx = mqttBus.indexOf(':');
-
-                    nodes[index2].configuration.host = mqttBus.substr(0, idx);
-                    nodes[index2].configuration.port = Number.parseInt(mqttBus.substr(idx + 1));
-                }
-
-                // POST meta data
-                postMetaData(ruleMeta, token, res);
-            }
-        }
-    }
-}
-
-function updateRuleChain(deviceIdList, token, res) {
-    // 获取规则链
-    let getRuleChainApi = util.getAPI() + 'currentUser/ruleChains';
-    axios.get(getRuleChainApi,
-        {
-            headers: { "X-Authorization": token },
-            params: {
-                textSearch: "MQTT_ENGINE_BUS",
-                limit: 1
-            }
-        }).then(resp => {
-            //根据规则链编号获取规则链中存储的meta数据
-            let ruleChain = resp.data;
-            if (ruleChain) {
-                ruleID = ruleChain[0].id;
-                let url = util.getAPI() + `ruleChain/${ruleID.id}/metadata`;
-                axios.get(url, {
-                    headers: {
-                        "X-Authorization": token
-                    }
-                }).then(resp => {
-                    let ruleMeta = resp.data;
-                    modifyMetaData(ruleMeta, deviceIdList, token, res);
-                }).catch(err => {
-                    util.responErrorMsg(err, res);
-                });
-            }
-        }).catch(err => {
-            util.responErrorMsg(err, res);
-        });
-}
-
 function createVirtualDevice(virtualName, token, res) {
     let api = util.getAPI() + 'device';
     axios.post(api, {
@@ -142,6 +37,38 @@ function createVirtualDevice(virtualName, token, res) {
         });
 }
 
+async function configMQTT(deviceId, deviceIdList, token, res){
+    var failCnt    = 0;
+    var sucess_cnt = 0;
+
+    for (let i = 0; i < deviceIdList.length; i++){
+        let devID = deviceIdList[i];
+        let api = util.getAPI() + `plugins/telemetry/DEVICE/${devID}/attributes/SERVER_SCOPE`;
+
+        await axios.post(api,
+        {
+            "is_mqtt_trans": true
+        },
+        {
+            headers: {
+            "X-Authorization": token
+            }
+        }).then(resp => {
+            sucess_cnt++;
+        }).catch(err =>{
+            failCnt++;
+            console.log(err);
+           });    
+    }
+
+    if (sucess_cnt == deviceIdList.length){
+        util.responData(util.CST.OK200, util.CST.MSG200, res);
+    }
+    else {
+        util.responData(util.CST.OK200, `成功${sucess_cnt}个设备, 失败${failCnt}个设备`, res);
+    }
+}
+
 function configVirtualDevive(deviceId, deviceIdList, token, res) {
     let get_credentials = util.getAPI() + `device/${deviceId}/credentials`;
     axios.get(get_credentials,
@@ -150,7 +77,10 @@ function configVirtualDevive(deviceId, deviceIdList, token, res) {
         }).then(resp => {
             virtual_dev_tok = resp.data.credentialsId;
             console.log(virtual_dev_tok);
-            updateRuleChain(deviceIdList, token, res);
+
+            let _dt = {'deviceToken': virtual_dev_tok};
+
+            util.responData(util.CST.OK200, _dt, res);
         }).catch(err => {
             util.responErrorMsg(err, res);
         });
@@ -161,22 +91,40 @@ router.post('/:id', async function (req, res) {
         let deviceId = req.params.id;
         try {
             let otherDeviceId = JSON.parse(req.query.otherDeviceId);
-            let deviceIdList = [];
-            if (typeof(otherDeviceId) === 'string') {
-                deviceIdList.push(otherDeviceId);
-            }
-            else {
-                otherDeviceId.forEach(element => {
-                    if (typeof(element) === 'number'){
-                        deviceIdList.push(element.toString());
+            if (otherDeviceId && otherDeviceId.length > 0) {
+                let token = req.headers['x-authorization'];
+                let api = util.getAPI() + `plugins/telemetry/DEVICE/${deviceId}/attributes/SERVER_SCOPE`;
+                axios.post(api,
+                {
+                    "other_device_id": req.query.otherDeviceId,
+                },
+                {
+                    headers: {
+                    "X-Authorization": token
+                    }
+                }).then(resp => {
+                    let deviceIdList = [];
+                    if (typeof(otherDeviceId) === 'string') {
+                        deviceIdList.push(otherDeviceId);
                     }
                     else {
-                        deviceIdList.push(element);
+                        otherDeviceId.forEach(element => {
+                            if (typeof(element) === 'number'){
+                                deviceIdList.push(element.toString());
+                            }
+                            else {
+                                deviceIdList.push(element);
+                            }
+                        });
                     }
+                    configMQTT(deviceId, deviceIdList, token, res);
+                }).catch(err =>{
+                    util.responErrorMsg(err, res);
                 });
             }
-            let token = req.headers['x-authorization'];
-            configVirtualDevive(deviceId, deviceIdList, token, res);
+            else {
+                util.responData(util.CST.ERR400, util.CST.MSG400, res);
+            }
         } catch (err) {
             util.responErrorMsg(err, res);
         }       
