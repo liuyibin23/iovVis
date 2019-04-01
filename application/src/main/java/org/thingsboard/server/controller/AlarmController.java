@@ -16,6 +16,10 @@
 package org.thingsboard.server.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -29,14 +33,17 @@ import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.kv.BasicTsKvEntry;
+import org.thingsboard.server.common.data.kv.KvEntry;
+import org.thingsboard.server.common.data.kv.TsKvEntry;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.security.Authority;
+import org.thingsboard.server.common.transport.adaptor.JsonConverter;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import javax.annotation.Nullable;
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
@@ -141,9 +148,51 @@ public class AlarmController extends BaseController {
 		closeAlarm.setStatus(AlarmStatus.CLEARED_ACK);
 		alarmService.createOrUpdateAlarm(closeAlarm);
 		logEntityAction(closeAlarm.getId(), closeAlarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
+		closeWarningByAlarm(closeAlarm,getTenantId());
 
 		return closeAlarm;
 	}
+
+	/**
+	 * 关闭告警时关闭此告警关联的预警状态
+	 * @param closeAlarm
+	 * @param tenantId
+	 * @return
+	 */
+	private ListenableFuture<Void> closeWarningByAlarm(Alarm closeAlarm,TenantId tenantId){
+		if(closeAlarm.getOriginator().getEntityType() == EntityType.DEVICE){
+			ListenableFuture<List<Asset>> assets = assetService.findAssetsByDeviceId(tenantId,new DeviceId(closeAlarm.getOriginator().getId()));
+			String alarmDeviceIdStr = closeAlarm.getOriginator().getId().toString();
+			return Futures.transformAsync(assets,assetList->{
+				JsonObject telemetryJson = new JsonObject();
+				telemetryJson.addProperty(alarmDeviceIdStr,"false");
+				Map<Long, List<KvEntry>> telemetryRequest = JsonConverter.convertToTelemetry(telemetryJson, System.currentTimeMillis());
+				List<TsKvEntry> entries = new ArrayList<>();
+				for (Map.Entry<Long, List<KvEntry>> entry : telemetryRequest.entrySet()) {
+					for (KvEntry kv : entry.getValue()) {
+						entries.add(new BasicTsKvEntry(entry.getKey(), kv));
+					}
+				}
+				for (Asset asset:assetList) {
+					tsSubService.saveAndNotify(tenantId, asset.getId(), entries, new FutureCallback<Void>() {
+						@Override
+						public void onSuccess(@Nullable Void aVoid) {
+
+						}
+
+						@Override
+						public void onFailure(Throwable throwable) {
+							log.error("关闭告警时关闭预警状态失败",throwable);
+						}
+					});
+				}
+				return Futures.immediateFuture(null);
+			});
+		}else {
+			return Futures.immediateFuture(null);
+		}
+	}
+
 	/** 
 	* @Description: 1.2.5.7 设备ID查询告警信息
 	* @Author: ShenJi
