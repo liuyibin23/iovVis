@@ -22,6 +22,11 @@ router.get('/about', function (req, res) {
 function generateReturnRules(keysInfo, additionalInfo, res) {
   let retInfo = [];
   
+  if (keysInfo && keysInfo.length == 0 && !additionalInfo){
+    util.responData(util.CST.ERR510, util.CST.MSG510, res);
+    return;
+  }
+
   // 先处理additionInfo
   if (additionalInfo){
     let IndeterminateRules = additionalInfo.IndeterminateRules;
@@ -163,11 +168,20 @@ router.post('/:id', async function (req, res) {
     if (params.length > 0) {
       let i = 0;
       for (i = 0; i < params.length; i++) {
+        // 参数校验
+        let IndRules = params[i].IndeterminateRules;
+        let WarRules = params[i].WarningRules;
+        if (!IndRules || !WarRules 
+          || (IndRules.min == undefined || IndRules.max == undefined || WarRules.min == undefined || WarRules.max == undefined)){
+          util.responData(util.CST.ERR400, util.CST.MSG400, res);
+          return;
+        }
+
         let _dt = {
           "Key": `${params[i].Key}`,
           "IndeterminateRules": {
-            "min": `${params[i].IndeterminateRules.min}`,
-            "max": `${params[i].IndeterminateRules.max}`
+            "min": `${IndRules.min}`,
+            "max": `${IndRules.max}`
           }
         };
         IndeterminateRules.push(_dt);
@@ -175,8 +189,8 @@ router.post('/:id', async function (req, res) {
         let _dt2 = {
           "Key": `${params[i].Key}`,
           "WarningRules": {
-            "min": `${params[i].WarningRules.min}`,
-            "max": `${params[i].WarningRules.max}`
+            "min": `${WarRules.min}`,
+            "max": `${WarRules.max}`
           }
         };
         WarningRules.push(_dt2);
