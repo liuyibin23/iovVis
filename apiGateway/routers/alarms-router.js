@@ -172,7 +172,7 @@ router.post('/:id', async function (req, res) {
         let IndRules = params[i].IndeterminateRules;
         let WarRules = params[i].WarningRules;
         if (!IndRules || !WarRules 
-          || (IndRules.min == undefined || IndRules.max == undefined || WarRules.min == undefined || WarRules.max == undefined)){
+          || (!IndRules.hasOwnProperty("min") ||!IndRules.hasOwnProperty("max") || !WarRules.hasOwnProperty("min") ||!WarRules.hasOwnProperty("max")) ){
           util.responData(util.CST.ERR400, util.CST.MSG400, res);
           return;
         }
