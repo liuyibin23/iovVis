@@ -91,22 +91,40 @@ router.post('/:id', async function (req, res) {
         let deviceId = req.params.id;
         try {
             let otherDeviceId = JSON.parse(req.query.otherDeviceId);
-            let deviceIdList = [];
-            if (typeof(otherDeviceId) === 'string') {
-                deviceIdList.push(otherDeviceId);
-            }
-            else {
-                otherDeviceId.forEach(element => {
-                    if (typeof(element) === 'number'){
-                        deviceIdList.push(element.toString());
+            if (otherDeviceId && otherDeviceId.length > 0) {
+                let token = req.headers['x-authorization'];
+                let api = util.getAPI() + `plugins/telemetry/DEVICE/${deviceId}/attributes/SERVER_SCOPE`;
+                axios.post(api,
+                {
+                    "other_device_id": req.query.otherDeviceId,
+                },
+                {
+                    headers: {
+                    "X-Authorization": token
+                    }
+                }).then(resp => {
+                    let deviceIdList = [];
+                    if (typeof(otherDeviceId) === 'string') {
+                        deviceIdList.push(otherDeviceId);
                     }
                     else {
-                        deviceIdList.push(element);
+                        otherDeviceId.forEach(element => {
+                            if (typeof(element) === 'number'){
+                                deviceIdList.push(element.toString());
+                            }
+                            else {
+                                deviceIdList.push(element);
+                            }
+                        });
                     }
+                    configMQTT(deviceId, deviceIdList, token, res);
+                }).catch(err =>{
+                    util.responErrorMsg(err, res);
                 });
             }
-            let token = req.headers['x-authorization'];
-            configMQTT(deviceId, deviceIdList, token, res);
+            else {
+                util.responData(util.CST.ERR400, util.CST.MSG400, res);
+            }
         } catch (err) {
             util.responErrorMsg(err, res);
         }       
