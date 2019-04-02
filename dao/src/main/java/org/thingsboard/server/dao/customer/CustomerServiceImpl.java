@@ -258,6 +258,7 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 						customerExInfo.getAdminUserNameList().add(user.getFirstName());
 					} else if(user.getAdditionalInfo().get("power").asText().equals("common")){
 						commonUsers.add(user);
+						customerExInfo.getUserNameList().add(user.getFirstName());
 					}
 				}
 			});

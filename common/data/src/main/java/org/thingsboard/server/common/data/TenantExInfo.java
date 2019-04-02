@@ -9,6 +9,7 @@ import java.util.List;
 public class TenantExInfo extends Tenant{
 
     private List<String> adminUserNameList = new ArrayList<>();
+    private List<String> userNameList = new ArrayList<>();
 
     public TenantExInfo(){}
 

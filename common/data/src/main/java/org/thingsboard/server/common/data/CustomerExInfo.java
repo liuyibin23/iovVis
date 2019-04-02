@@ -9,6 +9,7 @@ import java.util.List;
 public class CustomerExInfo extends Customer {
 
     private List<String> adminUserNameList = new ArrayList<>();
+    private List<String> userNameList = new ArrayList<>();
 
     public CustomerExInfo(){}
     public CustomerExInfo(Customer customer){
