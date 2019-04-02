@@ -288,6 +288,11 @@ CREATE TABLE IF NOT EXISTS ts_hour_value_statistic (
 	tenant_id varchar(31),
     CONSTRAINT ts_hour_value_statistic_unq_key UNIQUE (entity_type, entity_id, ts)
 );
+CREATE TABLE IF NOT EXISTS video_info (
+    id varchar(31) NOT NULL PRIMARY KEY,
+	video_info varchar,
+	ex_info varchar
+);
 CREATE OR REPLACE VIEW vassetattrkv AS
  SELECT attribute_kv.entity_type,
     attribute_kv.entity_id,
