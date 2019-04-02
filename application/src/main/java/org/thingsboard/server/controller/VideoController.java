@@ -8,6 +8,7 @@ import org.thingsboard.server.common.data.VideoInfo;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.Optional;
@@ -71,7 +72,7 @@ public class VideoController extends BaseController{
 			case TENANT_ADMIN:
 				if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN))
 					break;
-				if (getTenantId().equals(UUID.fromString(groupId)))
+				if (getTenantId().equals(new TenantId(UUID.fromString(groupId))))
 					break;
 				throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
 			case CUSTOMER_USER:
@@ -85,7 +86,7 @@ public class VideoController extends BaseController{
 						if(optionalCustomer.get().getTenantId().equals(getTenantId()))
 							break;
 					case CUSTOMER_USER:
-						if (getTenantId().equals(UUID.fromString(groupId)))
+						if (getCurrentUser().getCustomerId().equals(new CustomerId(UUID.fromString(groupId))))
 							break;
 						throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
 				}
