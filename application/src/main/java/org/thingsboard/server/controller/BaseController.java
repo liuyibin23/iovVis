@@ -80,6 +80,7 @@ import org.thingsboard.server.dao.tshourvaluestatistic.BaseTsHourValueStatisticS
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.vassetattrkv.VassetAttrKVService;
 import org.thingsboard.server.dao.vdeviceattrkv.DeviceAttrKVService;
+import org.thingsboard.server.dao.video.VideoInfoService;
 import org.thingsboard.server.dao.warnings.WarningsRecordService;
 import org.thingsboard.server.dao.widget.WidgetTypeService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
@@ -190,6 +191,9 @@ public abstract class BaseController {
 
     @Autowired
     protected PatrolRecordService patrolRecordService;
+
+    @Autowired
+    protected VideoInfoService videoInfoService;
 
     @Autowired
     protected BaseTsHourValueStatisticService tsHourValueStatisticService;
