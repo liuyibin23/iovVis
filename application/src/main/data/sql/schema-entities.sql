@@ -309,11 +309,7 @@ CREATE OR REPLACE VIEW vassetattrkv AS
     asset
   WHERE attribute_kv.entity_id::text = asset.id::text;
 
-CREATE OR REPLACE VIEW device_alarms AS
-select asset.id as asset_id,alarm.severity,device_attributes.entity_id as device_id,device_attributes.moniteritem from asset
-inner join relation on asset.id=relation.from_id and relation.to_type='DEVICE'
-inner join alarm on relation.to_id=alarm.originator_id and alarm.status='ACTIVE_UNACK'
-inner join device_attributes on alarm.originator_id=device_attributes.entity_id;
+
 
 CREATE OR REPLACE VIEW device_attributes AS
  SELECT attribute_kv.entity_id,
@@ -351,10 +347,28 @@ CREATE OR REPLACE VIEW device_attributes AS
 	CASE attribute_kv.attribute_key
 		WHEN 'active'::text THEN attribute_kv.bool_v
 		ELSE false::boolean
-	END::boolean) AS active
+	END::boolean) AS active,
+	max(
+	CASE attribute_kv.attribute_key
+		WHEN 'lastConnectTime'::text THEN attribute_kv.long_v
+		ELSE null::bigint
+	END::bigint) AS lastConnectTime	,
+	max(
+	CASE attribute_kv.attribute_key
+		WHEN 'lastDisconnectTime'::text THEN attribute_kv.long_v
+		ELSE null::bigint
+	END::bigint) AS lastDisconnectTime
    FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'DEVICE'::text
   GROUP BY attribute_kv.entity_id;
+
+CREATE OR REPLACE VIEW device_alarms AS
+select asset.id as asset_id,alarm.severity,device_attributes.entity_id as device_id,device_attributes.moniteritem from asset
+inner join relation on asset.id=relation.from_id and relation.to_type='DEVICE'
+inner join alarm on relation.to_id=alarm.originator_id and alarm.status='ACTIVE_UNACK'
+inner join device_attributes on alarm.originator_id=device_attributes.entity_id;
+
+
 
 CREATE OR REPLACE VIEW deviceattrkv AS
  SELECT attribute_kv.entity_type,

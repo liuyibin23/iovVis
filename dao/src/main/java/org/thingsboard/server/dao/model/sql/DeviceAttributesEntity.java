@@ -26,6 +26,11 @@ public class DeviceAttributesEntity {
 	@Column(name = "active")
 	private Boolean active;
 
+	@Column(name = "lastconnecttime")
+	private Long lastConnectTime;
+	@Column(name = "lastdisconnecttime")
+	private Long lastDisconnectTime;
+
 	public String getEntityId() {
 		return entityId;
 	}
@@ -88,5 +93,21 @@ public class DeviceAttributesEntity {
 
 	public void setActive(Boolean active) {
 		this.active = active;
+	}
+
+	public Long getLastConnectTime() {
+		return lastConnectTime;
+	}
+
+	public void setLastConnectTime(Long lastConnectTime) {
+		this.lastConnectTime = lastConnectTime;
+	}
+
+	public Long getLastDisconnectTime() {
+		return lastDisconnectTime;
+	}
+
+	public void setLastDisconnectTime(Long lastDisconnectTime) {
+		this.lastDisconnectTime = lastDisconnectTime;
 	}
 }

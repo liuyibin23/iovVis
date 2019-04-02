@@ -884,6 +884,8 @@ public class DeviceController extends BaseController {
 				tmp.setDeviceName(deviceAttributesEntity.getDeviceName());
 				tmp.setDescription(deviceAttributesEntity.getDescription());
 				tmp.setActive(deviceAttributesEntity.getActive());
+				tmp.setLastConnectTime(deviceAttributesEntity.getLastConnectTime());
+				tmp.setLastDisconnectTime(deviceAttributesEntity.getLastDisconnectTime());
 			}
 
 

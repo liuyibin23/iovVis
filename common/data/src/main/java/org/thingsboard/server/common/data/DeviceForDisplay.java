@@ -19,5 +19,7 @@ public class DeviceForDisplay {
 	private String deviceName;
 	private String description;
 	private Boolean active;
+	private Long lastConnectTime;
+	private Long lastDisconnectTime;
 
 }
