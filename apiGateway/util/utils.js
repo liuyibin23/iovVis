@@ -82,6 +82,9 @@ function responErrorMsg(err, res) {
         if (code == 401) {
             resMsg.message = '无授权访问。';
         }
+        else if (code == 403) {
+            resMsg.message = err.message;
+        }
         else if (code == 404) {
             resMsg.message = '访问资源不存在。';
         }
