@@ -3,6 +3,7 @@ package org.thingsboard.server.common.data;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.thingsboard.server.common.data.id.AssetId;
 
 @Data
 @AllArgsConstructor
@@ -14,6 +15,7 @@ public class DeviceForDisplay {
 	private String assetName;
 	private String ip;
 	private String channel;
+	private AssetId assetId;
 	private String measureid;
 	private String moniteritem;
 	private String deviceName;
