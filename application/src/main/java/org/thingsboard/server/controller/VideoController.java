@@ -8,6 +8,7 @@ import org.thingsboard.server.common.data.VideoInfo;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.Optional;
@@ -17,6 +18,13 @@ import java.util.UUID;
 @RequestMapping("/api")
 @Slf4j
 public class VideoController extends BaseController{
+	/**
+	* @Description: 1.2.18.1 新增/修改视频信息
+	* @Author: ShenJi
+	* @Date: 2019/4/2
+	* @Param: [groupType, groupId, videoInfo]
+	* @return: org.thingsboard.server.common.data.VideoInfo
+	*/
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/videoInfo", method = RequestMethod.POST)
 	@ResponseBody
@@ -34,6 +42,13 @@ public class VideoController extends BaseController{
 
 	}
 
+	/**
+	* @Description: 1.2.18.2 查询视频信息
+	* @Author: ShenJi
+	* @Date: 2019/4/2
+	* @Param: [groupType, groupId]
+	* @return: org.thingsboard.server.common.data.VideoInfo
+	*/
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/videoInfo", method = RequestMethod.GET)
 
@@ -57,7 +72,7 @@ public class VideoController extends BaseController{
 			case TENANT_ADMIN:
 				if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN))
 					break;
-				if (getTenantId().equals(UUID.fromString(groupId)))
+				if (getTenantId().equals(new TenantId(UUID.fromString(groupId))))
 					break;
 				throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
 			case CUSTOMER_USER:
@@ -71,7 +86,7 @@ public class VideoController extends BaseController{
 						if(optionalCustomer.get().getTenantId().equals(getTenantId()))
 							break;
 					case CUSTOMER_USER:
-						if (getTenantId().equals(UUID.fromString(groupId)))
+						if (getCurrentUser().getCustomerId().equals(new CustomerId(UUID.fromString(groupId))))
 							break;
 						throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
 				}

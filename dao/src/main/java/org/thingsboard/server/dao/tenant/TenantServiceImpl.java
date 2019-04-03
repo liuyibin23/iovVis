@@ -38,7 +38,6 @@ import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.service.Validator;
-import org.thingsboard.server.dao.sql.user.UserRepository;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.dao.widget.WidgetsBundleService;
 
@@ -167,6 +166,7 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 						tenantExInfo.getAdminUserNameList().add(user.getFirstName());
 					} else if (user.getAdditionalInfo().get("power").asText().equals("common")) {
 						commonUsers.add(user);
+						tenantExInfo.getUserNameList().add(user.getFirstName());
 					}
 				}
 			});
