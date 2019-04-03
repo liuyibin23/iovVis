@@ -54,4 +54,6 @@ public interface CustomerService {
 
     TenantId findTenantIdByCustomerId(CustomerId customerId,TextPageLink pageLink);
 
+    int countCustomerByTenantId(TenantId tenantId);
+
 }

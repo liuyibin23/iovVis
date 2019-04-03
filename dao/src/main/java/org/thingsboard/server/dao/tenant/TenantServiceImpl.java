@@ -132,6 +132,7 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 //					tenant.setUserCount(0);
 					tenant.setAdminCount(userService.countTenantAdminByTenantId(fromTimeUUID(tenant.getUuidId())));
 					tenant.setUserCount(userService.countTenantUserByTenantId(fromTimeUUID(tenant.getUuidId())));
+					tenant.setCustomerCount(customerService.countCustomerByTenantId(tenant.getId()));
 				}
 		);
 
@@ -173,6 +174,7 @@ public class TenantServiceImpl extends AbstractEntityService implements TenantSe
 
 			tenantExInfo.setAdminCount(adminUsers.size());
 			tenantExInfo.setUserCount(commonUsers.size());
+			tenantExInfo.setCustomerCount(customerService.countCustomerByTenantId(tenantExInfo.getId()));
 		});
 		return tenantExInfos;
 	}

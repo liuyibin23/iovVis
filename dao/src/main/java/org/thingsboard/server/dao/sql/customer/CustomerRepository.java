@@ -54,5 +54,8 @@ public interface CustomerRepository extends CrudRepository<CustomerEntity, Strin
 	List<CustomerEntity> findByTenantId(@Param("tenantId") String tenantId);
 
 
+	int countByTenantId(@Param("tenantId") String tenantId);
+
+
 
 }

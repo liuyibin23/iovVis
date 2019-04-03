@@ -19,8 +19,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import org.thingsboard.server.common.data.id.TenantId;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
 @EqualsAndHashCode(callSuper = true)
 public class Tenant extends ContactBased<TenantId> implements HasName {
 
@@ -31,6 +29,7 @@ public class Tenant extends ContactBased<TenantId> implements HasName {
 
     private int adminCount;
     private int userCount;
+    private int customerCount;
 
     public Tenant() {
         super();
@@ -89,7 +88,15 @@ public class Tenant extends ContactBased<TenantId> implements HasName {
 		this.userCount = userCount;
 	}
 
-	@Override
+    public int getCustomerCount() {
+        return customerCount;
+    }
+
+    public void setCustomerCount(int customerCount) {
+        this.customerCount = customerCount;
+    }
+
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("Tenant [title=");

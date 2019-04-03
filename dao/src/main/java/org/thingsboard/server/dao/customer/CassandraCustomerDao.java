@@ -92,4 +92,10 @@ public class CassandraCustomerDao extends CassandraAbstractSearchTextDao<Custome
         return null;
     }
 
+    @Override
+    public int countCustomersByTenantId(UUID tenantId) {
+        //todo cassandra
+        return 0;
+    }
+
 }

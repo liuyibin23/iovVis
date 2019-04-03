@@ -240,6 +240,11 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 		return tenantId;
 	}
 
+	@Override
+	public int countCustomerByTenantId(TenantId tenantId) {
+		return customerDao.countCustomersByTenantId(tenantId.getId());
+	}
+
 	private List<CustomerExInfo> customersToCustomerExInfos(List<Customer> customers){
 		List<CustomerExInfo> customerExInfos = customers.stream().map(CustomerExInfo::new).collect(Collectors.toList());
 		customerExInfos.forEach(customerExInfo -> {
