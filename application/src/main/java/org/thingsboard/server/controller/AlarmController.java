@@ -27,6 +27,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
@@ -43,7 +44,6 @@ import org.thingsboard.server.common.transport.adaptor.JsonConverter;
 
 import javax.annotation.Nullable;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api")
@@ -147,7 +147,10 @@ public class AlarmController extends BaseController {
 		closeAlarm.setDetails(additionalInfo);
 		closeAlarm.setStatus(AlarmStatus.CLEARED_ACK);
 		alarmService.createOrUpdateAlarm(closeAlarm);
-		logEntityAction(closeAlarm.getId(), closeAlarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
+		User tmpUser = getCurrentUser();
+		tmpUser.setTenantId(closeAlarm.getTenantId());
+
+		logEntityAction(tmpUser,closeAlarm.getId(), closeAlarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
 //		closeWarningByAlarm(closeAlarm,getTenantId());//在规则链中关闭预警
 
 		return closeAlarm;
