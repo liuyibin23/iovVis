@@ -39,6 +39,10 @@
     {
       "name": "虚拟设备",
       "description": "创建虚拟设备"
+    },
+    {
+      "name": "视频墙",
+      "description": "视频墙接口"
     }
   ],
   "paths": {
@@ -267,7 +271,6 @@
             "name": "report_type",
             "in": "formData",
             "type": "string",
-			"required": true,
             "enum": [
               "日报",
               "周报",
@@ -275,13 +278,6 @@
               "季报"
             ],
             "description": "报表类型。"
-          },
-		  {
-            "name": "operator",
-            "in": "formData",
-            "type": "string",
-            "required": true,
-            "description": "操作者名字。"
           },
           {
             "name": "report_date",
@@ -400,9 +396,7 @@
             "description": "图表类型。",
             "enum": [
               "折线图",
-              "柱状图",
-              "饼图",
-			  "雷达图"
+              "柱状图"
             ],
             "type": "string"
           },
@@ -433,12 +427,6 @@
             "format": "int64",
             "in": "query",
             "description": "结束时间。"
-          },
-		  {
-            "name": "interval",
-            "type": "integer",
-            "in": "query",
-            "description": "聚合时间间距(s)。"
           },
           {
             "name": "chartWidth",
@@ -855,6 +843,59 @@
           }
         }
       }
+    },
+    "/currentUser/wallResult/": {
+      "get": {
+        "tags": [
+          "视频墙"
+        ],
+        "summary": "获取视频墙信息",
+        "description": "获取视频墙信息。",
+        "responses": {
+          "200": {
+            "description": "成功。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "视频墙"
+        ],
+        "summary": "设置视频墙信息",
+        "description": "设置视频墙信息。",
+        "parameters": [
+          {
+            "name": "videoInfo",
+            "in": "query",
+            "required": true,
+            "description": "视频信息",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Standard200OkResponse"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
     }
   },
   "securityDefinitions": {
@@ -929,12 +970,10 @@
       "description": "一级告警规则（一般）。",
       "properties": {
         "min": {
-          "type": "string",
-          "example": "0.1"
+          "type": "integer"
         },
         "max": {
-          "type": "string",
-          "example": ""
+          "type": "integer"
         }
       }
     },
@@ -943,12 +982,10 @@
       "description": "二级告警规则（严重）。",
       "properties": {
         "min": {
-          "type": "string",
-          "example": "3"
+          "type": "integer"
         },
         "max": {
-          "type": "string",
-          "example": "9.9"
+          "type": "integer"
         }
       }
     },

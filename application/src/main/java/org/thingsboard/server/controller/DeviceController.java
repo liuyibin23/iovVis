@@ -873,6 +873,7 @@ public class DeviceController extends BaseController {
 						if (entityId.getEntityType().equals(EntityType.ASSET)){
 							AssetId assetId = new AssetId(entityId.getId());
 							tmp.setAssetName(assetService.findAssetById(device.getTenantId(),assetId).getName());
+                            tmp.setAssetId(assetId);
 						}
 					});
 			DeviceAttributesEntity deviceAttributesEntity = (deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId())));

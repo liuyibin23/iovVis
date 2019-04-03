@@ -148,7 +148,7 @@ public class AlarmController extends BaseController {
 		closeAlarm.setStatus(AlarmStatus.CLEARED_ACK);
 		alarmService.createOrUpdateAlarm(closeAlarm);
 		logEntityAction(closeAlarm.getId(), closeAlarm, getCurrentUser().getCustomerId(), ActionType.ALARM_CLEAR, null);
-		closeWarningByAlarm(closeAlarm,getTenantId());
+//		closeWarningByAlarm(closeAlarm,getTenantId());//在规则链中关闭预警
 
 		return closeAlarm;
 	}
