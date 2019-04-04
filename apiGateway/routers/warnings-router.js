@@ -106,7 +106,7 @@ async function postAsset(assetID, token, args, res) {
 async function postWarningStatus(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
-  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/attributes/SERVER_SCOPE`;
+  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
 
   axios.post(get_attributes_api, req.query, {
     headers: {
