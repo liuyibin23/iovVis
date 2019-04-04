@@ -42,8 +42,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 import org.thingsboard.rule.engine.api.msg.DeviceAttributesEventNotificationMsg;
 import org.thingsboard.server.common.data.DataConstants;
+import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
@@ -379,6 +381,22 @@ public class TelemetryController extends BaseController {
                                                                  @RequestBody JsonNode request) throws ThingsboardException {
         EntityId entityId = EntityIdFactory.getByTypeAndId(entityType, entityIdStr);
         if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
+
+            switch (entityId.getEntityType()){
+                case DEVICE:
+                    Device device = deviceService.findDeviceById(TenantId.SYS_TENANT_ID,new DeviceId(entityId.getId()));
+                    if(device == null || device.getTenantId().isNullUid()){
+                        throw new ThingsboardException("Invalid Entity",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                    }
+                    return saveAttributes(device.getTenantId(),entityId, scope, request);
+                case ASSET:
+                    Asset asset = assetService.findAssetById(TenantId.SYS_TENANT_ID,new AssetId(entityId.getId()));
+                    if(asset == null || asset.getTenantId().isNullUid()){
+                        throw new ThingsboardException("Invalid Entity",ThingsboardErrorCode.INVALID_ARGUMENTS);
+                    }
+                    return saveAttributes(asset.getTenantId(),entityId, scope, request);
+            }
+
             DeferredResult<ResponseEntity> response = new DeferredResult<>();
  /*       	if (tenantIdStr == null){
 				response.setResult(new ResponseEntity(HttpStatus.BAD_REQUEST));
@@ -555,7 +573,13 @@ public class TelemetryController extends BaseController {
             if (attributes.isEmpty()) {
                 return getImmediateDeferredResult("No attributes data found in request body!", HttpStatus.BAD_REQUEST);
             }
-            SecurityUser user = getCurrentUser();
+            SecurityUser user;
+            if(getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
+                user = getCurrentUser();
+                user.setTenantId(srcTenantId);
+            }else{
+                user = getCurrentUser();
+            }
             return accessValidator.validateEntityAndCallback(getCurrentUser(), entityIdSrc, (result, tenantId, entityId) -> {
                 tsSubService.saveAndNotify(tenantId, entityId, scope, attributes, new FutureCallback<Void>() {
                     @Override
