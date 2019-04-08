@@ -1,0 +1,198 @@
+{
+  "ruleChain": {
+    "additionalInfo": null,
+    "name": "WARNING_CLEAR",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null
+  },
+  "metadata": {
+    "firstNodeIndex": 3,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "layoutX": 482,
+          "layoutY": 266
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "获取告警设施",
+        "debugMode": false,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "relationTypeGroup": "ALARM",
+            "filters": [
+              {
+                "relationType": "ALARM_ANY",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 342,
+          "layoutY": 426
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "获取设施告警设备集合",
+        "debugMode": false,
+        "configuration": {
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "alarm_device_id"
+          ],
+          "latestTsKeyNames": []
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 642,
+          "layoutY": 430
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "清除此告警设备属性值",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\r\nmsg = {};\r\nif(metadata.hasOwnProperty(\"ss_alarm_device_id\")&&metadata.hasOwnProperty(\"device_id\")){\r\n    var alarmDeviceIds = JSON.parse(metadata.ss_alarm_device_id.replace(/\\\\/g,\"\"));\r\n    var dev_id = metadata.device_id;\r\n    function removeId(id){\r\n        for (var key in alarmDeviceIds) {\r\n            if (alarmDeviceIds.hasOwnProperty(key)) {\r\n                var element = alarmDeviceIds[key];\r\n                if(element === id){\r\n                    alarmDeviceIds.splice(key,1);\r\n                    return;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    removeId(dev_id);\r\n    metadata.ss_alarm_device_id = JSON.stringify(alarmDeviceIds);\r\n    var msgtmp = {};       \r\n    msgtmp[\"alarm_device_id\"] =  JSON.stringify(alarmDeviceIds);\r\n}\r\n\r\nreturn {msg: msgtmp, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 372,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetOriginatorFieldsNode",
+        "name": "获取报警设备id",
+        "debugMode": false,
+        "configuration": {
+          "fieldsMapping": {
+            "name": "originatorName",
+            "type": "originatorType",
+            "originator": "device_id"
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 901,
+          "layoutY": 434
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "保存清除告警id后的属性",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 736,
+          "layoutY": 150
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "获取告警设备",
+        "debugMode": false,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "relationTypeGroup": "ALARM",
+            "filters": [
+              {
+                "relationType": "ALARM_ANY",
+                "entityTypes": [
+                  "DEVICE"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 858,
+          "layoutY": 275
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "ClearAlarmLevel",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\r\nvar newMsg = {};\r\nnewMsg['alarm_level'] = 0\r\nreturn {msg: newMsg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 1120,
+          "layoutY": 284
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "AlarmLevelCleared",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 4,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 0,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 5,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 7,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": [
+      {
+        "fromIndex": 4,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+        },
+        "additionalInfo": {
+          "layoutX": 1142,
+          "layoutY": 368,
+          "ruleChainNodeId": "rule-chain-node-10"
+        },
+        "type": "Success"
+      }
+    ]
+  }
+}

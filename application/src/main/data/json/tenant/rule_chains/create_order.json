@@ -1,18 +1,22 @@
 [
   {
-    "rule_chain_template_name":"config_warning_rule",
+    "rule_chain_template_name":"warning_judge_rule",
 	"order":"1"
   },
   {
-    "rule_chain_template_name":"config_alarm_rule",
+    "rule_chain_template_name":"alarm_rule",
 	"order":"2"
   },
   {
-    "rule_chain_template_name":"mqtt_engine_bus",
+    "rule_chain_template_name":"warning_clear",
 	"order":"3"
   },
   {
-    "rule_chain_template_name":"root_rule_chain",
+    "rule_chain_template_name":"mqtt_engine_bus",
 	"order":"4"
+  },
+  {
+    "rule_chain_template_name":"root_rule_chain",
+	"order":"5"
   }
 ]

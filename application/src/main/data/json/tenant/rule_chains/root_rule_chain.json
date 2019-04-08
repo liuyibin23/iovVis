@@ -12,8 +12,8 @@
     "nodes": [
       {
         "additionalInfo": {
-          "layoutX": 824,
-          "layoutY": 156
+          "layoutX": 1054,
+          "layoutY": 300
         },
         "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
         "name": "Save Timeseries",
@@ -24,8 +24,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 825,
-          "layoutY": 52
+          "layoutX": 1051,
+          "layoutY": 398
         },
         "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
         "name": "Save Client Attributes",
@@ -36,8 +36,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 347,
-          "layoutY": 149
+          "layoutX": 463,
+          "layoutY": 398
         },
         "type": "org.thingsboard.rule.engine.filter.TbMsgTypeSwitchNode",
         "name": "Message Type Switch",
@@ -48,8 +48,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 825,
-          "layoutY": 266
+          "layoutX": 1051,
+          "layoutY": 477
         },
         "type": "org.thingsboard.rule.engine.action.TbLogNode",
         "name": "Log RPC from Device",
@@ -60,8 +60,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 825,
-          "layoutY": 379
+          "layoutX": 1050,
+          "layoutY": 552
         },
         "type": "org.thingsboard.rule.engine.action.TbLogNode",
         "name": "Log Other",
@@ -72,8 +72,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 825,
-          "layoutY": 468
+          "layoutX": 1052,
+          "layoutY": 625
         },
         "type": "org.thingsboard.rule.engine.rpc.TbSendRPCRequestNode",
         "name": "RPC Call Request",
@@ -81,9 +81,55 @@
         "configuration": {
           "timeoutInSeconds": 60
         }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 819,
+          "layoutY": 840
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "judgeWarningLevel",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "if(metadata.hasOwnProperty('ss_asset_warning_level')){\n    return metadata.ss_asset_warning_level === 'YELLOW';\n}else{\n    return false;\n}"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 725,
+          "layoutY": 717
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "getAssetWarningLevel",
+        "debugMode": false,
+        "configuration": {
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "asset_warning_level"
+          ],
+          "latestTsKeyNames": []
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 480,
+          "layoutY": 595
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbOriginatorTypeSwitchNode",
+        "name": "筛选设施",
+        "debugMode": false,
+        "configuration": {
+          "version": 0
+        }
       }
     ],
     "connections": [
+      {
+        "fromIndex": 2,
+        "toIndex": 8,
+        "type": "Attributes Updated"
+      },
       {
         "fromIndex": 2,
         "toIndex": 4,
@@ -108,6 +154,16 @@
         "fromIndex": 2,
         "toIndex": 5,
         "type": "RPC Request to Device"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 7,
+        "type": "Asset"
       }
     ],
     "ruleChainConnections": [
@@ -115,15 +171,43 @@
         "fromIndex": 2,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "67c0b4c0-1102-11e9-bae8-7562662cc4ee"
+          "id": "fdf2b890-56b6-11e9-8c83-01278f27a825"
         },
         "additionalInfo": {
-          "layoutX": 354,
-          "layoutY": 330,
-          "ruleChainNodeId": "rule-chain-node-8",
+          "layoutX": 1056,
+          "layoutY": 782,
+          "ruleChainNodeId": "rule-chain-node-11",
+		  "ruleChainName": "WARNING_CLEAR"
+        },
+        "type": "Alarm Cleared"
+      },
+      {
+        "fromIndex": 2,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "14a3bdf0-56b7-11e9-8c83-01278f27a825"
+        },
+        "additionalInfo": {
+          "layoutX": 1056,
+          "layoutY": 710,
+          "ruleChainNodeId": "rule-chain-node-12",
 		  "ruleChainName": "MQTT_ENGINE_BUS"
         },
         "type": "Post telemetry"
+      },
+      {
+        "fromIndex": 6,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+        },
+        "additionalInfo": {
+          "layoutX": 1046,
+          "layoutY": 851,
+          "ruleChainNodeId": "rule-chain-node-13",
+		  "ruleChainName": "WARNING_JUDGE_RULE"
+        },
+        "type": "True"
       }
     ]
   }

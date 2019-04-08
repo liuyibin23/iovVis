@@ -26,8 +26,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 969,
-          "layoutY": 149
+          "layoutX": 1281,
+          "layoutY": 152
         },
         "type": "org.thingsboard.rule.engine.mqtt.TbMqttNode",
         "name": "EAI_BUS",
@@ -35,7 +35,7 @@
         "configuration": {
           "topicPattern": "v1/devices/me/telemetry/${dev_id}",
           "host": "cf.beidouapp.com",
-          "port": 9008,
+          "port": 20002,
           "connectTimeoutSec": 10,
           "clientId": null,
           "cleanSession": true,
@@ -47,168 +47,38 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 645,
-          "layoutY": 152
+          "layoutX": 957,
+          "layoutY": 155
         },
         "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
-        "name": "switch by dev_id",
+        "name": "switch by is_mqtt_trans",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var devids = [\"280f1810-1104-11e9-bae8-7562662cc4ee\",\"b566b7e0-1104-11e9-bae8-7562662cc4ee\",\"280f1810-1104-11e9-bae8-7562662cc4ee\"];\n/*device ids array*/\n\nvar result = devids.filter(function(el) {\n    return el === metadata.dev_id;});\nvar subscribed = result.length > 0;\nif(subscribed)\n    return true;\nelse\n    return false;"
+          "jsScript": "if(metadata.hasOwnProperty(\"ss_is_mqtt_trans\")){\n    if (metadata.ss_is_mqtt_trans)\n        return true;\n    else\n        return false;\n}\n"
         }
       },
       {
         "additionalInfo": {
-          "layoutX": 975,
-          "layoutY": 374
+          "layoutX": 632,
+          "layoutY": 155
         },
-        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
-        "name": "create ALARM",
-        "debugMode": true,
-        "configuration": {
-          "alarmType": "General Alarm",
-          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
-          "severity": "INDETERMINATE",
-          "propagate": true
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 349,
-          "layoutY": 377
-        },
-        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
-        "name": "alarm_rules_computation",
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "获取设备是否向mqtt转发属性",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var ruleTables = {\n    \"280f1810-1104-11e9-bae8-7562662cc4ee\":\"msg.crackWidth > 10\",\n    \"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"msg.wave.some(function(it,ind){if(/*S*/it > 2/*E*/) return 1;});\"\n};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 351,
-          "layoutY": 526
-        },
-        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
-        "name": "sensor_related_bridge",
-        "debugMode": true,
-        "configuration": {
-          "originatorSource": "RELATED",
-          "relationsQuery": {
-            "direction": "TO",
-            "maxLevel": 1,
-            "filters": [
-              {
-                "relationType": "Contains",
-                "entityTypes": [
-                  "ASSET"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 976,
-          "layoutY": 527
-        },
-        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
-        "name": "asset",
-        "debugMode": true,
-        "configuration": {
-          "scope": "SERVER_SCOPE"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 651,
-          "layoutY": 527
-        },
-        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
-        "name": "bridge_warning",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\nmsg.bridge_warning_level = 'RED';\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 649,
-          "layoutY": 452
-        },
-        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
-        "name": "outlier",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "return {msg: msg, metadata: metadata, msgType: msgType};"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 975,
-          "layoutY": 452
-        },
-        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
-        "name": "saveOuterlier",
-        "debugMode": false,
-        "configuration": {
-          "defaultTTL": 0
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 464,
-          "layoutY": 263
-        },
-        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
-        "name": "alarm_rules_computation",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "var ruleTables = {\n    \"b566b7e0-1104-11e9-bae8-7562662cc4ee\":\"msg.crackDeepth > 0.3\"\n};\n/* alarm rule tables */\nvar dev_id = metadata.dev_id;\n\nif(ruleTables.hasOwnProperty(dev_id)) {\n    var rule = ruleTables[dev_id];\n    return eval(rule);\n} else\n    return false;"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 751,
-          "layoutY": 260
-        },
-        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
-        "name": "传感量所属资产",
-        "debugMode": true,
-        "configuration": {
-          "originatorSource": "RELATED",
-          "relationsQuery": {
-            "direction": "TO",
-            "maxLevel": 1,
-            "filters": [
-              {
-                "relationType": "Contains",
-                "entityTypes": [
-                  "ASSET"
-                ]
-              }
-            ]
-          }
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 1071,
-          "layoutY": 260
-        },
-        "type": "org.thingsboard.rule.engine.telemetry.TbMsgTimeseriesNode",
-        "name": "saveOuterlier",
-        "debugMode": true,
-        "configuration": {
-          "defaultTTL": 0
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "is_mqtt_trans"
+          ],
+          "latestTsKeyNames": []
         }
       }
     ],
     "connections": [
       {
         "fromIndex": 0,
-        "toIndex": 2,
+        "toIndex": 3,
         "type": "Success"
       },
       {
@@ -217,43 +87,8 @@
         "type": "True"
       },
       {
-        "fromIndex": 4,
-        "toIndex": 3,
-        "type": "True"
-      },
-      {
-        "fromIndex": 4,
-        "toIndex": 5,
-        "type": "True"
-      },
-      {
-        "fromIndex": 4,
-        "toIndex": 8,
-        "type": "True"
-      },
-      {
-        "fromIndex": 5,
-        "toIndex": 7,
-        "type": "Success"
-      },
-      {
-        "fromIndex": 7,
-        "toIndex": 6,
-        "type": "Success"
-      },
-      {
-        "fromIndex": 8,
-        "toIndex": 9,
-        "type": "Success"
-      },
-      {
-        "fromIndex": 10,
-        "toIndex": 11,
-        "type": "True"
-      },
-      {
-        "fromIndex": 11,
-        "toIndex": 12,
+        "fromIndex": 3,
+        "toIndex": 2,
         "type": "Success"
       }
     ],
@@ -262,13 +97,12 @@
         "fromIndex": 0,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "071b5610-1d97-11e9-b372-db8be707c5f4"
+          "id": "09a54220-56b7-11e9-8c83-01278f27a825"
         },
         "additionalInfo": {
-          "layoutX": 100,
-          "layoutY": 384,
-          "ruleChainNodeId": "rule-chain-node-15",
-		  "ruleChainName": "CONFIG_ALARM_RULE"
+          "layoutX": 457,
+          "layoutY": 335,
+          "ruleChainNodeId": "rule-chain-node-6"
         },
         "type": "Success"
       }

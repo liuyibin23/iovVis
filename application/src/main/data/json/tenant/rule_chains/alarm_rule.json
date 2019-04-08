@@ -1,0 +1,319 @@
+{
+  "ruleChain": {
+    "additionalInfo": null,
+    "name": "ALARM_RULE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null
+  },
+  "metadata": {
+    "firstNodeIndex": 6,
+    "nodes": [
+      {
+        "additionalInfo": {
+          "layoutX": 447,
+          "layoutY": 604
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "创建一级告警",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "General Alarm",
+          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
+          "severity": "INDETERMINATE",
+          "propagate": true
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 369,
+          "layoutY": 454
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "一级告警规则配置",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "if(metadata.hasOwnProperty(\"ss_alarm_level\")){\r\n    if(metadata.ss_alarm_level>1){\r\n        return false\r\n    }\r\n}\r\n\r\nif(!metadata.hasOwnProperty(\"ss_alarm_level_1_cfg\"))\r\n    return false;\r\nvar rule = JSON.parse(metadata.ss_alarm_level_1_cfg.replace(/\\\\/g,\"\"));\r\n//[{\\\"Key\\\":\\\"加速度\\\",\\\"IndeterminateRules\\\":{\\\"min\\\":\\\"-0.5\\\",\\\"max\\\":\\\"0.5\\\"}}]\r\n/* alarm rule tables */\r\n\r\nfor (var i = 0; i < rule.length; i++) {\r\n    if (msg.hasOwnProperty(rule[i].Key)) {\r\n        var val_max = msg[rule[i].Key+\"_max\"];\r\n        var val_min = msg[rule[i].Key+\"_min\"];\r\n        if(rule[i].hasOwnProperty(\"IndeterminateRules\")){\r\n            var min = parseFloat(rule[i].IndeterminateRules.min);\r\n            var max = parseFloat(rule[i].IndeterminateRules.max);\r\n            if (!isNaN(min)){\r\n                if(val_min < min){\r\n                    return true;\r\n                }\r\n            }\r\n            if(!isNaN(max)){\r\n                if(val_max > max){\r\n                    return true;\r\n                }\r\n            }\r\n        }\r\n        \r\n    }\r\n}\r\nreturn false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 235,
+          "layoutY": 56,
+          "description": "严重超标的指标"
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateAlarmNode",
+        "name": "创建二级告警",
+        "debugMode": false,
+        "configuration": {
+          "alarmType": "General Alarm",
+          "alarmDetailsBuildJs": "var details = {source: metadata.dev_id};\nif (metadata.prevAlarmDetails) {\n    details = JSON.parse(metadata.prevAlarmDetails);\n}\nreturn details;",
+          "severity": "WARNING",
+          "propagate": true
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 259,
+          "layoutY": 251
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "二级告警规则配置",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "if(metadata.hasOwnProperty(\"ss_alarm_level\")){\r\n    if(metadata.ss_alarm_level>2){\r\n        return false\r\n    }\r\n}\r\n\r\nif(!metadata.hasOwnProperty(\"ss_alarm_level_2_cfg\"))\r\n    return false;\r\nvar rule = JSON.parse(metadata.ss_alarm_level_2_cfg.replace(/\\\\/g,\"\"));\r\n//[{\\\"Key\\\":\\\"加速度\\\",\\\"WarningRules\\\":{\\\"min\\\":\\\"-1\\\",\\\"max\\\":\\\"1\\\"}}];\r\n/* alarm rule tables */\r\n\r\nfor (var i = 0; i < rule.length; i++) {\r\n    if (msg.hasOwnProperty(rule[i].Key)) {\r\n        var val_min = msg[rule[i].Key + '_min'];\r\n        var val_max = msg[rule[i].Key + '_max'];\r\n        if(rule[i].hasOwnProperty(\"WarningRules\")){\r\n            var min = parseFloat(rule[i].WarningRules.min);\r\n            var max = parseFloat(rule[i].WarningRules.max);\r\n            if (!isNaN(min)){\r\n                if(val_min < min){\r\n                    return true;\r\n                }\r\n            }\r\n            if(!isNaN(max)){\r\n                if(val_max > max){\r\n                    return true;\r\n                }\r\n            }\r\n        }                \r\n    }\r\n}\r\nreturn false;"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 496,
+          "layoutY": 322
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "SaveLowAlarm",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var newMsg = msg\nnewMsg['alarm_level']=1\nreturn {msg: newMsg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 477,
+          "layoutY": 195
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "SaveHighAlarm",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var newMsg = msg\nnewMsg['alarm_level']=2\nreturn {msg: newMsg, metadata: metadata, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 41,
+          "layoutY": 367
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "获取设备告警配置",
+        "debugMode": false,
+        "configuration": {
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "alarm_level_2_cfg",
+            "alarm_level_1_cfg",
+            "alarm_level"
+          ],
+          "latestTsKeyNames": []
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 861,
+          "layoutY": 535
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "SaveAlarmLevel",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 749,
+          "layoutY": 386
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "ChangeMsgType",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "var newMsg = {};\nvar newMsgType = 'POST_ATTRIBUTES_REQUEST';\nif(msg.hasOwnProperty('alarm_level')){\n    newMsg['alarm_level']=msg['alarm_level']\n}else{\n    newMsg['alarm_level']=1\n}\nreturn {msg: newMsg, metadata: metadata, msgType: newMsgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 834,
+          "layoutY": 56
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbChangeOriginatorNode",
+        "name": "getAsset",
+        "debugMode": false,
+        "configuration": {
+          "originatorSource": "RELATED",
+          "relationsQuery": {
+            "direction": "TO",
+            "maxLevel": 1,
+            "relationTypeGroup": "COMMON",
+            "filters": [
+              {
+                "relationType": "Contains",
+                "entityTypes": [
+                  "ASSET"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 1070,
+          "layoutY": 120
+        },
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "GetAssetDevLIst",
+        "debugMode": false,
+        "configuration": {
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [
+            "alarm_device_id"
+          ],
+          "latestTsKeyNames": []
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 985,
+          "layoutY": 235
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "ChangeAssetAttribute",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "if(msg.hasOwnProperty('alarm_level')){\r\n    metadata['alarm_level'] = msg['alarm_level'] \r\n}else{\r\n    metadata['alarm_level'] = 1\r\n}\r\nvar newMsg = {};\r\nvar newMsgType = 'POST_ATTRIBUTES_REQUEST';\r\nif (metadata.hasOwnProperty(\"ss_alarm_device_id\")) {\r\n    var ids = JSON.parse(metadata[\"ss_alarm_device_id\"]);\r\n\r\n    var isExist = false;\r\n    for (var key in ids) {\r\n        if (ids.hasOwnProperty(key)) {\r\n            if(ids[key] === metadata.dev_id){\r\n                isExist = true;\r\n                break;\r\n            }\r\n        }\r\n    }\r\n    if (!isExist) {\r\n        ids.push(metadata.dev_id);\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify(ids);\r\n    } else {\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify(ids[metadata.dev_id]);\r\n    }\r\n\r\n} else {\r\n    newMsg[\"alarm_device_id\"] = JSON.stringify([metadata.dev_id]);\r\n}\r\nreturn {\r\n    msg: newMsg,\r\n    metadata: metadata,\r\n    msgType: newMsgType\r\n};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 949,
+          "layoutY": 335
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
+        "name": "SaveAssetAttribute",
+        "debugMode": false,
+        "configuration": {
+          "scope": "SERVER_SCOPE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 516,
+          "layoutY": 50
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateTaskNode",
+        "name": "TaskLevel2",
+        "debugMode": false,
+        "configuration": {
+          "taskKind": "ANALYZE"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 691,
+          "layoutY": 613
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateTaskNode",
+        "name": "TaskLevel1",
+        "debugMode": false,
+        "configuration": {
+          "taskKind": "ANALYZE"
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 14,
+        "type": "Created"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 0,
+        "type": "True"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 4,
+        "type": "True"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 13,
+        "type": "Created"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 1,
+        "type": "False"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 2,
+        "type": "True"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 5,
+        "type": "True"
+      },
+      {
+        "fromIndex": 4,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 7,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 9,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 9,
+        "toIndex": 10,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 10,
+        "toIndex": 11,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 11,
+        "toIndex": 12,
+        "type": "Success"
+      }
+    ],
+    "ruleChainConnections": [
+      {
+        "fromIndex": 12,
+        "targetRuleChainId": {
+          "entityType": "RULE_CHAIN",
+          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+        },
+        "additionalInfo": {
+          "layoutX": 1100,
+          "layoutY": 450,
+          "ruleChainNodeId": "rule-chain-node-17"
+        },
+        "type": "Success"
+      }
+    ]
+  }
+}
