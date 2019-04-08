@@ -189,7 +189,8 @@
         "additionalInfo": {
           "layoutX": 1142,
           "layoutY": 368,
-          "ruleChainNodeId": "rule-chain-node-10"
+          "ruleChainNodeId": "rule-chain-node-10",
+		  "ruleChainName": "WARNING_JUDGE_RULE"
         },
         "type": "Success"
       }
