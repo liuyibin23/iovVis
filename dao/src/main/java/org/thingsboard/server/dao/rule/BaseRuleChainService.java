@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.dao.rule;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -185,7 +186,13 @@ public class BaseRuleChainService extends AbstractEntityService implements RuleC
                 EntityId from = nodes.get(nodeToRuleChainConnection.getFromIndex()).getId();
                 EntityId to = nodeToRuleChainConnection.getTargetRuleChainId();
                 String type = nodeToRuleChainConnection.getType();
+                RuleChain targetRuleChain = findRuleChainById(tenantId,nodeToRuleChainConnection.getTargetRuleChainId());
                 try {
+                    if(targetRuleChain != null){
+                        ObjectNode additionalInfo = (ObjectNode)nodeToRuleChainConnection.getAdditionalInfo();
+                        additionalInfo.put("ruleChainName",targetRuleChain.getName());
+                        nodeToRuleChainConnection.setAdditionalInfo(additionalInfo);
+                    }
                     createRelation(tenantId, new EntityRelation(from, to, type, RelationTypeGroup.RULE_NODE, nodeToRuleChainConnection.getAdditionalInfo()));
                 } catch (ExecutionException | InterruptedException e) {
                     log.warn("[{}] Failed to create rule node to rule chain relation. from: [{}], to: [{}]", from, to);
