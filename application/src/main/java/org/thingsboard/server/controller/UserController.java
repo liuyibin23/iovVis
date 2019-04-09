@@ -25,7 +25,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.rule.engine.api.MailService;
+import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -100,9 +102,18 @@ public class UserController extends BaseController {
 		}
 		if (retobj.getData().size() > 0){
 			List <User> tmp = new ArrayList<>();
-			retobj.getData().stream().forEach(user -> {
+			retobj.getData().forEach(user -> {
 				UserCredentials userCredentials = userService.findUserCredentialsByUserId(null, user.getId());
 				user.setActivation(userCredentials.isEnabled());
+				if(user.isCustomerUser()){
+                    Tenant tenant = tenantService.findTenantById(user.getTenantId());
+                    user.setTenantName(tenant.getName());
+                    Customer customer = customerService.findCustomerById(user.getTenantId(),user.getCustomerId());
+                    user.setCustomerName(customer.getName());
+                } else if(user.isTenantAdmin()){
+                    Tenant tenant = tenantService.findTenantById(user.getTenantId());
+                    user.setTenantName(tenant.getName());
+                }
 				tmp.add(user);
 			});
 			return new TextPageData<User>(tmp,retobj.getNextPageLink(),retobj.hasNext());
