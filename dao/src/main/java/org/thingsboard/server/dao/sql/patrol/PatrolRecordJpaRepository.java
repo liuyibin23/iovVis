@@ -9,6 +9,8 @@ public interface PatrolRecordJpaRepository extends CrudRepository<PatrolRecordEn
 
 	List<PatrolRecordEntity> findAll();
 
+	PatrolRecordEntity findAllById(String id);
+
 	List<PatrolRecordEntity> findByTenantId(String tenantId);
 
 	List<PatrolRecordEntity> findByTenantIdAndAndCustomerId(String tenantId,String customerId);
