@@ -57,8 +57,8 @@
 			"title":"一周重车数量",
 			"groupType":"PERCENT",
 			"groupInfo":[
-					{"min":0,   "max":80},
-					{"min":80, "max":99999}
+					{"min":0,   "max":40},
+					{"min":40, "max":99999}
 				]
 		},
 		"车辆荷载自动监测数据车速":{
