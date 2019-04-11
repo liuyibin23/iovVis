@@ -7,10 +7,7 @@ import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -137,6 +134,12 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     }
 
     @Override
+    public PatrolRecord findAllById(PatrolId id) throws ExecutionException, InterruptedException {
+        PatrolRecord patrolRecord = findPatrolTask(patrolRecordJpaRepository.findAllById(fromTimeUUID(id.getId())).toData());
+        return setAssetIdToPatrolRecord(patrolRecord);
+    }
+
+    @Override
     public List<PatrolRecord> findByTenantId(TenantId tenantId) throws ExecutionException, InterruptedException {
 
         List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByTenantId(fromTimeUUID(tenantId.getId()))));
@@ -173,7 +176,17 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 fromTimeUUID(customerId.getId())));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
-
+    private PatrolRecord setAssetIdToPatrolRecord(PatrolRecord patrolRecord) throws ExecutionException, InterruptedException {
+        if(patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)){
+            patrolRecord.setAssetId((AssetId) patrolRecord.getOriginator());
+        } else if(patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)){
+            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,(DeviceId) patrolRecord.getOriginator()).get();
+            if(assets.size() > 0){
+                patrolRecord.setAssetId(assets.get(0).getId());
+            }
+        }
+        return patrolRecord;
+    }
     private List<PatrolRecord> setAssetIdToPatrolRecords(List<PatrolRecord> patrolRecords) throws ExecutionException, InterruptedException {
         for (PatrolRecord item:patrolRecords) {
             if(item.getOriginator().getEntityType().equals(EntityType.ASSET)){
@@ -257,6 +270,26 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 fromTimeUUID(tenantId.getId()),
                 fromTimeUUID(customerId.getId()))));
         return setAssetIdToPatrolRecords(patrolRecords);
+    }
+
+    /**
+     * 填充关联的task
+     *
+     * @param patrolRecord
+     */
+    private PatrolRecord findPatrolTask(PatrolRecord patrolRecord) {
+
+            try {
+                relationDao.findAllByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON).get()
+                        .stream()
+                        .findFirst()
+                        .ifPresent(relation ->
+                                patrolRecord.setTaskId(relation.getTo()));
+            } catch (InterruptedException | ExecutionException e) {
+                log.error("find relation task of patrol failed. Patrol info : {}", patrolRecord, e);
+            }
+
+        return patrolRecord;
     }
 
     /**
