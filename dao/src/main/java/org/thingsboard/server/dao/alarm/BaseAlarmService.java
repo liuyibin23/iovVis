@@ -38,9 +38,9 @@ import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.*;
 import org.thingsboard.server.dao.DateAndTimeUtils;
-import org.thingsboard.server.dao.asset.AssetDao;
+import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.customer.CustomerDao;
-import org.thingsboard.server.dao.device.DeviceDao;
+import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entity.EntityService;
 import org.thingsboard.server.dao.exception.DataValidationException;
@@ -54,7 +54,6 @@ import javax.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -81,10 +80,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     private RelationService relationService;
 
     @Autowired
-    private AssetDao assetDao;
+    private AssetService assetService;
 
     @Autowired
-    private DeviceDao deviceDao;
+    private DeviceService deviceService;
 
     @Autowired
     private EntityService entityService;
@@ -365,14 +364,14 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 //        TimePageLink reqPageLink = statisticsQuery.getPageLink();
 //        TextPageLink tempPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
 
-        UUID tId = null, cId = null;
-        if (!tenantId.isNullUid()) {
-            tId = tenantId.getId();
-        }
-        if (!customerId.isNullUid()) {
-            cId = customerId.getId();
-        }
-        List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerIdAndType(tId, cId, type.toString());
+//        UUID tId = null, cId = null;
+//        if (!tenantId.isNullUid()) {
+//            tId = tenantId.getId();
+//        }
+//        if (!customerId.isNullUid()) {
+//            cId = customerId.getId();
+//        }
+        List<Asset> assets = assetService.findAllAssetsByTenantIdAndCustomerIdAndType(tenantId, customerId, type.toString());
 
         List<AlarmSeverityCountInfo> data = new ArrayList<>();
         //根据asset查询所有alarm
@@ -407,14 +406,14 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 //        TimePageLink reqPageLink = statisticsQuery.getPageLink();
 //        TextPageLink tempPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
 
-        UUID tId = null, cId = null;
-        if (!tenantId.isNullUid()) {
-            tId = tenantId.getId();
-        }
-        if (!customerId.isNullUid()) {
-            cId = customerId.getId();
-        }
-        List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerId(tId, cId);
+//        UUID tId = null, cId = null;
+//        if (!tenantId.isNullUid()) {
+//            tId = tenantId.getId();
+//        }
+//        if (!customerId.isNullUid()) {
+//            cId = customerId.getId();
+//        }
+        List<Asset> assets = assetService.findAllAssetsByTenantIdAndCustomerId(tenantId, customerId);
 
         List<AlarmSeverityCountInfo> data = new ArrayList<>();
         //根据asset查询所有alarm
@@ -454,7 +453,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     public AlarmHandledCountInfo findAlarmStatisticsHandledCount(TenantId tenantId, CustomerId customerId, AlarmStatisticsQuery statisticsQuery) {
         log.trace("Executing findAlarmStatisticsHandledCount TenantId:[{}], CustomerId:[{}], AlarmStatisticsQuery:[{}]", statisticsQuery);
         EntityId entityId = AssetId.fromString(statisticsQuery.getEntityId());
-        Asset asset = assetDao.findById(tenantId, entityId.getId());
+        Asset asset = assetService.findAssetById(tenantId, new AssetId(entityId.getId()));
         Long startTime = statisticsQuery.getPageLink().getStartTime();
         Long endTime = statisticsQuery.getPageLink().getEndTime();
 
@@ -565,15 +564,15 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 //            TimePageLink reqPageLink = statisticsQuery.getPageLink();
 //            TextPageLink nextPageLink = new TextPageLink(reqPageLink.getLimit(), null, reqPageLink.getIdOffset(), null);
 
-            UUID tId = null, cId = null;
-            if (!tenantId.isNullUid()) {
-                tId = tenantId.getId();
-            }
-            if (!customerId.isNullUid()) {
-                cId = customerId.getId();
-            }
+//            UUID tId = null, cId = null;
+//            if (!tenantId.isNullUid()) {
+//                tId = tenantId.getId();
+//            }
+//            if (!customerId.isNullUid()) {
+//                cId = customerId.getId();
+//            }
 
-            List<Asset> assets = assetDao.findAllAssetsByTenantIdAndCustomerId(tId, cId);
+            List<Asset> assets = assetService.findAllAssetsByTenantIdAndCustomerId(tenantId, customerId);
 //            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), entityType.toString(), nextPageLink);
             for (Asset asset : assets) {
                 List<Alarm> alarms = findAllAlarmsByEntityId(tenantId, asset.getId(), startTime, endTime);
@@ -654,14 +653,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         TextPageLink nextPageLink = new TextPageLink(100);
         boolean hasNext = true;
         while (hasNext) {
-            UUID tId = null, cId = null;
-            if (!tenantId.isNullUid()) {
-                tId = tenantId.getId();
-            }
-            if (!customerId.isNullUid()) {
-                cId = customerId.getId();
-            }
-            List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tId, cId, assetType.toString(), nextPageLink);
+//            UUID tId = null, cId = null;
+//            if (!tenantId.isNullUid()) {
+//                tId = tenantId.getId();
+//            }
+//            if (!customerId.isNullUid()) {
+//                cId = customerId.getId();
+//            }
+            TextPageData<Asset> pageData = assetService.findAssetsByTenantIdAndCustomerIdAndType(tenantId, customerId, assetType.toString(), nextPageLink);
+
+            List<Asset> assets = pageData.getData();
             alarmCount.entityTotalCountPlus(assets.size());
 
             //根据asset查询所有alarm
@@ -674,7 +675,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
             });
 
-            TextPageData pageData = new TextPageData<>(assets, nextPageLink);
+//            TextPageData pageData = new TextPageData<>(assets, nextPageLink);
             hasNext = pageData.hasNext();
             nextPageLink = pageData.getNextPageLink();
         }
@@ -688,14 +689,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         TextPageLink nextPageLink = new TextPageLink(100);
         boolean hasNext = true;
         while (hasNext) {
-            UUID tId = null, cId = null;
-            if (!tenantId.isNullUid()) {
-                tId = tenantId.getId();
-            }
-            if (!customerId.isNullUid()) {
-                cId = customerId.getId();
-            }
-            List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tId, cId, nextPageLink);
+//            UUID tId = null, cId = null;
+//            if (!tenantId.isNullUid()) {
+//                tId = tenantId.getId();
+//            }
+//            if (!customerId.isNullUid()) {
+//                cId = customerId.getId();
+//            }
+            TextPageData<Device> pageData = deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId, nextPageLink);
+            List<Device> devices = pageData.getData();
+
             alarmCount.entityTotalCountPlus(devices.size());
 
             //根据asset查询所有alarm
@@ -708,7 +711,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
             });
 
-            TextPageData pageData = new TextPageData<>(devices, nextPageLink);
+//            TextPageData pageData = new TextPageData<>(devices, nextPageLink);
             hasNext = pageData.hasNext();
             nextPageLink = pageData.getNextPageLink();
         }
