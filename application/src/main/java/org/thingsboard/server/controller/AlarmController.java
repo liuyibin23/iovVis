@@ -54,7 +54,7 @@ public class AlarmController extends BaseController {
 
 
 	/**
-	* @Description: 获取所有告警等级
+	* @Description: 1.2.5.5 获取所有告警等级
 	* @Author: ShenJi
 	* @Date: 2019/3/14
 	* @Param: []
@@ -110,7 +110,7 @@ public class AlarmController extends BaseController {
 		return retList;
 	}
 	/**
-	* @Description: 1.2.5.7 告警处理
+	* @Description: 1.2.5.4 告警处理
 	* @Author: ShenJi
 	* @Date: 2019/1/31
 	* @Param: [strAlarmId, additionalInfo]
@@ -197,7 +197,7 @@ public class AlarmController extends BaseController {
 	}
 
 	/** 
-	* @Description: 1.2.5.7 设备ID查询告警信息
+	* @Description: 1.2.5.3 设备ID查询告警信息
 	* @Author: ShenJi
 	* @Date: 2019/1/30 
 	* @Param: [strDeviceId] 
@@ -241,7 +241,7 @@ public class AlarmController extends BaseController {
 	}
 
 	/**
-	 * @Description: 1.2.5.6 设备名称查询告警信息
+	 * @Description: 1.2.5.2 设备名称查询告警信息
 	 * @Author: ShenJi
 	 * @Date: 2019/1/30
 	 * @Param: [strDeviceName]
@@ -276,7 +276,50 @@ public class AlarmController extends BaseController {
 		return fillAlarmExInfo(retAlarmList);
 	}
 
-
+	/**
+	 * 1.2.5.6 设备ID查询时间段内的所有告警
+	 */
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/alarms/{deviceId}", method = RequestMethod.GET)
+	@ResponseBody
+	public TimePageData<AlarmInfo> getDeviceAlarms(
+			@PathVariable("deviceId") String strDeviceId,
+			@RequestParam Long startTime,
+			@RequestParam Long endTime,
+			@RequestParam int limit,
+			@RequestParam(required = false) String offset
+	) throws ThingsboardException {
+		checkParameter("DeviceId", strDeviceId);
+		if (endTime <= startTime) throw new IllegalArgumentException("endTime must bigger than startTime.");
+		DeviceId deviceId = new DeviceId(UUID.fromString(strDeviceId));
+		Device device = deviceService.findDeviceById(null, deviceId);
+		if (device == null) {
+			throw new RuntimeException("Error, device not exist! DeviceId = " + strDeviceId);
+		}
+		switch (getCurrentUser().getAuthority()) {
+			case TENANT_ADMIN:
+				TenantId tId = getCurrentUser().getTenantId();
+				if (!device.getTenantId().equals(tId)) {
+					throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
+							ThingsboardErrorCode.PERMISSION_DENIED);
+				}
+				break;
+			case CUSTOMER_USER:
+				TenantId tid = getCurrentUser().getTenantId();
+				CustomerId cId = getCurrentUser().getCustomerId();
+				if (!device.getTenantId().equals(tid) || !device.getCustomerId().equals(cId)) {
+					throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
+							ThingsboardErrorCode.PERMISSION_DENIED);
+				}
+				break;
+		}
+		try {
+			TimePageLink pageLink = createPageLink(limit, startTime, endTime, false, offset);
+			return checkNotNull(alarmService.findAlarms(getCurrentUser().getTenantId(), new AlarmQuery(deviceId, pageLink, null, null, true)).get());
+		} catch (Exception e) {
+			throw handleException(e);
+		}
+	}
 
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/alarm/{alarmId}", method = RequestMethod.GET)
