@@ -46,8 +46,9 @@ async function getWarningStatus(req, res) {
     if (resMsg.info) {
       let asset_warning_level = resMsg.info.value;
       util.responData(resp.status, { asset_warning_level }, res);
-    } else
-      util.responData(util.CST.ERR404, util.CST.MSG404, res);
+    } else {
+      util.responData(util.CST.OK200, util.CST.MSG510, res);
+    }
   }).catch((err) => {
     util.responErrorMsg(err, res);
   });
