@@ -16,7 +16,7 @@
 		"裂缝监测数据统计":
 		{
 			"maxCnt":3,
-			"keys":"裂缝值_max,裂缝值_avg,裂缝值_min",
+			"keys":"裂缝宽度_max,裂缝宽度_avg,裂缝宽度_min",
 			"comment":"振弦式裂缝计"
 		},
 		"应力监测数据统计":
@@ -53,7 +53,7 @@
 	"Bar":{
 		"车辆荷载自动监测数据车重":{
 			"comment":"动态称重系统",
-			"keys":"总重_avg",
+			"keys":"车总重_avg",
 			"title":"一周重车数量",
 			"groupType":"PERCENT",
 			"groupInfo":[
@@ -85,7 +85,7 @@
 	"Pie":{
 		"车辆荷载自动监测数据车重":{
 			"comment":"动态称重系统",
-			"keys":"总重_avg",
+			"keys":"车总重_avg",
 			"title":"重车车重分布",
 			"unit":"t",
 			"groupInfo":[
@@ -113,12 +113,12 @@
 			"keys":"车型",
 			"title":"一周超速车型统计",
 			"groupInfo":[
-				{"type":"A", "comment":"中小客车"},
-				{"type":"B", "comment":"小型货车"},
-				{"type":"C", "comment":"大客车"},
-				{"type":"D", "comment":"中型货车"},
-				{"type":"E", "comment":"大型货车"},
-				{"type":"F", "comment":"特大型货车"}
+				{"type":65, "comment":"中小客车"},
+				{"type":66, "comment":"小型货车"},
+				{"type":67, "comment":"大客车"},
+				{"type":68, "comment":"中型货车"},
+				{"type":69, "comment":"大型货车"},
+				{"type":70, "comment":"特大型货车"}
 			]
 		}
 	},
