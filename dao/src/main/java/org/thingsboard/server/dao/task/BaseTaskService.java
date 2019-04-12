@@ -1,5 +1,8 @@
 package org.thingsboard.server.dao.task;
 
+import com.google.common.base.Function;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,6 +12,7 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
@@ -22,6 +26,7 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserDao;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -49,8 +54,7 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     private DeviceService deviceService;
 
     @Autowired
-	private AssetService assetService;
-
+    private AssetService assetService;
 
 
     @Override
@@ -88,6 +92,14 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     @Override
     public List<Task> checkTasks() {
         return findTaskAlarm(taskDao.checkTasks());
+    }
+
+    @Override
+    public ListenableFuture<List<Task>> findTasks(TenantId tenantId, CustomerId customerId, TimePageLink pageLink) {
+        return Futures.transform(taskDao.findTasks(tenantId, customerId, pageLink), tasks-> {
+                findTaskAlarm(tasks);
+                return tasks;
+        });
     }
 
     @Override
@@ -217,33 +229,33 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
                             throw new DataValidationException("Task is non-existent Task Id!");
                         }
                     }
-                    if (task.getOriginator() != null){
-						switch (task.getOriginator().getEntityType()) {
-							case ASSET:
-								Asset asset = assetService.findAssetById(null,new AssetId(task.getOriginator().getId()));
-								if (asset == null){
-									throw new DataValidationException("Asset is non-existent id: "+task.getOriginator().getId()+" !");
-								}
-								if (task.getCustomerId() != null & task.getTenantId() != null ){
-									if (!asset.getTenantId().equals(task.getTenantId()) || !asset.getCustomerId().equals(task.getCustomerId())){
-										throw new DataValidationException("asset not allow this tenant or customer!");
-									}
-								}
-								break;
-							case DEVICE:
-								Device device = deviceService.findDeviceById(null,new DeviceId(task.getOriginator().getId()));
-								if (device == null){
-									throw new DataValidationException("Device is non-existent id: "+task.getOriginator().getId()+" !");
-								}
-								if (task.getCustomerId() != null & task.getTenantId() != null){
-									if (!device.getTenantId().equals(task.getTenantId()) || !device.getCustomerId().equals(task.getCustomerId())){
-										throw new DataValidationException("device not allow this tenant or customer!");
-									}
-								}
-								break;
-							default:
-								throw new DataValidationException("Originator not supper "+task.getOriginator().getEntityType()+" !");
-						}
+                    if (task.getOriginator() != null) {
+                        switch (task.getOriginator().getEntityType()) {
+                            case ASSET:
+                                Asset asset = assetService.findAssetById(null, new AssetId(task.getOriginator().getId()));
+                                if (asset == null) {
+                                    throw new DataValidationException("Asset is non-existent id: " + task.getOriginator().getId() + " !");
+                                }
+                                if (task.getCustomerId() != null & task.getTenantId() != null) {
+                                    if (!asset.getTenantId().equals(task.getTenantId()) || !asset.getCustomerId().equals(task.getCustomerId())) {
+                                        throw new DataValidationException("asset not allow this tenant or customer!");
+                                    }
+                                }
+                                break;
+                            case DEVICE:
+                                Device device = deviceService.findDeviceById(null, new DeviceId(task.getOriginator().getId()));
+                                if (device == null) {
+                                    throw new DataValidationException("Device is non-existent id: " + task.getOriginator().getId() + " !");
+                                }
+                                if (task.getCustomerId() != null & task.getTenantId() != null) {
+                                    if (!device.getTenantId().equals(task.getTenantId()) || !device.getCustomerId().equals(task.getCustomerId())) {
+                                        throw new DataValidationException("device not allow this tenant or customer!");
+                                    }
+                                }
+                                break;
+                            default:
+                                throw new DataValidationException("Originator not supper " + task.getOriginator().getEntityType() + " !");
+                        }
                     }
                 }
             };

@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -127,7 +127,7 @@ public abstract class BaseController {
     protected AssetService assetService;
 
     @Autowired
-	protected TaskService taskService;
+    protected TaskService taskService;
 
     @Autowired
     protected AlarmService alarmService;
@@ -181,7 +181,7 @@ public abstract class BaseController {
     protected DeviceAttrKVService deviceAttrKVService;
 
     @Autowired
-	protected DeviceAttributesService deviceAttributesService;
+    protected DeviceAttributesService deviceAttributesService;
 
     @Autowired
     protected DeviceCheckService deviceCheckService;
@@ -312,24 +312,24 @@ public abstract class BaseController {
         return getCurrentUser().getTenantId();
     }
 
-	Customer checkCustomerIdAdmin(TenantId tenantId,CustomerId customerId) throws ThingsboardException {
-		try {
+    Customer checkCustomerIdAdmin(TenantId tenantId, CustomerId customerId) throws ThingsboardException {
+        try {
 
-			if (customerId != null && !customerId.isNullUid()) {
-				Customer customer = customerService.findCustomerById(tenantId, customerId);
-				checkCustomer(customer);
-				return customer;
-			} else {
-				return null;
-			}
-		} catch (Exception e) {
-			throw handleException(e, false);
-		}
-	}
+            if (customerId != null && !customerId.isNullUid()) {
+                Customer customer = customerService.findCustomerById(tenantId, customerId);
+                checkCustomer(customer);
+                return customer;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            throw handleException(e, false);
+        }
+    }
 
-	Customer checkCustomerId(TenantId tenantId,CustomerId customerId)throws ThingsboardException{
-        if(getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
-            return checkCustomerIdAdmin(tenantId,customerId);
+    Customer checkCustomerId(TenantId tenantId, CustomerId customerId) throws ThingsboardException {
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            return checkCustomerIdAdmin(tenantId, customerId);
         } else {
             return checkCustomerId(customerId);
         }
@@ -418,17 +418,17 @@ public abstract class BaseController {
         }
     }
 
-	Device checkDeviceId(TenantId tenantId,DeviceId deviceId) throws ThingsboardException {
-		try {
-			validateId(deviceId, "Incorrect deviceId " + deviceId);
-			Device device = deviceService.findDeviceById(tenantId, deviceId);
-			checkNotNull(device);
-			checkDevice(tenantId,device);
-			return device;
-		} catch (Exception e) {
-			throw handleException(e, false);
-		}
-	}
+    Device checkDeviceId(TenantId tenantId, DeviceId deviceId) throws ThingsboardException {
+        try {
+            validateId(deviceId, "Incorrect deviceId " + deviceId);
+            Device device = deviceService.findDeviceById(tenantId, deviceId);
+            checkNotNull(device);
+            checkDevice(tenantId, device);
+            return device;
+        } catch (Exception e) {
+            throw handleException(e, false);
+        }
+    }
 
     Device checkDeviceId(DeviceId deviceId) throws ThingsboardException {
         try {
@@ -441,10 +441,10 @@ public abstract class BaseController {
         }
     }
 
-    protected void checkDevice(TenantId tenantId,Device device) throws ThingsboardException {
+    protected void checkDevice(TenantId tenantId, Device device) throws ThingsboardException {
         checkNotNull(device);
         checkTenantId(tenantId);
-        checkCustomerId(tenantId,device.getCustomerId());
+        checkCustomerId(tenantId, device.getCustomerId());
     }
 
     protected void checkDevice(Device device) throws ThingsboardException {
@@ -470,18 +470,19 @@ public abstract class BaseController {
         checkCustomerId(entityView.getCustomerId());
     }
 
-    Asset checkAssetId(TenantId tenantId,AssetId assetId) throws ThingsboardException {
+    Asset checkAssetId(TenantId tenantId, AssetId assetId) throws ThingsboardException {
         try {
             validateId(assetId, "Incorrect assetId " + assetId);
             Asset asset = assetService.findAssetById(tenantId, assetId);
-			checkNotNull(asset);
-			//todo SYS_ADMIN check
+            checkNotNull(asset);
+            //todo SYS_ADMIN check
             //checkAsset(asset);
             return asset;
         } catch (Exception e) {
             throw handleException(e, false);
         }
     }
+
     Asset checkAssetId(AssetId assetId) throws ThingsboardException {
         try {
             validateId(assetId, "Incorrect assetId " + assetId);
@@ -525,6 +526,21 @@ public abstract class BaseController {
         checkNotNull(alarm);
         checkTenantId(alarm.getTenantId());
     }
+
+    protected void checkTimestamp(Long ts) {
+        if (ts <= 0) {
+            handleException(new IllegalArgumentException("Timestamp must greater than zero."));
+        }
+    }
+
+    protected void checkTimestamps(Long startTs, Long endTs) {
+        checkTimestamp(startTs);
+        checkTimestamp(endTs);
+        if (endTs < startTs) {
+            handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
+        }
+    }
+
 
     WidgetsBundle checkWidgetsBundleId(WidgetsBundleId widgetsBundleId, boolean modify) throws ThingsboardException {
         try {
@@ -601,6 +617,7 @@ public abstract class BaseController {
             }
         }
     }
+
 
     ComponentDescriptor checkComponentDescriptorByClazz(String clazz) throws ThingsboardException {
         try {
@@ -814,16 +831,16 @@ public abstract class BaseController {
             tmpInfo.setAlarmEndTime(alarm.getEndTs());
             tmpInfo.setAlarmCount(alarm.getAlarmCount());
 
-            if (null != alarm.getOriginator()){
-                if (alarm.getOriginator().getEntityType() == EntityType.DEVICE){
-                    Device device = deviceService.findDeviceById(null,new DeviceId(alarm.getOriginator().getId()));
-                    if (null != device){
+            if (null != alarm.getOriginator()) {
+                if (alarm.getOriginator().getEntityType() == EntityType.DEVICE) {
+                    Device device = deviceService.findDeviceById(null, new DeviceId(alarm.getOriginator().getId()));
+                    if (null != device) {
                         tmpInfo.setDeviceId(device.getId().toString());
                         tmpInfo.setDeviceName(device.getName());
                         tmpInfo.setDeviceType(device.getType());
                         tmpInfo.setAdditionalInfo(alarm.getDetails());
                         DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId()));
-                        if (null != deviceAttributes.getMeasureid()){
+                        if (null != deviceAttributes.getMeasureid()) {
                             tmpInfo.setMeasureid(deviceAttributes.getMeasureid());
                         }
 //                        List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,device.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON);
@@ -836,16 +853,16 @@ public abstract class BaseController {
 //                                }
 //                            }
 //                        }
-                    } else{
+                    } else {
                         tmpInfo.setDeviceId("Deleted");
                         tmpInfo.setDeviceName("Deleted");
                         tmpInfo.setAdditionalInfo(alarm.getDetails());
                     }
-                    List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null,alarm.getId(),"ALARM_ANY",RelationTypeGroup.ALARM);
-                    for (EntityRelation entityRelation : tmpEntityRelationList){
-                        if (entityRelation.getFrom().getEntityType() == EntityType.ASSET){
-                            Asset tmpAsset = assetService.findAssetById(null,new AssetId(entityRelation.getFrom().getId()));
-                            if (null != tmpAsset){
+                    List<EntityRelation> tmpEntityRelationList = relationService.findByToAndType(null, alarm.getId(), "ALARM_ANY", RelationTypeGroup.ALARM);
+                    for (EntityRelation entityRelation : tmpEntityRelationList) {
+                        if (entityRelation.getFrom().getEntityType() == EntityType.ASSET) {
+                            Asset tmpAsset = assetService.findAssetById(null, new AssetId(entityRelation.getFrom().getId()));
+                            if (null != tmpAsset) {
                                 tmpInfo.setAssetName(tmpAsset.getName());
                                 break;
                             }
@@ -860,20 +877,21 @@ public abstract class BaseController {
         });
         return retList;
     }
-    /** 
-    * @Description: 计算设备特征值
-    * @Author: ShenJi
-    * @Date: 2019/3/21 
-    * @Param: [assetId, deviceIp, deviceChannle] 
-    * @return: java.lang.String
-    */ 
-    protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle){
-        return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode()+"";
-    }
-    protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
-        return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),deviceAutoLogon.getDeviceShareAttrib().getChannel());
+
+    /**
+     * @Description: 计算设备特征值
+     * @Author: ShenJi
+     * @Date: 2019/3/21
+     * @Param: [assetId, deviceIp, deviceChannle]
+     * @return: java.lang.String
+     */
+    protected String calculateDeviceCode(String assetId, String deviceIp, String deviceChannle) {
+        return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode() + "";
     }
 
+    protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon) {
+        return calculateDeviceCode(assetId, deviceAutoLogon.getDeviceShareAttrib().getIp(), deviceAutoLogon.getDeviceShareAttrib().getChannel());
+    }
 
 
 }
