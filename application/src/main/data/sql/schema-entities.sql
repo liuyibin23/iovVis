@@ -362,7 +362,17 @@ CREATE OR REPLACE VIEW device_attributes AS
 	CASE attribute_kv.attribute_key
 		WHEN 'lastDisconnectTime'::text THEN attribute_kv.long_v
 		ELSE null::bigint
-	END::bigint) AS lastDisconnectTime
+	END::bigint) AS lastDisconnectTime,
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'dynamicStaticState'::text THEN attribute_kv.str_v
+          ELSE NULL::character varying
+      END) AS dynamicstaticstate,
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'deviceGroup'::text THEN attribute_kv.str_v
+          ELSE NULL::character varying
+      END) AS deviceGroup
    FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'DEVICE'::text
   GROUP BY attribute_kv.entity_id;

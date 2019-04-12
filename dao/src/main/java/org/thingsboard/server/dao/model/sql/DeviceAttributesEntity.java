@@ -31,6 +31,11 @@ public class DeviceAttributesEntity {
 	@Column(name = "lastdisconnecttime")
 	private Long lastDisconnectTime;
 
+	@Column(name = "dynamicstaticstate")
+	private String dynamicStaticState;
+	@Column(name = "devicegroup")
+	private String deviceGroup;
+
 	public String getEntityId() {
 		return entityId;
 	}
@@ -109,5 +114,21 @@ public class DeviceAttributesEntity {
 
 	public void setLastDisconnectTime(Long lastDisconnectTime) {
 		this.lastDisconnectTime = lastDisconnectTime;
+	}
+
+	public String getDynamicStaticState() {
+		return dynamicStaticState;
+	}
+
+	public void setDynamicStaticState(String dynamicStaticState) {
+		this.dynamicStaticState = dynamicStaticState;
+	}
+
+	public String getDeviceGroup() {
+		return deviceGroup;
+	}
+
+	public void setDeviceGroup(String deviceGroup) {
+		this.deviceGroup = deviceGroup;
 	}
 }
