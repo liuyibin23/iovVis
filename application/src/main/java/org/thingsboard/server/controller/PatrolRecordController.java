@@ -52,7 +52,8 @@ public class PatrolRecordController  extends BaseController{
 		if (!taskOptional.isPresent()){
 			throw new ThingsboardException(ThingsboardErrorCode.BAD_REQUEST_PARAMS);
 		}
-		if (!taskOptional.get().getTaskKind().equals(TaskKind.PATROL)){
+		if (!(taskOptional.get().getTaskKind().equals(TaskKind.PATROL) ||
+				taskOptional.get().getTaskKind().equals(TaskKind.MAINTENANCE))){
 			throw new ThingsboardException("task kind not patrol",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
 		}
 		switch (getCurrentUser().getAuthority()){
