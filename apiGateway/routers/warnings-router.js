@@ -46,8 +46,9 @@ async function getWarningStatus(req, res) {
     if (resMsg.info) {
       let asset_warning_level = resMsg.info.value;
       util.responData(resp.status, { asset_warning_level }, res);
-    } else
-      util.responData(util.CST.ERR404, util.CST.MSG404, res);
+    } else {
+      util.responData(util.CST.OK200, util.CST.MSG510, res);
+    }
   }).catch((err) => {
     util.responErrorMsg(err, res);
   });
@@ -158,7 +159,7 @@ async function getWarningRules(req, res) {
       } 
       
       if (!dataValid){
-        util.responData(util.CST.ERR510, util.CST.MSG510, res);
+        util.responData(util.CST.OK200, util.CST.MSG510, res);
       }
     }).catch(err => {
       //规则链获取出现问题

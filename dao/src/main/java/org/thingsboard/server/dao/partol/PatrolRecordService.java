@@ -2,6 +2,7 @@ package org.thingsboard.server.dao.partol;
 
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 
@@ -16,6 +17,7 @@ public interface PatrolRecordService {
 	List<PatrolRecord> findAllByOriginatorTypeAndOriginatorId(String originatorType,String originatorId) throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findAllByOriginatorTypeAndOriginatorIdAndRecodeType(String originatorType,String originatorId,String recodeType) throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findAll() throws ExecutionException, InterruptedException;
+	PatrolRecord findAllById(PatrolId id) throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findByTenantId(TenantId tenantId) throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findByTenantIdAndCustomerId(TenantId tenantId, CustomerId  customerId) throws ExecutionException, InterruptedException;
 

@@ -7,10 +7,7 @@ import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.AssetId;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -20,9 +17,9 @@ import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.asset.BaseAssetService;
 import org.thingsboard.server.dao.model.sql.PatrolRecordEntity;
-import org.thingsboard.server.dao.relation.RelationDao;
+import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.sql.patrol.PatrolRecordJpaRepository;
-import org.thingsboard.server.dao.task.TaskDao;
+import org.thingsboard.server.dao.task.TaskService;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -36,10 +33,10 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     private PatrolRecordJpaRepository patrolRecordJpaRepository;
 
     @Autowired
-    private TaskDao taskDao;
+    private TaskService taskService;
 
     @Autowired
-    private RelationDao relationDao;
+    private RelationService relationService;
 
     @Autowired
     private BaseAssetService assetService;
@@ -81,7 +78,7 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
             if (patrolRecord.getTaskId() == null) {
                 throw new IllegalArgumentException("taskId can not be null!");
             }
-            Task task = taskDao.findTaskById(patrolRecord.getTaskId().getId());
+            Task task = taskService.findTaskById(patrolRecord.getTaskId().getId());
             if(task == null) {
                 throw new IllegalArgumentException("task not exists!");
             }
@@ -90,24 +87,25 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                         task.getTaskKind(), TaskKind.PATROL, TaskKind.MAINTENANCE));
             }
             task.setTaskStatus(TaskStatus.CLEARED_ACK);
-            taskDao.save(null, task);
+//            taskDao.save(null, task);
+            taskService.createOrUpdateTask(task);
 
             result.setTaskId(task.getId());
             result.setTenantId(task.getTenantId());
 
             //绑定relation
             EntityRelation relation = new EntityRelation(result.getId(), patrolRecord.getTaskId(), EntityRelation.CONTAINS_TYPE);
-            if (!relationDao.saveRelation(null, relation)) {
+            if (!relationService.saveRelation(null, relation)) {
                 throw new IllegalStateException("bind taskId to patrol failed. Raw patrol is:" + patrolRecord.toString());
             }
         } else {
             //不能修改taskId
             try {
-                EntityRelation relation = relationDao.findAllByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON).get().stream().findFirst().orElse(null);
+                EntityRelation relation = relationService.findByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON).stream().findFirst().orElse(null);
                 if (relation != null && !relation.getTo().getId().toString().equals(patrolRecord.getTaskId().getId().toString())) {
                     throw new IllegalStateException("can not modify taskId when update a patrol. Raw patrol record is:" + patrolRecord.toString());
                 }
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (RuntimeException e) {
                 throw new RuntimeException("update patrol record failed. Because there is a error when find relation task.", e);
             }
 
@@ -134,6 +132,12 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     public List<PatrolRecord> findAll() throws ExecutionException, InterruptedException {
         List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findAll()));
         return setAssetIdToPatrolRecords(patrolRecords);
+    }
+
+    @Override
+    public PatrolRecord findAllById(PatrolId id) throws ExecutionException, InterruptedException {
+        PatrolRecord patrolRecord = findPatrolTask(patrolRecordJpaRepository.findAllById(fromTimeUUID(id.getId())).toData());
+        return setAssetIdToPatrolRecord(patrolRecord);
     }
 
     @Override
@@ -173,7 +177,17 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 fromTimeUUID(customerId.getId())));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
-
+    private PatrolRecord setAssetIdToPatrolRecord(PatrolRecord patrolRecord) throws ExecutionException, InterruptedException {
+        if(patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)){
+            patrolRecord.setAssetId((AssetId) patrolRecord.getOriginator());
+        } else if(patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)){
+            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,(DeviceId) patrolRecord.getOriginator()).get();
+            if(assets.size() > 0){
+                patrolRecord.setAssetId(assets.get(0).getId());
+            }
+        }
+        return patrolRecord;
+    }
     private List<PatrolRecord> setAssetIdToPatrolRecords(List<PatrolRecord> patrolRecords) throws ExecutionException, InterruptedException {
         for (PatrolRecord item:patrolRecords) {
             if(item.getOriginator().getEntityType().equals(EntityType.ASSET)){
@@ -262,17 +276,36 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     /**
      * 填充关联的task
      *
+     * @param patrolRecord
+     */
+    private PatrolRecord findPatrolTask(PatrolRecord patrolRecord) {
+            try {
+                relationService.findByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON)
+                        .stream()
+                        .findFirst()
+                        .ifPresent(relation ->
+                                patrolRecord.setTaskId(relation.getTo()));
+            } catch (RuntimeException e) {
+                log.error("find relation task of patrol failed. Patrol info : {}", patrolRecord, e);
+            }
+
+        return patrolRecord;
+    }
+
+    /**
+     * 填充关联的task
+     *
      * @param patrolRecords
      */
     private List<PatrolRecord> findPatrolTask(List<PatrolRecord> patrolRecords) {
         patrolRecords.forEach(p -> {
             try {
-                relationDao.findAllByFrom(null, p.getId(), RelationTypeGroup.COMMON).get()
+                relationService.findByFrom(null, p.getId(), RelationTypeGroup.COMMON)
                         .stream()
                         .findFirst()
                         .ifPresent(relation ->
                                 p.setTaskId(relation.getTo()));
-            } catch (InterruptedException | ExecutionException e) {
+            } catch (RuntimeException e) {
                 log.error("find relation task of patrol failed. Patrol info : {}", p, e);
             }
         });

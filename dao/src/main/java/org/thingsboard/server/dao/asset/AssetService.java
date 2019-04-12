@@ -17,7 +17,6 @@ package org.thingsboard.server.dao.asset;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
@@ -29,7 +28,6 @@ import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface AssetService {
 
@@ -85,6 +83,9 @@ public interface AssetService {
     List<Asset> findAssets();
     List<Asset> findAssetsByTenantId(TenantId tenantId);
     List<Asset> findAssetsByCustomerId(CustomerId customerId);
+
+    List<Asset> findAllAssetsByTenantIdAndCustomerIdAndType(TenantId tenantId, CustomerId customerId, String type);
+    List<Asset> findAllAssetsByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId);
 
     TenantId findTenantIdByAssetId(AssetId assetId,TextPageLink pageLink);
 }

@@ -231,13 +231,13 @@ public class DeviceController extends BaseController {
 				throw new DatabaseException("Asset not exit!" + assetIdStr);
 			}
 
-
-
 			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr);
 			if(deviceCheckService.checkDeviceCode(deviceCode)){
 				device.setId(new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
 			}
 			device.setTenantId(new TenantId(UUID.fromString(tenantIdStr)));
+
+			checkDeviceassign(device);
 
             Device savedDevice = checkNotNull(deviceService.saveDevice(device));
 			EntityId entityIdFreom =  EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(),optionalAsset.get().getUuidId());
@@ -1038,4 +1038,10 @@ public class DeviceController extends BaseController {
             throw handleException(e);
         }
     }
+
+    private void checkDeviceassign(Device device) throws ThingsboardException {
+    	Optional<Customer> optionalCustomer = Optional.ofNullable(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()));
+    	if (!optionalCustomer.isPresent())
+    		throw new ThingsboardException("Customer "+ device.getCustomerId()+" not allow Tenant " +device.getTenantId()+" !",ThingsboardErrorCode.INVALID_ARGUMENTS);
+	}
 }

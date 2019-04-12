@@ -23,7 +23,7 @@ function generateReturnRules(keysInfo, additionalInfo, res) {
   let retInfo = [];
   
   if (keysInfo && keysInfo.length == 0 && !additionalInfo){
-    util.responData(util.CST.ERR510, util.CST.MSG510, res);
+    util.responData(util.CST.OK200, util.CST.MSG510, res);
     return;
   }
 

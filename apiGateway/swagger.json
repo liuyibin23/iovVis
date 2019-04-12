@@ -271,6 +271,7 @@
             "name": "report_type",
             "in": "formData",
             "type": "string",
+            "required": true,
             "enum": [
               "日报",
               "周报",
@@ -278,6 +279,13 @@
               "季报"
             ],
             "description": "报表类型。"
+          },
+          {
+            "name": "operator",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "操作者名字。"
           },
           {
             "name": "report_date",
@@ -396,7 +404,9 @@
             "description": "图表类型。",
             "enum": [
               "折线图",
-              "柱状图"
+              "柱状图",
+              "饼图",
+              "雷达图"
             ],
             "type": "string"
           },
@@ -427,6 +437,12 @@
             "format": "int64",
             "in": "query",
             "description": "结束时间。"
+          },
+          {
+            "name": "interval",
+            "type": "integer",
+            "in": "query",
+            "description": "聚合时间间距(s)。"
           },
           {
             "name": "chartWidth",
@@ -552,6 +568,45 @@
           },
           "500": {
             "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/generate/reports/{fileId}": {
+      "get": {
+        "tags": [
+          "文件内容"
+        ],
+        "summary": "生成报表文件",
+        "description": "根据指定的报表模板生成报表。",
+        "parameters": [
+          {
+            "name": "fileId",
+            "in": "path",
+            "required": true,
+            "description": "文件ID。",
+            "type": "string"
+          },
+          {
+            "name": "startTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "required": true,
+            "description": "开始时间。"
+          },
+          {
+            "name": "endTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "required": true,
+            "description": "结束时间。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回文件。"
           }
         }
       }
@@ -896,6 +951,61 @@
           }
         }
       }
+    },
+    "/statistics/{deviceId}": {
+      "get": {
+        "tags": [
+          "统计"
+        ],
+        "summary": "获取物理量count信息",
+        "description": "获取物理量count信息。",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "description": "设备编号（deviceId）。",
+            "type": "string"
+          },
+          {
+            "name": "keys",
+            "in": "query",
+            "required": true,
+            "description": "物理量列表 key1,key2,ket3",
+            "type": "string"
+          },
+          {
+            "name": "startTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "required": true,
+            "description": "开始时间。"
+          },
+          {
+            "name": "endTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "required": true,
+            "description": "结束时间。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
     }
   },
   "securityDefinitions": {
@@ -970,10 +1080,10 @@
       "description": "一级告警规则（一般）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string"
         },
         "max": {
-          "type": "integer"
+          "type": "string"
         }
       }
     },
@@ -982,10 +1092,10 @@
       "description": "二级告警规则（严重）。",
       "properties": {
         "min": {
-          "type": "integer"
+          "type": "string"
         },
         "max": {
-          "type": "integer"
+          "type": "string"
         }
       }
     },

@@ -25,11 +25,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.EntitySubtype;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.EntityView;
-import org.thingsboard.server.common.data.Tenant;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
@@ -40,7 +36,6 @@ import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
-import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
@@ -49,10 +44,7 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -95,6 +87,9 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	public TextPageData<AssetExInfo> findAllAssetExInfo(TextPageLink pageLink){
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
 		List<AssetExInfo> assetExInfos = assetDao.findAllAssetExInfo(pageLink);
+		assetExInfos.stream().forEach(asset -> {
+			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
+		});
 		return  new TextPageData<>(assetExInfos, pageLink);
 	}
 
@@ -105,6 +100,9 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
 		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
 		List<AssetExInfo> assetExInfos = assetDao.findAssetExInfoByTenantId(tenantId.getId(),pageLink);
+		assetExInfos.stream().forEach(asset -> {
+			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
+		});
 		return  new TextPageData<>(assetExInfos, pageLink);
 	}
 
@@ -113,6 +111,9 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
 		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
 		List<AssetExInfo> assetExInfos = assetDao.findAssetExInfosByTenantIdAndCustomerId(tenantId.getId(),customerId.getId(),pageLink);
+		assetExInfos.stream().forEach(asset -> {
+			asset.setContainsCount(relationService.findByFromAndType(asset.getTenantId(),asset.getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON).size());
+		});
 		return new TextPageData<>(assetExInfos, pageLink);
 	}
 
@@ -260,11 +261,19 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	@Override
 	public TextPageData<Asset> findAssetsByTenantIdAndCustomerIdAndType(TenantId tenantId, CustomerId customerId, String type, TextPageLink pageLink) {
 		log.trace("Executing findAssetsByTenantIdAndCustomerIdAndType, tenantId [{}], customerId [{}], type [{}], pageLink [{}]", tenantId, customerId, type, pageLink);
-		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-		validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
+        //TODO 下面代码是拷贝过来的，需要优化，不应该把tid和cid的判断逻辑放到DAO中，应该拆分成几个独立的service方法。
+//		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+//		validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
 		validateString(type, "Incorrect type " + type);
 		validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
-		List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tenantId.getId(), customerId.getId(), type, pageLink);
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+		List<Asset> assets = assetDao.findAssetsByTenantIdAndCustomerIdAndType(tId, cId, type, pageLink);
 		return new TextPageData<>(assets, pageLink);
 	}
 
@@ -362,6 +371,30 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 	public List<Asset> findAssetsByCustomerId(CustomerId customerId) {
 		return assetDao.findAssetsByCustomerId(customerId.getId());
 	}
+
+	@Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId){
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+        return assetDao.findAllAssetsByTenantIdAndCustomerId(tId, cId);
+    }
+
+    @Override
+    public List<Asset> findAllAssetsByTenantIdAndCustomerIdAndType(TenantId tenantId, CustomerId customerId, String type) {
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+        return assetDao.findAllAssetsByTenantIdAndCustomerIdAndType(tId, cId, type);
+    }
 
 	@Override
 	public TenantId findTenantIdByAssetId(AssetId assetId,TextPageLink pageLink){

@@ -3,15 +3,20 @@ package org.thingsboard.server.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
-import org.thingsboard.server.service.security.model.UserPrincipal;
+import org.thingsboard.server.common.data.relation.EntityRelation;
+import org.thingsboard.server.common.data.relation.RelationTypeGroup;
+import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskKind;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -31,6 +36,55 @@ public class PatrolRecordController  extends BaseController{
 
 	}
 
+	/**
+	* @Description: 1.2.15.3 查询指定任务巡检养护信息
+	* @Author: ShenJi
+	* @Date: 2019/4/10
+	* @Param: [taskId]
+	* @return: java.util.List<org.thingsboard.server.common.data.patrol.PatrolRecord>
+	*/
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/currentUser/findPatrolRecordsByTaskId", method = RequestMethod.GET)
+	@ResponseBody
+	public List<PatrolRecord> checkRecordsByTaskId(String taskId) throws ThingsboardException, ExecutionException, InterruptedException {
+
+		Optional<Task> taskOptional = Optional.ofNullable(taskService.findTaskById(toUUID(taskId)));
+		if (!taskOptional.isPresent()){
+			throw new ThingsboardException(ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		}
+		if (!(taskOptional.get().getTaskKind().equals(TaskKind.PATROL) ||
+				taskOptional.get().getTaskKind().equals(TaskKind.MAINTENANCE))){
+			throw new ThingsboardException("task kind not patrol",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+		}
+		switch (getCurrentUser().getAuthority()){
+			case SYS_ADMIN:
+				break;
+			case TENANT_ADMIN:
+				if (!taskOptional.get().getTenantId().equals(getTenantId())){
+					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+				}
+				break;
+			case CUSTOMER_USER:
+				if (!taskOptional.get().getCustomerId().equals(getCurrentUser())){
+					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+				}
+				break;
+		}
+		Optional<List<EntityRelation>> optionalEntityRelation = Optional.ofNullable(
+				relationService.findByToAndType(
+						getTenantId(),taskOptional.get().getId(),EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON));
+		if (!optionalEntityRelation.isPresent())
+			return null;
+		List<PatrolRecord> retObj = new ArrayList<>();
+
+		for (EntityRelation e:optionalEntityRelation.get()){
+			Optional<PatrolRecord> optionalPatrolRecord = Optional.ofNullable(patrolRecordService.findAllById(new PatrolId(e.getFrom().getId())));
+			if (optionalEntityRelation.isPresent()){
+				retObj.add(optionalPatrolRecord.get());
+			}
+		}
+		return retObj;
+	}
 	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
 	@RequestMapping(value = "/currentUser/patrolRecords", method = RequestMethod.GET)
 	@ResponseBody

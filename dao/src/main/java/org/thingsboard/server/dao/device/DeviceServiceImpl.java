@@ -246,10 +246,18 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     @Override
     public TextPageData<Device> findDevicesByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, TextPageLink pageLink) {
         log.trace("Executing findDevicesByTenantIdAndCustomerId, tenantId [{}], customerId [{}], pageLink [{}]", tenantId, customerId, pageLink);
-        validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-        validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
+        //TODO 下面代码是拷贝过来的，需要优化，不应该把tid和cid的判断逻辑放到DAO中，应该拆分成几个独立的service方法。
+//        validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+//        validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
         validatePageLink(pageLink, INCORRECT_PAGE_LINK + pageLink);
-        List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tenantId.getId(), customerId.getId(), pageLink);
+        UUID tId = null, cId = null;
+        if (!tenantId.isNullUid()) {
+            tId = tenantId.getId();
+        }
+        if (!customerId.isNullUid()) {
+            cId = customerId.getId();
+        }
+        List<Device> devices = deviceDao.findDevicesByTenantIdAndCustomerId(tId, cId, pageLink);
         return new TextPageData<>(devices, pageLink);
     }
 
