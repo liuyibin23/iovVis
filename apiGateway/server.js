@@ -11,6 +11,7 @@ const templatesRouter = require('./routers/templates-router');
 const reportsRouter = require('./routers/reports-router');
 const echartsRouter = require('./routers/echarts-router');
 const contentRouter =  require('./routers/content-router');
+const generateReportsRouter = require('./routers/generate-reports-router');
 const alarmsRouter = require('./routers/alarms-router');
 const warningsRouter = require('./routers/warnings-router');
 const virtualDeviceRouter = require('./routers/virtual-device-router');
@@ -49,6 +50,7 @@ if (ret) {
     app.use('/api/v1/echarts', echartsRouter);
     app.use('/api/v1/tables', contentRouter);
     app.use('/api/v1/content', contentRouter);
+    app.use('/api/v1/generate/reports', generateReportsRouter);
     app.use('/api/v1/warnings', warningsRouter);
     app.use('/api/v1/rules/warnings', warningsRouter);
     app.use('/api/v1/virtualDevice/create', virtualDeviceRouter);
