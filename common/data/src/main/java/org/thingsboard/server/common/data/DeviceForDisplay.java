@@ -23,5 +23,6 @@ public class DeviceForDisplay {
 	private Boolean active;
 	private Long lastConnectTime;
 	private Long lastDisconnectTime;
-
+	private String dynamicStaticState;
+	private String deviceGroup;
 }
