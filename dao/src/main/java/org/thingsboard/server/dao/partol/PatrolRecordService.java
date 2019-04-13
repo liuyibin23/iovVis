@@ -1,9 +1,12 @@
 package org.thingsboard.server.dao.partol;
 
+import com.google.common.util.concurrent.ListenableFuture;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 
 import java.util.List;
@@ -37,4 +40,7 @@ public interface PatrolRecordService {
 	List<PatrolRecord> findByOriginatorTypeAndRecodeType(String originatorType,String recodeType)throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findByOriginatorTypeAndRecodeTypeAndTenantId(String originatorType,String recodeType,TenantId tenantId)throws ExecutionException, InterruptedException;
 	List<PatrolRecord> findByOriginatorTypeAndRecodeTypeAndTenantIdAndCustomerId(String originatorType,String recodeType,TenantId tenantId,CustomerId customerId)throws ExecutionException, InterruptedException;
+
+	ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, EntityId originatorId, String recordType, TimePageLink pageLink);
+
 }

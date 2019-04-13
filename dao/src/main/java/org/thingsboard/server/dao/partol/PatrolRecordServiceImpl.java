@@ -1,5 +1,7 @@
 package org.thingsboard.server.dao.partol;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -18,6 +21,7 @@ import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.asset.BaseAssetService;
 import org.thingsboard.server.dao.model.sql.PatrolRecordEntity;
 import org.thingsboard.server.dao.relation.RelationService;
+import org.thingsboard.server.dao.sql.patrol.JpaPatrolRecordDao;
 import org.thingsboard.server.dao.sql.patrol.PatrolRecordJpaRepository;
 import org.thingsboard.server.dao.task.TaskService;
 
@@ -31,6 +35,9 @@ import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
 public class PatrolRecordServiceImpl implements PatrolRecordService {
     @Autowired
     private PatrolRecordJpaRepository patrolRecordJpaRepository;
+
+    @Autowired
+    private JpaPatrolRecordDao patrolRecordDao;
 
     @Autowired
     private TaskService taskService;
@@ -79,7 +86,7 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 throw new IllegalArgumentException("taskId can not be null!");
             }
             Task task = taskService.findTaskById(patrolRecord.getTaskId().getId());
-            if(task == null) {
+            if (task == null) {
                 throw new IllegalArgumentException("task not exists!");
             }
             if (task.getTaskKind() != TaskKind.PATROL && task.getTaskKind() != TaskKind.MAINTENANCE) {
@@ -177,24 +184,26 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                 fromTimeUUID(customerId.getId())));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
+
     private PatrolRecord setAssetIdToPatrolRecord(PatrolRecord patrolRecord) throws ExecutionException, InterruptedException {
-        if(patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)){
+        if (patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)) {
             patrolRecord.setAssetId((AssetId) patrolRecord.getOriginator());
-        } else if(patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)){
-            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,(DeviceId) patrolRecord.getOriginator()).get();
-            if(assets.size() > 0){
+        } else if (patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
+            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) patrolRecord.getOriginator()).get();
+            if (assets.size() > 0) {
                 patrolRecord.setAssetId(assets.get(0).getId());
             }
         }
         return patrolRecord;
     }
+
     private List<PatrolRecord> setAssetIdToPatrolRecords(List<PatrolRecord> patrolRecords) throws ExecutionException, InterruptedException {
-        for (PatrolRecord item:patrolRecords) {
-            if(item.getOriginator().getEntityType().equals(EntityType.ASSET)){
+        for (PatrolRecord item : patrolRecords) {
+            if (item.getOriginator().getEntityType().equals(EntityType.ASSET)) {
                 item.setAssetId((AssetId) item.getOriginator());
-            } else if(item.getOriginator().getEntityType().equals(EntityType.DEVICE)){
-                List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,(DeviceId) item.getOriginator()).get();
-                if(assets.size() > 0){
+            } else if (item.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
+                List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) item.getOriginator()).get();
+                if (assets.size() > 0) {
                     item.setAssetId(assets.get(0).getId());
                 }
             }
@@ -204,13 +213,13 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findAllByRecodeType(String recodeType) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findAllByRecodeType(recodeType)));
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findAllByRecodeType(recodeType)));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
 
     @Override
     public List<PatrolRecord> findByRecodeTypeAndTenantId(String recodeType, TenantId tenantId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByRecodeTypeAndTenantId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByRecodeTypeAndTenantId(
                 recodeType,
                 fromTimeUUID(tenantId.getId()))));
         return setAssetIdToPatrolRecords(patrolRecords);
@@ -218,7 +227,7 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findByRecodeTypeAndTenantIdAndCustomerId(String recodeType, TenantId tenantId, CustomerId customerId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByRecodeTypeAndTenantIdAndCustomerId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByRecodeTypeAndTenantIdAndCustomerId(
                 recodeType,
                 fromTimeUUID(tenantId.getId()),
                 fromTimeUUID(customerId.getId()))));
@@ -227,13 +236,13 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findAllByOriginatorType(String originatorType) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorType(originatorType)));
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorType(originatorType)));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
 
     @Override
     public List<PatrolRecord> findByOriginatorTypeAndTenantId(String originatorType, TenantId tenantId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndTenantId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndTenantId(
                 originatorType,
                 fromTimeUUID(tenantId.getId()))));
         return setAssetIdToPatrolRecords(patrolRecords);
@@ -241,7 +250,7 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findByOriginatorTypeAndTenantIdAndCustomerId(String originatorType, TenantId tenantId, CustomerId customerId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndTenantIdAndCustomerId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndTenantIdAndCustomerId(
                 originatorType,
                 fromTimeUUID(tenantId.getId()),
                 fromTimeUUID(customerId.getId()))));
@@ -250,13 +259,13 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findByOriginatorTypeAndRecodeType(String originatorType, String recodeType) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeType(originatorType,recodeType)));
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeType(originatorType, recodeType)));
         return setAssetIdToPatrolRecords(patrolRecords);
     }
 
     @Override
     public List<PatrolRecord> findByOriginatorTypeAndRecodeTypeAndTenantId(String originatorType, String recodeType, TenantId tenantId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeTypeAndTenantId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeTypeAndTenantId(
                 originatorType,
                 recodeType,
                 fromTimeUUID(tenantId.getId()))));
@@ -265,12 +274,26 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
 
     @Override
     public List<PatrolRecord> findByOriginatorTypeAndRecodeTypeAndTenantIdAndCustomerId(String originatorType, String recodeType, TenantId tenantId, CustomerId customerId) throws ExecutionException, InterruptedException {
-        List<PatrolRecord> patrolRecords =  findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeTypeAndTenantIdAndCustomerId(
+        List<PatrolRecord> patrolRecords = findPatrolTask(DaoUtil.convertDataList(patrolRecordJpaRepository.findByOriginatorTypeAndRecodeTypeAndTenantIdAndCustomerId(
                 originatorType,
                 recodeType,
                 fromTimeUUID(tenantId.getId()),
                 fromTimeUUID(customerId.getId()))));
         return setAssetIdToPatrolRecords(patrolRecords);
+    }
+
+    @Override
+    public ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, EntityId originatorId, String recordType, TimePageLink pageLink) {
+        return Futures.transform(patrolRecordDao.findAllByOriginatorAndType(tenantId, customerId, originatorId, recordType, pageLink), patrolRecords -> {
+            List<PatrolRecord> withTasks = findPatrolTask(patrolRecords);
+            try {
+                return setAssetIdToPatrolRecords(withTasks);
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+                log.error("PatrolRecordService", "Set AssetId to Pratrol Record failed." + e.toString());
+                return withTasks;
+            }
+        });
     }
 
     /**
@@ -279,15 +302,15 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
      * @param patrolRecord
      */
     private PatrolRecord findPatrolTask(PatrolRecord patrolRecord) {
-            try {
-                relationService.findByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON)
-                        .stream()
-                        .findFirst()
-                        .ifPresent(relation ->
-                                patrolRecord.setTaskId(relation.getTo()));
-            } catch (RuntimeException e) {
-                log.error("find relation task of patrol failed. Patrol info : {}", patrolRecord, e);
-            }
+        try {
+            relationService.findByFrom(null, patrolRecord.getId(), RelationTypeGroup.COMMON)
+                    .stream()
+                    .findFirst()
+                    .ifPresent(relation ->
+                            patrolRecord.setTaskId(relation.getTo()));
+        } catch (RuntimeException e) {
+            log.error("find relation task of patrol failed. Patrol info : {}", patrolRecord, e);
+        }
 
         return patrolRecord;
     }

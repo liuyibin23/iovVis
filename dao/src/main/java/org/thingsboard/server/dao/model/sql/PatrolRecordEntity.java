@@ -11,6 +11,8 @@ import org.thingsboard.server.common.data.id.EntityIdFactory;
 import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
+import org.thingsboard.server.dao.model.BaseEntity;
+import org.thingsboard.server.dao.model.BaseSqlEntity;
 import org.thingsboard.server.dao.model.ToData;
 
 import javax.persistence.*;
@@ -24,10 +26,10 @@ import static org.thingsboard.server.dao.model.ModelConstants.*;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class PatrolRecordEntity implements ToData<PatrolRecord> {
-	@Id
-	@Column(name = ID_PROPERTY)
-	private String id;
+public class PatrolRecordEntity extends BaseSqlEntity<PatrolRecord> implements BaseEntity<PatrolRecord> {
+//	@Id
+//	@Column(name = ID_PROPERTY)
+//	private String id;
 
 	@Column(name = TASK_TENANT_ID_PROPERTY)
 	private String tenantId;
