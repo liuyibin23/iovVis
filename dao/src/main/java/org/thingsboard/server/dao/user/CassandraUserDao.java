@@ -151,4 +151,9 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     public User findFirstUserByCustomerId(UUID customerId) {
         return null;
     }
+
+    @Override
+    public List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority, TextPageLink pageLink) {
+        return null;
+    }
 }

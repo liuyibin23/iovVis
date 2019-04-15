@@ -693,21 +693,46 @@ public class AssetController extends BaseController {
 	@RequestMapping(value = "/currentUser/assets", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<AssetExInfo> getCurrentUserAssets(@RequestParam int limit,
-												  @RequestParam(required = false) String textSearch,
-												  @RequestParam(required = false) String idOffset,
-												  @RequestParam(required = false) String textOffset) throws ThingsboardException {
+														  @RequestParam(required = false) String tenantIdStr,
+														  @RequestParam(required = false) String customerIdStr,
+														  @RequestParam(required = false) String textSearch,
+														  @RequestParam(required = false) String idOffset,
+														  @RequestParam(required = false) String textOffset) throws ThingsboardException {
 		try {
 			SecurityUser user = getCurrentUser();
-			TenantId tenantId = user.getTenantId();
-			CustomerId customerId = user.getCustomerId();
+			TenantId tenantId;//= user.getTenantId();
+			CustomerId customerId;//= user.getCustomerId();
 			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-			if(customerId != null && !customerId.isNullUid()){ //customer
+
+			if(StringUtils.isNotEmpty(tenantIdStr)){
+				tenantId = new TenantId(UUID.fromString(tenantIdStr));
+				checkTenantId(tenantId);
+			} else {
+				tenantId = user.getTenantId();
+			}
+
+			if(StringUtils.isNotEmpty(customerIdStr)){
+				customerId = new CustomerId(UUID.fromString(customerIdStr));
+				checkCustomerId(getTenantId(),customerId);
+			} else {
+				customerId = user.getCustomerId();
+			}
+
+			if(!customerId.getId().equals(CustomerId.NULL_UUID)){
 				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId,pageLink));
-			} else if(tenantId != null && !tenantId.isNullUid()){ //tenant
+			} else if(!tenantId.getId().equals(TenantId.NULL_UUID)){
 				return checkNotNull(assetService.findAssetExInfoByTenant(tenantId,pageLink));
-			} else { //admin
+			} else {
 				return checkNotNull(assetService.findAllAssetExInfo(pageLink));
 			}
+
+//			if(customerId != null && !customerId.isNullUid()){ //customer
+//				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId,pageLink));
+//			} else if(tenantId != null && !tenantId.isNullUid()){ //tenant
+//				return checkNotNull(assetService.findAssetExInfoByTenant(tenantId,pageLink));
+//			} else { //admin
+//				return checkNotNull(assetService.findAllAssetExInfo(pageLink));
+//			}
 		} catch (ThingsboardException e) {
 			throw handleException(e);
 		}
