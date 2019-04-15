@@ -42,6 +42,7 @@ import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.thingsboard.server.dao.service.Validator.validateId;
 import static org.thingsboard.server.dao.service.Validator.validatePageLink;
@@ -301,6 +302,24 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     @Override
     public User findFirstUserByCustomerId(CustomerId customerId) {
         return userDao.findFirstUserByCustomerId(customerId.getId());
+    }
+
+    @Override
+    public TextPageData<User> findUsersByAuthority(TenantId tenantId, CustomerId customerId, Authority authority, TextPageLink pageLink) {
+        UUID tenantUUID;
+        UUID customerUUID;
+        if(tenantId == null || tenantId.getId() ==null){
+            tenantUUID = null;
+        } else{
+            tenantUUID = tenantId.getId();
+        }
+        if(customerId == null || customerId.getId() == null){
+            customerUUID = null;
+        } else {
+            customerUUID = customerId.getId();
+        }
+        List<User> users = userDao.findUsersByAuthority(tenantUUID,customerUUID,authority,pageLink);
+        return new TextPageData<>(users,pageLink);
     }
 
     private DataValidator<User> userValidator =

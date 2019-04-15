@@ -136,6 +136,8 @@ public interface UserDao extends Dao<User> {
 	List<User> findUsersByTenantIdAndCustomerId(UUID tenantId,UUID customerId,TextPageLink pageLink);
 
 	User findFirstUserByCustomerId(UUID customerId);
+
+    List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority,TextPageLink pageLink);
 }
 
 

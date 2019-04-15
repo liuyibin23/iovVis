@@ -18,6 +18,7 @@ package org.thingsboard.server.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,6 +46,7 @@ import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -261,18 +263,34 @@ public class CustomerController extends BaseController {
 	@RequestMapping(value = "/currentUser/customers", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<CustomerExInfo> getCurrentUserCustomers(@RequestParam int limit,
+																@RequestParam(required = false) String tenantIdStr,
 																@RequestParam(required = false) String textSearch,
 																@RequestParam(required = false) String idOffset,
 																@RequestParam(required = false) String textOffset) throws ThingsboardException {
-		TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
-		switch (getCurrentUser().getAuthority()){
-			case SYS_ADMIN:
-				return checkNotNull(customerService.findCustomerExInfos(pageLink));
-			case TENANT_ADMIN:
-				return checkNotNull(customerService.findCustomerExInfosByTenantId(getTenantId(), pageLink));
-			default:
-				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+		try{
+			TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+			TenantId tenantId = null;
+			if(StringUtils.isNotEmpty(tenantIdStr)){
+				tenantId = new TenantId(UUID.fromString(tenantIdStr));
+				checkTenantId(tenantId);
+			}
+			switch (getCurrentUser().getAuthority()){
+				case SYS_ADMIN:
+					if(tenantId != null){
+						return checkNotNull(customerService.findCustomerExInfosByTenantId(tenantId,pageLink));
+					}
+					else{
+						return checkNotNull(customerService.findCustomerExInfos(pageLink));
+					}
+				case TENANT_ADMIN:
+					return checkNotNull(customerService.findCustomerExInfosByTenantId(getTenantId(), pageLink));
+				default:
+					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+			}
+		} catch (Exception e) {
+			throw handleException(e);
 		}
+
 
 	}
 	@PreAuthorize("hasAuthority('SYS_ADMIN')")
