@@ -427,7 +427,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                 protected void validateCreate(TenantId tenantId, Device device) {
                     deviceDao.findDeviceByTenantIdAndName(device.getTenantId().getId(), device.getName()).ifPresent(
                             d -> {
-                               // throw new DataValidationException("Device with such name already exists!");
+                               throw new DataValidationException("Device with such name already exists!");
                             }
                     );
                 }

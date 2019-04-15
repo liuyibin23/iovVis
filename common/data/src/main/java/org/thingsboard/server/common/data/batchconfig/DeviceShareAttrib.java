@@ -37,6 +37,8 @@ public class DeviceShareAttrib implements Serializable {
 	@JsonProperty("moniteritem")
 	private String moniterItem;
 
+	private String dynamicStaticState;
+	private String deviceGroup;
 //	@JsonProperty("IMEI")
 //	private String imei;
 //	@JsonProperty("IMSI")
