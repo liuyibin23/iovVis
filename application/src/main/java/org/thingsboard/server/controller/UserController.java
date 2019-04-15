@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.Getter;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -48,6 +49,7 @@ import org.thingsboard.server.service.security.model.token.JwtTokenFactory;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -82,24 +84,63 @@ public class UserController extends BaseController {
 	@RequestMapping(value = "/currentUser/users", method = RequestMethod.GET)
 	@ResponseBody
 	public TextPageData<User> getUsers(@RequestParam int limit,
-                               @RequestParam(required = false) String textSearch,
-                               @RequestParam(required = false) String idOffset,
-                               @RequestParam(required = false) String textOffset) throws ThingsboardException {
+                                       @RequestParam(required = false) String tenantIdStr,
+                                       @RequestParam(required = false) String customerIdStr,
+                                       @RequestParam(required = false) UserRole role,
+                                       @RequestParam(required = false) String textSearch,
+                                       @RequestParam(required = false) String idOffset,
+                                       @RequestParam(required = false) String textOffset) throws ThingsboardException {
         TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
 		TextPageData<User> retobj;
-		switch (getCurrentUser().getAuthority()){
-			case SYS_ADMIN:
-				retobj = userService.findUsers(pageLink);
-				break;
-			case TENANT_ADMIN:
-				retobj = userService.findTenantUsers(getCurrentUser().getTenantId(),pageLink);
-				break;
-			case CUSTOMER_USER:
-				retobj = userService.findUsersByTenantIdAndCustomerId(getTenantId(),getCurrentUser().getCustomerId(),pageLink);
-				break;
-			default:
-				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
-		}
+
+        SecurityUser currentUser = getCurrentUser();
+        TenantId tenantId;//= user.getTenantId();
+        CustomerId customerId;//= user.getCustomerId();
+        if(StringUtils.isNotEmpty(tenantIdStr)){
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        } else {
+            tenantId = currentUser.getTenantId();
+        }
+
+        if(StringUtils.isNotEmpty(customerIdStr)){
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            checkCustomerId(getTenantId(),customerId);
+        } else {
+            customerId = currentUser.getCustomerId();
+        }
+
+        if(role != null){
+            checkUserRole(role);
+            Authority authority = null;
+            switch (role){
+                case SYS_ADMIN:
+                    authority = Authority.SYS_ADMIN;
+                    break;
+                case TENANT_ADMIN:
+                    authority = Authority.TENANT_ADMIN;
+                    break;
+                case CUSTOMER_USER:
+                    authority = Authority.CUSTOMER_USER;
+                    break;
+            }
+            if(!customerId.getId().equals(CustomerId.NULL_UUID)){
+                retobj = userService.findUsersByAuthority(tenantId,customerId,authority,pageLink);
+            } else if(!tenantId.getId().equals(TenantId.NULL_UUID)){
+                retobj = userService.findUsersByAuthority(tenantId,null,authority,pageLink);
+            } else {
+                retobj = userService.findUsersByAuthority(null,null,authority,pageLink);
+            }
+        }else{
+            if(!customerId.getId().equals(CustomerId.NULL_UUID)){
+                retobj = userService.findUsersByTenantIdAndCustomerId(tenantId,customerId,pageLink);
+            } else if(!tenantId.getId().equals(TenantId.NULL_UUID)){
+                retobj = userService.findTenantUsers(tenantId,pageLink);
+            } else {
+                retobj = userService.findUsers(pageLink);
+            }
+        }
+
 		if (retobj.getData().size() > 0){
 			List <User> tmp = new ArrayList<>();
 			retobj.getData().forEach(user -> {
@@ -114,8 +155,9 @@ public class UserController extends BaseController {
                     Tenant tenant = tenantService.findTenantById(user.getTenantId());
                     user.setTenantName(tenant.getName());
                 }
-				tmp.add(user);
+                tmp.add(user);
 			});
+
 			return new TextPageData<User>(tmp,retobj.getNextPageLink(),retobj.hasNext());
 		} else {
 			return retobj;
@@ -123,6 +165,29 @@ public class UserController extends BaseController {
 
 
 	}
+
+	private void checkUserRole(UserRole role) throws ThingsboardException{
+	    switch (getCurrentUser().getAuthority()){
+            case SYS_ADMIN:
+
+                break;
+            case TENANT_ADMIN:
+                if(role.getCode() < UserRole.TENANT_ADMIN.getCode()){
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
+                            ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                break;
+            case CUSTOMER_USER:
+                if(role.getCode() < UserRole.CUSTOMER_USER.getCode()){
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION,
+                            ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                break;
+            case REFRESH_TOKEN:
+                throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+        }
+    }
+
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/user/{userId}", method = RequestMethod.GET)
     @ResponseBody
@@ -487,4 +552,19 @@ public class UserController extends BaseController {
         return user;
     }
 
+    public enum UserRole{
+        SYS_ADMIN(0),
+        TENANT_ADMIN(1),
+        CUSTOMER_USER(2);
+
+        UserRole(int code){
+            this.code = code;
+        }
+
+        private int code;
+
+        public int getCode() {
+            return code;
+        }
+    }
 }

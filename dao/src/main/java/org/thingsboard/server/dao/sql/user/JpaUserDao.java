@@ -176,4 +176,29 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 	public User findFirstUserByCustomerId(UUID customerId) {
 		return userRepository.findFirstByCustomerId(fromTimeUUID(customerId)).toData();
 	}
+
+	@Override
+	public List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority, TextPageLink pageLink) {
+		String tenantIdStr;
+		String customerIdStr;
+		if(tenantId != null){
+			tenantIdStr = fromTimeUUID(tenantId);
+		} else {
+			tenantIdStr = null;
+		}
+		if(customerId != null){
+			customerIdStr = fromTimeUUID(customerId);
+		} else {
+			customerIdStr = null;
+		}
+		return DaoUtil.convertDataList(
+				userRepository
+						.findUsersByAuthority(
+								tenantIdStr,
+								customerIdStr,
+								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+								Objects.toString(pageLink.getTextSearch(), ""),
+								authority,
+								new PageRequest(0, pageLink.getLimit())));
+	}
 }

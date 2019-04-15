@@ -45,8 +45,8 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 
 //	int countByAdditionalInfoLike(String likeStr);
 
-    @Query("SELECT u FROM UserEntity u WHERE u.tenantId = :tenantId " +
-            "AND u.customerId = :customerId AND u.authority = :authority " +
+    @Query("SELECT u FROM UserEntity u WHERE (:tenantId is null OR u.tenantId = :tenantId) " +
+            "AND (:customerId is null OR u.customerId = :customerId)  AND u.authority = :authority " +
             "AND LOWER(u.searchText) LIKE LOWER(CONCAT(:searchText, '%'))" +
             "AND u.id > :idOffset ORDER BY u.id")
     List<UserEntity> findUsersByAuthority(@Param("tenantId") String tenantId,

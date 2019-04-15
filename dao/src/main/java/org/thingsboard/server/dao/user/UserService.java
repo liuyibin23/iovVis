@@ -109,4 +109,6 @@ public interface UserService {
 	List<User> findUsersByFirstNameLike(String firstName);
 
 	User findFirstUserByCustomerId(CustomerId customerId);
+
+	TextPageData<User> findUsersByAuthority(TenantId tenantId, CustomerId customerId, Authority authority,TextPageLink pageLink);
 }
