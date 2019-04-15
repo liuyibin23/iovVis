@@ -18,6 +18,7 @@ package org.thingsboard.server.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.log4j.Log4j;
@@ -36,6 +37,8 @@ import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.page.TimePageData;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -47,6 +50,7 @@ import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttrKV;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
+import org.thingsboard.server.dao.model.sql.RelationEntity;
 import org.thingsboard.server.service.device.DeviceCheckService;
 import org.thingsboard.server.service.security.model.SecurityUser;
 import org.thingsboard.server.service.telemetry.AttributeData;
@@ -666,6 +670,133 @@ public class DeviceController extends BaseController {
                 .filter(item-> item.isPresent() && item.get().getBooleanValue().isPresent() && item.get().getBooleanValue().get())
                 .collect(Collectors.toList());
         return new DeviceCount(devices.size(),activeAttrKeys.size());
+    }
+
+
+    /**
+     * 1.2.4.14 查询所有设备以及设备属性（支持分页）
+     * @param limit
+     * @param type
+     * @param tenantIdStr
+     * @param customerIdStr
+     * @param assetIdStr
+     * @param textSearch
+     * @param idOffset
+     * @param textOffset
+     * @return
+     * @throws ThingsboardException
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/currentUser/page/devicesAndInfo", method = RequestMethod.GET)
+    @ResponseBody
+    public TextPageData<DeviceForDisplay> getDevicesAndInfoPage(
+            @RequestParam(name = "limit") int limit,
+            @RequestParam(required = false) String type,
+            @RequestParam(required = false) String tenantIdStr,
+            @RequestParam(required = false) String customerIdStr,
+            @RequestParam(required = false) String assetIdStr,
+            @RequestParam(required = false) String textSearch,
+            @RequestParam(required = false) String idOffset,
+            @RequestParam(required = false) String textOffset) throws ThingsboardException {
+
+        TenantId tenantId = null;
+        CustomerId customerId = null;
+
+        if (tenantIdStr != null) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if (customerIdStr != null) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            Customer customer;
+            if (tenantId != null) {
+                customer = checkCustomerId(tenantId, customerId);
+            } else {
+                customer = checkCustomerId(customerId);
+            }
+            if (customer != null) {
+                checkNotNull(customer);
+                tenantId = customer.getTenantId();
+            }
+        }
+
+        TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+
+        if (assetIdStr != null) { //1. 查询Asset包含的所有Device，通过Relation查询
+            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
+            Asset asset = checkAssetId(tenantId, assetId);
+            checkAsset(asset);
+
+            final List<Device> devices = new ArrayList<>();
+
+            TimePageLink timePageLink = createPageLink(limit, null, null, true, idOffset);
+            try {
+                List<EntityRelation> relations = relationService.findRelations(tenantId, assetId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON, EntityType.DEVICE, timePageLink).get();
+
+                if (relations != null) {
+                    relations.stream().forEach(entityRelation -> {
+                        DeviceId deviceId = (DeviceId) entityRelation.getTo();
+                        Device device = deviceService.findDeviceById(null, deviceId);
+                        devices.add(device);
+                    });
+                }
+
+                //计算next page link
+                TextPageData tmpPageData = new TextPageData<>(devices, pageLink);
+
+                //条件过滤，然后查询Device属性
+                final CustomerId cId = customerId;
+                final TenantId tId = tenantId;
+                List filteredDevices = devices.stream().filter(device -> {
+                            boolean isTrue = true;
+                            if (!Strings.isNullOrEmpty(type)) {
+                                isTrue = isTrue && device.getType().equals(type);
+                            }
+                            if (!Strings.isNullOrEmpty(textSearch)) {
+                                isTrue = isTrue && device.getName().equals(textSearch);
+                            }
+                            if (cId != null) {
+                                isTrue = isTrue && cId.equals(device.getCustomerId());
+                            }
+                            if (tId != null) {
+                                isTrue = isTrue && tId.equals(device.getTenantId());
+                            }
+                            return isTrue;
+                        }
+                ).collect(Collectors.toList());
+                List<DeviceForDisplay> deviceForDisplays = devicesSearchInfo(filteredDevices);
+
+                return new TextPageData<>(deviceForDisplays, tmpPageData.getNextPageLink(), tmpPageData.hasNext());
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                throw handleException(e);
+            }
+        } else { //2. 根据DeviceService条件查询
+            TextPageData tmpPageData;
+            if (Strings.isNullOrEmpty(type)) {
+                if (customerId == null) {
+                    if (tenantId == null) {
+                        tmpPageData = deviceService.findDevices(pageLink);
+                    } else {
+                        tmpPageData = deviceService.findDevicesByTenantId(tenantId,pageLink);
+                    }
+                } else {
+                    tmpPageData = deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId, pageLink);
+                }
+            } else {
+                if(customerId == null){
+                    if(tenantId == null) {
+                        tmpPageData = deviceService.findDevicesByType(type, pageLink);
+                    }else {
+                        tmpPageData = deviceService.findDevicesByTenantIdAndType(tenantId, type, pageLink);
+                    }
+                }else{
+                    tmpPageData = deviceService.findDevicesByTenantIdAndCustomerIdAndType(tenantId, customerId, type, pageLink);
+                }
+            }
+            List<DeviceForDisplay> deviceForDisplays = devicesSearchInfo(tmpPageData.getData());
+            return new TextPageData<>(deviceForDisplays, tmpPageData.getNextPageLink(), tmpPageData.hasNext());
+        }
     }
 
 //	@PreAuthorize("hasAuthority('SYS_ADMIN')")
