@@ -137,7 +137,7 @@ buildDeb {
 
     archiveName = "${pkgName}.deb"
 
-    requires("openjdk-8-jre").or("java8-runtime").or("oracle-java8-installer").or("openjdk-8-jre-headless")
+    //requires("openjdk-8-jre").or("java8-runtime").or("oracle-java8-installer").or("openjdk-8-jre-headless")
 
     from("target/conf") {
         include "${pkgName}.conf"
