@@ -427,7 +427,12 @@ CREATE OR REPLACE VIEW asset_attributes AS
 	  CASE attribute_kv.attribute_key
 		  WHEN 'structureInfo'::text THEN attribute_kv.str_v
 		  ELSE NULL::character varying
-	  END::text) AS structureInfo
+	  END::text) AS structureInfo,
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'warning_rule_cfg'::text THEN attribute_kv.str_v
+          ELSE NULL::character varying
+      END::text) AS warning_rule_cfg
   FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'ASSET'::text
   GROUP BY attribute_kv.entity_id;

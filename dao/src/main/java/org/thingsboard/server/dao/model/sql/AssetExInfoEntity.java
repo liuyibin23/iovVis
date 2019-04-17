@@ -40,6 +40,8 @@ public class AssetExInfoEntity extends BaseSqlEntity<AssetExInfo> {
     private String type;
     @Column(name = "basicinfo")
     private String basicinfo;
+    @Column(name = "warning_rule_cfg")
+    private String warningRuleCfg;
 
     @Override
     public AssetExInfo toData(){
@@ -56,6 +58,7 @@ public class AssetExInfoEntity extends BaseSqlEntity<AssetExInfo> {
         assetExInfo.setType(type);
         assetExInfo.setAdditionalInfo(additionalInfo);
         assetExInfo.setBasicinfo(basicinfo);
+        assetExInfo.setWarningRuleCfg(warningRuleCfg);
         return assetExInfo;
     }
 }
