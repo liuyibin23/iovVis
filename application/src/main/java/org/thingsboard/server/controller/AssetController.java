@@ -406,8 +406,6 @@ public class AssetController extends BaseController {
 		}else {
 			return vassetAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
 		}
-
-
 	}
 
 	/**
