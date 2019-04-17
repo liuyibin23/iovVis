@@ -15,6 +15,7 @@
  */
 package org.thingsboard.server.controller;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -24,11 +25,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.thingsboard.rule.engine.metadata.TbGetEntityAttrNodeConfiguration;
 import org.thingsboard.server.common.data.*;
-import org.thingsboard.server.common.data.alarm.Alarm;
-import org.thingsboard.server.common.data.alarm.AlarmExInfo;
-import org.thingsboard.server.common.data.alarm.AlarmInfo;
-import org.thingsboard.server.common.data.alarm.AlarmQuery;
+import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.asset.AssetExInfo;
 import org.thingsboard.server.common.data.asset.AssetSearchQuery;
@@ -49,6 +48,7 @@ import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.ComposeAssetAttrKV;
+import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.model.sql.VassetAttrKV;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
@@ -405,6 +405,94 @@ public class AssetController extends BaseController {
 			return vassetAttrKVService.findAll();
 		}else {
 			return vassetAttrKVService.findbytenantId(UUIDConverter.fromTimeUUID(getTenantId().getId()));
+		}
+	}
+
+	/**
+	 * 1.2.5.7 查权限内所有设施的所有告警信息（支持分页）
+	 * zhengtao 2019-04-17
+	 *
+	 * @return
+	 * @throws ThingsboardException
+	 */
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/currentUser/page/assetsAlarm", method = RequestMethod.GET)
+	@ResponseBody
+	public TimePageData<AssetDeviceAlarm> getAssetsAlarmAndAttributes(@RequestParam(name = "limit") int limit,
+																	  @RequestParam(required = false) String tenantIdStr,
+																	  @RequestParam(required = false) String customerIdStr,
+																	  @RequestParam(required = false) String assetIdStr,
+																	  @RequestParam(required = false) String deviceType,
+																	  @RequestParam(required = false) String deviceNameStr,
+																	  @RequestParam(required = false) String idOffset,
+																	  @RequestParam(required = false) Long startTs,
+																	  @RequestParam(required = false) Long endTs,
+																	  @RequestParam(required = false, defaultValue = "false") boolean ascOrder
+	) throws ThingsboardException {
+		TenantId tenantId = null;
+		CustomerId customerId = null;
+		if (!Strings.isNullOrEmpty(tenantIdStr)) {
+			tenantId = new TenantId(UUID.fromString(tenantIdStr));
+			checkTenantId(tenantId);
+		}
+		if (!Strings.isNullOrEmpty(customerIdStr)) {
+			customerId = new CustomerId(UUID.fromString(customerIdStr));
+			if (tenantId != null) {
+				checkCustomerId(tenantId, customerId);
+			} else {
+				checkCustomerId(customerId);
+			}
+		}
+
+		AssetId assetId = null;
+		if (!Strings.isNullOrEmpty(assetIdStr)) {
+			assetId = new AssetId(UUID.fromString(assetIdStr));
+			if (tenantId != null) {
+				checkAssetId(tenantId, assetId);
+			} else {
+				checkAssetId(assetId);
+			}
+		}
+
+		/**
+		 * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+		 */
+		if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+			//do nothing
+		} else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+			if (tenantId == null) {
+				tenantId = getCurrentUser().getTenantId();
+			}
+		} else {
+			if (tenantId == null) {
+				tenantId = getCurrentUser().getTenantId();
+			}
+			if (customerId == null) {
+				customerId = getCurrentUser().getCustomerId();
+			}
+		}
+
+		TimePageLink pageLink = createPageLink(limit, startTs, endTs, ascOrder, idOffset);
+		AssetDeviceAlarmQuery query = AssetDeviceAlarmQuery.builder()
+				.assetId(assetId)
+				.customerId(customerId)
+				.tenantId(tenantId)
+				.deviceName(deviceNameStr)
+				.deviceType(deviceType)
+				.build();
+		try {
+			TimePageData<AssetDeviceAlarm> pageData = alarmService.findAssetDeviceAlarms(query, pageLink).get();
+			//TimePageData的getData方法是浅拷贝，此处不再创建临时list，直接使用getData的list遍历计算measureid
+			pageData.getData().forEach(alarm -> {
+				DeviceAttributesEntity deviceAttributes = deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(alarm.getDeviceId().getId()));
+				if (null != deviceAttributes.getMeasureid()) {
+					alarm.setMeasureId(deviceAttributes.getMeasureid());
+				}
+			});
+			return pageData;
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			throw handleException(e);
 		}
 	}
 

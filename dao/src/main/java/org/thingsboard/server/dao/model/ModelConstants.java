@@ -70,6 +70,11 @@ public class ModelConstants {
     public static final String TASK_CLEAR_TS_PROPERTY = "clear_ts";
     public static final String TASK_ASSET_ID = "asset_id";
 
+    /**
+     * asset_device_alarms view constants
+     */
+    public static final String ASSET_DEVICE_ALARMS_FAMILY_NAME="asset_device_alarms";
+    public static final String ASSET_DEVICE_ALARMS_ID_PROPERTY="alarm_id";
 
     /**
      * Cassandra user constants.

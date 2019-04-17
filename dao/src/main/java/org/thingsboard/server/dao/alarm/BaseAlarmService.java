@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.thingsboard.server.common.data.AssetDeviceAlarm;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.Tenant;
@@ -69,6 +70,9 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
     @Autowired
     private AlarmDao alarmDao;
+
+    @Autowired
+    private AssetDeviceAlarmDao assetDeviceAlarmDao;
 
     @Autowired
     private TenantDao tenantDao;
@@ -421,8 +425,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             AlarmQuery alarmQuery = new AlarmQuery(asset.getId(), new TimePageLink(100), null, null, false);
             AlarmSeverityCount alarmSeverityCount = new AlarmSeverityCount();
             calculateAlarmSeverityCount(alarmSeverityCount, tenantId, alarmQuery);
-            EntityId entityFrom = EntityIdFactory.getByTypeAndUuid(asset.getId().getEntityType(),asset.getId().getId());
-            List<EntityRelation> entityRelationList = relationService.findByFromAndType(tenantId, entityFrom,"Contains",RelationTypeGroup.COMMON);
+            EntityId entityFrom = EntityIdFactory.getByTypeAndUuid(asset.getId().getEntityType(), asset.getId().getId());
+            List<EntityRelation> entityRelationList = relationService.findByFromAndType(tenantId, entityFrom, "Contains", RelationTypeGroup.COMMON);
 
             EntityType entityType = EntityType.UNDEFINED;
             try {
@@ -436,7 +440,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                     .entityId(asset.getId().toString())
                     .entityName(asset.getName())
                     .entityType(entityType)
-                    .deviceCount(entityRelationList.stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).count())
+                    .deviceCount(entityRelationList.stream().filter(r -> EntityType.DEVICE.equals(r.getTo().getEntityType())).count())
                     .build();
             data.add(alarmSeverityCountInfo);
         });
@@ -473,15 +477,15 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         alarmHandledCount.createdOfTodayPlus(1);
 
                         //for JIRA_364
-                        if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                        if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                             alarmHandledCount.criticalOfTodayPlus(1);
-                        }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                        } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
                             alarmHandledCount.majorOfTodayPlus(1);
-                        }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                        } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
                             alarmHandledCount.minorOfTodayPlus(1);
-                        }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                        } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
                             alarmHandledCount.warningOfTodayPlus(1);
-                        }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                        } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
                             alarmHandledCount.indeterminateOfTodayPlus(1);
                         }
                     }
@@ -497,16 +501,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         }
 
                         //for JIRA_364
-                        if(!alarm.getStatus().isCleared()){
-                            if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                        if (!alarm.getStatus().isCleared()) {
+                            if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                                 alarmHandledCount.criticalUnclearedWithinDuePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
                                 alarmHandledCount.majorUnclearedWithinDuePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
                                 alarmHandledCount.minorUnclearedWithinDuePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
                                 alarmHandledCount.warningUnclearedWithinDuePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
                                 alarmHandledCount.indeterminateUnclearedWithinDuePlus(1);
                             }
                         }
@@ -520,16 +524,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         }
 
                         //for JIRA_364
-                        if(!alarm.getStatus().isCleared()) {
-                            if(alarm.getSeverity() == AlarmSeverity.CRITICAL) {
+                        if (!alarm.getStatus().isCleared()) {
+                            if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                                 alarmHandledCount.criticalUnclearedOverduePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.MAJOR) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
                                 alarmHandledCount.majorUnclearedOverduePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.MINOR) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.MINOR) {
                                 alarmHandledCount.minorUnclearedOverduePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.WARNING) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.WARNING) {
                                 alarmHandledCount.warningUnclearedOverduePlus(1);
-                            }else if(alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
+                            } else if (alarm.getSeverity() == AlarmSeverity.INDETERMINATE) {
                                 alarmHandledCount.indeterminateUnclearedOverduePlus(1);
                             }
                         }
@@ -625,6 +629,13 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     @Override
     public List<Alarm> findAlarmByOriginatorTypeAndStatus(EntityType entityType, AlarmStatus alarmStatus) {
         return alarmDao.findAlarmEntitiesByOriginatorTypeAndStatus(entityType, alarmStatus);
+    }
+
+    @Override
+    public ListenableFuture<TimePageData<AssetDeviceAlarm>> findAssetDeviceAlarms(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
+        return Futures.transform(assetDeviceAlarmDao.findAll(query, pageLink), alarms ->
+                new TimePageData<>(alarms, pageLink)
+        );
     }
 
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {
