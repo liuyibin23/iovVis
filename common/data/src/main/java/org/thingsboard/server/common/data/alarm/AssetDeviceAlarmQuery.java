@@ -1,5 +1,6 @@
 package org.thingsboard.server.common.data.alarm;
 
+import jdk.net.SocketFlow;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,11 +16,16 @@ import org.thingsboard.server.common.data.id.TenantId;
 @AllArgsConstructor
 public class AssetDeviceAlarmQuery {
 
+    public enum StatusFilter{
+        ALL, CLEARED, UNCLEARED
+    }
+
     private String deviceType;
     private String deviceName;
     private AssetId assetId;
     private TenantId tenantId;
     private CustomerId customerId;
+    private StatusFilter statusFilter;
 
     public AssetDeviceAlarmQuery(AssetDeviceAlarmQuery query) {
         this.deviceName = query.getDeviceName();
@@ -27,5 +33,6 @@ public class AssetDeviceAlarmQuery {
         this.assetId = query.getAssetId();
         this.tenantId = query.getTenantId();
         this.customerId = query.getCustomerId();
+        this.statusFilter = query.getStatusFilter();
     }
 }

@@ -9,6 +9,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskQuery;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,5 +23,5 @@ public interface TaskService {
 	List<Task> findTasksByUserId(UserId userId);
 	Task findTaskByOriginator(EntityId entityId);
 
-	ListenableFuture<List<Task>> findTasks(TenantId tenantId, CustomerId customerId, TimePageLink pageLink);
+	ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink);
 }

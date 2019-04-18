@@ -1,5 +1,6 @@
 package org.thingsboard.server.controller;
 
+import com.google.common.base.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -122,28 +123,59 @@ public class PatrolRecordController extends BaseController {
 
     /**
      * 1.2.15.4 查询所有巡检养护信息（支持分页）
-     * @param originatorType
-     * @param originatorId
-     * @param recordType
-     * @param limit
-     * @param offset
-     * @param startTime
-     * @param entTime
-     * @param ascOrder
+     *
      * @return
      * @throws ThingsboardException
      */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/page/patrolRecords", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<PatrolRecord> checkRecords(@RequestParam(required = false) String originatorType,
-                                                   @RequestParam(required = false) String originatorId,
-                                                   @RequestParam(required = false) String recordType,
-                                                   @RequestParam int limit,
-                                                   @RequestParam(required = false) String offset,
-                                                   @RequestParam(required = false) Long startTime,
-                                                   @RequestParam(required = false) Long entTime,
-                                                   @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+    public TimePageData<PatrolRecord> checkRecords(
+            @RequestParam(required = false) String tenantIdStr,
+            @RequestParam(required = false) String customerIdStr,
+            @RequestParam(required = false) String originatorType,
+            @RequestParam(required = false) String originatorId,
+            @RequestParam(required = false) String recordType,
+            @RequestParam int limit,
+            @RequestParam(required = false) String offset,
+            @RequestParam(required = false) Long startTime,
+            @RequestParam(required = false) Long entTime,
+            @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+
+        TenantId tenantId = null;
+        CustomerId customerId = null;
+
+        if(!Strings.isNullOrEmpty(tenantIdStr)){
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if(!Strings.isNullOrEmpty(customerIdStr)){
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if(tenantId!=null){
+                checkCustomerId(tenantId,customerId);
+            }else{
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
         EntityId entityId = null;
         if (originatorType != null) {
             checkParameter("originatorId", originatorId);
@@ -154,14 +186,7 @@ public class PatrolRecordController extends BaseController {
             } else {
                 throw handleException(new IllegalArgumentException(String.format("Originator Type must be [%s, %s]", EntityType.ASSET, EntityType.DEVICE)));
             }
-        }
-
-        TenantId tenantId = null;
-        CustomerId customerId = null;
-        if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
-            tenantId = getCurrentUser().getTenantId();
-        } else if (getCurrentUser().getAuthority() == Authority.CUSTOMER_USER) {
-            customerId = getCurrentUser().getCustomerId();
+            checkEntityId(entityId);
         }
 
         TimePageLink pageLink = createPageLink(limit, startTime, entTime, ascOrder, offset);
