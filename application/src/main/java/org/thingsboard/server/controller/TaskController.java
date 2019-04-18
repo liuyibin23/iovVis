@@ -1,5 +1,7 @@
 package org.thingsboard.server.controller;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +12,12 @@ import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -21,6 +25,7 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
+import org.thingsboard.server.common.data.task.TaskQuery;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
@@ -73,39 +78,108 @@ public class TaskController extends BaseController {
 
     /**
      * 1.2.14.6 查询所有任务（支持分页）
-     * @param startTime
-     * @param endTime
-     * @param limit
-     * @param idOffset
-     * @param ascOrder
      * @return
      * @throws ThingsboardException
      */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alltask", method = RequestMethod.GET)
+    @RequestMapping(value = "/page/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<Task> getTasks(@RequestParam(required = false) Long startTime,
-                                       @RequestParam(required = false) Long endTime,
+    public TimePageData<Task> getTasks(@RequestParam(required = false) String tenantIdStr,
+                                       @RequestParam(required = false) String customerIdStr,
+                                       @RequestParam(required = false) String userIdStr,
+                                       @RequestParam(required = false) String userName,
+                                       @RequestParam(required = false) TaskKind taskKind,
                                        @RequestParam int limit,
+                                       @RequestParam(required = false) Long startTime,
+                                       @RequestParam(required = false) Long endTime,
                                        @RequestParam(required = false) String idOffset,
                                        @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+
+//        TaskKind taskKind = null;
+//        if (!Strings.isNullOrEmpty(taskKindStr)) {
+//            taskKind = TaskKind.valueOf(taskKindStr);
+//        }
+
+        TenantId tenantId = null;
+        CustomerId customerId = null;
+
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
+        List<UserId> userIds = null;
+        UserId userId = null;
+        if (!Strings.isNullOrEmpty(userIdStr)) {
+            userId = new UserId(UUID.fromString(userIdStr));
+            User user = checkUserId(userId);
+            if (user != null) {
+                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+            }
+
+            userIds = Lists.newArrayListWithExpectedSize(1);
+            userIds.add(userId);
+        }
+
         if (startTime != null && endTime != null) {
             checkTimestamps(startTime, endTime);
         }
         TimePageLink pageLink = createPageLink(limit, startTime, endTime, ascOrder, idOffset);
 
-        TenantId tenantId = null;
-        CustomerId customerId = null;
-        SecurityUser currentUser = getCurrentUser();
-        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
-        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
-            tenantId = currentUser.getTenantId();
-        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
-            tenantId = currentUser.getTenantId();
-            customerId = currentUser.getCustomerId();
+        //userName Parameter should be ignored if userId is specified.
+        if (userId == null && !Strings.isNullOrEmpty(userName)) {
+            List<User> tmpUsers = userService.findUsersByFirstNameLike(userName);
+            if (tmpUsers != null && !tmpUsers.isEmpty()) {
+                userIds = Lists.newArrayListWithExpectedSize(tmpUsers.size());
+                for (int i = 0; i < tmpUsers.size(); i++) {
+                    userIds.add(tmpUsers.get(i).getId());
+                }
+            } else {
+                //return empty list directly if there is no user called 'userName'.
+                return new TimePageData<>(new ArrayList<>(), pageLink);
+            }
         }
+
+        TaskQuery query = TaskQuery.builder()
+                .customerId(customerId)
+                .tenantId(tenantId)
+                .taskKind(taskKind)
+                .userIdList(userIds)
+                .build();
+
         try {
-            List<Task> tasks = taskService.findTasks(tenantId, customerId, pageLink).get();
+            List<Task> tasks = taskService.findTasks(query, pageLink).get();
             return new TimePageData<>(getTasksNameInfo(tasks), pageLink);
         } catch (InterruptedException | ExecutionException e) {
             throw handleException(e);
@@ -137,7 +211,9 @@ public class TaskController extends BaseController {
     @RequestMapping(value = "/currentUser/findTasksByUserName", method = RequestMethod.GET)
     @ResponseBody
     public List<Task> findTasksByUserName(@RequestParam String firstName,
-                                          @RequestParam(required = false) String lastName) throws ThingsboardException {
+                                          @RequestParam(required = false) String lastName,
+                                          @RequestParam(required = false) TaskKind taskKind
+                                          ) throws ThingsboardException {
         List<User> userList = null;
         List<Task> taskList = new ArrayList<>();
         checkNotNull(firstName);
@@ -153,7 +229,10 @@ public class TaskController extends BaseController {
                         taskList.addAll(taskTmpList);
                     }
                 });
-        return getTasksNameInfo(taskList);
+        List<Task> tempTaskList = taskList.stream().filter(task -> {
+            return taskKind == null || taskKind == task.getTaskKind();
+        }).collect(Collectors.toList());
+        return getTasksNameInfo(tempTaskList);
     }
 
     /**

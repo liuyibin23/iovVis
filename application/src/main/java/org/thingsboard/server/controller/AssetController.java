@@ -424,6 +424,7 @@ public class AssetController extends BaseController {
 																	  @RequestParam(required = false) String assetIdStr,
 																	  @RequestParam(required = false) String deviceType,
 																	  @RequestParam(required = false) String deviceNameStr,
+																	  @RequestParam(required = false, defaultValue = "ALL") AssetDeviceAlarmQuery.StatusFilter statusFilter,
 																	  @RequestParam(required = false) String idOffset,
 																	  @RequestParam(required = false) Long startTs,
 																	  @RequestParam(required = false) Long endTs,
@@ -479,6 +480,7 @@ public class AssetController extends BaseController {
 				.tenantId(tenantId)
 				.deviceName(deviceNameStr)
 				.deviceType(deviceType)
+				.statusFilter(statusFilter)
 				.build();
 		try {
 			TimePageData<AssetDeviceAlarm> pageData = alarmService.findAssetDeviceAlarms(query, pageLink).get();

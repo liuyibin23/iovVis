@@ -1,6 +1,7 @@
 package org.thingsboard.server.dao.sql.alarm;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import jdk.net.SocketFlow;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -85,8 +86,18 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
                 predicates.add(deviceTypePredicate);
             }
             if (query.getDeviceName() != null) {
-                Predicate deviceNamePredicate = criteriaBuilder.like(root.get("deviceName"), query.getDeviceName()+"%");
+                Predicate deviceNamePredicate = criteriaBuilder.like(root.get("deviceName"), "%" + query.getDeviceName() + "%");
                 predicates.add(deviceNamePredicate);
+            }
+            AssetDeviceAlarmQuery.StatusFilter statusFilter = query.getStatusFilter();
+            if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.ALL) {
+                //do not filter
+            } else if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.CLEARED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%CLEARED%");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.UNCLEARED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%ACTIVE%");
+                predicates.add(statusPredicate);
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };

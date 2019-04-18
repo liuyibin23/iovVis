@@ -16,6 +16,7 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskQuery;
 import org.thingsboard.server.dao.alarm.AlarmDao;
 import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.customer.CustomerDao;
@@ -95,8 +96,8 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     }
 
     @Override
-    public ListenableFuture<List<Task>> findTasks(TenantId tenantId, CustomerId customerId, TimePageLink pageLink) {
-        return Futures.transform(taskDao.findTasks(tenantId, customerId, pageLink), tasks-> {
+    public ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink) {
+        return Futures.transform(taskDao.findTasks(query, pageLink), tasks-> {
                 findTaskAlarm(tasks);
                 return tasks;
         });
