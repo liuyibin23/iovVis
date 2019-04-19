@@ -201,7 +201,7 @@ public class DeviceApiController {
                             ObjectMapper mapper = new ObjectMapper();
                             ObjectNode result = mapper.createObjectNode();
                             result.put("validate",false);
-                            responseWriter.setResult(new ResponseEntity<>(result.toString(),HttpStatus.UNAUTHORIZED));
+                            responseWriter.setResult(new ResponseEntity<>(result.toString(),HttpStatus.OK));
                         }
                     }
 
