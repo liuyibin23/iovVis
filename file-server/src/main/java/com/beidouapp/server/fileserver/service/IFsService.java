@@ -16,6 +16,15 @@ public interface IFsService {
     FileResponseData uploadFile(MultipartFile file, HttpServletRequest request);
 
     /**
+     * 验证合法性后再上传文件
+     * @param authorized
+     * @param file
+     * @param request
+     * @return
+     */
+    FileResponseData uploadFile(boolean authorized, MultipartFile file, HttpServletRequest request);
+
+    /**
      * 上传base64文件
      * @param base64
      * @param request

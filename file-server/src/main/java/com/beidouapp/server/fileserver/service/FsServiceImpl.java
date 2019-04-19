@@ -1,8 +1,6 @@
 package com.beidouapp.server.fileserver.service;
 
-import com.beidouapp.server.fileserver.fscore.FastDFSClientWrapper;
-import com.beidouapp.server.fileserver.fscore.FastDFSException;
-import com.beidouapp.server.fileserver.fscore.FileResponseData;
+import com.beidouapp.server.fileserver.fscore.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,8 +35,43 @@ public class FsServiceImpl implements IFsService{
             responseData.setFileName(file.getOriginalFilename());
             responseData.setFileId(fileId);
             responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(file.getOriginalFilename()));
+            String baseUrl = constructBaseUrl(request);
+            responseData.setHttpUrl(baseUrl+"/"+ fileId);
+        } catch (FastDFSException e) {
+            e.printStackTrace();
+            responseData.setSuccess(false);
+            responseData.setCode(e.getCode());
+            responseData.setMessage(e.getMessage());
+        }
 
-            responseData.setHttpUrl(fileServerAddr+"/"+ fileId);
+        return responseData;
+    }
+
+    /**
+     * 验证合法性后再上传文件
+     * @param authorized
+     * @param file
+     * @param request
+     * @return
+     */
+    public FileResponseData uploadFile(boolean authorized, MultipartFile file, HttpServletRequest request){
+        FileResponseData responseData = new FileResponseData();
+        try {
+            if(authorized){
+                // 上传到服务器
+                String fileId = dfsClient.uploadFileWithMultipart(file);
+
+                responseData.setFileName(file.getOriginalFilename());
+                responseData.setFileId(fileId);
+                responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(file.getOriginalFilename()));
+                String baseUrl = constructBaseUrl(request);
+                responseData.setHttpUrl(baseUrl+"/"+ fileId);
+            } else {
+                responseData.setSuccess(false);
+                responseData.setCode(ErrorCode.NO_AUTHORIZED.CODE);
+                responseData.setMessage(ErrorCode.NO_AUTHORIZED.MESSAGE);
+            }
+
         } catch (FastDFSException e) {
             e.printStackTrace();
             responseData.setSuccess(false);
@@ -65,8 +98,8 @@ public class FsServiceImpl implements IFsService{
 //            responseData.setFileName(fileName);
             responseData.setFileId(fileId);
             responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(fileName));
-
-            responseData.setHttpUrl(fileServerAddr+"/"+ fileId);
+            String baseUrl = constructBaseUrl(request);
+            responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e){
             e.printStackTrace();
             responseData.setSuccess(false);
@@ -90,8 +123,8 @@ public class FsServiceImpl implements IFsService{
 
             responseData.setFileId(fileId);
             responseData.setFileType(fileExtension);
-
-            responseData.setHttpUrl(fileServerAddr+"/"+ fileId);
+            String baseUrl = constructBaseUrl(request);
+            responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e) {
             e.printStackTrace();
             e.printStackTrace();
@@ -119,6 +152,26 @@ public class FsServiceImpl implements IFsService{
             responseData.setMessage(e.getMessage());
         }
         return responseData;
+    }
+
+    private String constructBaseUrl(HttpServletRequest request) {
+        String scheme = request.getScheme();
+        if (request.getHeader("x-forwarded-proto") != null) {
+            scheme = request.getHeader("x-forwarded-proto");
+        }
+        int serverPort = request.getServerPort();
+        if (request.getHeader("x-forwarded-port") != null) {
+            try {
+                serverPort = request.getIntHeader("x-forwarded-port");
+            } catch (NumberFormatException e) {
+            }
+        }
+
+        String baseUrl = String.format("%s://%s:%d",
+                scheme,
+                request.getServerName(),
+                serverPort);
+        return baseUrl;
     }
 
 }
