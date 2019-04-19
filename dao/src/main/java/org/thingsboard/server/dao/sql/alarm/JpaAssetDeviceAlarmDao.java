@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.springframework.data.jpa.domain.Specifications.where;
+import static org.thingsboard.server.common.data.alarm.AssetDeviceAlarmQuery.StatusFilter;
 
 /**
  * Created by ztao at 2019/4/17 15:53.
@@ -89,14 +90,33 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
                 Predicate deviceNamePredicate = criteriaBuilder.like(root.get("deviceName"), "%" + query.getDeviceName() + "%");
                 predicates.add(deviceNamePredicate);
             }
-            AssetDeviceAlarmQuery.StatusFilter statusFilter = query.getStatusFilter();
-            if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.ALL) {
+
+            StatusFilter statusFilter = query.getStatusFilter();
+            if (statusFilter == StatusFilter.ALL) {
                 //do not filter
-            } else if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.CLEARED) {
-                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%CLEARED%");
+            } else if (statusFilter == StatusFilter.CLEARED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "CLEARED%");
                 predicates.add(statusPredicate);
-            } else if (statusFilter == AssetDeviceAlarmQuery.StatusFilter.UNCLEARED) {
-                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%ACTIVE%");
+            } else if (statusFilter == StatusFilter.UNCLEARED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "ACTIVE%");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.ACKED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%\\_ACK");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.UNACKED) {
+                Predicate statusPredicate = criteriaBuilder.like(root.get("status").as(String.class), "%\\_UNACK");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.ACTIVE_ACK) {
+                Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class), "ACTIVE_ACK");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.ACTIVE_UNACK) {
+                Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class), "ACTIVE_UNACK");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.CLEARED_ACK) {
+                Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class), "CLEARED_ACK");
+                predicates.add(statusPredicate);
+            } else if (statusFilter == StatusFilter.CLEARED_UNACK) {
+                Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class), "CLEARED_UNACK");
                 predicates.add(statusPredicate);
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

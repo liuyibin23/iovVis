@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -70,6 +70,9 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     private DeviceDao deviceDao;
 
     @Autowired
+    private AssetDevicesDao assetDevicesDao;
+
+    @Autowired
     private TenantDao tenantDao;
 
     @Autowired
@@ -86,7 +89,6 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Autowired
     private AlarmService alarmService;
-
 
     @Override
     public Device findDeviceById(TenantId tenantId, DeviceId deviceId) {
@@ -177,10 +179,10 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
      * 删除设备时，将设备关联的告警的告警状态全部设置为CLEARED_ACK
      * @param deviceId
      */
-    private void closeDeletedDeviceAlarm(DeviceId deviceId){
+    private void closeDeletedDeviceAlarm(DeviceId deviceId) {
         List<Alarm> alarms = alarmService.findAlarmByOriginator(deviceId);
-        if(alarms != null && alarms.size() > 0){
-            for(Alarm alarm : alarms){
+        if (alarms != null && alarms.size() > 0) {
+            for (Alarm alarm : alarms) {
                 Long closeTime = System.currentTimeMillis();
                 alarm.setClearTs(closeTime);
                 alarm.setEndTs(closeTime);
@@ -318,7 +320,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Override
     public ListenableFuture<List<Device>> findDevicesByQueryWithOutTypeFilter(TenantId tenantId, DeviceSearchQuery query) {
-        return innnerfindDevicesByQuery(tenantId,query);
+        return innnerfindDevicesByQuery(tenantId, query);
     }
 
     @Override
@@ -335,7 +337,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 //            }
 //            return Futures.successfulAsList(futures);
 //        });
-        ListenableFuture<List<Device>> devices = innnerfindDevicesByQuery(tenantId,query);
+        ListenableFuture<List<Device>> devices = innnerfindDevicesByQuery(tenantId, query);
         devices = Futures.transform(devices, new Function<List<Device>, List<Device>>() {
             @Nullable
             @Override
@@ -347,7 +349,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return devices;
     }
 
-    private ListenableFuture<List<Device>> innnerfindDevicesByQuery(TenantId tenantId, DeviceSearchQuery query){
+    private ListenableFuture<List<Device>> innnerfindDevicesByQuery(TenantId tenantId, DeviceSearchQuery query) {
         ListenableFuture<List<EntityRelation>> relations = relationService.findByQuery(tenantId, query.toEntitySearchQuery());
         ListenableFuture<List<Device>> devices = Futures.transformAsync(relations, r -> {
             EntitySearchDirection direction = query.toEntitySearchQuery().getParameters().getDirection();
@@ -365,12 +367,12 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     }
 
     @Override
-    public ListenableFuture<List<Device>> findDevicesByAssetId(AssetId assetId){
+    public ListenableFuture<List<Device>> findDevicesByAssetId(AssetId assetId) {
         DeviceSearchQuery query = new DeviceSearchQuery();
-        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId,EntitySearchDirection.FROM,1);
+        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId, EntitySearchDirection.FROM, 1);
         query.setParameters(parameters);
         query.setRelationType(EntityRelation.CONTAINS_TYPE);
-        return findDevicesByQueryWithOutTypeFilter(TenantId.SYS_TENANT_ID,query);
+        return findDevicesByQueryWithOutTypeFilter(TenantId.SYS_TENANT_ID, query);
     }
 
     @Override
@@ -397,12 +399,12 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
 
     @Override
     public List<Device> findDevicesByName(String deviceName, TenantId tenantId) {
-        return deviceDao.findDevicesByNameAndTenantId(deviceName,tenantId.getId());
+        return deviceDao.findDevicesByNameAndTenantId(deviceName, tenantId.getId());
     }
 
     @Override
     public List<Device> findDevicesByName(String deviceName, CustomerId customerId) {
-        return deviceDao.findDevicesByNameAndCustomerId(deviceName,customerId.getId());
+        return deviceDao.findDevicesByNameAndCustomerId(deviceName, customerId.getId());
     }
 
     @Override
@@ -420,6 +422,11 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return deviceDao.findDevicesByCustomerId(customerId.getId());
     }
 
+    @Override
+    public ListenableFuture<List<Device>> findAllAssetDevicesByQuery(AssetDevicesQuery query, TextPageLink pageLink) {
+        return assetDevicesDao.findAllByQuery(query, pageLink);
+    }
+
     private DataValidator<Device> deviceValidator =
             new DataValidator<Device>() {
 
@@ -427,7 +434,7 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
                 protected void validateCreate(TenantId tenantId, Device device) {
                     deviceDao.findDeviceByTenantIdAndName(device.getTenantId().getId(), device.getName()).ifPresent(
                             d -> {
-                               throw new DataValidationException("Device with such name already exists!");
+                                throw new DataValidationException("Device with such name already exists!");
                             }
                     );
                 }
@@ -474,18 +481,18 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
             };
 
     private PaginatedRemover<TenantId, Device> tenantDevicesRemover =
-        new PaginatedRemover<TenantId, Device>() {
+            new PaginatedRemover<TenantId, Device>() {
 
-            @Override
-            protected List<Device> findEntities(TenantId tenantId, TenantId id, TextPageLink pageLink) {
-                return deviceDao.findDevicesByTenantId(id.getId(), pageLink);
-            }
+                @Override
+                protected List<Device> findEntities(TenantId tenantId, TenantId id, TextPageLink pageLink) {
+                    return deviceDao.findDevicesByTenantId(id.getId(), pageLink);
+                }
 
-            @Override
-            protected void removeEntity(TenantId tenantId, Device entity) {
-                deleteDevice(tenantId, new DeviceId(entity.getUuidId()));
-            }
-        };
+                @Override
+                protected void removeEntity(TenantId tenantId, Device entity) {
+                    deleteDevice(tenantId, new DeviceId(entity.getUuidId()));
+                }
+            };
 
     private PaginatedRemover<CustomerId, Device> customerDeviceUnasigner = new PaginatedRemover<CustomerId, Device>() {
 
