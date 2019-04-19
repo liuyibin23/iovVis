@@ -22,8 +22,9 @@ import javax.persistence.Id;
 @Data
 @Entity
 @Subselect("select device.* , asset.id as asset_id, asset.name as asset_name " +
-        "from device, asset, relation " +
-        "where relation.from_id = asset.id and relation.to_type='DEVICE'")
+        "from asset " +
+        "join relation on relation.from_id = asset.id and relation.to_type='DEVICE' " +
+        "join device on device.id=relation.to_id")
 public class AssetDevicesEntity implements ToData<Device> {
     @Id
     @Column(name = ModelConstants.ID_PROPERTY)
