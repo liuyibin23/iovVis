@@ -422,6 +422,7 @@ public class AssetController extends BaseController {
 																	  @RequestParam(required = false) String tenantIdStr,
 																	  @RequestParam(required = false) String customerIdStr,
 																	  @RequestParam(required = false) String assetIdStr,
+																	  @RequestParam(required = false) String assetNameStr,
 																	  @RequestParam(required = false) String deviceType,
 																	  @RequestParam(required = false) String deviceNameStr,
 																	  @RequestParam(required = false, defaultValue = "ALL") AssetDeviceAlarmQuery.StatusFilter statusFilter,
@@ -476,6 +477,7 @@ public class AssetController extends BaseController {
 		TimePageLink pageLink = createPageLink(limit, startTs, endTs, ascOrder, idOffset);
 		AssetDeviceAlarmQuery query = AssetDeviceAlarmQuery.builder()
 				.assetId(assetId)
+				.assetName(assetNameStr)
 				.customerId(customerId)
 				.tenantId(tenantId)
 				.deviceName(deviceNameStr)
@@ -511,6 +513,7 @@ public class AssetController extends BaseController {
 	public CountData getAssetsAlarmCount(@RequestParam(required = false) String tenantIdStr,
 										 @RequestParam(required = false) String customerIdStr,
 										 @RequestParam(required = false) String assetIdStr,
+										 @RequestParam(required = false) String assetNameStr,
 										 @RequestParam(required = false) String deviceType,
 										 @RequestParam(required = false) String deviceNameStr,
 										 @RequestParam(required = false, defaultValue = "ALL") AssetDeviceAlarmQuery.StatusFilter statusFilter,
@@ -562,6 +565,7 @@ public class AssetController extends BaseController {
 		TimePageLink pageLink = createPageLink(10, startTs, endTs, false, null);
 		AssetDeviceAlarmQuery query = AssetDeviceAlarmQuery.builder()
 				.assetId(assetId)
+				.assetName(assetNameStr)
 				.customerId(customerId)
 				.tenantId(tenantId)
 				.deviceName(deviceNameStr)
