@@ -5,10 +5,7 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Device;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.User;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
@@ -89,6 +86,7 @@ public class TaskController extends BaseController {
                                        @RequestParam(required = false) String userIdStr,
                                        @RequestParam(required = false) String userName,
                                        @RequestParam(required = false) TaskKind taskKind,
+                                       @RequestParam(required = false,defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
                                        @RequestParam int limit,
                                        @RequestParam(required = false) Long startTime,
                                        @RequestParam(required = false) Long endTime,
@@ -175,12 +173,115 @@ public class TaskController extends BaseController {
                 .customerId(customerId)
                 .tenantId(tenantId)
                 .taskKind(taskKind)
+                .statusFilter(statusFilter)
                 .userIdList(userIds)
                 .build();
 
         try {
             List<Task> tasks = taskService.findTasks(query, pageLink).get();
             return new TimePageData<>(getTasksNameInfo(tasks), pageLink);
+        } catch (InterruptedException | ExecutionException e) {
+            throw handleException(e);
+        }
+    }
+
+    /**
+     * 1.2.14.7 查询所有任务的数量
+     * @return
+     * @throws ThingsboardException
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/count/tasks", method = RequestMethod.GET)
+    @ResponseBody
+    public CountData getTasksCount(@RequestParam(required = false) String tenantIdStr,
+                                       @RequestParam(required = false) String customerIdStr,
+                                       @RequestParam(required = false) String userIdStr,
+                                       @RequestParam(required = false) String userName,
+                                       @RequestParam(required = false) TaskKind taskKind,
+                                       @RequestParam(required = false,defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
+                                       @RequestParam(required = false) Long startTime,
+                                       @RequestParam(required = false) Long endTime) throws ThingsboardException {
+
+        TenantId tenantId = null;
+        CustomerId customerId = null;
+
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
+        List<UserId> userIds = null;
+        UserId userId = null;
+        if (!Strings.isNullOrEmpty(userIdStr)) {
+            userId = new UserId(UUID.fromString(userIdStr));
+            User user = checkUserId(userId);
+            if (user != null) {
+                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+            }
+
+            userIds = Lists.newArrayListWithExpectedSize(1);
+            userIds.add(userId);
+        }
+
+        if (startTime != null && endTime != null) {
+            checkTimestamps(startTime, endTime);
+        }
+        TimePageLink pageLink = createPageLink(10, startTime, endTime,false,null);
+
+        //userName Parameter should be ignored if userId is specified.
+        if (userId == null && !Strings.isNullOrEmpty(userName)) {
+            List<User> tmpUsers = userService.findUsersByFirstNameLike(userName);
+            if (tmpUsers != null && !tmpUsers.isEmpty()) {
+                userIds = Lists.newArrayListWithExpectedSize(tmpUsers.size());
+                for (int i = 0; i < tmpUsers.size(); i++) {
+                    userIds.add(tmpUsers.get(i).getId());
+                }
+            } else {
+                //return empty list directly if there is no user called 'userName'.
+                return new CountData(0L);
+            }
+        }
+
+        TaskQuery query = TaskQuery.builder()
+                .customerId(customerId)
+                .tenantId(tenantId)
+                .taskKind(taskKind)
+                .statusFilter(statusFilter)
+                .userIdList(userIds)
+                .build();
+        try {
+            return new CountData(taskService.getTasksCount(query, pageLink).get());
         } catch (InterruptedException | ExecutionException e) {
             throw handleException(e);
         }

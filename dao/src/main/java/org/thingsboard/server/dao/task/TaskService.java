@@ -15,13 +15,21 @@ import java.util.List;
 import java.util.UUID;
 
 public interface TaskService {
-	Task createOrUpdateTask(Task task);
-	List<Task> checkTasks(TenantId tenantId, CustomerId customerId);
-	List<Task> checkTasks(TenantId tenantId);
-	List<Task> checkTasks();
-	Task findTaskById(UUID taskId);
-	List<Task> findTasksByUserId(UserId userId);
-	Task findTaskByOriginator(EntityId entityId);
+    Task createOrUpdateTask(Task task);
 
-	ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink);
+    List<Task> checkTasks(TenantId tenantId, CustomerId customerId);
+
+    List<Task> checkTasks(TenantId tenantId);
+
+    List<Task> checkTasks();
+
+    Task findTaskById(UUID taskId);
+
+    List<Task> findTasksByUserId(UserId userId);
+
+    Task findTaskByOriginator(EntityId entityId);
+
+    ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink);
+
+    ListenableFuture<Long> getTasksCount(TaskQuery query, TimePageLink pageLink);
 }

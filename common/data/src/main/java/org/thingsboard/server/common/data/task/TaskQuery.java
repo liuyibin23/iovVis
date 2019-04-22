@@ -15,8 +15,13 @@ import java.util.List;
 @Data
 @Builder
 public class TaskQuery {
+    public enum StatusFilter {
+        ALL, ACTIVED, CLEARED, ACKED, UNACKED, ACTIVE_UNACK, ACTIVE_ACK, CLEARED_ACK
+    }
+
     TenantId tenantId;
     CustomerId customerId;
     List<UserId> userIdList;
     TaskKind taskKind;
+    StatusFilter statusFilter;
 }
