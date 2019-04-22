@@ -21,7 +21,7 @@ router.get('/about', function (req, res) {
     res.send('About Generate reports')
 })
 
-async function decodeFile(buffer, query_time, token, res) {
+async function decodeFile(buffer, query_time, token,req, res) {
     console.log('Creating report (can take some time) ...');
     let api = util.getAPI() + `v1/tables?template=%E5%AE%9A%E6%9C%9F%E7%9B%91%E6%B5%8B%E6%8A%A5%E5%91%8A&startTime=${query_time.startTs}&endTime=${query_time.endTs}&graphQL=`;
     const doc = await createReport({
@@ -62,12 +62,13 @@ async function decodeFile(buffer, query_time, token, res) {
     });
 
     console.log('完成，发送文件中...');
-    ResponFile(doc, res);
+    ResponFile(doc, req, res);
     console.log('发送完成');
 }
 
-function ResponFile(filePath, res) {
-    var fileName = "N.docx";
+function ResponFile(filePath, req, res) {
+    var fileName = `${req.query.report_type}_${req.query.report_name}_${req.query.report_date}.docx`;
+    fileName = encodeURI(fileName);
     var stream = require('stream');
     // 创建一个bufferstream
     var bufferStream = new stream.PassThrough();
@@ -81,13 +82,14 @@ function ResponFile(filePath, res) {
     bufferStream.pipe(res);
 }
 
+//GET STAT
 router.get('/:id', function (req, res) {
     let id = req.params.id;
 
     // 下载文件到本地
     let token = req.headers['x-authorization'];
     // download file
-    let downloadFileHost = util.getFSVR() + id;
+    let downloadFileHost = util.getFSVR() + req.query.fileId;
     axios.get(downloadFileHost, {
         headers: {
             "X-Authorization": token
@@ -98,7 +100,7 @@ router.get('/:id', function (req, res) {
             'startTs': req.query.startTime,
             'endTs': req.query.endTime
         };
-        decodeFile(resp.data, query_time, token, res);
+        decodeFile(resp.data, query_time, token, req, res);
     }).catch((err) => {
         util.responErrorMsg(err, res);
     });

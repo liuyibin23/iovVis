@@ -572,7 +572,7 @@
         }
       }
     },
-    "/generate/reports/{fileId}": {
+    "/generate/reports/{assetId}": {
       "get": {
         "tags": [
           "文件内容"
@@ -580,13 +580,54 @@
         "summary": "生成报表文件",
         "description": "根据指定的报表模板生成报表。",
         "parameters": [
+			{
+			"name": "assetId",
+			"in": "path",
+			"type": "string",
+			"required": true,
+			"description": "关联报表的资产编号（assetId）。"
+		  },
           {
             "name": "fileId",
-            "in": "path",
+            "in": "query",
             "required": true,
             "description": "文件ID。",
             "type": "string"
           },
+		  {
+			"name": "report_name",
+			"in": "query",
+			"type": "string",
+			"required": true,
+			"description": "报表文件名称。"
+			},
+			{
+			"name": "report_type",
+			"in": "query",
+			"type": "string",
+			"required": true,
+			"enum": [
+			  "日报",
+			  "周报",
+			  "月报",
+			  "季报"
+			],
+			"description": "报表类型。"
+			},
+			{
+            "name": "report_date",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "报表日期"
+			},
+			{
+			"name": "operator",
+			"in": "query",
+			"type": "string",
+			"required": true,
+			"description": "操作者名字。"
+			},
           {
             "name": "startTime",
             "type": "integer",
