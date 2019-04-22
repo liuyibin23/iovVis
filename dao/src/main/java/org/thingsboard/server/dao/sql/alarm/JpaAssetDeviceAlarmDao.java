@@ -67,6 +67,13 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
                 DaoUtil.convertDataList(repository.findAll(where(pageSepc).and(fieldsSpec), pageable).getContent()));
     }
 
+    @Override
+    public ListenableFuture<Long> getCount(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
+        Specification<AssetDeviceAlarmsEntity> pageSepc = JpaAbstractSearchTimeDao.getTimeSearchPageSpec(pageLink, "alarmId");
+        Specification<AssetDeviceAlarmsEntity> fieldsSpec = getEntityFieldsSpec(query);
+        return service.submit(() -> repository.count(where(pageSepc).and(fieldsSpec)));
+    }
+
     private Specification<AssetDeviceAlarmsEntity> getEntityFieldsSpec(AssetDeviceAlarmQuery query) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();

@@ -15,4 +15,6 @@ import java.util.List;
 public interface AssetDeviceAlarmDao extends Dao<AssetDeviceAlarm> {
 
     ListenableFuture<List<AssetDeviceAlarm>> findAll(AssetDeviceAlarmQuery query, TimePageLink pageLink);
+
+    ListenableFuture<Long> getCount(AssetDeviceAlarmQuery query, TimePageLink pageLink);
 }
