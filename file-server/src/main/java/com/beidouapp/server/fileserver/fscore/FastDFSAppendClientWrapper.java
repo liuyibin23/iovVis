@@ -20,14 +20,13 @@ public class FastDFSAppendClientWrapper {
     private AppendFileStorageClient appendFileStorageClient;
 
     /**
-     * 初始化一块指定大小的文件存储区
-     * @param is
+     * 初始化一块指定大小的空文件
      * @param fileSize
      * @param originalFileName
      * @return
      * @throws FastDFSException
      */
-    public String initAppendFile(InputStream is, long fileSize, String originalFileName) throws FastDFSException {
+    public String initAppendFile(long fileSize, String originalFileName) throws FastDFSException {
         int splitSize = 1024*1024*10;
         String suffix = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
 //        initFileStorage(fileSize,splitSize,suffix);
