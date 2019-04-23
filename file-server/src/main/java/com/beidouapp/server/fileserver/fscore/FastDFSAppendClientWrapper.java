@@ -28,7 +28,7 @@ public class FastDFSAppendClientWrapper {
      */
     public String initAppendFile(long fileSize, String originalFileName) throws FastDFSException {
         int splitSize = 1024*1024*10;
-        String suffix = originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
+        String suffix = FsUtils.getFilenameSuffix(originalFileName);//originalFileName.substring(originalFileName.lastIndexOf('.') + 1);
 //        initFileStorage(fileSize,splitSize,suffix);
         StorePath storePath = initFileStorage(fileSize,splitSize,suffix);
         String path = storePath.getFullPath();

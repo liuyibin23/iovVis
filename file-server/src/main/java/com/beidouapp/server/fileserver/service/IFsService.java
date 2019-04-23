@@ -48,4 +48,9 @@ public interface IFsService {
      */
     FileResponseData deleteFile(String fileId,HttpServletRequest request);
 
+    /**
+     * 分片文件上传初始文件
+     * @return
+     */
+    FileResponseData initAppendFile(long initSize,String fileName);
 }

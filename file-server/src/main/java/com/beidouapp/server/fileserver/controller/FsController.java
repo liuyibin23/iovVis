@@ -62,12 +62,20 @@ public class FsController {
         return fsService.deleteFile(fileId,request);
     }
 
-//    @RequestMapping(value = "/chunk/init/{originalFileName}")
-//    public FileResponseData chunkInitFile(@PathVariable("originalFileName")String originalFileName,
-//                                          @RequestHeader("Token") String token,
-//                                          @RequestHeader("Upload-Length") String uploadLength){
-//
-//    }
+    /**
+     * 分片文件上传初始化接口
+     * @param originalFileName
+     * @param token
+     * @param uploadLength
+     * @return
+     */
+//    @RequestMapping(value = "/chunk/init/{originalFileName:.*\\..*}",method = RequestMethod.POST)
+    @RequestMapping(value = "/chunk/init",method = RequestMethod.POST)
+    public FileResponseData chunkInitFile(@RequestParam("originalFileName")String originalFileName,
+                                          @RequestHeader("Token") String token,
+                                          @RequestHeader("Upload-Length") long uploadLength){
+        return fsService.initAppendFile(uploadLength,originalFileName);
+    }
 
 //    @RequestMapping(value = "/test/{fileId}")
 //    public ResponseEntity<String> test(@RequestHeader("Upload-Offset")int uploadOffset,
