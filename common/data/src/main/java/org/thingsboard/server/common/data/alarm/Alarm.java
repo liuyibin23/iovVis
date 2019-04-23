@@ -49,10 +49,12 @@ public class Alarm extends BaseData<AlarmId> implements HasName, HasTenantId {
 
     public Alarm() {
         super();
+        alarmCount = 1;
     }
 
     public Alarm(AlarmId id) {
         super(id);
+        alarmCount = 1;
     }
 
     public Alarm(Alarm alarm) {
@@ -69,7 +71,7 @@ public class Alarm extends BaseData<AlarmId> implements HasName, HasTenantId {
         this.clearTs = alarm.getClearTs();
         this.details = alarm.getDetails();
         this.propagate = alarm.isPropagate();
-        this.alarmCount = alarm.getAlarmCount();
+        this.alarmCount = alarm.getAlarmCount()>0?alarm.getAlarmCount():1;
     }
 
     @Override
