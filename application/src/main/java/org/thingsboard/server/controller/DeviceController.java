@@ -45,6 +45,7 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.security.DeviceCredentials;
+import org.thingsboard.server.dao.device.AssetDevicesQuery;
 import org.thingsboard.server.dao.exception.DatabaseException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
 import org.thingsboard.server.dao.model.ModelConstants;
@@ -675,14 +676,6 @@ public class DeviceController extends BaseController {
 
     /**
      * 1.2.4.14 查询所有设备以及设备属性（支持分页）
-     * @param limit
-     * @param type
-     * @param tenantIdStr
-     * @param customerIdStr
-     * @param assetIdStr
-     * @param textSearch
-     * @param idOffset
-     * @param textOffset
      * @return
      * @throws ThingsboardException
      */
@@ -691,111 +684,70 @@ public class DeviceController extends BaseController {
     @ResponseBody
     public TextPageData<DeviceForDisplay> getDevicesAndInfoPage(
             @RequestParam(name = "limit") int limit,
-            @RequestParam(required = false) String type,
             @RequestParam(required = false) String tenantIdStr,
             @RequestParam(required = false) String customerIdStr,
             @RequestParam(required = false) String assetIdStr,
-            @RequestParam(required = false) String textSearch,
-            @RequestParam(required = false) String idOffset,
-            @RequestParam(required = false) String textOffset) throws ThingsboardException {
+            @RequestParam(required = false) String deviceType,
+            @RequestParam(required = false) String deviceName,
+            @RequestParam(required = false) String idOffset) throws ThingsboardException {
 
         TenantId tenantId = null;
         CustomerId customerId = null;
 
-        if (tenantIdStr != null) {
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
             tenantId = new TenantId(UUID.fromString(tenantIdStr));
             checkTenantId(tenantId);
         }
-        if (customerIdStr != null) {
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
             customerId = new CustomerId(UUID.fromString(customerIdStr));
-            Customer customer;
             if (tenantId != null) {
-                customer = checkCustomerId(tenantId, customerId);
+                checkCustomerId(tenantId, customerId);
             } else {
-                customer = checkCustomerId(customerId);
-            }
-            if (customer != null) {
-                checkNotNull(customer);
-                tenantId = customer.getTenantId();
+                checkCustomerId(customerId);
             }
         }
 
-        TextPageLink pageLink = createPageLink(limit, textSearch, idOffset, textOffset);
+        AssetId assetId = null;
+        if (!Strings.isNullOrEmpty(assetIdStr)) {
+            assetId = new AssetId(UUID.fromString(assetIdStr));
+            Asset asset = checkAssetId(null, assetId);
+            checkNotNull(asset);
+        }
 
-        if (assetIdStr != null) { //1. 查询Asset包含的所有Device，通过Relation查询
-            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
-            Asset asset = checkAssetId(tenantId, assetId);
-            checkAsset(asset);
-
-            final List<Device> devices = new ArrayList<>();
-
-            TimePageLink timePageLink = createPageLink(limit, null, null, true, idOffset);
-            try {
-                List<EntityRelation> relations = relationService.findRelations(tenantId, assetId, EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON, EntityType.DEVICE, timePageLink).get();
-
-                if (relations != null) {
-                    relations.stream().forEach(entityRelation -> {
-                        DeviceId deviceId = (DeviceId) entityRelation.getTo();
-                        Device device = deviceService.findDeviceById(null, deviceId);
-                        devices.add(device);
-                    });
-                }
-
-                //计算next page link
-                TextPageData tmpPageData = new TextPageData<>(devices, pageLink);
-
-                //条件过滤，然后查询Device属性
-                final CustomerId cId = customerId;
-                final TenantId tId = tenantId;
-                List filteredDevices = devices.stream().filter(device -> {
-                            boolean isTrue = true;
-                            if (!Strings.isNullOrEmpty(type)) {
-                                isTrue = isTrue && device.getType().equals(type);
-                            }
-                            if (!Strings.isNullOrEmpty(textSearch)) {
-                                isTrue = isTrue && device.getName().equals(textSearch);
-                            }
-                            if (cId != null) {
-                                isTrue = isTrue && cId.equals(device.getCustomerId());
-                            }
-                            if (tId != null) {
-                                isTrue = isTrue && tId.equals(device.getTenantId());
-                            }
-                            return isTrue;
-                        }
-                ).collect(Collectors.toList());
-                List<DeviceForDisplay> deviceForDisplays = devicesSearchInfo(filteredDevices);
-
-                return new TextPageData<>(deviceForDisplays, tmpPageData.getNextPageLink(), tmpPageData.hasNext());
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
-                throw handleException(e);
+        SecurityUser currentUser = getCurrentUser();
+        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = currentUser.getTenantId();
             }
-        } else { //2. 根据DeviceService条件查询
-            TextPageData tmpPageData;
-            if (Strings.isNullOrEmpty(type)) {
-                if (customerId == null) {
-                    if (tenantId == null) {
-                        tmpPageData = deviceService.findDevices(pageLink);
-                    } else {
-                        tmpPageData = deviceService.findDevicesByTenantId(tenantId,pageLink);
-                    }
-                } else {
-                    tmpPageData = deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId, pageLink);
-                }
-            } else {
-                if(customerId == null){
-                    if(tenantId == null) {
-                        tmpPageData = deviceService.findDevicesByType(type, pageLink);
-                    }else {
-                        tmpPageData = deviceService.findDevicesByTenantIdAndType(tenantId, type, pageLink);
-                    }
-                }else{
-                    tmpPageData = deviceService.findDevicesByTenantIdAndCustomerIdAndType(tenantId, customerId, type, pageLink);
-                }
+        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
+            if (tenantId == null) {
+                tenantId = currentUser.getTenantId();
             }
-            List<DeviceForDisplay> deviceForDisplays = devicesSearchInfo(tmpPageData.getData());
+            if (customerId == null) {
+                customerId = currentUser.getCustomerId();
+            }
+        }
+
+        TextPageLink pageLink = createPageLink(limit, null, idOffset, null);
+
+        AssetDevicesQuery query = AssetDevicesQuery.builder()
+                .assetId(assetId)
+                .tenantId(tenantId)
+                .customerId(customerId)
+                .deviceName(deviceName)
+                .deviceType(deviceType)
+                .build();
+
+        try {
+            List<Device> devices = deviceService.findAllAssetDevicesByQuery(query, pageLink).get();
+            TextPageData<Device> tmpPageData = new TextPageData<>(devices, pageLink);
+            List<DeviceForDisplay> deviceForDisplays = fetchDeviceAttributes(devices);
             return new TextPageData<>(deviceForDisplays, tmpPageData.getNextPageLink(), tmpPageData.hasNext());
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+            throw handleException(e);
         }
     }
 
@@ -985,6 +937,45 @@ public class DeviceController extends BaseController {
         return result;
     }
 
+    private List<DeviceForDisplay> fetchDeviceAttributes(List<Device> devices){
+        List<DeviceForDisplay> retObj = new ArrayList<>();
+        devices.forEach(device -> {
+            //todo 这个forEach里面执行效率较慢，待优化
+            DeviceForDisplay tmp = new DeviceForDisplay();
+            tmp.setDevice(device);
+            tmp.setTenantName(tenantService.findTenantById(device.getTenantId()).getName());
+            Optional<Customer> customer = Optional.ofNullable(customerService.findCustomerById(device.getTenantId(),device.getCustomerId()));
+            if(customer.isPresent()){
+                tmp.setCustomerName(customer.get().getName());
+            }
+            relationService.findByToAndType(device.getTenantId(),device.getId(),"Contains",RelationTypeGroup.COMMON)
+                    .forEach(entityRelation -> {
+                        EntityId entityId = entityRelation.getFrom();
+                        if (entityId.getEntityType().equals(EntityType.ASSET)){
+                            AssetId assetId = new AssetId(entityId.getId());
+                            tmp.setAssetName(assetService.findAssetById(device.getTenantId(),assetId).getName());
+                            tmp.setAssetId(assetId);
+                        }
+                    });
+            DeviceAttributesEntity deviceAttributesEntity = (deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(device.getId().getId())));
+            if (deviceAttributesEntity != null){
+                tmp.setChannel(deviceAttributesEntity.getChannel());
+                tmp.setIp(deviceAttributesEntity.getIp());
+                tmp.setMeasureid(deviceAttributesEntity.getMeasureid());
+                tmp.setMoniteritem(deviceAttributesEntity.getMoniteritem());
+                tmp.setDeviceName(device.getName());
+                tmp.setDescription(deviceAttributesEntity.getDescription());
+                tmp.setActive(deviceAttributesEntity.getActive());
+                tmp.setLastConnectTime(deviceAttributesEntity.getLastConnectTime());
+                tmp.setLastDisconnectTime(deviceAttributesEntity.getLastDisconnectTime());
+                tmp.setDynamicStaticState(deviceAttributesEntity.getDynamicStaticState());
+                tmp.setDeviceGroup(deviceAttributesEntity.getDeviceGroup());
+            }
+            retObj.add(tmp);
+        });
+        return retObj;
+    }
+
 	private List<DeviceForDisplay> devicesSearchInfo(List<Device> deviceList){
 		List<DeviceForDisplay> retObj = new ArrayList<>();
 		deviceList.forEach(device -> {
@@ -1013,7 +1004,7 @@ public class DeviceController extends BaseController {
 				tmp.setIp(deviceAttributesEntity.getIp());
 				tmp.setMeasureid(deviceAttributesEntity.getMeasureid());
 				tmp.setMoniteritem(deviceAttributesEntity.getMoniteritem());
-				tmp.setDeviceName(deviceAttributesEntity.getDeviceName());
+				tmp.setDeviceName(device.getName());
 				tmp.setDescription(deviceAttributesEntity.getDescription());
 				tmp.setActive(deviceAttributesEntity.getActive());
 				tmp.setLastConnectTime(deviceAttributesEntity.getLastConnectTime());
@@ -1021,12 +1012,12 @@ public class DeviceController extends BaseController {
 				tmp.setDynamicStaticState(deviceAttributesEntity.getDynamicStaticState());
 				tmp.setDeviceGroup(deviceAttributesEntity.getDeviceGroup());
 			}
-
-
 			retObj.add(tmp);
 		});
 		return retObj;
 	}
+
+
 	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
 	@RequestMapping(value = "/device/deviceattr", method = RequestMethod.GET)
 	@ResponseBody

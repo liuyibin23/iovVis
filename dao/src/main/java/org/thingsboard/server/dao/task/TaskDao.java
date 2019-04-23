@@ -1,9 +1,6 @@
 package org.thingsboard.server.dao.task;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Tenant;
-import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -33,4 +30,5 @@ public interface TaskDao extends Dao<Task> {
     Task findTaskById(UUID Id);
 
     ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink);
+    ListenableFuture<Long> getTasksCount(TaskQuery query, TimePageLink pageLink);
 }

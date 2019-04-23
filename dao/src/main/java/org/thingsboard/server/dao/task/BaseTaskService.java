@@ -104,6 +104,11 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     }
 
     @Override
+    public ListenableFuture<Long> getTasksCount(TaskQuery query, TimePageLink pageLink) {
+        return taskDao.getTasksCount(query, pageLink);
+    }
+
+    @Override
     public Task findTaskById(UUID taskId) {
         return taskDao.findTaskById(taskId);
     }

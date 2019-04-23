@@ -15,23 +15,38 @@
  */
 package org.thingsboard.server.dao.sql.device;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.jpa.domain.Specifications;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntitySubtype;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
+import org.thingsboard.server.common.data.id.AssetId;
+import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.dao.DaoUtil;
+import org.thingsboard.server.dao.device.AssetDevicesDao;
+import org.thingsboard.server.dao.device.AssetDevicesQuery;
 import org.thingsboard.server.dao.device.DeviceDao;
+import org.thingsboard.server.dao.model.sql.AssetDevicesEntity;
 import org.thingsboard.server.dao.model.sql.DeviceEntity;
 import org.thingsboard.server.dao.sql.JpaAbstractSearchTextDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -39,6 +54,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.springframework.data.jpa.domain.Specifications.where;
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUIDs;
 import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID_STR;
@@ -48,10 +64,13 @@ import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID_STR;
  */
 @Component
 @SqlDao
-public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device> implements DeviceDao {
+public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device> implements DeviceDao, AssetDevicesDao {
 
     @Autowired
     private DeviceRepository deviceRepository;
+
+    @Autowired
+    private AssetDevicesRepository assetDevicesRepository;
 
     @Override
     protected Class<DeviceEntity> getEntityClass() {
@@ -197,6 +216,45 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
         return DaoUtil.convertDataList(deviceRepository.findAllByCustomerId(fromTimeUUID(customerId)));
     }
 
+    @Override
+    public ListenableFuture<List<Device>> findAllByQuery(AssetDevicesQuery query, TextPageLink pageLink) {
+        Specification<AssetDevicesEntity> specs = new Specification<AssetDevicesEntity>() {
+            @Override
+            public Predicate toPredicate(Root<AssetDevicesEntity> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder criteriaBuilder) {
+                List<Predicate> predicates = new ArrayList<>();
+                UUID idOffset = pageLink.getIdOffset();
+                if (idOffset != null) {
+                    Predicate lowerBound = criteriaBuilder.greaterThan(root.get("id"), UUIDConverter.fromTimeUUID(idOffset));
+                    predicates.add(lowerBound);
+                }
+                if (query.getAssetId() != null) {
+                    Predicate assetIdPredicate = criteriaBuilder.equal(root.get("assetId"), UUIDConverter.fromTimeUUID(query.getAssetId().getId()));
+                    predicates.add(assetIdPredicate);
+                }
+                if (!Strings.isNullOrEmpty(query.getDeviceType())) {
+                    Predicate deviceTypePredicate = criteriaBuilder.equal(root.get("type"), query.getDeviceType());
+                    predicates.add(deviceTypePredicate);
+                }
+                if (!Strings.isNullOrEmpty(query.getDeviceName())) {
+                    Predicate deviceNamePredicate = criteriaBuilder.like(root.get("name"), "%" + query.getDeviceName() + "%");
+                    predicates.add(deviceNamePredicate);
+                }
+                if (query.getTenantId() != null) {
+                    Predicate tenantIdPredicate = criteriaBuilder.equal(root.get("tenantId"), UUIDConverter.fromTimeUUID(query.getTenantId().getId()));
+                    predicates.add(tenantIdPredicate);
+                }
+                if (query.getCustomerId() != null) {
+                    Predicate customerIdPredicate = criteriaBuilder.equal(root.get("customerId"), UUIDConverter.fromTimeUUID(query.getCustomerId().getId()));
+                    predicates.add(customerIdPredicate);
+                }
+                return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+            }
+        };
+        Pageable pageable = new PageRequest(0, pageLink.getLimit(), Sort.Direction.ASC, "id");
+        return service.submit(() ->
+                DaoUtil.convertDataList(assetDevicesRepository.findAll(where(specs), pageable).getContent()));
+    }
+
     private List<EntitySubtype> convertTenantDeviceTypesToDto(UUID tenantId, List<String> types) {
         List<EntitySubtype> list = Collections.emptyList();
         if (types != null && !types.isEmpty()) {
@@ -207,4 +265,6 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
         }
         return list;
     }
+
+
 }

@@ -638,6 +638,11 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         );
     }
 
+    @Override
+    public ListenableFuture<Long> getAssetDeviceAlarmsCount(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
+        return assetDeviceAlarmDao.getCount(query, pageLink);
+    }
+
     private List<Alarm> findAllAlarmsByEntityId(TenantId tenantId, EntityId entityId, Long startTime, Long endTime) throws Exception {
         TimePageLink nextPageLink = new TimePageLink(100, startTime, endTime);
         boolean hasNext = true;
