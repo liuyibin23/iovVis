@@ -53,4 +53,10 @@ public interface IFsService {
      * @return
      */
     FileResponseData initAppendFile(long initSize,String fileName);
+
+    /**
+     * 分片文件上传
+     * @return
+     */
+    FileResponseData chunkFileUpload(String fileId,long fileOffset,long length,byte[] fileContent);
 }

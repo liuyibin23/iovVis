@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 
 @Service
 @Slf4j
@@ -172,6 +173,20 @@ public class FsServiceImpl implements IFsService{
 //            responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e) {
             responseData = handelException("分片文件上传初始化文件错误:",e);
+        }
+        return responseData;
+    }
+
+    /**
+     * 分片文件上传
+     * @return
+     */
+    public FileResponseData chunkFileUpload(String fileId,long fileOffset,long length,byte[] fileContent){
+        FileResponseData responseData = new FileResponseData();
+        try {
+            dfsAppendClientWrapper.modifyFile(fileId,new ByteArrayInputStream(fileContent),length,fileOffset);
+        } catch (FastDFSException e) {
+            responseData = handelException("分片文件上传错误:",e);
         }
         return responseData;
     }
