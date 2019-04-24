@@ -1,19 +1,22 @@
 package org.thingsboard.server.controller;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Device;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.User;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
@@ -21,6 +24,7 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
+import org.thingsboard.server.common.data.task.TaskQuery;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.ArrayList;
@@ -73,40 +77,216 @@ public class TaskController extends BaseController {
 
     /**
      * 1.2.14.6 查询所有任务（支持分页）
-     * @param startTime
-     * @param endTime
-     * @param limit
-     * @param idOffset
-     * @param ascOrder
      * @return
      * @throws ThingsboardException
      */
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/alltask", method = RequestMethod.GET)
+    @RequestMapping(value = "/page/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<Task> getTasks(@RequestParam(required = false) Long startTime,
-                                       @RequestParam(required = false) Long endTime,
+    public TimePageData<Task> getTasks(@RequestParam(required = false) String tenantIdStr,
+                                       @RequestParam(required = false) String customerIdStr,
+                                       @RequestParam(required = false) String userIdStr,
+                                       @RequestParam(required = false) String userName,
+                                       @RequestParam(required = false) TaskKind taskKind,
+                                       @RequestParam(required = false,defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
                                        @RequestParam int limit,
+                                       @RequestParam(required = false) Long startTime,
+                                       @RequestParam(required = false) Long endTime,
                                        @RequestParam(required = false) String idOffset,
                                        @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+
+//        TaskKind taskKind = null;
+//        if (!Strings.isNullOrEmpty(taskKindStr)) {
+//            taskKind = TaskKind.valueOf(taskKindStr);
+//        }
+
+        TenantId tenantId = null;
+        CustomerId customerId = null;
+
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
+        List<UserId> userIds = null;
+        UserId userId = null;
+        if (!Strings.isNullOrEmpty(userIdStr)) {
+            userId = new UserId(UUID.fromString(userIdStr));
+            User user = checkUserId(userId);
+            if (user != null) {
+                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+            }
+
+            userIds = Lists.newArrayListWithExpectedSize(1);
+            userIds.add(userId);
+        }
+
         if (startTime != null && endTime != null) {
             checkTimestamps(startTime, endTime);
         }
         TimePageLink pageLink = createPageLink(limit, startTime, endTime, ascOrder, idOffset);
 
+        //userName Parameter should be ignored if userId is specified.
+        if (userId == null && !Strings.isNullOrEmpty(userName)) {
+            List<User> tmpUsers = userService.findUsersByFirstNameLike(userName);
+            if (tmpUsers != null && !tmpUsers.isEmpty()) {
+                userIds = Lists.newArrayListWithExpectedSize(tmpUsers.size());
+                for (int i = 0; i < tmpUsers.size(); i++) {
+                    userIds.add(tmpUsers.get(i).getId());
+                }
+            } else {
+                //return empty list directly if there is no user called 'userName'.
+                return new TimePageData<>(new ArrayList<>(), pageLink);
+            }
+        }
+
+        TaskQuery query = TaskQuery.builder()
+                .customerId(customerId)
+                .tenantId(tenantId)
+                .taskKind(taskKind)
+                .statusFilter(statusFilter)
+                .userIdList(userIds)
+                .build();
+
+        try {
+            List<Task> tasks = taskService.findTasks(query, pageLink).get();
+            return new TimePageData<>(getTasksNameInfo(tasks), pageLink);
+        } catch (InterruptedException | ExecutionException e) {
+            throw handleException(e);
+        }
+    }
+
+    /**
+     * 1.2.14.7 查询所有任务的数量
+     *
+     * @return
+     * @throws ThingsboardException
+     */
+    @ApiOperation(value = "获取所有任务数量", notes = "根据当前登录用户的权限，统计所有任务的总数量。")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/count/tasks", method = RequestMethod.GET)
+    @ResponseBody
+    public CountData getTasksCount(@ApiParam(value = "业主id") @RequestParam(required = false) String tenantIdStr,
+                                   @ApiParam(value = "项目id") @RequestParam(required = false) String customerIdStr,
+                                   @ApiParam(value = "用户id") @RequestParam(required = false) String userIdStr,
+                                   @ApiParam(value = "模糊匹配用户名称，如果userIdStr被指定，那么忽略该字段")
+                                   @RequestParam(required = false) String userName,
+                                   @RequestParam(required = false) TaskKind taskKind,
+                                   @RequestParam(required = false, defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
+                                   @RequestParam(required = false) Long startTime,
+                                   @RequestParam(required = false) Long endTime) throws ThingsboardException {
+
         TenantId tenantId = null;
         CustomerId customerId = null;
-        SecurityUser currentUser = getCurrentUser();
-        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
-        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
-            tenantId = currentUser.getTenantId();
-        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
-            tenantId = currentUser.getTenantId();
-            customerId = currentUser.getCustomerId();
+
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
         }
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
+        List<UserId> userIds = null;
+        UserId userId = null;
+        if (!Strings.isNullOrEmpty(userIdStr)) {
+            userId = new UserId(UUID.fromString(userIdStr));
+            User user = checkUserId(userId);
+            if (user != null) {
+                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+            }
+
+            userIds = Lists.newArrayListWithExpectedSize(1);
+            userIds.add(userId);
+        }
+
+        if (startTime != null && endTime != null) {
+            checkTimestamps(startTime, endTime);
+        }
+        TimePageLink pageLink = createPageLink(10, startTime, endTime,false,null);
+
+        //userName Parameter should be ignored if userId is specified.
+        if (userId == null && !Strings.isNullOrEmpty(userName)) {
+            List<User> tmpUsers = userService.findUsersByFirstNameLike(userName);
+            if (tmpUsers != null && !tmpUsers.isEmpty()) {
+                userIds = Lists.newArrayListWithExpectedSize(tmpUsers.size());
+                for (int i = 0; i < tmpUsers.size(); i++) {
+                    userIds.add(tmpUsers.get(i).getId());
+                }
+            } else {
+                //return empty list directly if there is no user called 'userName'.
+                return new CountData(0L);
+            }
+        }
+
+        TaskQuery query = TaskQuery.builder()
+                .customerId(customerId)
+                .tenantId(tenantId)
+                .taskKind(taskKind)
+                .statusFilter(statusFilter)
+                .userIdList(userIds)
+                .build();
         try {
-            List<Task> tasks = taskService.findTasks(tenantId, customerId, pageLink).get();
-            return new TimePageData<>(getTasksNameInfo(tasks), pageLink);
+            return new CountData(taskService.getTasksCount(query, pageLink).get());
         } catch (InterruptedException | ExecutionException e) {
             throw handleException(e);
         }
@@ -133,11 +313,47 @@ public class TaskController extends BaseController {
         }
     }
 
+
+    /**
+     * 1.2.14.8 根据任务id获取任务信息
+     */
+    @ApiOperation(value = "根据任务id获取任务信息", notes = "根据当前登录用户的权限，查询指定任务id的任务信息。")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/task", method = RequestMethod.GET)
+    @ResponseBody
+    public Task getTaskById(@ApiParam(value = "任务id", required = true) @RequestParam() String taskIdStr)
+            throws ThingsboardException {
+        UUID taskId = UUID.fromString(taskIdStr);
+        Task task = taskService.findTaskById(taskId);
+
+        if (task == null) {
+            throw new ThingsboardException("not found task with id[" + taskIdStr + "]", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+        }
+        SecurityUser currentUser = getCurrentUser();
+        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
+            if (task.getTenantId() == null || !task.getTenantId().equals(currentUser.getTenantId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
+            if (task.getCustomerId() == null || !task.getCustomerId().equals(currentUser.getCustomerId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+            if (task.getTenantId() == null || !task.getTenantId().equals(currentUser.getTenantId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+        }
+        return task;
+    }
+
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/findTasksByUserName", method = RequestMethod.GET)
     @ResponseBody
     public List<Task> findTasksByUserName(@RequestParam String firstName,
-                                          @RequestParam(required = false) String lastName) throws ThingsboardException {
+                                          @RequestParam(required = false) String lastName,
+                                          @RequestParam(required = false) TaskKind taskKind
+                                          ) throws ThingsboardException {
         List<User> userList = null;
         List<Task> taskList = new ArrayList<>();
         checkNotNull(firstName);
@@ -153,7 +369,10 @@ public class TaskController extends BaseController {
                         taskList.addAll(taskTmpList);
                     }
                 });
-        return getTasksNameInfo(taskList);
+        List<Task> tempTaskList = taskList.stream().filter(task -> {
+            return taskKind == null || taskKind == task.getTaskKind();
+        }).collect(Collectors.toList());
+        return getTasksNameInfo(tempTaskList);
     }
 
     /**

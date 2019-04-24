@@ -46,7 +46,7 @@ router.get('/:assetId', async function (req, res) {
         }
       }
       if (!find) {
-        util.responData(resp.status, '无数据', res);
+        util.responData(200, [], res);
       }
     })
     .catch((err) => {

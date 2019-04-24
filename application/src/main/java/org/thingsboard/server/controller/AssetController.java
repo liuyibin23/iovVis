@@ -422,8 +422,10 @@ public class AssetController extends BaseController {
 																	  @RequestParam(required = false) String tenantIdStr,
 																	  @RequestParam(required = false) String customerIdStr,
 																	  @RequestParam(required = false) String assetIdStr,
+																	  @RequestParam(required = false) String assetNameStr,
 																	  @RequestParam(required = false) String deviceType,
 																	  @RequestParam(required = false) String deviceNameStr,
+																	  @RequestParam(required = false, defaultValue = "ALL") AssetDeviceAlarmQuery.StatusFilter statusFilter,
 																	  @RequestParam(required = false) String idOffset,
 																	  @RequestParam(required = false) Long startTs,
 																	  @RequestParam(required = false) Long endTs,
@@ -475,10 +477,12 @@ public class AssetController extends BaseController {
 		TimePageLink pageLink = createPageLink(limit, startTs, endTs, ascOrder, idOffset);
 		AssetDeviceAlarmQuery query = AssetDeviceAlarmQuery.builder()
 				.assetId(assetId)
+				.assetName(assetNameStr)
 				.customerId(customerId)
 				.tenantId(tenantId)
 				.deviceName(deviceNameStr)
 				.deviceType(deviceType)
+				.statusFilter(statusFilter)
 				.build();
 		try {
 			TimePageData<AssetDeviceAlarm> pageData = alarmService.findAssetDeviceAlarms(query, pageLink).get();
@@ -490,6 +494,86 @@ public class AssetController extends BaseController {
 				}
 			});
 			return pageData;
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace();
+			throw handleException(e);
+		}
+	}
+
+	/**
+	 * 1.2.5.8 查权限内所有设施的所有告警数量
+	 * zhengtao 2019-04-22
+	 *
+	 * @return
+	 * @throws ThingsboardException
+	 */
+	@PreAuthorize("hasAnyAuthority('TENANT_ADMIN','CUSTOMER_USER','SYS_ADMIN')")
+	@RequestMapping(value = "/currentUser/count/assetsAlarm", method = RequestMethod.GET)
+	@ResponseBody
+	public CountData getAssetsAlarmCount(@RequestParam(required = false) String tenantIdStr,
+										 @RequestParam(required = false) String customerIdStr,
+										 @RequestParam(required = false) String assetIdStr,
+										 @RequestParam(required = false) String assetNameStr,
+										 @RequestParam(required = false) String deviceType,
+										 @RequestParam(required = false) String deviceNameStr,
+										 @RequestParam(required = false, defaultValue = "ALL") AssetDeviceAlarmQuery.StatusFilter statusFilter,
+										 @RequestParam(required = false) Long startTs,
+										 @RequestParam(required = false) Long endTs) throws ThingsboardException {
+		TenantId tenantId = null;
+		CustomerId customerId = null;
+		if (!Strings.isNullOrEmpty(tenantIdStr)) {
+			tenantId = new TenantId(UUID.fromString(tenantIdStr));
+			checkTenantId(tenantId);
+		}
+		if (!Strings.isNullOrEmpty(customerIdStr)) {
+			customerId = new CustomerId(UUID.fromString(customerIdStr));
+			if (tenantId != null) {
+				checkCustomerId(tenantId, customerId);
+			} else {
+				checkCustomerId(customerId);
+			}
+		}
+
+		AssetId assetId = null;
+		if (!Strings.isNullOrEmpty(assetIdStr)) {
+			assetId = new AssetId(UUID.fromString(assetIdStr));
+			if (tenantId != null) {
+				checkAssetId(tenantId, assetId);
+			} else {
+				checkAssetId(assetId);
+			}
+		}
+
+		/**
+		 * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+		 */
+		if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+			//do nothing
+		} else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+			if (tenantId == null) {
+				tenantId = getCurrentUser().getTenantId();
+			}
+		} else {
+			if (tenantId == null) {
+				tenantId = getCurrentUser().getTenantId();
+			}
+			if (customerId == null) {
+				customerId = getCurrentUser().getCustomerId();
+			}
+		}
+
+		TimePageLink pageLink = createPageLink(10, startTs, endTs, false, null);
+		AssetDeviceAlarmQuery query = AssetDeviceAlarmQuery.builder()
+				.assetId(assetId)
+				.assetName(assetNameStr)
+				.customerId(customerId)
+				.tenantId(tenantId)
+				.deviceName(deviceNameStr)
+				.deviceType(deviceType)
+				.statusFilter(statusFilter)
+				.build();
+		try {
+			return new CountData(alarmService.getAssetDeviceAlarmsCount(query, pageLink).get());
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 			throw handleException(e);

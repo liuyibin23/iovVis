@@ -457,5 +457,5 @@ CREATE OR REPLACE VIEW asset_device_alarms AS
     device.tenant_id
    FROM asset
      JOIN relation ON asset.id::text = relation.from_id::text AND relation.to_type::text = 'DEVICE'::text
-     JOIN alarm ON alarm.originator_id::text = relation.to_id::text AND alarm.status::text ~~ 'ACTIVE_%'::text
+     JOIN alarm ON alarm.originator_id::text = relation.to_id::text
      JOIN device ON device.id::text = alarm.originator_id::text;
