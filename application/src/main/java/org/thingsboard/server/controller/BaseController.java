@@ -69,6 +69,7 @@ import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
+import org.thingsboard.server.dao.historyvideo.HistoryVideoService;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.partol.PatrolRecordService;
@@ -194,6 +195,9 @@ public abstract class BaseController {
 
     @Autowired
     protected VideoInfoService videoInfoService;
+
+    @Autowired
+    protected HistoryVideoService historyVideoService;
 
     @Autowired
     protected BaseTsHourValueStatisticService tsHourValueStatisticService;
