@@ -5,19 +5,14 @@ import com.beidouapp.server.fileserver.service.IAuthService;
 import com.beidouapp.server.fileserver.service.IFsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("api/file")
@@ -119,34 +114,6 @@ public class FsController {
         throw new FastDFSException(ErrorCode.NO_AUTHORIZED.CODE,ErrorCode.NO_AUTHORIZED.MESSAGE);
     }
 
-//    @RequestMapping(value = "/test/{fileId}")
-//    public ResponseEntity<String> test(@RequestHeader("Upload-Offset")int uploadOffset,
-//                                       @RequestHeader("Content-Length")int contentLength,
-//                                       @PathVariable(("fileId")) String fileId,
-//                                       @RequestBody byte[] file){
-////        MultiValueMap heads = new LinkedMultiValueMap();
-////        heads.add("File-Id","jijsdjieojidsonicd.2");
-//        ByteArrayInputStream is = new ByteArrayInputStream(file);
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("File-Id","ksajdiowensdnkldkajfie.2");
-//        return new ResponseEntity<>(fileId + "," + uploadOffset + "," + contentLength,headers,HttpStatus.OK);
-//    }
-//
-//    @RequestMapping(value = "/test/{:group[0-9]}/**")
-//    public ResponseEntity<String> test1(@RequestHeader("Upload-Offset")int uploadOffset,
-//                                       @RequestHeader("Content-Length")int contentLength,
-////                                        @PathVariable(("fileId")) String fileId,
-//                                       @RequestBody byte[] file,
-//                                        HttpServletRequest request){
-////        MultiValueMap heads = new LinkedMultiValueMap();
-////        heads.add("File-Id","jijsdjieojidsonicd.2");
-//        String s = request.getRequestURI();
-//        String r = getMatcher("group[0-9]/.*",s);
-//        ByteArrayInputStream is = new ByteArrayInputStream(file);
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("File-Id","ksajdiowensdnkldkajfie.2");
-//        return new ResponseEntity<>("," + uploadOffset + "," + contentLength,headers,HttpStatus.OK);
-//    }
 //
 //    private String getMatcher(String regex, String source) {
 //        String result = "";
