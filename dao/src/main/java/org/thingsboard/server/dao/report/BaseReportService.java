@@ -1,8 +1,10 @@
 package org.thingsboard.server.dao.report;
 
+import ch.qos.logback.core.joran.action.NewRuleAction;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.ReportId;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
@@ -39,8 +41,39 @@ public class BaseReportService implements ReportService {
     }
 
     @Override
-    public Report createOrUpdate(Report report) {
-        //TODO
-        return null;
+    public Report createOrUpdate(Report newReport) {
+        Report oldReport = null;
+
+        if (newReport.getId() != null) {
+            oldReport = reportDao.findById(null, newReport.getId().getId());
+            if (oldReport == null) {
+                throw new IllegalArgumentException("report id not found!");
+            }
+        } else {
+            reportDao.findTenantAndCustomerAndUserAndTypeAndFile(newReport.getTenantId(),
+                    newReport.getCustomerId(), newReport.getUserId(), newReport.getType(), newReport.getName());
+        }
+
+        if (oldReport != null) {
+            oldReport = meger(oldReport, newReport);
+        } else {
+            newReport.setCreateTs(System.currentTimeMillis());
+            oldReport = newReport;
+        }
+        return reportDao.save(null, oldReport);
+    }
+
+    private Report meger(Report oldReport, Report newReport) {
+        oldReport.setAssetId(newReport.getAssetId());
+        if (newReport.getCreateTs() > oldReport.getCreateTs()) {
+            oldReport.setCreateTs(newReport.getCreateTs());
+        }
+        oldReport.setName(newReport.getName());
+        oldReport.setFileId(newReport.getFileId());
+        oldReport.setFileUrl(newReport.getFileUrl());
+        oldReport.setType(newReport.getType());
+        oldReport.setUserName(newReport.getUserName());
+        oldReport.setAdditionalInfo(newReport.getAdditionalInfo());
+        return oldReport;
     }
 }

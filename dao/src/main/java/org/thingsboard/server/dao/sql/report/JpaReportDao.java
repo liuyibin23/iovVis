@@ -12,9 +12,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.UUIDConverter;
+import org.thingsboard.server.common.data.id.CustomerId;
+import org.thingsboard.server.common.data.id.TenantId;
+import org.thingsboard.server.common.data.id.UserId;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
+import org.thingsboard.server.common.data.reportfile.ReportType;
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.model.sql.ReportEntity;
 import org.thingsboard.server.dao.report.ReportDao;
@@ -51,6 +55,19 @@ public class JpaReportDao extends JpaAbstractDao<ReportEntity, Report> implement
     @Override
     protected CrudRepository<ReportEntity, String> getCrudRepository() {
         return reportRepository;
+    }
+
+    @Override
+    public Report findTenantAndCustomerAndUserAndTypeAndFile(TenantId tenantId, CustomerId customerId, UserId userId, ReportType type, String fileName) {
+        Pageable pageable = new PageRequest(0, 1);
+        List<ReportEntity> reportEntityS = reportRepository.findLatest(UUIDConverter.fromTimeUUID(tenantId.getId()),
+                UUIDConverter.fromTimeUUID(customerId.getId()),
+                UUIDConverter.fromTimeUUID(userId.getId()),
+                type, fileName, pageable);
+        if (reportEntityS != null && reportEntityS.size() > 0) {
+            return reportEntityS.get(0).toData();
+        }
+        return null;
     }
 
     @Override

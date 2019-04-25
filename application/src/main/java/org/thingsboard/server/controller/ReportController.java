@@ -1,9 +1,11 @@
 package org.thingsboard.server.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
+import org.thingsboard.server.common.data.reportfile.ReportType;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.dao.report.ReportService;
 
@@ -34,15 +37,49 @@ public class ReportController extends BaseController {
     private ReportService reportService;
 
 
+    /**
+     * 检查report的参数是否合法
+     *
+     * @param report
+     */
+    private void checkReport(Report report) throws ThingsboardException {
+        if (report.getAssetId() != null) {
+            checkAssetId(report.getAssetId());
+        }
+        if (!getCurrentUser().getFirstName().equals(report.getUserName())) {
+            throw new IllegalArgumentException("userName not correct!");
+        }
+    }
+
     @ApiOperation(value = "保存报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/report", method = RequestMethod.POST)
     @ResponseBody
-    public Report saveReport(@RequestBody Report report) throws ThingsboardException {
+    public Report saveReport(@RequestParam String reportName,
+                             @RequestParam ReportType reportType,
+                             @RequestParam String fileId,
+                             @RequestParam String fileUrl,
+                             @RequestParam String assetIdStr,
+                             @RequestParam String userName,
+                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
         try {
+            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
+
+            Report report = Report.builder()
+                    .additionalInfo(additionalInfo)
+                    .name(reportName)
+                    .type(reportType)
+                    .fileId(fileId)
+                    .fileUrl(fileUrl)
+                    .assetId(assetId)
+                    .userName(userName).build();
+
+            //设置当前用户
             report.setTenantId(getCurrentUser().getTenantId());
             report.setCustomerId(getCurrentUser().getCustomerId());
             report.setUserId(getCurrentUser().getId());
+
+            checkReport(report);
             return reportService.createOrUpdate(report);
         } catch (Exception e) {
             throw handleException(e);
