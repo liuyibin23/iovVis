@@ -21,9 +21,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.thingsboard.rule.engine.api.*;
 import org.thingsboard.rule.engine.api.util.TbNodeUtils;
-import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.plugin.ComponentType;
@@ -89,6 +87,7 @@ public class TbCreateWarningNode implements TbNode {
         return ctx.getDbCallbackExecutor().executeAsync(() -> {
             EntityId originatorId = msg.getOriginator();
 
+
             TenantId tenantId = new TenantId(EntityId.NULL_UUID);
             CustomerId customerId = new CustomerId(EntityId.NULL_UUID);
             UserId userId = new UserId(EntityId.NULL_UUID);
@@ -107,14 +106,15 @@ public class TbCreateWarningNode implements TbNode {
             if (customerId != null && !customerId.isNullUid()) {
                 userId = ctx.getUserService().findFirstUserByCustomerId(customerId).getId();
             }
-
+            //陈莞魔鬼代码
             WarningsRecord warning = WarningsRecord.builder()
                     .tenantId(tenantId)
                     .customerId(customerId)
                     .userId(userId)
                     .assetId(new AssetId(originatorId.getId()))
                     .recordTs(System.currentTimeMillis())
-                    .recordType("create")
+                    .recordType(msg.getMetaData().getValue("recordType"))
+                    .info(msg.getData())
                     .build();
 
             warning = ctx.getWarningService().save(warning);

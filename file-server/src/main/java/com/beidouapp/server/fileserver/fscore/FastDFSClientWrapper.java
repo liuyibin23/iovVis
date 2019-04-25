@@ -164,7 +164,7 @@ public class FastDFSClientWrapper {
         // 返回路径
         String path = null;
         // 文件名后缀
-        String suffix = getFilenameSuffix(filename);
+        String suffix = FsUtils.getFilenameSuffix(filename);
 
         try {
             StorePath storePath = storageClient.uploadFile(is,is.available(), suffix,null);
@@ -222,29 +222,29 @@ public class FastDFSClientWrapper {
         }
     }
 
-    /**
-     * 获取文件名称的后缀
-     *
-     * @param filename 文件名 或 文件路径
-     * @return 文件后缀
-     */
-    public static String getFilenameSuffix(String filename) {
-        String suffix = null;
-        String originalFilename = filename;
-        if (org.apache.commons.lang3.StringUtils.isNotBlank(filename)) {
-            if (filename.contains(SEPARATOR)) {
-                filename = filename.substring(filename.lastIndexOf(SEPARATOR) + 1);
-            }
-            if (filename.contains(POINT)) {
-                suffix = filename.substring(filename.lastIndexOf(POINT) + 1);
-            } else {
-                if (log.isErrorEnabled()) {
-                    log.error("filename error without suffix : {}", originalFilename);
-                }
-            }
-        }
-        return suffix;
-    }
+//    /**
+//     * 获取文件名称的后缀
+//     *
+//     * @param filename 文件名 或 文件路径
+//     * @return 文件后缀
+//     */
+//    public static String getFilenameSuffix(String filename) {
+//        String suffix = null;
+//        String originalFilename = filename;
+//        if (org.apache.commons.lang3.StringUtils.isNotBlank(filename)) {
+//            if (filename.contains(SEPARATOR)) {
+//                filename = filename.substring(filename.lastIndexOf(SEPARATOR) + 1);
+//            }
+//            if (filename.contains(POINT)) {
+//                suffix = filename.substring(filename.lastIndexOf(POINT) + 1);
+//            } else {
+//                if (log.isErrorEnabled()) {
+//                    log.error("filename error without suffix : {}", originalFilename);
+//                }
+//            }
+//        }
+//        return suffix;
+//    }
 
     /**
      * 转换路径中的 '\' 为 '/' <br>

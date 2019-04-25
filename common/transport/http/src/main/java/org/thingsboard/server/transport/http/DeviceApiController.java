@@ -15,6 +15,8 @@
  */
 package org.thingsboard.server.transport.http;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
@@ -180,6 +182,35 @@ public class DeviceApiController {
                             new SessionCloseOnErrorCallback(transportService, sessionInfo));
 
                 }));
+        return responseWriter;
+    }
+
+    @RequestMapping(value = "/{deviceToken}/validate", method = RequestMethod.GET)
+    public DeferredResult<ResponseEntity> validateDeviceToken(@PathVariable("deviceToken") String deviceToken){
+        DeferredResult<ResponseEntity> responseWriter = new DeferredResult<>();
+        transportContext.getTransportService().process(ValidateDeviceTokenRequestMsg.newBuilder().setToken(deviceToken).build(),
+                new TransportServiceCallback<ValidateDeviceCredentialsResponseMsg>() {
+                    @Override
+                    public void onSuccess(ValidateDeviceCredentialsResponseMsg msg) {
+                        if(msg.hasDeviceInfo()){
+                            ObjectMapper mapper = new ObjectMapper();
+                            ObjectNode result = mapper.createObjectNode();
+                            result.put("validate",true);
+                            responseWriter.setResult(new ResponseEntity<>(result.toString(),HttpStatus.OK));
+                        } else {
+                            ObjectMapper mapper = new ObjectMapper();
+                            ObjectNode result = mapper.createObjectNode();
+                            result.put("validate",false);
+                            responseWriter.setResult(new ResponseEntity<>(result.toString(),HttpStatus.OK));
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        responseWriter.setResult(new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+                    }
+                }
+                );
         return responseWriter;
     }
 
