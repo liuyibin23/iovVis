@@ -531,20 +531,19 @@ public abstract class BaseController {
         checkTenantId(alarm.getTenantId());
     }
 
-    protected void checkTimestamp(Long ts) {
+    protected void checkTimestamp(Long ts) throws ThingsboardException{
         if (ts <= 0) {
-            handleException(new IllegalArgumentException("Timestamp must greater than zero."));
+           throw handleException(new IllegalArgumentException("Timestamp must greater than zero."));
         }
     }
 
-    protected void checkTimestamps(Long startTs, Long endTs) {
+    protected void checkTimestamps(Long startTs, Long endTs) throws ThingsboardException{
         checkTimestamp(startTs);
         checkTimestamp(endTs);
         if (endTs < startTs) {
-            handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
+           throw handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
         }
     }
-
 
     WidgetsBundle checkWidgetsBundleId(WidgetsBundleId widgetsBundleId, boolean modify) throws ThingsboardException {
         try {

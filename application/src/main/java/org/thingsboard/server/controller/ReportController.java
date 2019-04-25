@@ -3,17 +3,20 @@ package org.thingsboard.server.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.gson.stream.JsonReader;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.CountData;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
@@ -51,28 +54,20 @@ public class ReportController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "保存报表")
+    @ApiOperation(value = "新增或者更新报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/report", method = RequestMethod.POST)
     @ResponseBody
-    public Report saveReport(@RequestParam String reportName,
-                             @RequestParam ReportType reportType,
-                             @RequestParam String fileId,
-                             @RequestParam String fileUrl,
-                             @RequestParam String assetIdStr,
-                             @RequestParam String userName,
-                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
+    public Report saveReport(@RequestBody Report report) throws ThingsboardException {
         try {
-            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
-
-            Report report = Report.builder()
-                    .additionalInfo(additionalInfo)
-                    .name(reportName)
-                    .type(reportType)
-                    .fileId(fileId)
-                    .fileUrl(fileUrl)
-                    .assetId(assetId)
-                    .userName(userName).build();
+            if (Strings.isNullOrEmpty(report.getName()) ||
+                    Strings.isNullOrEmpty(report.getFileId()) ||
+                    Strings.isNullOrEmpty(report.getFileUrl()) ||
+                    report.getAssetId() == null ||
+                    Strings.isNullOrEmpty(report.getUserName()) ||
+                    report.getType() == null) {
+                throw new IllegalArgumentException("params [" + "name, type, fileId, fileUrl, assetId, userName" + "] can not be empty or null.");
+            }
 
             //设置当前用户
             report.setTenantId(getCurrentUser().getTenantId());
@@ -85,6 +80,41 @@ public class ReportController extends BaseController {
             throw handleException(e);
         }
     }
+
+//    @ApiOperation(value = "创建报表")
+//    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+//    @RequestMapping(value = "/report", method = RequestMethod.POST)
+//    @ResponseBody
+//    public Report createReport(@RequestParam String reportName,
+//                             @RequestParam ReportType reportType,
+//                             @RequestParam String fileId,
+//                             @RequestParam String fileUrl,
+//                             @RequestParam String assetIdStr,
+//                             @RequestParam String userName,
+//                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
+//        try {
+//            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
+//
+//            Report report = Report.builder()
+//                    .additionalInfo(additionalInfo)
+//                    .name(reportName)
+//                    .type(reportType)
+//                    .fileId(fileId)
+//                    .fileUrl(fileUrl)
+//                    .assetId(assetId)
+//                    .userName(userName).build();
+//
+//            //设置当前用户
+//            report.setTenantId(getCurrentUser().getTenantId());
+//            report.setCustomerId(getCurrentUser().getCustomerId());
+//            report.setUserId(getCurrentUser().getId());
+//
+//            checkReport(report);
+//            return reportService.createOrUpdate(report);
+//        } catch (Exception e) {
+//            throw handleException(e);
+//        }
+//    }
 
     @ApiOperation(value = "删除指定id的报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
@@ -99,17 +129,17 @@ public class ReportController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/page/reports", method = RequestMethod.GET)
     @ResponseBody
-    public List<Report> getAllReports(@RequestParam() int limit,
-                                      @RequestParam(required = false) Long startTs,
-                                      @RequestParam(required = false) Long endTs,
-                                      @RequestParam(required = false) String idOffset,
-                                      @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
-                                      @RequestParam(required = false) String tenantIdStr,
-                                      @RequestParam(required = false) String customerIdStr,
-                                      @RequestParam(required = false) String assetIdStr,
-                                      @RequestParam(required = false) String userIdStr,
-                                      @RequestParam(required = false) String userName,
-                                      @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter) throws ThingsboardException {
+    public TimePageData<Report> getAllReports(@RequestParam() int limit,
+                                              @RequestParam(required = false) Long startTs,
+                                              @RequestParam(required = false) Long endTs,
+                                              @RequestParam(required = false) String idOffset,
+                                              @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
+                                              @RequestParam(required = false) String tenantIdStr,
+                                              @RequestParam(required = false) String customerIdStr,
+                                              @RequestParam(required = false) String assetIdStr,
+                                              @RequestParam(required = false) String userIdStr,
+                                              @RequestParam(required = false) String userName,
+                                              @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter) throws ThingsboardException {
         TenantId tenantId = null;
         CustomerId customerId = null;
 
@@ -192,7 +222,8 @@ public class ReportController extends BaseController {
                 .build();
 
         try {
-            return reportService.findAllByQuery(query).get();
+            List<Report> reportList = reportService.findAllByQuery(query).get();
+            return new TimePageData<>(reportList, pageLink);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             throw handleException(e);
@@ -204,14 +235,14 @@ public class ReportController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/count/reports", method = RequestMethod.GET)
     @ResponseBody
-    public Long getAllReportsCount(@RequestParam(required = false) Long startTs,
-                                   @RequestParam(required = false) Long endTs,
-                                   @RequestParam(required = false) String tenantIdStr,
-                                   @RequestParam(required = false) String customerIdStr,
-                                   @RequestParam(required = false) String assetIdStr,
-                                   @RequestParam(required = false) String userIdStr,
-                                   @RequestParam(required = false) String userName,
-                                   @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter
+    public CountData getAllReportsCount(@RequestParam(required = false) Long startTs,
+                                        @RequestParam(required = false) Long endTs,
+                                        @RequestParam(required = false) String tenantIdStr,
+                                        @RequestParam(required = false) String customerIdStr,
+                                        @RequestParam(required = false) String assetIdStr,
+                                        @RequestParam(required = false) String userIdStr,
+                                        @RequestParam(required = false) String userName,
+                                        @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter
     ) throws ThingsboardException {
         TenantId tenantId = null;
         CustomerId customerId = null;
@@ -294,7 +325,7 @@ public class ReportController extends BaseController {
                 .build();
 
         try {
-            return reportService.getCount(query).get();
+            return new CountData(reportService.getCount(query).get());
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             throw handleException(e);
