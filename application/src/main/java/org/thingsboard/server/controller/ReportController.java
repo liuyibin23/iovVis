@@ -1,13 +1,9 @@
 package org.thingsboard.server.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.gson.stream.JsonReader;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.CountData;
@@ -20,9 +16,7 @@ import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
-import org.thingsboard.server.common.data.reportfile.ReportType;
 import org.thingsboard.server.common.data.security.Authority;
-import org.thingsboard.server.dao.report.ReportService;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,8 +30,7 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 public class ReportController extends BaseController {
 
-    @Autowired
-    private ReportService reportService;
+
 
 
     /**
@@ -56,7 +49,7 @@ public class ReportController extends BaseController {
 
     @ApiOperation(value = "新增或者更新报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/report", method = RequestMethod.POST)
+    @RequestMapping(value = "/currentUser/report", method = RequestMethod.POST)
     @ResponseBody
     public Report saveReport(@RequestBody Report report) throws ThingsboardException {
         try {
@@ -118,7 +111,7 @@ public class ReportController extends BaseController {
 
     @ApiOperation(value = "删除指定id的报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-    @RequestMapping(value = "/report/{reportId}", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/currentUser/report/{reportId}", method = RequestMethod.DELETE)
     @ResponseBody
     public void deleteReport(@PathVariable(name = "reportId") String reportIdStr) throws ThingsboardException {
         ReportId reportId = new ReportId(UUID.fromString(reportIdStr));

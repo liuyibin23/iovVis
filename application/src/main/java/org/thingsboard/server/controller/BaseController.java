@@ -74,6 +74,7 @@ import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.partol.PatrolRecordService;
 import org.thingsboard.server.dao.relation.RelationService;
+import org.thingsboard.server.dao.report.ReportService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
@@ -198,6 +199,9 @@ public abstract class BaseController {
 
     @Autowired
     protected HistoryVideoService historyVideoService;
+
+    @Autowired
+    protected ReportService reportService;
 
     @Autowired
     protected BaseTsHourValueStatisticService tsHourValueStatisticService;

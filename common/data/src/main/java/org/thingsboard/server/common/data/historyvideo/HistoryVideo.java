@@ -14,7 +14,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 @Builder
 @AllArgsConstructor
 public class HistoryVideo extends BaseData<HistoryVideoId> {
-	private HistoryVideoId id;
+
 	private TenantId tenantId;
 	private CustomerId customerId;
 	private DeviceId deviceId;

@@ -67,6 +67,8 @@ public class EntityIdFactory {
                 return new WarningsId(uuid);
             case REPORT:
                 return new ReportId(uuid);
+            case HISTORY_VIDEO:
+                return new HistoryVideoId(uuid);
         }
         throw new IllegalArgumentException("EntityType " + type + " is not supported!");
     }

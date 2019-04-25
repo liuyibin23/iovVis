@@ -96,8 +96,8 @@ public class jpaHistoryVideoDao extends JpaAbstractDao<HistoryVideoEntity,Histor
 				Predicate fileIdPredicate = criteriaBuilder.equal(root.get("fileId"), query.getFileId());
 				predicates.add(fileIdPredicate);
 			}
-			if (query.getFildUrl() != null) {
-				Predicate fileUrlPredicate = criteriaBuilder.equal(root.get("fileUrl"), query.getFildUrl());
+			if (query.getFileUrl() != null) {
+				Predicate fileUrlPredicate = criteriaBuilder.equal(root.get("fileUrl"), query.getFileUrl());
 				predicates.add(fileUrlPredicate);
 			}
 			if (query.getPageLink().getStartTime() != null) {
@@ -113,7 +113,7 @@ public class jpaHistoryVideoDao extends JpaAbstractDao<HistoryVideoEntity,Histor
 			if (typeFilter == HistoryVideoQuery.HistoryVideoFilter.ALL) {
 				//do not filter
 			} else {
-				Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), typeFilter);
+				Predicate statusPredicate = criteriaBuilder.equal(root.get("status"), typeFilter.name());
 				predicates.add(statusPredicate);
 			}
 			return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

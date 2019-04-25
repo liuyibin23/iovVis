@@ -99,6 +99,6 @@ public class HistoryVideoEntity extends BaseSqlEntity<HistoryVideo> {
 		historyVideo.setFileId(fileId);
 		historyVideo.setFileUrl(fileUrl);
 		historyVideo.setAdditionalInfo(additionalInfo);
-		return null;
+		return historyVideo;
 	}
 }

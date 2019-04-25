@@ -24,6 +24,6 @@ public class HistoryVideoQuery {
 	private Long startTs;
 	private Long endTs;
 	private String fileId;
-	private String fildUrl;
+	private String fileUrl;
 	private HistoryVideoFilter status;
 }
