@@ -9,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.CountData;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
@@ -99,17 +101,17 @@ public class ReportController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/page/reports", method = RequestMethod.GET)
     @ResponseBody
-    public List<Report> getAllReports(@RequestParam() int limit,
-                                      @RequestParam(required = false) Long startTs,
-                                      @RequestParam(required = false) Long endTs,
-                                      @RequestParam(required = false) String idOffset,
-                                      @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
-                                      @RequestParam(required = false) String tenantIdStr,
-                                      @RequestParam(required = false) String customerIdStr,
-                                      @RequestParam(required = false) String assetIdStr,
-                                      @RequestParam(required = false) String userIdStr,
-                                      @RequestParam(required = false) String userName,
-                                      @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter) throws ThingsboardException {
+    public TimePageData<Report> getAllReports(@RequestParam() int limit,
+                                              @RequestParam(required = false) Long startTs,
+                                              @RequestParam(required = false) Long endTs,
+                                              @RequestParam(required = false) String idOffset,
+                                              @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
+                                              @RequestParam(required = false) String tenantIdStr,
+                                              @RequestParam(required = false) String customerIdStr,
+                                              @RequestParam(required = false) String assetIdStr,
+                                              @RequestParam(required = false) String userIdStr,
+                                              @RequestParam(required = false) String userName,
+                                              @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter) throws ThingsboardException {
         TenantId tenantId = null;
         CustomerId customerId = null;
 
@@ -192,7 +194,8 @@ public class ReportController extends BaseController {
                 .build();
 
         try {
-            return reportService.findAllByQuery(query).get();
+            List<Report> reportList = reportService.findAllByQuery(query).get();
+            return new TimePageData<>(reportList, pageLink);
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             throw handleException(e);
@@ -204,14 +207,14 @@ public class ReportController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/count/reports", method = RequestMethod.GET)
     @ResponseBody
-    public Long getAllReportsCount(@RequestParam(required = false) Long startTs,
-                                   @RequestParam(required = false) Long endTs,
-                                   @RequestParam(required = false) String tenantIdStr,
-                                   @RequestParam(required = false) String customerIdStr,
-                                   @RequestParam(required = false) String assetIdStr,
-                                   @RequestParam(required = false) String userIdStr,
-                                   @RequestParam(required = false) String userName,
-                                   @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter
+    public CountData getAllReportsCount(@RequestParam(required = false) Long startTs,
+                                        @RequestParam(required = false) Long endTs,
+                                        @RequestParam(required = false) String tenantIdStr,
+                                        @RequestParam(required = false) String customerIdStr,
+                                        @RequestParam(required = false) String assetIdStr,
+                                        @RequestParam(required = false) String userIdStr,
+                                        @RequestParam(required = false) String userName,
+                                        @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter
     ) throws ThingsboardException {
         TenantId tenantId = null;
         CustomerId customerId = null;
@@ -294,7 +297,7 @@ public class ReportController extends BaseController {
                 .build();
 
         try {
-            return reportService.getCount(query).get();
+            return new CountData(reportService.getCount(query).get());
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
             throw handleException(e);

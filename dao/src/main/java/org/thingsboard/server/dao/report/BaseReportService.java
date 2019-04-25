@@ -1,10 +1,8 @@
 package org.thingsboard.server.dao.report;
 
-import ch.qos.logback.core.joran.action.NewRuleAction;
 import com.google.common.util.concurrent.ListenableFuture;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.ReportId;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
@@ -50,12 +48,12 @@ public class BaseReportService implements ReportService {
                 throw new IllegalArgumentException("report id not found!");
             }
         } else {
-            reportDao.findTenantAndCustomerAndUserAndTypeAndFile(newReport.getTenantId(),
+            oldReport = reportDao.findTenantAndCustomerAndUserAndTypeAndFile(newReport.getTenantId(),
                     newReport.getCustomerId(), newReport.getUserId(), newReport.getType(), newReport.getName());
         }
 
         if (oldReport != null) {
-            oldReport = meger(oldReport, newReport);
+            oldReport = merge(oldReport, newReport);
         } else {
             newReport.setCreateTs(System.currentTimeMillis());
             oldReport = newReport;
@@ -63,10 +61,12 @@ public class BaseReportService implements ReportService {
         return reportDao.save(null, oldReport);
     }
 
-    private Report meger(Report oldReport, Report newReport) {
+    private Report merge(Report oldReport, Report newReport) {
         oldReport.setAssetId(newReport.getAssetId());
-        if (newReport.getCreateTs() > oldReport.getCreateTs()) {
+        if (newReport.getCreateTs() != null && newReport.getCreateTs() > oldReport.getCreateTs()) {
             oldReport.setCreateTs(newReport.getCreateTs());
+        } else {
+            oldReport.setCreateTs(System.currentTimeMillis());
         }
         oldReport.setName(newReport.getName());
         oldReport.setFileId(newReport.getFileId());
