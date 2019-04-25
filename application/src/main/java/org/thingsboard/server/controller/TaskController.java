@@ -2,6 +2,8 @@ package org.thingsboard.server.controller;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -187,20 +189,23 @@ public class TaskController extends BaseController {
 
     /**
      * 1.2.14.7 查询所有任务的数量
+     *
      * @return
      * @throws ThingsboardException
      */
+    @ApiOperation(value = "获取所有任务数量", notes = "根据当前登录用户的权限，统计所有任务的总数量。")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/count/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public CountData getTasksCount(@RequestParam(required = false) String tenantIdStr,
-                                       @RequestParam(required = false) String customerIdStr,
-                                       @RequestParam(required = false) String userIdStr,
-                                       @RequestParam(required = false) String userName,
-                                       @RequestParam(required = false) TaskKind taskKind,
-                                       @RequestParam(required = false,defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
-                                       @RequestParam(required = false) Long startTime,
-                                       @RequestParam(required = false) Long endTime) throws ThingsboardException {
+    public CountData getTasksCount(@ApiParam(value = "业主id") @RequestParam(required = false) String tenantIdStr,
+                                   @ApiParam(value = "项目id") @RequestParam(required = false) String customerIdStr,
+                                   @ApiParam(value = "用户id") @RequestParam(required = false) String userIdStr,
+                                   @ApiParam(value = "模糊匹配用户名称，如果userIdStr被指定，那么忽略该字段")
+                                   @RequestParam(required = false) String userName,
+                                   @RequestParam(required = false) TaskKind taskKind,
+                                   @RequestParam(required = false, defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
+                                   @RequestParam(required = false) Long startTime,
+                                   @RequestParam(required = false) Long endTime) throws ThingsboardException {
 
         TenantId tenantId = null;
         CustomerId customerId = null;
@@ -306,6 +311,40 @@ public class TaskController extends BaseController {
         } catch (Exception e) {
             throw handleException(e);
         }
+    }
+
+
+    /**
+     * 1.2.14.8 根据任务id获取任务信息
+     */
+    @ApiOperation(value = "根据任务id获取任务信息", notes = "根据当前登录用户的权限，查询指定任务id的任务信息。")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/task", method = RequestMethod.GET)
+    @ResponseBody
+    public Task getTaskById(@ApiParam(value = "任务id", required = true) @RequestParam() String taskIdStr)
+            throws ThingsboardException {
+        UUID taskId = UUID.fromString(taskIdStr);
+        Task task = taskService.findTaskById(taskId);
+
+        if (task == null) {
+            throw new ThingsboardException("not found task with id[" + taskIdStr + "]", ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+        }
+        SecurityUser currentUser = getCurrentUser();
+        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
+            if (task.getTenantId() == null || !task.getTenantId().equals(currentUser.getTenantId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
+            if (task.getCustomerId() == null || !task.getCustomerId().equals(currentUser.getCustomerId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+            if (task.getTenantId() == null || !task.getTenantId().equals(currentUser.getTenantId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+            }
+        }
+        return task;
     }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")

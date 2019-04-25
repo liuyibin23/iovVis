@@ -1,16 +1,20 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.base.Strings;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
+import org.thingsboard.server.common.data.patrol.PatrolRecordEx;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
@@ -22,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -130,7 +135,7 @@ public class PatrolRecordController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/page/patrolRecords", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<PatrolRecord> checkRecords(
+    public TimePageData<PatrolRecordEx> getAllRecords(
             @RequestParam(required = false) String tenantIdStr,
             @RequestParam(required = false) String customerIdStr,
             @RequestParam(required = false) String originatorType,
@@ -191,8 +196,15 @@ public class PatrolRecordController extends BaseController {
 
         TimePageLink pageLink = createPageLink(limit, startTime, entTime, ascOrder, offset);
         try {
-            List<PatrolRecord> patrolRecords = patrolRecordService.findAllByOriginatorAndType(tenantId, customerId, entityId, recordType, pageLink).get();
-            return new TimePageData<>(patrolRecords, pageLink);
+            ListenableFuture<List<PatrolRecord>> patrolRecordFuture = patrolRecordService.findAllByOriginatorAndType(tenantId, customerId, entityId, recordType, pageLink);
+            List<PatrolRecordEx> patrolRecordExList = Futures.transform(patrolRecordFuture, patrolRecords -> patrolRecords.stream().map(patrolRecord -> {
+                Asset asset = assetService.findAssetById(null, patrolRecord.getAssetId());
+                PatrolRecordEx patrolRecordEx = new PatrolRecordEx(patrolRecord);
+                patrolRecordEx.setAssetName(asset != null ? asset.getName() : "asset deleted");
+                return patrolRecordEx;
+            }).collect(Collectors.toList())).get();
+
+            return new TimePageData<>(patrolRecordExList, pageLink);
         } catch (InterruptedException | ExecutionException e) {
             throw handleException(e);
         }
