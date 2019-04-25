@@ -12,8 +12,8 @@
     "nodes": [
       {
         "additionalInfo": {
-          "layoutX": 980,
-          "layoutY": 381
+          "layoutX": 1062,
+          "layoutY": 434
         },
         "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
         "name": "更新资产预警属性",
@@ -41,7 +41,7 @@
         },
         "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
         "name": "严重超标黄色预警",
-        "debugMode": false,
+        "debugMode": true,
         "configuration": {
           "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\nmsg.asset_warning_level = 'YELLOW';\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
         }
@@ -105,6 +105,30 @@
           ],
           "latestTsKeyNames": []
         }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 1130,
+          "layoutY": 566
+        },
+        "type": "org.thingsboard.rule.engine.action.TbCreateWarningNode",
+        "name": "记录更新预警",
+        "debugMode": true,
+        "configuration": {
+          "version": 0
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 843,
+          "layoutY": 527
+        },
+        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
+        "name": "saveWarningRecord",
+        "debugMode": true,
+        "configuration": {
+          "jsScript": "var newMsg = {}\nvar newMetaData = metadata;\nnewMetaData.recordType = '系统设置预警状态'\nif(msg.hasOwnProperty('asset_warning_level')){\n    newMsg.asset_warning_level = msg.asset_warning_level\n}else if (metadata.hasOwnProperty('ss_asset_warning_level')){\n    newMsg.asset_warning_level = metadata.ss_asset_warning_level\n}else{\n    newMsg.asset_warning_level = \"\"\n}\n\nreturn {msg: newMsg, metadata: newMetaData, msgType: msgType};"
+        }
       }
     ],
     "connections": [
@@ -114,8 +138,18 @@
         "type": "Success"
       },
       {
+        "fromIndex": 1,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
         "fromIndex": 2,
         "toIndex": 0,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 8,
         "type": "Success"
       },
       {
@@ -139,8 +173,13 @@
         "type": "True"
       },
       {
-        "fromIndex": 6,
+        "fromIndex": 6,t
         "toIndex": 1,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 7,
         "type": "Success"
       }
     ],
