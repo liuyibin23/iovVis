@@ -1,21 +1,18 @@
 package com.beidouapp.server.fileserver.controller;
 
-import com.beidouapp.server.fileserver.fscore.FileResponseData;
-import com.beidouapp.server.fileserver.fscore.FileTypeGetter;
+import com.beidouapp.server.fileserver.fscore.*;
 import com.beidouapp.server.fileserver.service.IAuthService;
 import com.beidouapp.server.fileserver.service.IFsService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayInputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("api/file")
@@ -52,9 +49,14 @@ public class FsController {
     }
 
     @RequestMapping(value = "/auth/upload")
-    public FileResponseData uploadFile(@RequestHeader(("Token")) String deviceToken,MultipartFile file, HttpServletRequest request){
+    public FileResponseData uploadFile(@RequestHeader(("Token")) String deviceToken,MultipartFile file,
+                                       HttpServletRequest request,HttpServletResponse response) throws IOException, FastDFSException {
         boolean authorized = authService.validateAuth(deviceToken);
-        return fsService.uploadFile(authorized,file,request);
+        if(!authorized){
+            handleUnAuthorized(response);
+        }
+//        return fsService.uploadFile(authorized,file,request);
+        return fsService.uploadFile(file,request);
     }
 
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
@@ -62,41 +64,56 @@ public class FsController {
         return fsService.deleteFile(fileId,request);
     }
 
-//    @RequestMapping(value = "/chunk/init/{originalFileName}")
-//    public FileResponseData chunkInitFile(@PathVariable("originalFileName")String originalFileName,
-//                                          @RequestHeader("Token") String token,
-//                                          @RequestHeader("Upload-Length") String uploadLength){
-//
-//    }
+    /**
+     * 分片文件上传初始化接口
+     * @param originalFileName
+     * @param token
+     * @param uploadLength
+     * @return
+     */
+//    @RequestMapping(value = "/chunk/init/{originalFileName:.*\\..*}",method = RequestMethod.POST)
+    @RequestMapping(value = "/chunk/init",method = RequestMethod.POST)
+    public FileResponseData chunkInitFile(@RequestParam("originalFileName")String originalFileName,
+                                          @RequestHeader("Token") String token,
+                                          @RequestHeader("Upload-Length") long uploadLength,
+                                          HttpServletResponse response) throws IOException, FastDFSException {
+        boolean authorized = authService.validateAuth(token);
+        if(!authorized){
+            handleUnAuthorized(response);
+        }
+        return fsService.initAppendFile(uploadLength,originalFileName);
+    }
 
-//    @RequestMapping(value = "/test/{fileId}")
-//    public ResponseEntity<String> test(@RequestHeader("Upload-Offset")int uploadOffset,
-//                                       @RequestHeader("Content-Length")int contentLength,
-//                                       @PathVariable(("fileId")) String fileId,
-//                                       @RequestBody byte[] file){
-////        MultiValueMap heads = new LinkedMultiValueMap();
-////        heads.add("File-Id","jijsdjieojidsonicd.2");
-//        ByteArrayInputStream is = new ByteArrayInputStream(file);
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("File-Id","ksajdiowensdnkldkajfie.2");
-//        return new ResponseEntity<>(fileId + "," + uploadOffset + "," + contentLength,headers,HttpStatus.OK);
-//    }
-//
-//    @RequestMapping(value = "/test/{:group[0-9]}/**")
-//    public ResponseEntity<String> test1(@RequestHeader("Upload-Offset")int uploadOffset,
-//                                       @RequestHeader("Content-Length")int contentLength,
-////                                        @PathVariable(("fileId")) String fileId,
-//                                       @RequestBody byte[] file,
-//                                        HttpServletRequest request){
-////        MultiValueMap heads = new LinkedMultiValueMap();
-////        heads.add("File-Id","jijsdjieojidsonicd.2");
-//        String s = request.getRequestURI();
-//        String r = getMatcher("group[0-9]/.*",s);
-//        ByteArrayInputStream is = new ByteArrayInputStream(file);
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.add("File-Id","ksajdiowensdnkldkajfie.2");
-//        return new ResponseEntity<>("," + uploadOffset + "," + contentLength,headers,HttpStatus.OK);
-//    }
+    /**
+     * 上传一个分片
+     * @param fileId
+     * @param token
+     * @param uploadOffset
+     * @param uploadLength
+     * @param file
+     * @return
+     */
+    @RequestMapping(value = "/chunk/upload",method = RequestMethod.PATCH)
+    public FileResponseData chunkFileUpload(@RequestParam("fileId")String fileId,
+                                            @RequestHeader("Token") String token,
+                                            @RequestHeader("Upload-Offset") long uploadOffset,
+                                            @RequestHeader("Content-Length") long uploadLength,
+                                            @RequestBody byte[] file,
+                                            HttpServletResponse response) throws IOException, FastDFSException {
+        boolean authorized = authService.validateAuth(token);
+        if(!authorized){
+            handleUnAuthorized(response);
+        }
+        return fsService.chunkFileUpload(fileId,uploadOffset,uploadLength,file);
+    }
+
+    private void handleUnAuthorized(HttpServletResponse response) throws IOException, FastDFSException {
+        ObjectMapper mapper = new ObjectMapper();
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        mapper.writeValue(response.getWriter(),FsErrorResponse.of(ErrorCode.NO_AUTHORIZED.CODE,ErrorCode.NO_AUTHORIZED.MESSAGE,HttpStatus.UNAUTHORIZED));
+        throw new FastDFSException(ErrorCode.NO_AUTHORIZED.CODE,ErrorCode.NO_AUTHORIZED.MESSAGE);
+    }
+
 //
 //    private String getMatcher(String regex, String source) {
 //        String result = "";

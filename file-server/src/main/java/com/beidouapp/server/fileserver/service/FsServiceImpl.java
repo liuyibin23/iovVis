@@ -1,19 +1,23 @@
 package com.beidouapp.server.fileserver.service;
 
 import com.beidouapp.server.fileserver.fscore.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 
 @Service
+@Slf4j
 public class FsServiceImpl implements IFsService{
 
     @Autowired
     private FastDFSClientWrapper dfsClient;
-
+    @Autowired
+    private FastDFSAppendClientWrapper dfsAppendClientWrapper;
     /**
      * 文件服务器地址
      */
@@ -34,14 +38,15 @@ public class FsServiceImpl implements IFsService{
 
             responseData.setFileName(file.getOriginalFilename());
             responseData.setFileId(fileId);
-            responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(file.getOriginalFilename()));
+            responseData.setFileType(FsUtils.getFilenameSuffix(file.getOriginalFilename()));
             String baseUrl = constructBaseUrl(request);
             responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e) {
-            e.printStackTrace();
-            responseData.setSuccess(false);
-            responseData.setCode(e.getCode());
-            responseData.setMessage(e.getMessage());
+//            e.printStackTrace();
+//            responseData.setSuccess(false);
+//            responseData.setCode(e.getCode());
+//            responseData.setMessage(e.getMessage());
+            responseData = handelException("上传单个文件错误:",e);
         }
 
         return responseData;
@@ -63,7 +68,7 @@ public class FsServiceImpl implements IFsService{
 
                 responseData.setFileName(file.getOriginalFilename());
                 responseData.setFileId(fileId);
-                responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(file.getOriginalFilename()));
+                responseData.setFileType(FsUtils.getFilenameSuffix(file.getOriginalFilename()));
                 String baseUrl = constructBaseUrl(request);
                 responseData.setHttpUrl(baseUrl+"/"+ fileId);
             } else {
@@ -73,10 +78,11 @@ public class FsServiceImpl implements IFsService{
             }
 
         } catch (FastDFSException e) {
-            e.printStackTrace();
-            responseData.setSuccess(false);
-            responseData.setCode(e.getCode());
-            responseData.setMessage(e.getMessage());
+//            e.printStackTrace();
+//            responseData.setSuccess(false);
+//            responseData.setCode(e.getCode());
+//            responseData.setMessage(e.getMessage());
+            responseData = handelException("验证合法性后再上传文件错误:",e);
         }
 
         return responseData;
@@ -97,14 +103,15 @@ public class FsServiceImpl implements IFsService{
 
 //            responseData.setFileName(fileName);
             responseData.setFileId(fileId);
-            responseData.setFileType(FastDFSClientWrapper.getFilenameSuffix(fileName));
+            responseData.setFileType(FsUtils.getFilenameSuffix(fileName));
             String baseUrl = constructBaseUrl(request);
             responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e){
-            e.printStackTrace();
-            responseData.setSuccess(false);
-            responseData.setCode(e.getCode());
-            responseData.setMessage(e.getMessage());
+//            e.printStackTrace();
+//            responseData.setSuccess(false);
+//            responseData.setCode(e.getCode());
+//            responseData.setMessage(e.getMessage());
+            responseData = handelException("上传base64文件错误:",e);
         }
         return responseData;
     }
@@ -126,11 +133,11 @@ public class FsServiceImpl implements IFsService{
             String baseUrl = constructBaseUrl(request);
             responseData.setHttpUrl(baseUrl+"/"+ fileId);
         } catch (FastDFSException e) {
-            e.printStackTrace();
-            e.printStackTrace();
-            responseData.setSuccess(false);
-            responseData.setCode(e.getCode());
-            responseData.setMessage(e.getMessage());
+//            e.printStackTrace();
+//            responseData.setSuccess(false);
+//            responseData.setCode(e.getCode());
+//            responseData.setMessage(e.getMessage());
+            responseData = handelException("字符串文件上传错误:",e);
         }
         return responseData;
     }
@@ -146,11 +153,50 @@ public class FsServiceImpl implements IFsService{
         try {
             dfsClient.deleteFile(fileId);
         } catch (FastDFSException e) {
-            e.printStackTrace();
-            responseData.setSuccess(false);
-            responseData.setCode(e.getCode());
-            responseData.setMessage(e.getMessage());
+            responseData = handelException("删除文件错误:",e);
         }
+        return responseData;
+    }
+
+    /**
+     * 分片文件上传初始文件
+     * @return
+     */
+    public FileResponseData initAppendFile(long initSize,String fileName){
+        FileResponseData responseData = new FileResponseData();
+        try {
+            String fileId = dfsAppendClientWrapper.initAppendFile(initSize,fileName);
+            responseData.setFileName(fileName);
+            responseData.setFileId(fileId);
+            responseData.setFileType(FsUtils.getFilenameSuffix(fileName));
+//            String baseUrl = constructBaseUrl(request);
+//            responseData.setHttpUrl(baseUrl+"/"+ fileId);
+        } catch (FastDFSException e) {
+            responseData = handelException("分片文件上传初始化文件错误:",e);
+        }
+        return responseData;
+    }
+
+    /**
+     * 分片文件上传
+     * @return
+     */
+    public FileResponseData chunkFileUpload(String fileId,long fileOffset,long length,byte[] fileContent){
+        FileResponseData responseData = new FileResponseData();
+        try {
+            dfsAppendClientWrapper.modifyFile(fileId,new ByteArrayInputStream(fileContent),length,fileOffset);
+        } catch (FastDFSException e) {
+            responseData = handelException("分片文件上传错误:",e);
+        }
+        return responseData;
+    }
+
+    private FileResponseData handelException(String errorMsg,FastDFSException e){
+        FileResponseData responseData = new FileResponseData();
+        log.error(errorMsg,e);
+        responseData.setSuccess(false);
+        responseData.setCode(e.getCode());
+        responseData.setMessage(e.getMessage());
         return responseData;
     }
 
