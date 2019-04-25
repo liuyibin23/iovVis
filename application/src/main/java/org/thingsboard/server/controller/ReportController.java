@@ -3,6 +3,7 @@ package org.thingsboard.server.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import com.google.gson.stream.JsonReader;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,28 +54,20 @@ public class ReportController extends BaseController {
         }
     }
 
-    @ApiOperation(value = "保存报表")
+    @ApiOperation(value = "新增或者更新报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/report", method = RequestMethod.POST)
     @ResponseBody
-    public Report saveReport(@RequestParam String reportName,
-                             @RequestParam ReportType reportType,
-                             @RequestParam String fileId,
-                             @RequestParam String fileUrl,
-                             @RequestParam String assetIdStr,
-                             @RequestParam String userName,
-                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
+    public Report saveReport(@RequestBody Report report) throws ThingsboardException {
         try {
-            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
-
-            Report report = Report.builder()
-                    .additionalInfo(additionalInfo)
-                    .name(reportName)
-                    .type(reportType)
-                    .fileId(fileId)
-                    .fileUrl(fileUrl)
-                    .assetId(assetId)
-                    .userName(userName).build();
+            if (Strings.isNullOrEmpty(report.getName()) ||
+                    Strings.isNullOrEmpty(report.getFileId()) ||
+                    Strings.isNullOrEmpty(report.getFileUrl()) ||
+                    report.getAssetId() == null ||
+                    Strings.isNullOrEmpty(report.getUserName()) ||
+                    report.getType() == null) {
+                throw new IllegalArgumentException("params [" + "name, type, fileId, fileUrl, assetId, userName" + "] can not be empty or null.");
+            }
 
             //设置当前用户
             report.setTenantId(getCurrentUser().getTenantId());
@@ -87,6 +80,41 @@ public class ReportController extends BaseController {
             throw handleException(e);
         }
     }
+
+//    @ApiOperation(value = "创建报表")
+//    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+//    @RequestMapping(value = "/report", method = RequestMethod.POST)
+//    @ResponseBody
+//    public Report createReport(@RequestParam String reportName,
+//                             @RequestParam ReportType reportType,
+//                             @RequestParam String fileId,
+//                             @RequestParam String fileUrl,
+//                             @RequestParam String assetIdStr,
+//                             @RequestParam String userName,
+//                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
+//        try {
+//            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
+//
+//            Report report = Report.builder()
+//                    .additionalInfo(additionalInfo)
+//                    .name(reportName)
+//                    .type(reportType)
+//                    .fileId(fileId)
+//                    .fileUrl(fileUrl)
+//                    .assetId(assetId)
+//                    .userName(userName).build();
+//
+//            //设置当前用户
+//            report.setTenantId(getCurrentUser().getTenantId());
+//            report.setCustomerId(getCurrentUser().getCustomerId());
+//            report.setUserId(getCurrentUser().getId());
+//
+//            checkReport(report);
+//            return reportService.createOrUpdate(report);
+//        } catch (Exception e) {
+//            throw handleException(e);
+//        }
+//    }
 
     @ApiOperation(value = "删除指定id的报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")

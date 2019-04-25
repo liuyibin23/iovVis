@@ -14,7 +14,7 @@ import org.thingsboard.server.common.data.id.*;
 @Builder
 @AllArgsConstructor
 public class Report extends BaseData<ReportId> {
-    private ReportId id;
+//    private ReportId id;
     private TenantId tenantId;
     private CustomerId customerId;
     private UserId userId;
@@ -36,7 +36,8 @@ public class Report extends BaseData<ReportId> {
     }
 
     public Report(Report reportFile) {
-        super(reportFile);
+        super(reportFile.getId());
+        this.createdTime = reportFile.getCreatedTime();
         this.tenantId = reportFile.getTenantId();
         this.customerId = reportFile.getCustomerId();
         this.userId = reportFile.getUserId();
