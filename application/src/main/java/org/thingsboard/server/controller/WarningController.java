@@ -179,9 +179,9 @@ public class WarningController extends BaseController {
 		recordList.stream().forEach(record->{
 			Optional<UserId> op = Optional.of(record.getUserId());
 			if (op.isPresent()){
-				Optional<String> opUserName = Optional.ofNullable(userService.findUserById(null,op.get()).getFirstName());
-				if (opUserName.isPresent()){
-					record.setUserName(opUserName.get());
+				Optional<User> opUser = Optional.ofNullable(userService.findUserById(null,op.get()));
+				if (opUser.isPresent()){
+					record.setUserName(opUser.get().getFirstName());
 				}
 			}
 		});

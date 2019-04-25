@@ -293,6 +293,39 @@ CREATE TABLE IF NOT EXISTS video_info (
 	video_info varchar,
 	ex_info varchar
 );
+
+CREATE TABLE IF NOT EXISTS report
+(
+    id varchar(31) NOT NULL PRIMARY KEY,
+    tenant_id varchar(31),
+    customer_id varchar(31),
+    user_id varchar(31),
+    user_name varchar(255),
+    asset_id varchar(31),
+    create_ts bigint,
+    name varchar(255),
+    type varchar(255),
+    file_id varchar(255),
+    file_url varchar(255),
+    additional_info varchar
+);
+
+
+CREATE TABLE IF NOT EXISTS history_video
+(
+    id varchar(31) NOT NULL PRIMARY KEY,
+    tenant_id varchar(31),
+    customer_id varchar(31),
+    device_id varchar(31),
+    start_ts bigint,
+    end_ts bigint,
+    file_id varchar(255),
+    file_url varchar(255),
+    status varchar(255),
+    additional_info varchar
+);
+
+
 CREATE OR REPLACE VIEW vassetattrkv AS
  SELECT attribute_kv.entity_type,
     attribute_kv.entity_id,
