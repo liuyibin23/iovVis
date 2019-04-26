@@ -52,6 +52,7 @@ import org.thingsboard.server.dao.dashboard.DashboardService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.event.EventService;
+import org.thingsboard.server.dao.historyvideo.HistoryVideoService;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.task.TaskService;
@@ -186,6 +187,10 @@ public class ActorSystemContext {
     @Autowired
     @Getter
     private DeviceRpcService deviceRpcService;
+
+    @Autowired
+    @Getter
+    private HistoryVideoService historyVideoService;
 
     @Autowired
     @Getter
