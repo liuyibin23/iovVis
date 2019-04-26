@@ -32,6 +32,7 @@ import org.thingsboard.server.common.data.asset.AssetSearchQuery;
 import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
+import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
@@ -40,6 +41,7 @@ import org.thingsboard.server.dao.customer.CustomerDao;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
+import org.thingsboard.server.dao.partol.PatrolRecordService;
 import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.tenant.TenantDao;
@@ -75,6 +77,9 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 
 	@Autowired
 	private CacheManager cacheManager;
+
+	@Autowired
+	PatrolRecordService patrolRecordService;
 
 	@Override
 	public Asset findAssetById(TenantId tenantId, AssetId assetId) {
@@ -162,6 +167,20 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 		deleteEntityRelations(tenantId, assetId);
 
 		Asset asset = assetDao.findById(tenantId, assetId.getId());
+
+		//删除与此设施相关的PatrolRecord
+		try {
+			List<PatrolRecord> patrolRecords =patrolRecordService.findByOriginatorId(asset.getId().toString());
+			patrolRecords.forEach(item->{
+				if(item.getOriginator().getEntityType() == EntityType.ASSET){
+					patrolRecordService.delete(item.getId());
+				}
+			});
+		} catch (ExecutionException | InterruptedException e) {
+			log.error("Exception while finding patrol record for assetId [{}]", assetId, e);
+			throw new RuntimeException("Exception while finding patrol record for assetId [" + assetId + "]", e);
+		}
+
 		try {
 			List<EntityView> entityViews = entityViewService.findEntityViewsByTenantIdAndEntityIdAsync(asset.getTenantId(), assetId).get();
 			if (entityViews != null && !entityViews.isEmpty()) {

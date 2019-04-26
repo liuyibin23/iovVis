@@ -473,7 +473,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
 
                 alarms.forEach(alarm -> {
-                    if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
+                    alarmHandledCount.totalAlarmCountPlus(1);
+
+                    if (DateAndTimeUtils.isAtToday(alarm.getStartTs()) &&
+                            !alarm.getStatus().isCleared()) { //未处理
                         alarmHandledCount.createdOfTodayPlus(1);
 
                         //for JIRA_364
@@ -489,7 +492,6 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                             alarmHandledCount.indeterminateOfTodayPlus(1);
                         }
                     }
-                    alarmHandledCount.totalAlarmCountPlus(1);
 
                     if (DateAndTimeUtils.isBetween(alarm.getStartTs(), startTime, endTime)) {
                         if (alarm.getStatus().isCleared()) {
@@ -501,7 +503,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         }
 
                         //for JIRA_364
-                        if (!alarm.getStatus().isCleared()) {
+                        if (!alarm.getStatus().isCleared()) { //未处理
                             if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                                 alarmHandledCount.criticalUnclearedWithinDuePlus(1);
                             } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
@@ -524,7 +526,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                         }
 
                         //for JIRA_364
-                        if (!alarm.getStatus().isCleared()) {
+                        if (!alarm.getStatus().isCleared()) { //未处理
                             if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                                 alarmHandledCount.criticalUnclearedOverduePlus(1);
                             } else if (alarm.getSeverity() == AlarmSeverity.MAJOR) {
@@ -679,6 +681,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             TextPageData<Asset> pageData = assetService.findAssetsByTenantIdAndCustomerIdAndType(tenantId, customerId, assetType.toString(), nextPageLink);
 
             List<Asset> assets = pageData.getData();
+
+            //资产总数量
             alarmCount.entityTotalCountPlus(assets.size());
 
             //根据asset查询所有alarm
@@ -715,9 +719,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             TextPageData<Device> pageData = deviceService.findDevicesByTenantIdAndCustomerId(tenantId, customerId, nextPageLink);
             List<Device> devices = pageData.getData();
 
+            //所有设备总数量
             alarmCount.entityTotalCountPlus(devices.size());
 
-            //根据asset查询所有alarm
+            //根据device查询所有alarm
             devices.stream().forEach(device -> {
                 AlarmQuery query = new AlarmQuery(device.getId(), new TimePageLink(100), null, null, false);
 
@@ -748,31 +753,32 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             boolean hasNext = true;
             while (hasNext) {
                 List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
+
                 alarmCount.entityAlarmCountPlus(alarms.size());
 
                 alarms.stream().forEach(alarm -> {
-                    if (alarm.getStatus() == AlarmStatus.ACTIVE_ACK) {
-                        alarmCount.ackPlus(1);
-                    } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
-                        alarmCount.unackPlus(1);
-                    } else {
-                        alarmCount.clearPlus(1);
-                    }
+                    if (!alarm.getStatus().isCleared()) {  //未处理的告警
+                        if (alarm.getStatus() == AlarmStatus.ACTIVE_ACK) {
+                            alarmCount.ackPlus(1);
+                        } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
+                            alarmCount.unackPlus(1);
+                        }
 
-                    if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
-                        alarmCount.createdOfToadyPlus(1);
-                    }
+                        if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
+                            alarmCount.createdOfToadyPlus(1);
+                        }
 
-                    if (DateAndTimeUtils.isInThisMonth(alarm.getStartTs())) {
-                        alarmCount.createdOfMonthPlus(1);
-                    }
+                        if (DateAndTimeUtils.isInThisMonth(alarm.getStartTs())) {
+                            alarmCount.createdOfMonthPlus(1);
+                        }
 
-                    if (!alarm.getStatus().isCleared()) {
                         if (highestSeverity.getSeverity() == null) {
                             highestSeverity.setSeverity(alarm.getSeverity());
                         } else if (highestSeverity.getSeverity().compareTo(alarm.getSeverity()) > 0) {
                             highestSeverity.setSeverity(alarm.getSeverity());
                         }
+                    } else { //已处理的告警
+                        alarmCount.clearPlus(1);
                     }
                 });
 
@@ -820,7 +826,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             boolean hasNext = true;
             while (hasNext) {
                 List<AlarmInfo> alarms = alarmDao.findAlarms(tenantId, nextQuery).get();
-                alarms.stream().filter(alarm -> !alarm.getStatus().isCleared())
+                alarms.stream().filter(alarm -> !alarm.getStatus().isCleared()) //只统计未处理的告警
                         .forEach(alarm -> {
                             if (alarm.getSeverity() == AlarmSeverity.CRITICAL) {
                                 alarmSeverityCount.criticalCountPlus(1);

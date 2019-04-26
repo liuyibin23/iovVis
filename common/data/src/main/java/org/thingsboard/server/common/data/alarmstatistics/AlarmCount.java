@@ -12,15 +12,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AlarmCount {
     /**
-     * 状态为 unclear + unack 的资产数量
+     * 状态为  active_unack 的资产数量
      */
     private int unacked = 0;
     /**
-     * 状态为 unclear + ack 的资产数量
+     * 状态为 active_ack 的资产数量
      */
     private int acked = 0;
     /**
-     * 状态为 clear 的资产数量
+     * 状态为 cleared_ 的资产数量
      */
     private int cleared = 0;
     /**
