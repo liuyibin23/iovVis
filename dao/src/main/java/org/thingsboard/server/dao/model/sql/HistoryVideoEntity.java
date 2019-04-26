@@ -74,7 +74,7 @@ public class HistoryVideoEntity extends BaseSqlEntity<HistoryVideo> {
 		this.endTs = historyVideo.getStartTs();
 		this.status = historyVideo.getStatus();
 		this.fileId = historyVideo.getFileId();
-		this.fileUrl = historyVideo.getFileUrl();
+//		this.fileUrl = historyVideo.getFileUrl();
 		this.additionalInfo = historyVideo.getAdditionalInfo();
 
 	}
@@ -97,7 +97,7 @@ public class HistoryVideoEntity extends BaseSqlEntity<HistoryVideo> {
 		historyVideo.setEndTs(endTs);
 		historyVideo.setStatus(status);
 		historyVideo.setFileId(fileId);
-		historyVideo.setFileUrl(fileUrl);
+//		historyVideo.setFileUrl(fileUrl);
 		historyVideo.setAdditionalInfo(additionalInfo);
 		return historyVideo;
 	}

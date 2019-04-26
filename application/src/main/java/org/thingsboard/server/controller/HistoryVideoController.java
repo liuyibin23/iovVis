@@ -36,10 +36,10 @@ public class HistoryVideoController extends BaseController {
 		try {
 			if (
 					Strings.isNullOrEmpty(historyVideo.getFileId()) ||
-					Strings.isNullOrEmpty(historyVideo.getFileUrl()) ||
+//					Strings.isNullOrEmpty(historyVideo.getFileUrl()) ||
 							historyVideo.getDeviceId() == null ||
 							historyVideo.getStatus() == null) {
-				throw new IllegalArgumentException("params [" + "status, fileId, fileUrl, deviceId " + "] can not be empty or null.");
+				throw new IllegalArgumentException("params [" + "status, fileId, deviceId " + "] can not be empty or null.");
 			}
 
 			//设置当前用户
