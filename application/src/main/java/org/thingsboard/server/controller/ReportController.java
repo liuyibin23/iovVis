@@ -17,6 +17,7 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.reportfile.Report;
 import org.thingsboard.server.common.data.reportfile.ReportQuery;
 import org.thingsboard.server.common.data.security.Authority;
+import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.List;
 import java.util.UUID;
@@ -29,9 +30,6 @@ import java.util.concurrent.ExecutionException;
 @RequestMapping("/api")
 @Slf4j
 public class ReportController extends BaseController {
-
-
-
 
     /**
      * 检查report的参数是否合法
@@ -115,6 +113,26 @@ public class ReportController extends BaseController {
     @ResponseBody
     public void deleteReport(@PathVariable(name = "reportId") String reportIdStr) throws ThingsboardException {
         ReportId reportId = new ReportId(UUID.fromString(reportIdStr));
+        Report report = reportService.findById(reportId);
+
+        if (report == null) {
+            throw new IllegalArgumentException("report not found corresponding to reportId " + reportIdStr);
+        }
+
+        SecurityUser currentUser = getCurrentUser();
+        if (currentUser.getAuthority() == Authority.SYS_ADMIN) {
+            //can delete everything
+        } else if (currentUser.getAuthority() == Authority.TENANT_ADMIN) {
+            if (report.getTenantId() != null && !report.getTenantId().equals(currentUser.getTenantId())) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.AUTHENTICATION);
+            }
+        } else if (currentUser.getAuthority() == Authority.CUSTOMER_USER) {
+            if ((report.getTenantId() != null && !report.getTenantId().equals(currentUser.getTenantId())) ||
+                    (report.getCustomerId() != null && !report.getCustomerId().equals(currentUser.getCustomerId()))) {
+                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.AUTHENTICATION);
+            }
+        }
+
         reportService.deleteById(reportId);
     }
 

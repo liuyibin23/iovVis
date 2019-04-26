@@ -22,7 +22,6 @@ public class AlarmHandledCount {
     private int clearedWithinDue;
 
     private int totalAlarmCount;
-    private int createdOfToday;
 
     //    CRITICAL, MAJOR, MINOR, WARNING, INDETERMINATE;
     private int criticalUnclearedOverdue;
@@ -37,6 +36,10 @@ public class AlarmHandledCount {
     private int warningUnclearedWithinDue;
     private int indeterminateUnclearedWithinDue;
 
+    /**
+     * 今日新增未处理的告警
+     */
+    private int createdOfToday;
     private int criticalOfToday;
     private int majorOfToday;
     private int minorOfToday;

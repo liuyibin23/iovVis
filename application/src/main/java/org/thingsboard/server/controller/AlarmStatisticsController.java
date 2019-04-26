@@ -1,6 +1,7 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.collect.Lists;
+import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -44,16 +45,16 @@ public class AlarmStatisticsController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "仪表盘告警汇总", notes = "只统计未处理的告警。")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/alarm/statistics/summary", method = RequestMethod.GET)
     @ResponseBody
-    public AlarmCountInfo getAlarmStatisticsSummary(@RequestParam(required = false) Long startTime,
-                                                    @RequestParam(required = false) Long endTime) throws ThingsboardException {
-        checkTimePeriod(startTime, endTime);
+    public AlarmCountInfo getAlarmStatisticsSummary() throws ThingsboardException {
+//        checkTimePeriod(startTime, endTime);
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
+            TimePageLink pageLink = createPageLink(100, null, null, true, null);
             AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
                     .pageLink(pageLink)
                     .build();
@@ -64,6 +65,7 @@ public class AlarmStatisticsController extends BaseController {
         }
     }
 
+    @ApiOperation(value = "根据告警优先级统计告警数量", notes = "只统计未处理的告警")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(value = "/alarm/statistics/severity/{entityType}", method = RequestMethod.GET)
     @ResponseBody
@@ -88,82 +90,83 @@ public class AlarmStatisticsController extends BaseController {
             throw handleException(e);
         }
     }
+
     /**
-    * @Description: 1.2.10.5 监测项聚合统计
-    * @Author: ShenJi
-    * @Date: 2019/3/25
-    * @Param: [assetId]
-    * @return: org.thingsboard.server.common.data.alarmstatistics.AlarmMonitorItemCountInfo
-    */
-	@PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
-	@RequestMapping(path = "/alarm/statistics/handled/{assetId}", method = RequestMethod.GET)
-	@ResponseBody
-	public AlarmMonitorItemCountInfo getAlarmMonitorItemCount(@PathVariable String assetId) throws ThingsboardException {
-    	Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(null,new AssetId(UUID.fromString(assetId))));
-    	if (!optionalAsset.isPresent()){
-    		throw new DataValidationException("Asset not exit");
-		}
-		switch (getCurrentUser().getAuthority()) {
-			case SYS_ADMIN:
-				break;
-			case TENANT_ADMIN:
-				if(!optionalAsset.get().getTenantId().equals(getTenantId()))
-					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
-				break;
-			case CUSTOMER_USER:
-				if(!optionalAsset.get().getCustomerId().equals(getCurrentUser().getCustomerId()))
-					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
-				break;
-		}
-		List<MonitorItemAlarm> monitorItemAlarmList = new ArrayList<>();
-    	Map<String,Long> monitorCountMap = new HashMap<>();
-		AlarmMonitorItemCountInfo retObj = new AlarmMonitorItemCountInfo();
-		Map<String,Long> monitorDeviceCountMap = new HashMap<>();
+     * @Description: 1.2.10.5 监测项聚合统计
+     * @Author: ShenJi
+     * @Date: 2019/3/25
+     * @Param: [assetId]
+     * @return: org.thingsboard.server.common.data.alarmstatistics.AlarmMonitorItemCountInfo
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
+    @RequestMapping(path = "/alarm/statistics/handled/{assetId}", method = RequestMethod.GET)
+    @ResponseBody
+    public AlarmMonitorItemCountInfo getAlarmMonitorItemCount(@PathVariable String assetId) throws ThingsboardException {
+        Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(null, new AssetId(UUID.fromString(assetId))));
+        if (!optionalAsset.isPresent()) {
+            throw new DataValidationException("Asset not exit");
+        }
+        switch (getCurrentUser().getAuthority()) {
+            case SYS_ADMIN:
+                break;
+            case TENANT_ADMIN:
+                if (!optionalAsset.get().getTenantId().equals(getTenantId()))
+                    throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+                break;
+            case CUSTOMER_USER:
+                if (!optionalAsset.get().getCustomerId().equals(getCurrentUser().getCustomerId()))
+                    throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+                break;
+        }
+        List<MonitorItemAlarm> monitorItemAlarmList = new ArrayList<>();
+        Map<String, Long> monitorCountMap = new HashMap<>();
+        AlarmMonitorItemCountInfo retObj = new AlarmMonitorItemCountInfo();
+        Map<String, Long> monitorDeviceCountMap = new HashMap<>();
 
-		List<DeviceAlarm> deviceAlarmList = alarmMonitorItemService.findDeviceAlarmByAssetId(UUIDConverter.fromTimeUUID(optionalAsset.get().getId().getId()));
+        List<DeviceAlarm> deviceAlarmList = alarmMonitorItemService.findDeviceAlarmByAssetId(UUIDConverter.fromTimeUUID(optionalAsset.get().getId().getId()));
 
-		//计算monitorItem Type
-    	for (DeviceAlarm deviceAlarm: deviceAlarmList){
-    		if (null == deviceAlarm.getMoniteritem())
-    			continue;
-    		if (null == monitorCountMap.get(deviceAlarm.getMoniteritem())){
-				monitorCountMap.put(deviceAlarm.getMoniteritem(),new Long(0));
-			}
-    		monitorCountMap.put(deviceAlarm.getMoniteritem(),monitorCountMap.get(deviceAlarm.getMoniteritem())+1);
-		}
-
-
-		retObj.setMonitorAlarm(monitorItemAlarmList);
-    	Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByFromAndType(null,EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(),optionalAsset.get().getId().getId()),
-				EntityRelation.CONTAINS_TYPE,RelationTypeGroup.COMMON));
-    	if (!optionalEntityRelations.isPresent()){
-    		retObj.setDeviceCount(new Long(0));
-		}
-		else{
-    		List<DeviceAttributesEntity> deviceList = new ArrayList<>();
-			retObj.setDeviceCount(new Long(optionalEntityRelations.get().stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).count()));
-			optionalEntityRelations.get().stream().filter(r->EntityType.DEVICE.equals(r.getTo().getEntityType())).forEach(r->{
-				Optional<DeviceAttributesEntity> optionalDevice = Optional.ofNullable(deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(r.getTo().getId())));
-				if (!optionalDevice.isPresent()){
-					return ;
-				}
-				deviceList.add(optionalDevice.get());
-			});
-
-			monitorDeviceCountMap = deviceList.stream().filter(d->d.getMoniteritem()!=null).collect(Collectors.groupingBy(DeviceAttributesEntity::getMoniteritem,Collectors.counting()));
-
-		}
-
-		for (Map.Entry<String,Long> entry : monitorDeviceCountMap.entrySet()){
-			MonitorItemAlarm monitorItemAlarm = new MonitorItemAlarm(entry.getKey(),entry.getValue(),
-					null!=monitorCountMap.get(entry.getKey())?monitorCountMap.get(entry.getKey()):new Long(0));
-			monitorItemAlarmList.add(monitorItemAlarm);
-		}
+        //计算monitorItem Type
+        for (DeviceAlarm deviceAlarm : deviceAlarmList) {
+            if (null == deviceAlarm.getMoniteritem())
+                continue;
+            if (null == monitorCountMap.get(deviceAlarm.getMoniteritem())) {
+                monitorCountMap.put(deviceAlarm.getMoniteritem(), new Long(0));
+            }
+            monitorCountMap.put(deviceAlarm.getMoniteritem(), monitorCountMap.get(deviceAlarm.getMoniteritem()) + 1);
+        }
 
 
-    	return retObj;
-	}
+        retObj.setMonitorAlarm(monitorItemAlarmList);
+        Optional<List<EntityRelation>> optionalEntityRelations = Optional.ofNullable(relationService.findByFromAndType(null, EntityIdFactory.getByTypeAndUuid(optionalAsset.get().getId().getEntityType(), optionalAsset.get().getId().getId()),
+                EntityRelation.CONTAINS_TYPE, RelationTypeGroup.COMMON));
+        if (!optionalEntityRelations.isPresent()) {
+            retObj.setDeviceCount(new Long(0));
+        } else {
+            List<DeviceAttributesEntity> deviceList = new ArrayList<>();
+            retObj.setDeviceCount(new Long(optionalEntityRelations.get().stream().filter(r -> EntityType.DEVICE.equals(r.getTo().getEntityType())).count()));
+            optionalEntityRelations.get().stream().filter(r -> EntityType.DEVICE.equals(r.getTo().getEntityType())).forEach(r -> {
+                Optional<DeviceAttributesEntity> optionalDevice = Optional.ofNullable(deviceAttributesService.findByEntityId(UUIDConverter.fromTimeUUID(r.getTo().getId())));
+                if (!optionalDevice.isPresent()) {
+                    return;
+                }
+                deviceList.add(optionalDevice.get());
+            });
 
+            monitorDeviceCountMap = deviceList.stream().filter(d -> d.getMoniteritem() != null).collect(Collectors.groupingBy(DeviceAttributesEntity::getMoniteritem, Collectors.counting()));
+
+        }
+
+        for (Map.Entry<String, Long> entry : monitorDeviceCountMap.entrySet()) {
+            MonitorItemAlarm monitorItemAlarm = new MonitorItemAlarm(entry.getKey(), entry.getValue(),
+                    null != monitorCountMap.get(entry.getKey()) ? monitorCountMap.get(entry.getKey()) : new Long(0));
+            monitorItemAlarmList.add(monitorItemAlarm);
+        }
+
+
+        return retObj;
+    }
+
+    @ApiOperation(value = "统计测点告警数量", notes = "只统计未处理的告警")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(path = "/alarm/statistics/handled/{entityType}/{entityId}", method = RequestMethod.GET)
     @ResponseBody
@@ -176,7 +179,8 @@ public class AlarmStatisticsController extends BaseController {
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            if (!EntityType.ALL.equals(entityType)){
+            if (!EntityType.ALL.equals(entityType)) { //查询具体entityId的设施的告警
+                UUID id =UUID.fromString(entityId); //校验id格式是否正确
                 TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
                 AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
                         .pageLink(pageLink)
@@ -185,13 +189,14 @@ public class AlarmStatisticsController extends BaseController {
                         .build();
                 return alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query);
             }
-			AlarmHandledCountInfo sum = AlarmHandledCountInfo.builder().alarmCount(new AlarmHandledCount()).endTime(endTime)
-					.startTime(startTime).entityId(entityId)
-					.entityName(entityId).entityType(entityType).build();
+
+            AlarmHandledCountInfo sum = AlarmHandledCountInfo.builder().alarmCount(new AlarmHandledCount()).endTime(endTime)
+                    .startTime(startTime).entityId(entityId)
+                    .entityName(entityId).entityType(entityType).build();
 
             List<AlarmHandledCountInfo> countInfoList = new ArrayList<>();
             List<Asset> assetList = new ArrayList<>();
-            switch (getCurrentUser().getAuthority()){
+            switch (getCurrentUser().getAuthority()) {
                 case SYS_ADMIN:
                     assetList = assetService.findAssets();
                     break;
@@ -202,37 +207,36 @@ public class AlarmStatisticsController extends BaseController {
                     assetList = assetService.findAssetsByCustomerId(getCurrentUser().getCustomerId());
                     break;
             }
-            if (null != assetList){
-            	if (assetList.size() > 0) {
-            		assetList.stream().forEach(asset -> {
-						TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
-						AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
-								.pageLink(pageLink)
-								.entityType(EntityType.PROJECT)
-								.entityId(asset.getId().getId().toString())
-								.build();
-						countInfoList.add(alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query));
-					});
-				}
-				if (countInfoList.size() > 0){
-            		countInfoList.stream().forEach(info -> {
-						AlarmHandledCount tmp = sum.getAlarmCount();
-            			sum.setAlarmCount(tmp.add(info.getAlarmCount()));
-            			sum.setStartTime(info.getStartTime());
-            			sum.setEndTime(info.getEndTime());
+            if (null != assetList) {
+                if (assetList.size() > 0) {
+                    assetList.stream().forEach(asset -> {
+                        TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
+                        AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
+                                .pageLink(pageLink)
+                                .entityType(EntityType.PROJECT)
+                                .entityId(asset.getId().getId().toString())
+                                .build();
+                        countInfoList.add(alarmService.findAlarmStatisticsHandledCount(tenantId, customerId, query));
+                    });
+                }
+                if (countInfoList.size() > 0) {
+                    countInfoList.stream().forEach(info -> {
+                        AlarmHandledCount tmp = sum.getAlarmCount();
+                        sum.setAlarmCount(tmp.add(info.getAlarmCount()));
+                        sum.setStartTime(info.getStartTime());
+                        sum.setEndTime(info.getEndTime());
 
-					});
-				}
-				return sum;
-			}
-			return sum;
-
-
+                    });
+                }
+                return sum;
+            }
+            return sum;
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
+    @ApiOperation(value = "查询所有告警信息", notes = "查询给定类型的资产指定时间段内的所有告警信息。（包括处理和未处理的所有告警）")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(path = "/alarm/statistics/alarms/{entityType}", method = RequestMethod.GET)
     @ResponseBody
