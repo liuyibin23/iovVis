@@ -6,6 +6,7 @@ import com.beidouapp.server.fileserver.service.IFsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -108,6 +109,7 @@ public class FsController {
     }
 
     private void handleUnAuthorized(HttpServletResponse response) throws IOException, FastDFSException {
+        response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         ObjectMapper mapper = new ObjectMapper();
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         mapper.writeValue(response.getWriter(),FsErrorResponse.of(ErrorCode.NO_AUTHORIZED.CODE,ErrorCode.NO_AUTHORIZED.MESSAGE,HttpStatus.UNAUTHORIZED));
