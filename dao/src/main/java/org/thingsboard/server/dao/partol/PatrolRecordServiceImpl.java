@@ -296,6 +296,11 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
         });
     }
 
+    @Override
+    public void delete(PatrolId patrolId) {
+        patrolRecordDao.delete(patrolId);
+    }
+
     /**
      * 填充关联的task
      *

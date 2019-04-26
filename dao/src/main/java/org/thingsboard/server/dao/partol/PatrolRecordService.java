@@ -43,4 +43,6 @@ public interface PatrolRecordService {
 
 	ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, EntityId originatorId, String recordType, TimePageLink pageLink);
 
+	void delete(PatrolId patrolId);
+
 }

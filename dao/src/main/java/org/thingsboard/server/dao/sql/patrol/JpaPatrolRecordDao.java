@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.EntityId;
+import org.thingsboard.server.common.data.id.PatrolId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
@@ -59,6 +60,11 @@ public class JpaPatrolRecordDao extends JpaAbstractDao<PatrolRecordEntity, Patro
         );
     }
 
+    @Override
+    public void delete(PatrolId patrolId) {
+        patrolRecordRepository.delete(patrolId.toString());
+    }
+
     private Specification<PatrolRecordEntity> getFieldsSpecifications(TenantId tenantId, CustomerId customerId, EntityId originatorId, String type) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -83,4 +89,6 @@ public class JpaPatrolRecordDao extends JpaAbstractDao<PatrolRecordEntity, Patro
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+
 }
