@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.CountData;
+import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -20,6 +21,7 @@ import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -72,41 +74,6 @@ public class ReportController extends BaseController {
         }
     }
 
-//    @ApiOperation(value = "创建报表")
-//    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
-//    @RequestMapping(value = "/report", method = RequestMethod.POST)
-//    @ResponseBody
-//    public Report createReport(@RequestParam String reportName,
-//                             @RequestParam ReportType reportType,
-//                             @RequestParam String fileId,
-//                             @RequestParam String fileUrl,
-//                             @RequestParam String assetIdStr,
-//                             @RequestParam String userName,
-//                             @RequestParam(required = false) JsonNode additionalInfo) throws ThingsboardException {
-//        try {
-//            AssetId assetId = new AssetId(UUID.fromString(assetIdStr));
-//
-//            Report report = Report.builder()
-//                    .additionalInfo(additionalInfo)
-//                    .name(reportName)
-//                    .type(reportType)
-//                    .fileId(fileId)
-//                    .fileUrl(fileUrl)
-//                    .assetId(assetId)
-//                    .userName(userName).build();
-//
-//            //设置当前用户
-//            report.setTenantId(getCurrentUser().getTenantId());
-//            report.setCustomerId(getCurrentUser().getCustomerId());
-//            report.setUserId(getCurrentUser().getId());
-//
-//            checkReport(report);
-//            return reportService.createOrUpdate(report);
-//        } catch (Exception e) {
-//            throw handleException(e);
-//        }
-//    }
-
     @ApiOperation(value = "删除指定id的报表")
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/report/{reportId}", method = RequestMethod.DELETE)
@@ -151,76 +118,91 @@ public class ReportController extends BaseController {
                                               @RequestParam(required = false) String userIdStr,
                                               @RequestParam(required = false) String userName,
                                               @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter) throws ThingsboardException {
-        TenantId tenantId = null;
-        CustomerId customerId = null;
+//        TenantId tenantId = null;
+//        CustomerId customerId = null;
+//
+//        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+//            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+//            checkTenantId(tenantId);
+//        }
+//        if (!Strings.isNullOrEmpty(customerIdStr)) {
+//            customerId = new CustomerId(UUID.fromString(customerIdStr));
+//            if (tenantId != null) {
+//                checkCustomerId(tenantId, customerId);
+//            } else {
+//                checkCustomerId(customerId);
+//            }
+//        }
+//
+//        /**
+//         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+//         */
+//        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+//            //do nothing
+//        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+//            if (tenantId == null) {
+//                tenantId = getCurrentUser().getTenantId();
+//            }
+//        } else {
+//            if (tenantId == null) {
+//                tenantId = getCurrentUser().getTenantId();
+//            }
+//            if (customerId == null) {
+//                customerId = getCurrentUser().getCustomerId();
+//            }
+//        }
+//
+//        List<UserId> userIds = null;
+//        UserId userId = null;
+//        if (!Strings.isNullOrEmpty(userIdStr)) {
+//            userId = new UserId(UUID.fromString(userIdStr));
+//            User user = checkUserId(userId);
+//            if (user != null) {
+//                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+//                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//                }
+//                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+//                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//                }
+//            }
+//
+//            userIds = Lists.newArrayListWithExpectedSize(1);
+//            userIds.add(userId);
+//        }
+//
+//        AssetId assetId = null;
+//        if (!Strings.isNullOrEmpty(assetIdStr)) {
+//            assetId = new AssetId(UUID.fromString(assetIdStr));
+//            Asset asset = assetService.findAssetById(null, assetId);
+//            checkNotNull(asset);
+//            if (tenantId != null && !asset.getTenantId().equals(tenantId)) {
+//                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//            }
+//            if (customerId != null && !asset.getCustomerId().equals(customerId)) {
+//                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//            }
+//        }
 
-        if (!Strings.isNullOrEmpty(tenantIdStr)) {
-            tenantId = new TenantId(UUID.fromString(tenantIdStr));
-            checkTenantId(tenantId);
-        }
-        if (!Strings.isNullOrEmpty(customerIdStr)) {
-            customerId = new CustomerId(UUID.fromString(customerIdStr));
-            if (tenantId != null) {
-                checkCustomerId(tenantId, customerId);
-            } else {
-                checkCustomerId(customerId);
-            }
-        }
+        Map<String, EntityId> tcId = checkTenantIdAndCustomerIdParams(tenantIdStr, customerIdStr);
+        TenantId tenantId = (TenantId) tcId.get(KEY_TENANT_ID);
+        CustomerId customerId = (CustomerId) tcId.get(KEY_CUSTOMER_ID);
 
-        /**
-         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
-         */
-        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-            //do nothing
-        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-        } else {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-            if (customerId == null) {
-                customerId = getCurrentUser().getCustomerId();
-            }
-        }
-
-        List<UserId> userIds = null;
         UserId userId = null;
         if (!Strings.isNullOrEmpty(userIdStr)) {
             userId = new UserId(UUID.fromString(userIdStr));
-            User user = checkUserId(userId);
-            if (user != null) {
-                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
-                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-                }
-                if (customerId != null && !user.getCustomerId().equals(customerId)) {
-                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-                }
-            }
-
-            userIds = Lists.newArrayListWithExpectedSize(1);
-            userIds.add(userId);
+            checkUserId(tenantId, customerId, userId);
         }
 
         AssetId assetId = null;
         if (!Strings.isNullOrEmpty(assetIdStr)) {
             assetId = new AssetId(UUID.fromString(assetIdStr));
-            Asset asset = assetService.findAssetById(null, assetId);
-            checkNotNull(asset);
-            if (tenantId != null && !asset.getTenantId().equals(tenantId)) {
-                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-            }
-            if (customerId != null && !asset.getCustomerId().equals(customerId)) {
-                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-            }
+            checkAssetId(assetId);
         }
 
         if (startTs != null && endTs != null) {
             checkTimestamps(startTs, endTs);
         }
         TimePageLink pageLink = createPageLink(limit, startTs, endTs, ascOrder, idOffset);
-
 
         ReportQuery query = ReportQuery.builder()
                 .tenantId(tenantId)
@@ -255,69 +237,67 @@ public class ReportController extends BaseController {
                                         @RequestParam(required = false) String userName,
                                         @RequestParam(required = false, defaultValue = "ALL") ReportQuery.ReportTypeFilter typeFilter
     ) throws ThingsboardException {
-        TenantId tenantId = null;
-        CustomerId customerId = null;
+        Map<String, EntityId> tcId = checkTenantIdAndCustomerIdParams(tenantIdStr, customerIdStr);
+        TenantId tenantId = (TenantId) tcId.get(KEY_TENANT_ID);
+        CustomerId customerId = (CustomerId) tcId.get(KEY_CUSTOMER_ID);
 
-        if (!Strings.isNullOrEmpty(tenantIdStr)) {
-            tenantId = new TenantId(UUID.fromString(tenantIdStr));
-            checkTenantId(tenantId);
-        }
-        if (!Strings.isNullOrEmpty(customerIdStr)) {
-            customerId = new CustomerId(UUID.fromString(customerIdStr));
-            if (tenantId != null) {
-                checkCustomerId(tenantId, customerId);
-            } else {
-                checkCustomerId(customerId);
-            }
-        }
+//        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+//            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+//            checkTenantId(tenantId);
+//        }
+//        if (!Strings.isNullOrEmpty(customerIdStr)) {
+//            customerId = new CustomerId(UUID.fromString(customerIdStr));
+//            if (tenantId != null) {
+//                checkCustomerId(tenantId, customerId);
+//            } else {
+//                checkCustomerId(customerId);
+//            }
+//        }
+//
+//        /**
+//         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+//         */
+//        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+//            //do nothing
+//        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+//            if (tenantId == null) {
+//                tenantId = getCurrentUser().getTenantId();
+//            }
+//        } else {
+//            if (tenantId == null) {
+//                tenantId = getCurrentUser().getTenantId();
+//            }
+//            if (customerId == null) {
+//                customerId = getCurrentUser().getCustomerId();
+//            }
+//        }
 
-        /**
-         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
-         */
-        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-            //do nothing
-        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-        } else {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-            if (customerId == null) {
-                customerId = getCurrentUser().getCustomerId();
-            }
-        }
-
-        List<UserId> userIds = null;
         UserId userId = null;
         if (!Strings.isNullOrEmpty(userIdStr)) {
             userId = new UserId(UUID.fromString(userIdStr));
-            User user = checkUserId(userId);
-            if (user != null) {
-                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
-                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-                }
-                if (customerId != null && !user.getCustomerId().equals(customerId)) {
-                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-                }
-            }
-
-            userIds = Lists.newArrayListWithExpectedSize(1);
-            userIds.add(userId);
+            checkUserId(tenantId, customerId, userId);
         }
+
+//        if (!Strings.isNullOrEmpty(userIdStr)) {
+//            userId = new UserId(UUID.fromString(userIdStr));
+//            User user = checkUserId(userId);
+//            if (user != null) {
+//                if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+//                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//                }
+//                if (customerId != null && !user.getCustomerId().equals(customerId)) {
+//                    throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+//                }
+//            }
+//
+//            userIds = Lists.newArrayListWithExpectedSize(1);
+//            userIds.add(userId);
+//        }
 
         AssetId assetId = null;
         if (!Strings.isNullOrEmpty(assetIdStr)) {
             assetId = new AssetId(UUID.fromString(assetIdStr));
-            Asset asset = assetService.findAssetById(null, assetId);
-            checkNotNull(asset);
-            if (tenantId != null && !asset.getTenantId().equals(tenantId)) {
-                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-            }
-            if (customerId != null && !asset.getCustomerId().equals(customerId)) {
-                throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
-            }
+            checkAssetId(assetId);
         }
 
         if (startTs != null && endTs != null) {
