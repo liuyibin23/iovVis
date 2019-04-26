@@ -302,13 +302,6 @@
             "description": "报表类型 [DAY-日报 WEEK-周报 MONTH-月报 QUARTER-季报 YEAR-年报]。"
           },
           {
-            "name": "report_date",
-            "in": "query",
-            "type": "string",
-            "required": true,
-            "description": "报表日期"
-          },
-          {
             "name": "operator",
             "in": "query",
             "type": "string",
