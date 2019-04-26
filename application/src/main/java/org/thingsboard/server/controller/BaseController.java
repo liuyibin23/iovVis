@@ -19,6 +19,9 @@ import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
+import com.sun.istack.internal.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -106,6 +109,13 @@ public abstract class BaseController {
 
     public static final String INCORRECT_TENANT_ID = "Incorrect tenantId ";
     public static final String YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION = "You don't have permission to perform this operation!";
+
+
+    /**
+     * 检查tenantId和customerId参数权限时，返回的map的key值。
+     */
+    protected final String KEY_TENANT_ID = "tenant_id";
+    protected final String KEY_CUSTOMER_ID = "customer_id";
 
     private static final ObjectMapper json = new ObjectMapper();
 
@@ -306,6 +316,61 @@ public abstract class BaseController {
         }
     }
 
+
+    /**
+     * 检查当前登录的用户是否有权限访问参数传入的tenantId和customerId。
+     * 1. 如果没有访问权限，抛异常。
+     * 2. 如果有访问权限，则返回包含解析后id的Map，通过 KEY_TENANT_ID 和 KEY_CUSTOMER_ID 获取。
+     * 3. 如果参数{tenantIdStr} 或者 {customerIdStr}为null，那么返回当前登录用户权限下的tenantId或者customerId, 如果是SYS_ADMIN，则返回null，表示可以访问所有tenant和customer。
+     * <p>
+     * 此接口通常用于对tenantId和customerId进行条件筛选时，进行权限判断。
+     * <p>
+     * add by zhengtao 2019/04/26
+     *
+     * @param tenantIdStr   筛选指定的tenantId，可以为null
+     * @param customerIdStr 筛选指定的customerId，可以为null
+     */
+    protected Map<String, EntityId> checkTenantIdAndCustomerIdParams(@Nullable String tenantIdStr, @Nullable String customerIdStr) throws ThingsboardException {
+        TenantId tenantId = null;  //Do not filter tenant if null
+        CustomerId customerId = null;
+
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
+            tenantId = new TenantId(UUID.fromString(tenantIdStr));
+            checkTenantId(tenantId);
+        }
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
+            customerId = new CustomerId(UUID.fromString(customerIdStr));
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
+                checkCustomerId(customerId);
+            }
+        }
+
+        /**
+         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
+         */
+        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
+            //do nothing
+        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+        } else {
+            if (tenantId == null) {
+                tenantId = getCurrentUser().getTenantId();
+            }
+            if (customerId == null) {
+                customerId = getCurrentUser().getCustomerId();
+            }
+        }
+
+        Map<String, EntityId> tenantAndCustomerMap = Maps.newHashMapWithExpectedSize(2);
+        tenantAndCustomerMap.put(KEY_TENANT_ID, tenantId);
+        tenantAndCustomerMap.put(KEY_CUSTOMER_ID, customerId);
+        return tenantAndCustomerMap;
+    }
+
     void checkTenantId(TenantId tenantId) throws ThingsboardException {
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         SecurityUser authUser = getCurrentUser();
@@ -322,7 +387,6 @@ public abstract class BaseController {
 
     Customer checkCustomerIdAdmin(TenantId tenantId, CustomerId customerId) throws ThingsboardException {
         try {
-
             if (customerId != null && !customerId.isNullUid()) {
                 Customer customer = customerService.findCustomerById(tenantId, customerId);
                 checkCustomer(customer);
@@ -380,6 +444,24 @@ public abstract class BaseController {
         }
     }
 
+    /**
+     * 检查userId是否归属于tenantId和customerId,并且当前登录用户有访问userId的权限。
+     * add by zhengtao at 2019/04/26
+     *
+     * @return
+     * @throws ThingsboardException
+     */
+    protected User checkUserId(TenantId tenantId, CustomerId customerId, UserId userId) throws ThingsboardException {
+        User user = checkUserId(userId);
+        if (tenantId != null && !user.getTenantId().equals(tenantId)) {
+            throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+        }
+        if (customerId != null && !user.getCustomerId().equals(customerId)) {
+            throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+        }
+        return user;
+    }
+
     private void checkUser(User user) throws ThingsboardException {
         checkNotNull(user);
         checkTenantId(user.getTenantId());
@@ -417,6 +499,8 @@ public abstract class BaseController {
                     return;
                 case ENTITY_VIEW:
                     checkEntityViewId(new EntityViewId(entityId.getId()));
+                    return;
+                case REPORT:
                     return;
                 default:
                     throw new IllegalArgumentException("Unsupported entity type: " + entityId.getEntityType());
@@ -478,6 +562,24 @@ public abstract class BaseController {
         checkCustomerId(entityView.getCustomerId());
     }
 
+    /**
+     * 检查assetId是否归属于tenantId和customerId,并且当前登录用户有访问assetId的权限。
+     * add by zhengtao at 2019/04/26
+     *
+     * @return
+     * @throws ThingsboardException
+     */
+    protected Asset checkAssetId(TenantId tenantId, CustomerId customerId, AssetId assetId) throws ThingsboardException {
+        Asset asset = checkAssetId(assetId);
+        if (tenantId != null && !asset.getTenantId().equals(tenantId)) {
+            throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+        }
+        if (customerId != null && !asset.getCustomerId().equals(customerId)) {
+            throw new ThingsboardException(YOU_DON_T_HAVE_PERMISSION_TO_PERFORM_THIS_OPERATION, ThingsboardErrorCode.PERMISSION_DENIED);
+        }
+        return asset;
+    }
+
     Asset checkAssetId(TenantId tenantId, AssetId assetId) throws ThingsboardException {
         try {
             validateId(assetId, "Incorrect assetId " + assetId);
@@ -535,17 +637,17 @@ public abstract class BaseController {
         checkTenantId(alarm.getTenantId());
     }
 
-    protected void checkTimestamp(Long ts) throws ThingsboardException{
+    protected void checkTimestamp(Long ts) throws ThingsboardException {
         if (ts <= 0) {
-           throw handleException(new IllegalArgumentException("Timestamp must greater than zero."));
+            throw handleException(new IllegalArgumentException("Timestamp must greater than zero."));
         }
     }
 
-    protected void checkTimestamps(Long startTs, Long endTs) throws ThingsboardException{
+    protected void checkTimestamps(Long startTs, Long endTs) throws ThingsboardException {
         checkTimestamp(startTs);
         checkTimestamp(endTs);
         if (endTs < startTs) {
-           throw handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
+            throw handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
         }
     }
 

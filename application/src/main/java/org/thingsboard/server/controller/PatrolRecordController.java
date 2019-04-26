@@ -1,8 +1,11 @@
 package org.thingsboard.server.controller;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +24,7 @@ import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -126,6 +126,8 @@ public class PatrolRecordController extends BaseController {
     }
 
 
+
+
     /**
      * 1.2.15.4 查询所有巡检养护信息（支持分页）
      *
@@ -150,15 +152,15 @@ public class PatrolRecordController extends BaseController {
         TenantId tenantId = null;
         CustomerId customerId = null;
 
-        if(!Strings.isNullOrEmpty(tenantIdStr)){
+        if (!Strings.isNullOrEmpty(tenantIdStr)) {
             tenantId = new TenantId(UUID.fromString(tenantIdStr));
             checkTenantId(tenantId);
         }
-        if(!Strings.isNullOrEmpty(customerIdStr)){
+        if (!Strings.isNullOrEmpty(customerIdStr)) {
             customerId = new CustomerId(UUID.fromString(customerIdStr));
-            if(tenantId!=null){
-                checkCustomerId(tenantId,customerId);
-            }else{
+            if (tenantId != null) {
+                checkCustomerId(tenantId, customerId);
+            } else {
                 checkCustomerId(customerId);
             }
         }
