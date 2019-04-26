@@ -144,7 +144,7 @@ public class JpaReportDao extends JpaAbstractDao<ReportEntity, Report> implement
             if (typeFilter == ReportQuery.ReportTypeFilter.ALL) {
                 //do not filter
             } else {
-                Predicate statusPredicate = criteriaBuilder.equal(root.get("type"), typeFilter);
+                Predicate statusPredicate = criteriaBuilder.equal(root.get("type").as(String.class), typeFilter.toString());
                 predicates.add(statusPredicate);
             }
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
