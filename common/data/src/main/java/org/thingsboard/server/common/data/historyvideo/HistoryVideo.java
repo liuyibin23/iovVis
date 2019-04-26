@@ -25,6 +25,7 @@ public class HistoryVideo extends BaseData<HistoryVideoId> {
 	private Long startTs;
 	private Long endTs;
 	private String fileId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String fileUrl;
 	private String status;
 	private transient JsonNode additionalInfo;
