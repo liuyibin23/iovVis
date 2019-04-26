@@ -46,6 +46,7 @@ import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.dashboard.DashboardService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
+import org.thingsboard.server.dao.historyvideo.HistoryVideoService;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.task.TaskService;
@@ -237,6 +238,11 @@ class DefaultTbContext implements TbContext {
     @Override
     public TaskService getTaskService() {
         return mainCtx.getTaskService();
+    }
+
+    @Override
+    public HistoryVideoService getHistoryVideoService() {
+        return mainCtx.getHistoryVideoService();
     }
 
     @Override

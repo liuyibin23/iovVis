@@ -1,5 +1,6 @@
 package org.thingsboard.server.common.data.historyvideo;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,8 +16,11 @@ import org.thingsboard.server.common.data.id.TenantId;
 @AllArgsConstructor
 public class HistoryVideo extends BaseData<HistoryVideoId> {
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private TenantId tenantId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private CustomerId customerId;
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private DeviceId deviceId;
 	private Long startTs;
 	private Long endTs;

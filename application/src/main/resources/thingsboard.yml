@@ -120,11 +120,12 @@ database:
 # Cassandra driver configuration parameters
 cassandra:
   # Thingsboard cluster name
-  cluster_name: "${CASSANDRA_CLUSTER_NAME:Thingsboard Cluster}"
+  cluster_name: "${CASSANDRA_CLUSTER_NAME:Test Cluster}"
   # Thingsboard keyspace name
   keyspace_name: "${CASSANDRA_KEYSPACE_NAME:thingsboard}"
   # Specify node list
-  url: "${CASSANDRA_URL:192.168.1.12:9042}"
+#  url: "${CASSANDRA_URL:192.168.1.23:9042}"
+  url: "${CASSANDRA_URL:192.168.1.16:9042}"
   # Enable/disable secure connection
   ssl: "${CASSANDRA_USE_SSL:false}"
   # Enable/disable JMX
@@ -309,6 +310,8 @@ spring.resources.chain:
 #    username: "${SPRING_DATASOURCE_USERNAME:sa}"
 #    password: "${SPRING_DATASOURCE_PASSWORD:}"
 
+spring.aop:
+  proxy-target-class: true
 # PostgreSQL DAO Configuration
 spring:
   data:
@@ -324,7 +327,9 @@ spring:
     url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.16:5432/thingsboard}"
     username: "${SPRING_DATASOURCE_USERNAME:postgres}"
     password: "${SPRING_DATASOURCE_PASSWORD:beidouapp@psql}"
-
+#    url: "${SPRING_DATASOURCE_URL:jdbc:postgresql://192.168.1.23:5432/thingsboard}"
+#    username: "${SPRING_DATASOURCE_USERNAME:postgres}"
+#    password: "${SPRING_DATASOURCE_PASSWORD:postgres}"
 # Audit log parameters
 audit_log:
   # Enable/disable audit log functionality.
@@ -367,7 +372,7 @@ state:
   defaultStateCheckIntervalInSec: "${DEFAULT_STATE_CHECK_INTERVAL:10}"
 
 kafka:
-  enabled: true
+  enabled: false
   bootstrap.servers: "${TB_KAFKA_SERVERS:localhost:9092}"
   acks: "${TB_KAFKA_ACKS:all}"
   retries: "${TB_KAFKA_RETRIES:1}"
