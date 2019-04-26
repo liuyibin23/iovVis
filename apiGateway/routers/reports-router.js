@@ -57,7 +57,8 @@ router.get('/:assetId', async function (req, res) {
       for (let i = 0; i < resp.data.data.length; i++){
         let reportInfo = resp.data.data[i];
         let _dt = {
-          "report_name":  reportInfo.name,
+          "report_name": reportInfo.name,
+          "report_id": reportInfo.id.id,
           "report_fileId": reportInfo.fileId,
           "report_url": reportInfo.fileUrl,
           "report_type": reportInfo.type,
