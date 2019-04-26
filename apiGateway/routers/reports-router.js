@@ -48,7 +48,30 @@ router.get('/:assetId', async function (req, res) {
       "X-Authorization": token
     }
   }).then((resp) => {
-    res.send(resp.data);
+    let data = {
+      data:[],
+      hasNext:false,
+      nextPageLink:null
+    };
+    if (resp.data && resp.data.data) {
+      for (let i = 0; i < resp.data.data.length; i++){
+        let reportInfo = resp.data.data[i];
+        let _dt = {
+          "report_name":  reportInfo.name,
+          "report_fileId": reportInfo.fileId,
+          "report_url": reportInfo.fileUrl,
+          "report_type": reportInfo.type,
+          "report_date": reportInfo.createTs
+        };
+
+        data.data.push(_dt);
+      }
+
+      data.hasNext = resp.data.hasNext;
+      data.nextPageLink = resp.data.nextPageLink;
+    }
+
+    util.responData(200, data, res);
   }).catch((err) => {
     util.responErrorMsg(err, res);
   });
