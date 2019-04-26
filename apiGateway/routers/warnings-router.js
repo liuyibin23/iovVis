@@ -47,7 +47,8 @@ async function getWarningStatus(req, res) {
       let asset_warning_level = resMsg.info.value;
       util.responData(resp.status, { asset_warning_level }, res);
     } else {
-      util.responData(util.CST.OK200, util.CST.MSG510, res);
+      let data = [];
+      util.responData(util.CST.OK200, data, res);
     }
   }).catch((err) => {
     util.responErrorMsg(err, res);
@@ -94,7 +95,7 @@ async function postAsset(assetID, token, args, res) {
         }
       }).then((resp) => {
         // 添加预警操作记录
-        addWarningOperatorRecord(assetID, args, '设置资产预警状态', token, res);
+        addWarningOperatorRecord(assetID, args, '手动设置资产预警状态', token, res);
       }).catch((err) => {
         util.responErrorMsg(err, res);
       });
@@ -150,8 +151,9 @@ async function getWarningRules(req, res) {
     }).then(resp => {
       let dataValid = false;
       let rules = resp.data;
+      let data = [];
       if (rules[0] && rules[0].value) {
-        let data = JSON.parse(rules[0].value);
+        data = JSON.parse(rules[0].value);
         if (data){
           dataValid = true;
           util.responData(util.CST.OK200, data, res);
@@ -159,7 +161,7 @@ async function getWarningRules(req, res) {
       } 
       
       if (!dataValid){
-        util.responData(util.CST.OK200, util.CST.MSG510, res);
+        util.responData(util.CST.OK200, data, res);
       }
     }).catch(err => {
       //规则链获取出现问题
@@ -191,7 +193,7 @@ function updateAssetInfo(assetID, WarningRule, tenantId, token, req, res){
       params: { "tenantIdStr": tenantId }
     }).then(resp => {
       // 添加预警操作记录
-      addWarningOperatorRecord(assetID, req.body, '设置资产预警规则', token, res);
+      addWarningOperatorRecord(assetID, req.body, '手动设置资产预警规则', token, res);
     })
   }).catch(err => {
     //通过资产ID获取信息失败
