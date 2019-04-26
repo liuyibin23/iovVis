@@ -23,47 +23,6 @@ router.get('/about', function (req, res) {
   res.send('About reports')
 })
 
-//GET STAT
-router.get('/stat', function (req, res) {
-  let ret_data = [];
-  let limit = req.query.limit;
-  let token = req.headers['x-authorization'];
-  let urlGetReports = util.getAPI() + `assets/assetattr`;
-  if (limit) {
-    axios.get(urlGetReports, {
-      headers: {
-        "X-Authorization": token
-      },
-      params: {
-        limit,
-        attrKey: 'REPORTS'
-      }
-    }).then(resp => {
-      try {
-        resp.data.forEach(element => {
-          if (element.entity_type = 'ASSET') {
-            let it = {};
-            it.assetId = element.id;
-            it.reports = JSON.parse(element.strV);
-            ret_data.push(it);
-          }
-        });
-        let reports = [];
-        ret_data.forEach(element => {
-          reports = [...element.reports, ...reports];
-        })
-        util.responData(util.CST.OK200, reports, res);
-      } catch (err) {
-        util.responErrorMsg(err, res);
-      }
-    }).catch(err => {
-      util.responErrorMsg(err, res);
-    });
-  } else {
-    util.responData(util.CST.ERR400, util.CST.MSG400, res);
-  }
-})
-
 // GET
 router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
