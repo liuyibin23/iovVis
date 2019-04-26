@@ -195,7 +195,7 @@
           "报表"
         ],
         "summary": "获取资产关联的报表",
-        "description": "返回与资产关联的报表的URL列表。实际返回的是资产的共享属性REPORTS的值。该值为一个JSON对象，value中包含所有报表的url列表。",
+        "description": "返回与资产关联的报表的信息，支持分页查询。",
         "parameters": [
           {
             "$ref": "#/parameters/assetId"
