@@ -16,6 +16,15 @@ public interface IFsService {
     FileResponseData uploadFile(MultipartFile file, HttpServletRequest request);
 
     /**
+     * 验证合法性后再上传文件
+     * @param authorized
+     * @param file
+     * @param request
+     * @return
+     */
+    FileResponseData uploadFile(boolean authorized, MultipartFile file, HttpServletRequest request);
+
+    /**
      * 上传base64文件
      * @param base64
      * @param request
@@ -39,4 +48,15 @@ public interface IFsService {
      */
     FileResponseData deleteFile(String fileId,HttpServletRequest request);
 
+    /**
+     * 分片文件上传初始文件
+     * @return
+     */
+    FileResponseData initAppendFile(long initSize,String fileName);
+
+    /**
+     * 分片文件上传
+     * @return
+     */
+    FileResponseData chunkFileUpload(String fileId,long fileOffset,long length,byte[] fileContent);
 }

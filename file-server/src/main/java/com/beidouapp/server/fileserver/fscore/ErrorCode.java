@@ -26,7 +26,9 @@ public enum ErrorCode {
 
     FILE_TYPE_ERROR_COMPRESS("error.file.type.compress", "压缩文件类型错误"),
 
-    FILE_TYPE_ERROR_BASE64("error.file.type.base64", "base64文件格式错误");
+    FILE_TYPE_ERROR_BASE64("error.file.type.base64", "base64文件格式错误"),
+
+    NO_AUTHORIZED("error.auth.no_authorized","授权验证失败");
 
 
     public String CODE;

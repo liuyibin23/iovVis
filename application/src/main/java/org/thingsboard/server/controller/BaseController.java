@@ -69,10 +69,12 @@ import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.exception.IncorrectParameterException;
+import org.thingsboard.server.dao.historyvideo.HistoryVideoService;
 import org.thingsboard.server.dao.model.ModelConstants;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 import org.thingsboard.server.dao.partol.PatrolRecordService;
 import org.thingsboard.server.dao.relation.RelationService;
+import org.thingsboard.server.dao.report.ReportService;
 import org.thingsboard.server.dao.rule.RuleChainService;
 import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
@@ -194,6 +196,12 @@ public abstract class BaseController {
 
     @Autowired
     protected VideoInfoService videoInfoService;
+
+    @Autowired
+    protected HistoryVideoService historyVideoService;
+
+    @Autowired
+    protected ReportService reportService;
 
     @Autowired
     protected BaseTsHourValueStatisticService tsHourValueStatisticService;
@@ -527,20 +535,19 @@ public abstract class BaseController {
         checkTenantId(alarm.getTenantId());
     }
 
-    protected void checkTimestamp(Long ts) {
+    protected void checkTimestamp(Long ts) throws ThingsboardException{
         if (ts <= 0) {
-            handleException(new IllegalArgumentException("Timestamp must greater than zero."));
+           throw handleException(new IllegalArgumentException("Timestamp must greater than zero."));
         }
     }
 
-    protected void checkTimestamps(Long startTs, Long endTs) {
+    protected void checkTimestamps(Long startTs, Long endTs) throws ThingsboardException{
         checkTimestamp(startTs);
         checkTimestamp(endTs);
         if (endTs < startTs) {
-            handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
+           throw handleException(new IllegalArgumentException("End Timestamp must greater than StartTs"));
         }
     }
-
 
     WidgetsBundle checkWidgetsBundleId(WidgetsBundleId widgetsBundleId, boolean modify) throws ThingsboardException {
         try {

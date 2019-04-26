@@ -2,10 +2,12 @@ package com.beidouapp.server.fileserver;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
 
 import java.util.Arrays;
 
 @SpringBootApplication
+@EnableFeignClients
 public class FileServerApplication {
 
     private static final String SPRING_CONFIG_NAME_KEY = "--spring.config.name";

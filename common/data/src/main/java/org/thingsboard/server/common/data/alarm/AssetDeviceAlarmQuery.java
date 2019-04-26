@@ -23,6 +23,7 @@ public class AssetDeviceAlarmQuery {
     private String deviceType;
     private String deviceName;
     private AssetId assetId;
+    private String assetName;
     private TenantId tenantId;
     private CustomerId customerId;
     private StatusFilter statusFilter;
@@ -31,6 +32,7 @@ public class AssetDeviceAlarmQuery {
         this.deviceName = query.getDeviceName();
         this.deviceType = query.getDeviceType();
         this.assetId = query.getAssetId();
+        this.assetName = query.getAssetName();
         this.tenantId = query.getTenantId();
         this.customerId = query.getCustomerId();
         this.statusFilter = query.getStatusFilter();

@@ -1,7 +1,7 @@
 package org.thingsboard.server.dao.sql.alarm;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
-import jdk.net.SocketFlow;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -11,20 +11,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
 import org.thingsboard.server.common.data.AssetDeviceAlarm;
-import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
 import org.thingsboard.server.common.data.alarm.AssetDeviceAlarmQuery;
-import org.thingsboard.server.common.data.id.EntityId;
-import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.dao.DaoUtil;
 import org.thingsboard.server.dao.alarm.AssetDeviceAlarmDao;
 import org.thingsboard.server.dao.model.sql.AssetDeviceAlarmsEntity;
-import org.thingsboard.server.dao.model.sql.RelationEntity;
 import org.thingsboard.server.dao.sql.JpaAbstractDao;
-import org.thingsboard.server.dao.sql.JpaAbstractDaoListeningExecutorService;
-import org.thingsboard.server.dao.sql.JpaAbstractSearchTextDao;
 import org.thingsboard.server.dao.sql.JpaAbstractSearchTimeDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
@@ -80,6 +73,9 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
             if (query.getAssetId() != null) {
                 Predicate assetIdPredicate = criteriaBuilder.equal(root.get("assetId"), UUIDConverter.fromTimeUUID(query.getAssetId().getId()));
                 predicates.add(assetIdPredicate);
+            } else if (!Strings.isNullOrEmpty(query.getAssetName())) {
+                Predicate assetNamePredicate = criteriaBuilder.like(root.get("assetName"), "%" + query.getAssetName() + "%");
+                predicates.add(assetNamePredicate);
             }
             if (query.getCustomerId() != null) {
                 Predicate customerIdPredicate = criteriaBuilder.equal(root.get("customerId"), UUIDConverter.fromTimeUUID(query.getCustomerId().getId()));
@@ -93,7 +89,7 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
                 Predicate deviceTypePredicate = criteriaBuilder.equal(root.get("deviceType"), query.getDeviceType());
                 predicates.add(deviceTypePredicate);
             }
-            if (query.getDeviceName() != null) {
+            if (!Strings.isNullOrEmpty(query.getDeviceName())) {
                 Predicate deviceNamePredicate = criteriaBuilder.like(root.get("deviceName"), "%" + query.getDeviceName() + "%");
                 predicates.add(deviceNamePredicate);
             }

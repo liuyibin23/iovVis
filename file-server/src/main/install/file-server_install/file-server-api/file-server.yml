@@ -14,3 +14,6 @@ server:
   port: 8266
 logging:
   config: classpath:logback.xml
+tb:
+  transport:
+    url: http://localhost/api/v1 #tb 服务器接口

@@ -16,9 +16,13 @@
 package org.thingsboard.server.common.data;
 
 /**
+ * 注意：枚举的顺序不能随意变动，新增类型只能往后追加，因为部分表（比如alarm）保存的是枚举的下标ordinary，不是字符串。
+ * 注意：枚举的顺序不能随意变动，新增类型只能往后追加，因为部分表（比如alarm）保存的是枚举的下标ordinary，不是字符串。
+ * 注意：枚举的顺序不能随意变动，新增类型只能往后追加，因为部分表（比如alarm）保存的是枚举的下标ordinary，不是字符串。
+ *
  * @author Andrew Shvayka
  */
 public enum EntityType {
     TENANT, CUSTOMER, USER, DASHBOARD, ASSET, DEVICE, ALARM, RULE_CHAIN, RULE_NODE, ENTITY_VIEW,
-    PROJECT, BRIDGE, TUNNEL, ROAD, SLOPE, TASK,PATROL,WARNINGS,ALL,UNDEFINED
+    PROJECT, BRIDGE, TUNNEL, ROAD, SLOPE, TASK, PATROL, WARNINGS, ALL, UNDEFINED, REPORT, HISTORY_VIDEO
 }
