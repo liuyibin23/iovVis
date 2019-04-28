@@ -1,7 +1,7 @@
 version: '3'
 services:
   file-server:
-    build: .
+    build: ./file-server-api-distribute
     image: beidouapp/file-server
     container_name: file-server
     restart: always
