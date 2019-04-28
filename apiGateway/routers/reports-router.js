@@ -29,7 +29,10 @@ router.get('/:assetId', async function (req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
 
-  let api = util.getAPI() + `currentUser/page/reports?assetIdStr=${assetID}&limit=${req.query.limit}`;
+  let api = util.getAPI() + `currentUser/page/reports?limit=${req.query.limit}`;
+  if (assetID != 'ALL') {
+    api += `&assetIdStr=${assetID}`;
+  }
 
   if (req.query.startTs && req.query.endTs) {
     api += `&startTs=${req.query.startTs}&endTs=${req.query.endTs}`;
