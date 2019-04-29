@@ -1,0 +1,7 @@
+{
+  "serverCfg":{
+    "API":"http://192.168.1.23/api/",
+    "fileSVR":"http://192.168.1.23/",
+    "mqttBackendBUS":"192.168.1.23:9009"
+  }
+}
