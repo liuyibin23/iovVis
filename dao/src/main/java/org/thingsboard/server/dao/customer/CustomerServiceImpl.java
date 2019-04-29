@@ -41,6 +41,7 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.service.PaginatedRemover;
 import org.thingsboard.server.dao.service.Validator;
 import org.thingsboard.server.dao.tenant.TenantDao;
+import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 
 import java.io.IOException;
@@ -68,6 +69,9 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 
 	@Autowired
 	private TenantDao tenantDao;
+
+	@Autowired
+	private TenantService tenantService;
 
 	@Autowired
 	private AssetService assetService;
@@ -267,6 +271,9 @@ public class CustomerServiceImpl extends AbstractEntityService implements Custom
 					}
 				}
 			});
+
+			Tenant tenant = tenantService.findTenantById(customerExInfo.getTenantId());
+			customerExInfo.setTenantName(tenant.getName());
 
 			customerExInfo.setAdminCount(adminUsers.size());
 			customerExInfo.setUserCount(commonUsers.size());
