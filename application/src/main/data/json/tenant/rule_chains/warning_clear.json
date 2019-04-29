@@ -61,7 +61,7 @@
         "name": "清除此告警设备属性值",
         "debugMode": false,
         "configuration": {
-          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\r\nmsg = {};\r\nif(metadata.hasOwnProperty(\"ss_alarm_device_id\")&&metadata.hasOwnProperty(\"device_id\")){\r\n    var alarmDeviceIds = JSON.parse(metadata.ss_alarm_device_id.replace(/\\\\/g,\"\"));\r\n    var dev_id = metadata.device_id;\r\n    function removeId(id){\r\n        for (var key in alarmDeviceIds) {\r\n            if (alarmDeviceIds.hasOwnProperty(key)) {\r\n                var element = alarmDeviceIds[key];\r\n                if(element === id){\r\n                    alarmDeviceIds.splice(key,1);\r\n                    return;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    removeId(dev_id);\r\n    metadata.ss_alarm_device_id = JSON.stringify(alarmDeviceIds);\r\n    var msgtmp = {};       \r\n    msgtmp[\"alarm_device_id\"] =  JSON.stringify(alarmDeviceIds);\r\n}\r\n\r\nreturn {msg: msgtmp, metadata: metadata, msgType: msgType};"
+          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\r\nmsg = {};\r\nfunction removeId(id,alarmDeviceIds){\r\n    for (var key in alarmDeviceIds) {\r\n        if (alarmDeviceIds.hasOwnProperty(key)) {\r\n            if(!alarmDeviceIds[key].hasOwnProperty('dev_id'))\r\n                continue;\r\n            var element = alarmDeviceIds[key];\r\n            if(element.dev_id === id){\r\n                alarmDeviceIds.splice(key,1);\r\n                return;\r\n            }\r\n        }\r\n    }\r\n}\r\nif(metadata.hasOwnProperty(\"ss_alarm_device_id\")&&metadata.hasOwnProperty(\"device_id\")){\r\n    var alarmDeviceIds = JSON.parse(metadata.ss_alarm_device_id.replace(/\\\\/g,\"\"));\r\n    var dev_id = metadata.device_id;\r\n    removeId(dev_id,alarmDeviceIds);\r\n    metadata.ss_alarm_device_id = JSON.stringify(alarmDeviceIds);\r\n    var msgtmp = {};       \r\n    msgtmp[\"alarm_device_id\"] =  JSON.stringify(alarmDeviceIds);\r\n}\r\n\r\nreturn {msg: msgtmp, metadata: metadata, msgType: msgType};"
         }
       },
       {
@@ -184,13 +184,13 @@
         "fromIndex": 4,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+          "id": "551320b0-695e-11e9-a8f1-018c4cf00fce"
         },
         "additionalInfo": {
           "layoutX": 1142,
           "layoutY": 368,
           "ruleChainNodeId": "rule-chain-node-10",
-		  "ruleChainName": "WARNING_JUDGE_RULE"
+          "ruleChainName": "WARNING_JUDGE_RULE"
         },
         "type": "Success"
       }

@@ -122,6 +122,18 @@
         "configuration": {
           "version": 0
         }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 1033,
+          "layoutY": 204
+        },
+        "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesProtocolNode",
+        "name": "666",
+        "debugMode": false,
+        "configuration": {
+          "protocolType": "v1.0"
+        }
       }
     ],
     "connections": [
@@ -138,6 +150,11 @@
       {
         "fromIndex": 2,
         "toIndex": 1,
+        "type": "Post attributes"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 9,
         "type": "Post attributes"
       },
       {
@@ -176,8 +193,8 @@
         "additionalInfo": {
           "layoutX": 1056,
           "layoutY": 782,
-          "ruleChainNodeId": "rule-chain-node-11",
-		  "ruleChainName": "WARNING_CLEAR"
+          "ruleChainNodeId": "rule-chain-node-12",
+          "ruleChainName": "WARNING_CLEAR"
         },
         "type": "Alarm Cleared"
       },
@@ -190,8 +207,8 @@
         "additionalInfo": {
           "layoutX": 1056,
           "layoutY": 710,
-          "ruleChainNodeId": "rule-chain-node-12",
-		  "ruleChainName": "MQTT_ENGINE_BUS"
+          "ruleChainNodeId": "rule-chain-node-13",
+          "ruleChainName": "MQTT_ENGINE_BUS"
         },
         "type": "Post telemetry"
       },
@@ -204,8 +221,8 @@
         "additionalInfo": {
           "layoutX": 1046,
           "layoutY": 851,
-          "ruleChainNodeId": "rule-chain-node-13",
-		  "ruleChainName": "WARNING_JUDGE_RULE"
+          "ruleChainNodeId": "rule-chain-node-14",
+          "ruleChainName": "WARNING_JUDGE_RULE"
         },
         "type": "True"
       }
