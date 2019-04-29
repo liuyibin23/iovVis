@@ -65,7 +65,12 @@ router.get('/:assetId', async function (req, res) {
           "report_fileId": reportInfo.fileId,
           "report_url": reportInfo.fileUrl,
           "report_type": reportInfo.type,
-          "report_date": reportInfo.createTs
+          "report_date": reportInfo.createTs,
+          "assetId":reportInfo.assetId.id,
+          "tenantId":reportInfo.tenantId.id,
+          "customerId":reportInfo.customerId.id,
+          "userId":reportInfo.userId.id,
+          "userName":reportInfo.userName
         };
 
         data.data.push(_dt);
