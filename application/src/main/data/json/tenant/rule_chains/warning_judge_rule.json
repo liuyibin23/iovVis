@@ -8,12 +8,12 @@
     "configuration": null
   },
   "metadata": {
-    "firstNodeIndex": 3,
+    "firstNodeIndex": 2,
     "nodes": [
       {
         "additionalInfo": {
-          "layoutX": 1062,
-          "layoutY": 434
+          "layoutX": 989,
+          "layoutY": 75
         },
         "type": "org.thingsboard.rule.engine.telemetry.TbMsgAttributesNode",
         "name": "更新资产预警属性",
@@ -24,26 +24,14 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 679,
-          "layoutY": 319
+          "layoutX": 709,
+          "layoutY": 17
         },
         "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
         "name": "JudgeWarnings",
         "debugMode": false,
         "configuration": {
-          "jsScript": "function findId(id,alarmDeviceIds){\r\n    for (var key in alarmDeviceIds) {\r\n        if (alarmDeviceIds.hasOwnProperty(key)) {\r\n            var element = alarmDeviceIds[key];\r\n            if(element === id){\r\n                return true;\r\n            }\r\n        }\r\n    }\r\n    return false;\r\n}\r\n\r\n\r\nfunction tryRules(rule,alarmDeviceIds) {\r\n        //check orangeRules first, then blueRules\r\n    blueRules = [];\r\n    orangeRules = [];\r\n    if(typeof rule === undefined)\r\n         return  '';\r\n    if(rule.hasOwnProperty(\"blueRules\")){\r\n        blueRules = rule.blueRules;\r\n    }\r\n    if(rule.hasOwnProperty(\"orangeRules\")){\r\n        orangeRules = rule.orangeRules;\r\n    }\r\n    //橙色预警规则\r\n    //msg中包含资产中报警的设备（keys:true）\r\n    //input: msg.devA,msg.devB\r\n    //rule: [{andRule:[devA,devB]},{andRule:[devC]}]\r\n    //\r\n    var orange = false;\r\n    if(orangeRules !== null && orangeRules.hasOwnProperty('length')){\r\n        for (var idx = 0; idx < orangeRules.length; idx++) {\r\n            if(typeof orangeRules[idx] === undefined)\r\n                continue;\r\n            if(orangeRules[idx].hasOwnProperty('andRule')){\r\n                andRules = orangeRules[idx].andRule;\r\n                for (var jdx = 0; jdx < andRules.length; jdx++) {\r\n                    var alarmDev = andRules[jdx];\r\n                    if(!findId(alarmDev,alarmDeviceIds)){\r\n                        break;\r\n                    }\r\n                    if (jdx === andRules.length - 1)\r\n                        orange = true;\r\n                }\r\n                if (!orange) {\r\n                    continue;\r\n                } else{\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    if (orange)\r\n        return 'orange';\r\n\r\n    var blue = false;\r\n    if(blueRules !== null && blueRules.hasOwnProperty('length')){\r\n        for (idx = 0; idx < blueRules.length; idx++) {\r\n            if(typeof blueRules[idx] === undefined)\r\n                continue;\r\n            if(blueRules[idx].hasOwnProperty('andRule')){\r\n                andRules = blueRules[idx].andRule;\r\n                for ( jdx = 0; jdx < andRules.length; jdx++) {\r\n                    alarmDev = andRules[jdx];\r\n                    if(!findId(alarmDev,alarmDeviceIds)){\r\n                        break;\r\n                    }\r\n                    if (jdx === andRules.length - 1)\r\n                        blue = true;\r\n                }\r\n                if (!blue) { // test next rule (or)\r\n                    continue;\r\n                } else{\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    if (blue)\r\n        return 'blue';\r\n}\r\n\r\n\r\nfunction nextRelation(rule,alarmDeviceIds) {\r\n    var condition = 'default';\r\n    switch (tryRules(rule,alarmDeviceIds)) {\r\n        case 'blue':\r\n            // code\r\n            condition = \"BLUE\";\r\n            break;\r\n        case 'orange':\r\n            condition = \"YELLOW\";\r\n            break;\r\n        default:\r\n            condition = \"GREEN\";\r\n            break;\r\n    }\r\n    return condition;\r\n}\r\n\r\nvar msgtmp = {}\r\nmsgType = 'POST_ATTRIBUTES_REQUEST'\r\nif(!metadata.hasOwnProperty(\"ss_asset_warning_level\")\r\n||!metadata.hasOwnProperty(\"ss_warning_rule_cfg\")\r\n||!metadata.hasOwnProperty(\"ss_alarm_device_id\"))\r\n{\r\n    msgtmp[\"asset_warning_level\"] = \"GREEN\"\r\n}\r\nif(metadata.hasOwnProperty(\"ss_asset_warning_level\")&&metadata.hasOwnProperty(\"ss_warning_rule_cfg\")\r\n&&metadata.hasOwnProperty(\"ss_alarm_device_id\")){\r\n    var rule = JSON.parse(metadata.ss_warning_rule_cfg);\r\n    var alarmDeviceIds = JSON.parse(metadata.ss_alarm_device_id);\r\n    var warningLevel = metadata.ss_asset_warning_level;\r\n    \r\n    msgtmp[\"asset_warning_level\"] = warningLevel;\r\n    metadata.ss_asset_warning_level = nextRelation(rule,alarmDeviceIds);\r\n    msgtmp[\"asset_warning_level\"] = metadata.ss_asset_warning_level;\r\n}\r\n\r\n\r\n\r\nreturn {msg: msgtmp, metadata: metadata, msgType: msgType};"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 777,
-          "layoutY": 186
-        },
-        "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
-        "name": "严重超标黄色预警",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "msgType = 'POST_ATTRIBUTES_REQUEST';\nmsg.asset_warning_level = 'YELLOW';\nreturn {msg: msg, metadata: metadata, msgType: msgType};"
+          "jsScript": "function findId(id,alarmDeviceIds){\r\n    for (var key in alarmDeviceIds) {\r\n        if (alarmDeviceIds.hasOwnProperty(key)) {\r\n            if(!alarmDeviceIds[key].hasOwnProperty('dev_id')){\r\n                continue;\r\n            }\r\n            var element = alarmDeviceIds[key];\r\n            if(element.dev_id === id){\r\n                return true;\r\n            }\r\n        }\r\n    }\r\n    return false;\r\n}\r\nfunction hasHighLevelId(alarmDeviceIds){\r\n    for (var key in alarmDeviceIds) {\r\n        if (alarmDeviceIds.hasOwnProperty(key)) {\r\n            if(!alarmDeviceIds[key].hasOwnProperty('dev_id')){\r\n                continue;\r\n            }\r\n            if(!alarmDeviceIds[key].hasOwnProperty('alarm_level')){\r\n                continue;\r\n            }\r\n            var element = alarmDeviceIds[key];\r\n            if(element.alarm_level === 2){\r\n                return true;\r\n            }\r\n        }\r\n    }\r\n    return false;\r\n}\r\n\r\n\r\nfunction tryRules(rule,alarmDeviceIds) {\r\n        //check orangeRules first, then blueRules\r\n    blueRules = [];\r\n    orangeRules = [];\r\n    if(typeof rule === undefined)\r\n         return  '';\r\n    if(rule.hasOwnProperty(\"blueRules\")){\r\n        blueRules = rule.blueRules;\r\n    }\r\n    if(rule.hasOwnProperty(\"orangeRules\")){\r\n        orangeRules = rule.orangeRules;\r\n    }\r\n    //橙色预警规则\r\n    //msg中包含资产中报警的设备（keys:true）\r\n    //input: msg.devA,msg.devB\r\n    //rule: [{andRule:[devA,devB]},{andRule:[devC]}]\r\n    //\r\n    var orange = false;\r\n    if(orangeRules !== null && orangeRules.hasOwnProperty('length')){\r\n        for (var idx = 0; idx < orangeRules.length; idx++) {\r\n            if(typeof orangeRules[idx] === undefined)\r\n                continue;\r\n            if(orangeRules[idx].hasOwnProperty('andRule')){\r\n                andRules = orangeRules[idx].andRule;\r\n                for (var jdx = 0; jdx < andRules.length; jdx++) {\r\n                    var alarmDev = andRules[jdx];\r\n                    if(!findId(alarmDev,alarmDeviceIds)){\r\n                        break;\r\n                    }\r\n                    if (jdx === andRules.length - 1)\r\n                        orange = true;\r\n                }\r\n                if (!orange) {\r\n                    continue;\r\n                } else{\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    if (orange)\r\n        return 'orange';\r\n\r\n    var blue = false;\r\n    if(blueRules !== null && blueRules.hasOwnProperty('length')){\r\n        for (idx = 0; idx < blueRules.length; idx++) {\r\n            if(typeof blueRules[idx] === undefined)\r\n                continue;\r\n            if(blueRules[idx].hasOwnProperty('andRule')){\r\n                andRules = blueRules[idx].andRule;\r\n                for ( jdx = 0; jdx < andRules.length; jdx++) {\r\n                    alarmDev = andRules[jdx];\r\n                    if(!findId(alarmDev,alarmDeviceIds)){\r\n                        break;\r\n                    }\r\n                    if (jdx === andRules.length - 1)\r\n                        blue = true;\r\n                }\r\n                if (!blue) { // test next rule (or)\r\n                    continue;\r\n                } else{\r\n                    break;\r\n                }\r\n            }\r\n        }\r\n    }\r\n    if (blue)\r\n        return 'blue';\r\n}\r\n\r\n\r\nfunction nextRelation(rule,alarmDeviceIds) {\r\n    var condition = 'default';\r\n    switch (tryRules(rule,alarmDeviceIds)) {\r\n        case 'blue':\r\n            // code\r\n            condition = \"BLUE\";\r\n            break;\r\n        case 'orange':\r\n            condition = \"YELLOW\";\r\n            break;\r\n        default:\r\n            condition = \"GREEN\";\r\n            break;\r\n    }\r\n    return condition;\r\n}\r\n\r\nvar msgtmp = {}\r\nmsgType = 'POST_ATTRIBUTES_REQUEST'\r\nif(!metadata.hasOwnProperty(\"ss_asset_warning_level\")\r\n||!metadata.hasOwnProperty(\"ss_warning_rule_cfg\")\r\n||!metadata.hasOwnProperty(\"ss_alarm_device_id\"))\r\n{\r\n    msgtmp[\"asset_warning_level\"] = \"GREEN\"\r\n}\r\nif(metadata.hasOwnProperty(\"ss_asset_warning_level\")&&metadata.hasOwnProperty(\"ss_warning_rule_cfg\")\r\n&&metadata.hasOwnProperty(\"ss_alarm_device_id\")){\r\n    var rule = JSON.parse(metadata.ss_warning_rule_cfg);\r\n    var alarmDeviceIds = JSON.parse(metadata.ss_alarm_device_id);\r\n    var warningLevel = metadata.ss_asset_warning_level;\r\n    if(warningLevel == \"RED\")\r\n    {\r\n        msgtmp[\"asset_warning_level\"] = warningLevel;\r\n    }\r\n    if(hasHighLevelId(alarmDeviceIds)){\r\n        msgtmp[\"asset_warning_level\"] = \"YELLOW\"\r\n    }else{\r\n        metadata.ss_asset_warning_level = nextRelation(rule,alarmDeviceIds)\r\n        msgtmp[\"asset_warning_level\"] = metadata.ss_asset_warning_level;\r\n    }\r\n}\r\n\r\n\r\n\r\nreturn {msg: msgtmp, metadata: metadata, msgType: msgType};"
         }
       },
       {
@@ -77,20 +65,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 510,
-          "layoutY": 198
-        },
-        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
-        "name": "CheckAlarmLevel",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "if(metadata.hasOwnProperty('alarm_level')){\n    return metadata.alarm_level===\"2\";\n}else{\n    return false;\n}"
-        }
-      },
-      {
-        "additionalInfo": {
-          "layoutX": 436,
-          "layoutY": 375
+          "layoutX": 399,
+          "layoutY": 276
         },
         "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
         "name": "获取预警规则判决参数",
@@ -108,8 +84,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 1130,
-          "layoutY": 566
+          "layoutX": 1044,
+          "layoutY": 230
         },
         "type": "org.thingsboard.rule.engine.action.TbCreateWarningNode",
         "name": "记录更新预警",
@@ -120,8 +96,8 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 843,
-          "layoutY": 527
+          "layoutX": 719,
+          "layoutY": 240
         },
         "type": "org.thingsboard.rule.engine.transform.TbTransformMsgNode",
         "name": "saveWarningRecord",
@@ -139,47 +115,27 @@
       },
       {
         "fromIndex": 1,
-        "toIndex": 8,
+        "toIndex": 6,
         "type": "Success"
       },
       {
         "fromIndex": 2,
-        "toIndex": 0,
-        "type": "Success"
-      },
-      {
-        "fromIndex": 2,
-        "toIndex": 8,
+        "toIndex": 3,
         "type": "Success"
       },
       {
         "fromIndex": 3,
         "toIndex": 4,
-        "type": "Success"
+        "type": "False"
       },
       {
         "fromIndex": 4,
-        "toIndex": 5,
-        "type": "False"
-      },
-      {
-        "fromIndex": 5,
-        "toIndex": 6,
-        "type": "False"
-      },
-      {
-        "fromIndex": 5,
-        "toIndex": 2,
-        "type": "True"
-      },
-      {
-        "fromIndex": 6,
         "toIndex": 1,
         "type": "Success"
       },
       {
-        "fromIndex": 8,
-        "toIndex": 7,
+        "fromIndex": 6,
+        "toIndex": 5,
         "type": "Success"
       }
     ],

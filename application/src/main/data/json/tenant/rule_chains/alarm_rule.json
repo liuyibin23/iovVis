@@ -183,7 +183,7 @@
         "name": "ChangeAssetAttribute",
         "debugMode": false,
         "configuration": {
-          "jsScript": "if(msg.hasOwnProperty('alarm_level')){\r\n    metadata['alarm_level'] = msg['alarm_level'] \r\n}else{\r\n    metadata['alarm_level'] = 1\r\n}\r\nvar newMsg = {};\r\nvar newMsgType = 'POST_ATTRIBUTES_REQUEST';\r\nif (metadata.hasOwnProperty(\"ss_alarm_device_id\")) {\r\n    var ids = JSON.parse(metadata[\"ss_alarm_device_id\"]);\r\n\r\n    var isExist = false;\r\n    for (var key in ids) {\r\n        if (ids.hasOwnProperty(key)) {\r\n            if(ids[key] === metadata.dev_id){\r\n                isExist = true;\r\n                break;\r\n            }\r\n        }\r\n    }\r\n    if (!isExist) {\r\n        ids.push(metadata.dev_id);\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify(ids);\r\n    } else {\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify(ids[metadata.dev_id]);\r\n    }\r\n\r\n} else {\r\n    newMsg[\"alarm_device_id\"] = JSON.stringify([metadata.dev_id]);\r\n}\r\nreturn {\r\n    msg: newMsg,\r\n    metadata: metadata,\r\n    msgType: newMsgType\r\n};"
+          "jsScript": "if(msg.hasOwnProperty('alarm_level')){\r\n    metadata['alarm_level'] = msg['alarm_level'] \r\n}else{\r\n    metadata['alarm_level'] = 1\r\n}\r\nvar newMsg = {};\r\nvar newMsgType = 'POST_ATTRIBUTES_REQUEST';\r\nif (metadata.hasOwnProperty(\"ss_alarm_device_id\")) {\r\n    var ids = JSON.parse(metadata[\"ss_alarm_device_id\"]);\r\n\r\n    var isExist = false;\r\n    for (var key in ids) {\r\n        if (ids.hasOwnProperty(key)  && ids[key].hasOwnProperty('dev_id')) {\r\n            if(ids[key].dev_id === metadata.dev_id){\r\n                if(ids[key].hasOwnProperty('alarm_level')){\r\n                    ids[key].alarm_level = metadata.alarm_level\r\n                }\r\n                isExist = true;\r\n                break;\r\n            }\r\n        }\r\n    }\r\n    if (!isExist) {\r\n        ids.push({\"dev_id\":metadata.dev_id, \"alarm_level\":metadata.alarm_level});\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify(ids);\r\n    } else {\r\n        newMsg[\"alarm_device_id\"] = JSON.stringify([{\"dev_id\":metadata.dev_id, \"alarm_level\":metadata.alarm_level}]);\r\n    }\r\n\r\n} else {\r\n    newMsg[\"alarm_device_id\"] = JSON.stringify([{\"dev_id\":metadata.dev_id, \"alarm_level\":metadata.alarm_level}]);\r\n}\r\nreturn {\r\n    msg: newMsg,\r\n    metadata: metadata,\r\n    msgType: newMsgType\r\n};"
         }
       },
       {
@@ -305,13 +305,13 @@
         "fromIndex": 12,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+          "id": "551320b0-695e-11e9-a8f1-018c4cf00fce"
         },
         "additionalInfo": {
           "layoutX": 1100,
           "layoutY": 450,
           "ruleChainNodeId": "rule-chain-node-17",
-		  "ruleChainName": "WARNING_JUDGE_RULE"
+          "ruleChainName": "WARNING_JUDGE_RULE"
         },
         "type": "Success"
       }
