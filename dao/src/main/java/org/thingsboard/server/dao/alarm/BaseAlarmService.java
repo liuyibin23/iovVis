@@ -346,12 +346,12 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         AlarmCount deviceCount;
 
         {
-            projectCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.PROJECT, alarmHighestSeverity);
-            bridgeCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.BRIDGE, alarmHighestSeverity);
-            tunnelCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.TUNNEL, alarmHighestSeverity);
-            roadCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.ROAD, alarmHighestSeverity);
-            slopeCount = findAllAssetAlarmCountByType(tenantId, customerId, EntityType.SLOPE, alarmHighestSeverity);
-            deviceCount = findAllDeviceAlarmCountByType(tenantId, customerId, alarmHighestSeverity);
+            projectCount = findAllAssetAlarmCountByType(tenantId, customerId, statisticsQuery, EntityType.PROJECT, alarmHighestSeverity);
+            bridgeCount = findAllAssetAlarmCountByType(tenantId, customerId, statisticsQuery, EntityType.BRIDGE, alarmHighestSeverity);
+            tunnelCount = findAllAssetAlarmCountByType(tenantId, customerId, statisticsQuery, EntityType.TUNNEL, alarmHighestSeverity);
+            roadCount = findAllAssetAlarmCountByType(tenantId, customerId, statisticsQuery, EntityType.ROAD, alarmHighestSeverity);
+            slopeCount = findAllAssetAlarmCountByType(tenantId, customerId, statisticsQuery, EntityType.SLOPE, alarmHighestSeverity);
+            deviceCount = findAllDeviceAlarmCountByType(tenantId, customerId, statisticsQuery, alarmHighestSeverity);
         }
 
         return AlarmCountInfo.builder().highestAlarmSeverity(alarmHighestSeverity).bridgeAlarmCount(bridgeCount)
@@ -665,19 +665,16 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
     }
 
 
-    private AlarmCount findAllAssetAlarmCountByType(TenantId tenantId, CustomerId customerId, EntityType assetType, AlarmHighestSeverity highestSeverity) {
+    private AlarmCount findAllAssetAlarmCountByType(TenantId tenantId,
+                                                    CustomerId customerId,
+                                                    AlarmStatisticsQuery statisticsQuery,
+                                                    EntityType assetType,
+                                                    AlarmHighestSeverity highestSeverity) {
         AlarmCount alarmCount = new AlarmCount();
 
         TextPageLink nextPageLink = new TextPageLink(100);
         boolean hasNext = true;
         while (hasNext) {
-//            UUID tId = null, cId = null;
-//            if (!tenantId.isNullUid()) {
-//                tId = tenantId.getId();
-//            }
-//            if (!customerId.isNullUid()) {
-//                cId = customerId.getId();
-//            }
             TextPageData<Asset> pageData = assetService.findAssetsByTenantIdAndCustomerIdAndType(tenantId, customerId, assetType.toString(), nextPageLink);
 
             List<Asset> assets = pageData.getData();
@@ -692,7 +689,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 highestSeverity.setEntityId(asset.getId().toString());
                 highestSeverity.setEntityName(asset.getName());
                 highestSeverity.setEntityType(assetType);
-                calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
+                calculateAlarmCount(alarmCount, highestSeverity, tenantId, query, statisticsQuery);
             });
 
 //            TextPageData pageData = new TextPageData<>(assets, nextPageLink);
@@ -703,7 +700,10 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         return alarmCount;
     }
 
-    private AlarmCount findAllDeviceAlarmCountByType(TenantId tenantId, CustomerId customerId, AlarmHighestSeverity highestSeverity) {
+    private AlarmCount findAllDeviceAlarmCountByType(TenantId tenantId,
+                                                     CustomerId customerId,
+                                                     AlarmStatisticsQuery statisticsQuery,
+                                                     AlarmHighestSeverity highestSeverity) {
         AlarmCount alarmCount = new AlarmCount();
 
         TextPageLink nextPageLink = new TextPageLink(100);
@@ -729,7 +729,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                 highestSeverity.setEntityId(device.getId().toString());
                 highestSeverity.setEntityName(device.getName());
                 highestSeverity.setEntityType(EntityType.DEVICE);
-                calculateAlarmCount(alarmCount, highestSeverity, tenantId, query);
+                calculateAlarmCount(alarmCount, highestSeverity, tenantId, query, statisticsQuery);
             });
 
 //            TextPageData pageData = new TextPageData<>(devices, nextPageLink);
@@ -740,13 +740,20 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         return alarmCount;
     }
 
-    private void calculateAlarmCount(AlarmCount alarmCount, AlarmHighestSeverity highestSeverity, TenantId tenantId, AlarmQuery query) {
+    private void calculateAlarmCount(AlarmCount alarmCount,
+                                     AlarmHighestSeverity highestSeverity,
+                                     TenantId tenantId,
+                                     AlarmQuery query,
+                                     AlarmStatisticsQuery statisticsQuery) {
         try {
             int unackCount = alarmCount.getUnacked();
             int ackCount = alarmCount.getAcked();
             int clearCount = alarmCount.getCleared();
             int todayCount = alarmCount.getCreatedOfToday();
             int monthCount = alarmCount.getCreatedOfMonth();
+
+            int alarmingEntityWithinDueCount = alarmCount.getAlarmingEntityWithinDueCount();
+            int alarmingEntityOverdueCount = alarmCount.getAlarmingEntityOverdueCount();
 
             AlarmQuery nextQuery = new AlarmQuery(query);
             TimePageLink nextPageLink = query.getPageLink();
@@ -762,6 +769,12 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                             alarmCount.ackPlus(1);
                         } else if (alarm.getStatus() == AlarmStatus.ACTIVE_UNACK) {
                             alarmCount.unackPlus(1);
+                        }
+
+                        if (DateAndTimeUtils.isBetween(alarm.getStartTs(), statisticsQuery.getPageLink().getStartTime(), statisticsQuery.getPageLink().getEndTime())) {
+                            alarmCount.alarmingEntityWithinDueCountPlus(1);
+                        } else {
+                            alarmCount.alarmingEntityOverdueCountPlus(1);
                         }
 
                         if (DateAndTimeUtils.isAtToday(alarm.getStartTs())) {
@@ -791,6 +804,14 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
             //ack的数量或者unack的数量增加，说明当前asset存在unclear（未处理）的告警，那么统计计数+1
             if (alarmCount.getUnacked() > unackCount || alarmCount.getAcked() > ackCount) {
                 alarmCount.alarmingEntityCountPlus(1);
+            }
+
+            if (alarmCount.getAlarmingEntityOverdueCount() > alarmingEntityOverdueCount) {
+                alarmCount.setAlarmingEntityOverdueCount(alarmingEntityOverdueCount + 1);
+            }
+
+            if (alarmCount.getAlarmingEntityWithinDueCount() > alarmingEntityWithinDueCount) {
+                alarmCount.setAlarmingEntityWithinDueCount(alarmingEntityWithinDueCount + 1);
             }
 
             if (alarmCount.getAcked() > ackCount) {

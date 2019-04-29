@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
+ * 以alarm作为计数依据，统计的是告警的数量。
  * Created by ztao at 2019/1/4 16:19.
  */
 @Data

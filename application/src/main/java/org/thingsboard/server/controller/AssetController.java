@@ -427,8 +427,8 @@ public class AssetController extends BaseController {
                                                                       @RequestParam(required = false) String idOffset,
                                                                       @RequestParam(required = false) Long startTs,
                                                                       @RequestParam(required = false) Long endTs,
-                                                                      @RequestParam(required = false, defaultValue = "false") boolean timeAscOrder,
-                                                                      @RequestParam(required = false, defaultValue = "true") boolean statusAscOrder
+                                                                      @RequestParam(required = false, defaultValue = "false") boolean timeAscOrder
+//                                                                      @RequestParam(required = false, defaultValue = "true") boolean statusAscOrder
     ) throws ThingsboardException {
         Map<String, EntityId> tcId = checkTenantIdAndCustomerIdParams(tenantIdStr,customerIdStr);
         TenantId tenantId = (TenantId) tcId.get(KEY_TENANT_ID);
@@ -485,7 +485,7 @@ public class AssetController extends BaseController {
                 .deviceName(deviceNameStr)
                 .deviceType(deviceType)
                 .statusFilter(statusFilter)
-                .statusAsc(statusAscOrder)
+//                .statusAsc(statusAscOrder)  //目前不支持状态排序
                 .build();
         try {
             TimePageData<AssetDeviceAlarm> pageData = alarmService.findAssetDeviceAlarms(query, pageLink).get();
