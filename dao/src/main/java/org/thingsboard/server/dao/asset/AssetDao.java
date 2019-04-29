@@ -159,6 +159,8 @@ public interface AssetDao extends Dao<Asset> {
      */
     Optional<Asset> findAssetsByTenantIdAndName(UUID tenantId, String name);
 
+    Asset findAssetByName(String name);
+
     /**
      * Find tenants asset types.
      *

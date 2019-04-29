@@ -118,7 +118,7 @@ public class JpaAlarmDao extends JpaAbstractDao<AlarmEntity, Alarm> implements A
 
     @Override
     public Alarm findAlarmById(AlarmId alarmId) {
-        return alarmRepository.findAlarmEntitiesById(UUIDConverter.fromTimeUUID(alarmId.getId())).toData();
+        return DaoUtil.getData(alarmRepository.findAlarmEntitiesById(UUIDConverter.fromTimeUUID(alarmId.getId())));
     }
 
     @Override

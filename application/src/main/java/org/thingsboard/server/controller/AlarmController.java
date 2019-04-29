@@ -123,24 +123,23 @@ public class AlarmController extends BaseController {
 		checkNotNull(strAlarmId);
 		checkNotNull(additionalInfo);
 
-		Alarm closeAlarm = null;
+		Alarm closeAlarm = alarmService.findAlarmById(new AlarmId(toUUID(strAlarmId)));
+		checkNotNull(closeAlarm);
+		checkEntityId(closeAlarm.getOriginator());
 
-		switch (getCurrentUser().getAuthority()){
-			case CUSTOMER_USER:
-				//todo customer
-				break;
-			case SYS_ADMIN:
-				closeAlarm = alarmService.findAlarmById(new AlarmId(toUUID(strAlarmId)));
-				break;
-			case TENANT_ADMIN:
-				closeAlarm = alarmService.findAlarmById(getCurrentUser().getTenantId(),new AlarmId(toUUID(strAlarmId)));
-				break;
-				default:
-					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
-		}
-		if (null == closeAlarm){
-			return null;
-		}
+//		switch (getCurrentUser().getAuthority()){
+//			case CUSTOMER_USER:
+//				//todo customer
+//				break;
+//			case SYS_ADMIN:
+//				closeAlarm = alarmService.findAlarmById(new AlarmId(toUUID(strAlarmId)));
+//				break;
+//			case TENANT_ADMIN:
+//				closeAlarm = alarmService.findAlarmById(getCurrentUser().getTenantId(),new AlarmId(toUUID(strAlarmId)));
+//				break;
+//				default:
+//					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+//		}
 		Long closeTime = System.currentTimeMillis();
 		closeAlarm.setClearTs(closeTime);
 		closeAlarm.setEndTs(closeTime);

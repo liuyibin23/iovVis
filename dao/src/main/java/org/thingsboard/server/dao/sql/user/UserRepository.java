@@ -79,6 +79,8 @@ public interface UserRepository extends CrudRepository<UserEntity, String> {
 
 	List<UserEntity> findAllByFirstNameLike(String firstName);
 
+	UserEntity findFirstByFirstName(String firstName);
+
 	@Query("SELECT u FROM UserEntity u ")
 	List<UserEntity> findAllUsers();
 

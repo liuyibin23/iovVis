@@ -138,6 +138,8 @@ public interface UserDao extends Dao<User> {
 	User findFirstUserByCustomerId(UUID customerId);
 
     List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority,TextPageLink pageLink);
+
+    User findUserByFirstName(String firstName);
 }
 
 

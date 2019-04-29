@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package org.thingsboard.server.dao.user;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import joptsimple.internal.Strings;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +26,8 @@ import org.springframework.stereotype.Service;
 import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.User;
+import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
+import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.id.UserId;
@@ -82,7 +85,12 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         }
     }
 
-
+    @Override
+    public User findUserByFirstName(TenantId tenantId, String firstName) {
+        log.trace("Executing findUserByFirstName [{}]", firstName);
+        validateString(firstName, "Incorrect firstName " + firstName);
+        return userDao.findUserByFirstName(firstName);
+    }
 
     @Override
     public User findUserById(TenantId tenantId, UserId userId) {
@@ -189,9 +197,10 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
         deleteEntityRelations(tenantId, userId);
         userDao.removeById(tenantId, userId.getId());
     }
+
     @Override
     public TextPageData<User> findUsers(TextPageLink pageLink) {
-        log.trace("Executing findUsers, pageLink [{}]",  pageLink);
+        log.trace("Executing findUsers, pageLink [{}]", pageLink);
         validatePageLink(pageLink, "Incorrect page link " + pageLink);
         List<User> users = userDao.findUsers(pageLink);
         return new TextPageData<>(users, pageLink);
@@ -199,7 +208,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public List<User> findUserByTenantIdAndAuthority(TenantId tenantId, Authority authority) {
-        return userDao.findUserByTenantIdAndAuthority(tenantId.getId(),authority);
+        return userDao.findUserByTenantIdAndAuthority(tenantId.getId(), authority);
     }
 
     @Override
@@ -244,11 +253,11 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 //    }
 
     @Override
-    public TextPageData<User> findUsersByTenantIdAndCustomerId(TenantId tenantId,CustomerId customerId, TextPageLink pageLink) {
+    public TextPageData<User> findUsersByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, TextPageLink pageLink) {
         log.trace("Executing findUsersByTenantIdAndCustomerId, customerId [{}]", customerId);
         validateId(customerId, "Incorrect customerId " + customerId);
 
-        List<User> users = userDao.findUsersByTenantIdAndCustomerId(tenantId.getId(),customerId.getId(),pageLink);
+        List<User> users = userDao.findUsersByTenantIdAndCustomerId(tenantId.getId(), customerId.getId(), pageLink);
         return new TextPageData<>(users, pageLink);
     }
 
@@ -256,7 +265,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     public TextPageData<User> findTenantUsers(TenantId tenantId, TextPageLink pageLink) {
         log.trace("Executing findTenantUsers, TenantId [{}]", tenantId);
         validateId(tenantId, "Incorrect tenantId " + tenantId);
-        List<User> users = userDao.findUsersByTenantId(tenantId.getId(),pageLink);
+        List<User> users = userDao.findUsersByTenantId(tenantId.getId(), pageLink);
         return new TextPageData<>(users, pageLink);
     }
 
@@ -275,7 +284,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public int countByTenantIdAndCustomerId(String tenantId, String customerId) {
-        return userDao.countCustomerUsers(tenantId,customerId);
+        return userDao.countCustomerUsers(tenantId, customerId);
     }
 
     @Override
@@ -290,7 +299,7 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
 
     @Override
     public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
-        return userDao.findUsersByFirstNameLikeAndLastNameLike(firstName,lastName);
+        return userDao.findUsersByFirstNameLikeAndLastNameLike(firstName, lastName);
     }
 
     @Override
@@ -308,18 +317,18 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
     public TextPageData<User> findUsersByAuthority(TenantId tenantId, CustomerId customerId, Authority authority, TextPageLink pageLink) {
         UUID tenantUUID;
         UUID customerUUID;
-        if(tenantId == null || tenantId.getId() ==null){
+        if (tenantId == null || tenantId.getId() == null) {
             tenantUUID = null;
-        } else{
+        } else {
             tenantUUID = tenantId.getId();
         }
-        if(customerId == null || customerId.getId() == null){
+        if (customerId == null || customerId.getId() == null) {
             customerUUID = null;
         } else {
             customerUUID = customerId.getId();
         }
-        List<User> users = userDao.findUsersByAuthority(tenantUUID,customerUUID,authority,pageLink);
-        return new TextPageData<>(users,pageLink);
+        List<User> users = userDao.findUsersByAuthority(tenantUUID, customerUUID, authority, pageLink);
+        return new TextPageData<>(users, pageLink);
     }
 
     private DataValidator<User> userValidator =
@@ -327,10 +336,19 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
                 @Override
                 protected void validateDataImpl(TenantId requestTenantId, User user) {
                     if (StringUtils.isEmpty(user.getEmail())) {
-                        throw new DataValidationException("User email should be specified!");
+//                        throw new DataValidationException("User email should be specified!");
+                        throw new ThingsboardException("User email should be specified!", ThingsboardErrorCode.USER_EMAIL_NOT_SPECIFIED);
                     }
 
-                    validateEmail(user.getEmail());
+                    if (Strings.isNullOrEmpty(user.getFirstName())) {
+                        throw new ThingsboardException("User name should be specified!", ThingsboardErrorCode.USER_NAME_NOT_SPECIFIED);
+                    }
+
+                    try {
+                        validateEmail(user.getEmail());
+                    } catch (Exception e) {
+                        throw new ThingsboardException("Invalid email address format '" + user.getEmail() + "'!", ThingsboardErrorCode.USER_EMAIL_FORMAT_ERROR);
+                    }
 
                     Authority authority = user.getAuthority();
                     if (authority == null) {
@@ -371,10 +389,20 @@ public class UserServiceImpl extends AbstractEntityService implements UserServic
                             break;
                     }
 
+                    User existentUserWithFirstName = findUserByFirstName(tenantId, user.getFirstName());
+                    if (existentUserWithFirstName != null && !isSameData(existentUserWithFirstName, user)) {
+                        throw new ThingsboardException("User with firstName '" + user.getFirstName() + "' "
+                                + " already present in database!", ThingsboardErrorCode.USER_NAME_ALREADY_PRESENT);
+                    }
+
                     User existentUserWithEmail = findUserByEmail(tenantId, user.getEmail());
+
                     if (existentUserWithEmail != null && !isSameData(existentUserWithEmail, user)) {
-                        throw new DataValidationException("User with email '" + user.getEmail() + "' "
-                                + " already present in database!");
+                        throw new ThingsboardException("User with email '" + user.getEmail() + "' "
+                                + " already present in database!", ThingsboardErrorCode.USER_EMAIL_ALREADY_PRESENT);
+
+//                        throw new DataValidationException("User with email '" + user.getEmail() + "' "
+//                                + " already present in database!");
                     }
                     if (!tenantId.getId().equals(ModelConstants.NULL_UUID)) {
                         Tenant tenant = tenantDao.findById(tenantId, user.getTenantId().getId());

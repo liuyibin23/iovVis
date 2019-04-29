@@ -1,12 +1,15 @@
 package org.thingsboard.server.dao.sql.alarm;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Criteria;
+import org.hibernate.jpa.criteria.OrderImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+//import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Component;
@@ -21,6 +24,7 @@ import org.thingsboard.server.dao.sql.JpaAbstractDao;
 import org.thingsboard.server.dao.sql.JpaAbstractSearchTimeDao;
 import org.thingsboard.server.dao.util.SqlDao;
 
+import javax.persistence.criteria.Order;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,22 +56,23 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
 
     @Override
     public ListenableFuture<List<AssetDeviceAlarm>> findAll(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
-        Specification<AssetDeviceAlarmsEntity> pageSepc = JpaAbstractSearchTimeDao.getTimeSearchPageSpec(pageLink, "alarmId");
-        Specification<AssetDeviceAlarmsEntity> fieldsSpec = getEntityFieldsSpec(query);
-        Sort.Direction sortDirection = pageLink.isAscOrder() ? Sort.Direction.ASC : Sort.Direction.DESC;
-        Pageable pageable = new PageRequest(0, pageLink.getLimit(), sortDirection, "alarmId");
+        Specification<AssetDeviceAlarmsEntity> pageSpec = JpaAbstractSearchTimeDao.getTimeSearchPageSpec(pageLink, "alarmId");
+        Specification<AssetDeviceAlarmsEntity> fieldsSpec = getEntityFieldsSpec(query, pageLink);
+//        Sort.Direction sortDirection = pageLink.isAscOrder() ? Sort.Direction.ASC : Sort.Direction.DESC;
+//        Pageable pageable = new PageRequest(0, pageLink.getLimit(), sortDirection, "alarmId");
+        Pageable pageable = new PageRequest(0, pageLink.getLimit());
         return service.submit(() ->
-                DaoUtil.convertDataList(repository.findAll(where(pageSepc).and(fieldsSpec), pageable).getContent()));
+                DaoUtil.convertDataList(repository.findAll(where(pageSpec).and(fieldsSpec), pageable).getContent()));
     }
 
     @Override
     public ListenableFuture<Long> getCount(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
         Specification<AssetDeviceAlarmsEntity> pageSepc = JpaAbstractSearchTimeDao.getTimeSearchPageSpec(pageLink, "alarmId");
-        Specification<AssetDeviceAlarmsEntity> fieldsSpec = getEntityFieldsSpec(query);
+        Specification<AssetDeviceAlarmsEntity> fieldsSpec = getEntityFieldsSpec(query, pageLink);
         return service.submit(() -> repository.count(where(pageSepc).and(fieldsSpec)));
     }
 
-    private Specification<AssetDeviceAlarmsEntity> getEntityFieldsSpec(AssetDeviceAlarmQuery query) {
+    private Specification<AssetDeviceAlarmsEntity> getEntityFieldsSpec(AssetDeviceAlarmQuery query, TimePageLink pageLink) {
         return (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (query.getAssetId() != null) {
@@ -122,7 +127,27 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
                 Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class), "CLEARED_UNACK");
                 predicates.add(statusPredicate);
             }
-            return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
+
+            List<Order> orders = Lists.newArrayListWithExpectedSize(2);
+            /**
+             * 未处理的告警在前
+             */
+            if (query.isStatusAsc()) {
+                orders.add(criteriaBuilder.asc(root.get("status").as(String.class)));
+            } else {
+                orders.add(criteriaBuilder.desc(root.get("status").as(String.class)));
+            }
+
+            if (pageLink != null) {
+                if (pageLink.isAscOrder()) {
+                    orders.add(criteriaBuilder.asc(root.get("alarmId")));
+                } else {
+                    orders.add(criteriaBuilder.desc(root.get("alarmId")));
+                }
+            }
+            criteriaQuery.where(criteriaBuilder.and(predicates.toArray(new Predicate[0])));
+            criteriaQuery.orderBy(orders);
+            return criteriaQuery.getRestriction();
         };
     }
 

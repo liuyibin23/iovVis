@@ -28,6 +28,12 @@ public class AssetDeviceAlarmQuery {
     private CustomerId customerId;
     private StatusFilter statusFilter;
 
+    /**
+     * true 未处理的在前
+     * 默认为true
+     */
+    private boolean statusAsc = true;
+
     public AssetDeviceAlarmQuery(AssetDeviceAlarmQuery query) {
         this.deviceName = query.getDeviceName();
         this.deviceType = query.getDeviceType();
