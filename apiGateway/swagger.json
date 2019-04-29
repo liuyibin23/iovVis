@@ -198,7 +198,11 @@
         "description": "返回与资产关联的报表的信息，支持分页查询。",
         "parameters": [
           {
-            "$ref": "#/parameters/assetId"
+            "name": "assetId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "关联报表的资产编号（assetId）注意:如果需要查询所有的报表，ID写成 ALL。"
           },
           {
             "name": "limit",
