@@ -15,7 +15,7 @@
  */
 package org.thingsboard.server.common.data.exception;
 
-public class ThingsboardException extends Exception {
+public class ThingsboardException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

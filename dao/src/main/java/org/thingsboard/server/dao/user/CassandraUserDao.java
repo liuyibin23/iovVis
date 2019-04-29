@@ -61,6 +61,12 @@ public class CassandraUserDao extends CassandraAbstractSearchTextDao<UserEntity,
     }
 
     @Override
+    public User findUserByFirstName(String firstName) {
+        //todo
+        return null;
+    }
+
+    @Override
     public List<User> findUsers(TextPageLink pageLink) {
         //todo cassandra find all users
         return null;

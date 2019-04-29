@@ -43,162 +43,167 @@ import static org.thingsboard.server.dao.model.ModelConstants.NULL_UUID_STR;
 @SqlDao
 public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> implements UserDao {
 
-	private String TENANTADMINFILTERSTR = "common";//"%power%\"common\"%";
-	private String TENANTUSERFILTERSTR = "\"admin\"";//"%power%\"\"%";
+    private String TENANTADMINFILTERSTR = "common";//"%power%\"common\"%";
+    private String TENANTUSERFILTERSTR = "\"admin\"";//"%power%\"\"%";
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Override
-	protected Class<UserEntity> getEntityClass() {
-		return UserEntity.class;
-	}
+    @Override
+    protected Class<UserEntity> getEntityClass() {
+        return UserEntity.class;
+    }
 
-	@Override
-	protected CrudRepository<UserEntity, String> getCrudRepository() {
-		return userRepository;
-	}
+    @Override
+    protected CrudRepository<UserEntity, String> getCrudRepository() {
+        return userRepository;
+    }
 
-	@Override
-	public User findByEmail(TenantId tenantId, String email) {
-		return DaoUtil.getData(userRepository.findByEmail(email));
-	}
+    @Override
+    public User findByEmail(TenantId tenantId, String email) {
+        return DaoUtil.getData(userRepository.findByEmail(email));
+    }
 
-	@Override
-	public List<User> findUsers(TextPageLink pageLink) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsers(
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								new PageRequest(0, pageLink.getLimit())));
-	}
+    @Override
+    public List<User> findUsers(TextPageLink pageLink) {
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsers(
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                new PageRequest(0, pageLink.getLimit())));
+    }
 
-	@Override
-	public List<User> findTenantAdmins(UUID tenantId, TextPageLink pageLink) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByAuthority(
-								fromTimeUUID(tenantId),
-								NULL_UUID_STR,
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								Authority.TENANT_ADMIN,
-								new PageRequest(0, pageLink.getLimit())));
-	}
+    @Override
+    public List<User> findTenantAdmins(UUID tenantId, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsersByAuthority(
+                                fromTimeUUID(tenantId),
+                                NULL_UUID_STR,
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                Authority.TENANT_ADMIN,
+                                new PageRequest(0, pageLink.getLimit())));
+    }
 
-	@Override
-	public List<User> findCustomerUsers(UUID tenantId, UUID customerId, TextPageLink pageLink) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByAuthority(
-								fromTimeUUID(tenantId),
-								fromTimeUUID(customerId),
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								Authority.CUSTOMER_USER,
-								new PageRequest(0, pageLink.getLimit())));
+    @Override
+    public List<User> findCustomerUsers(UUID tenantId, UUID customerId, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsersByAuthority(
+                                fromTimeUUID(tenantId),
+                                fromTimeUUID(customerId),
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                Authority.CUSTOMER_USER,
+                                new PageRequest(0, pageLink.getLimit())));
 
-	}
+    }
 
-	@Override
-	public List<User> findCustomerUsers(UUID customerId, TextPageLink pageLink) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByAuthority(
-								fromTimeUUID(customerId),
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								Authority.CUSTOMER_USER,
-								new PageRequest(0, pageLink.getLimit())));
+    @Override
+    public List<User> findCustomerUsers(UUID customerId, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsersByAuthority(
+                                fromTimeUUID(customerId),
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                Authority.CUSTOMER_USER,
+                                new PageRequest(0, pageLink.getLimit())));
 
-	}
+    }
 
 
-	@Override
-	public int countTenant(String tenantId) {
-		return userRepository.countByTenantIdAndAuthority(tenantId, Authority.TENANT_ADMIN);
-	}
+    @Override
+    public int countTenant(String tenantId) {
+        return userRepository.countByTenantIdAndAuthority(tenantId, Authority.TENANT_ADMIN);
+    }
 
-	@Override
-	public int countCustomerUsers(String tenantId, String customerId) {
+    @Override
+    public int countCustomerUsers(String tenantId, String customerId) {
 
-		return userRepository.countByTenantIdAndCustomerIdAndAuthority(tenantId,customerId,Authority.CUSTOMER_USER);
-	}
+        return userRepository.countByTenantIdAndCustomerIdAndAuthority(tenantId, customerId, Authority.CUSTOMER_USER);
+    }
 
-	@Override
-	public List<User> findUserByTenantIdAndAuthority(UUID tenantId,Authority authority) {
-		return DaoUtil.convertDataList(userRepository.findAllByTenantIdAndAuthority(fromTimeUUID(tenantId),authority));
-	}
+    @Override
+    public List<User> findUserByTenantIdAndAuthority(UUID tenantId, Authority authority) {
+        return DaoUtil.convertDataList(userRepository.findAllByTenantIdAndAuthority(fromTimeUUID(tenantId), authority));
+    }
 
-	@Override
-	public int countTenantAdmin(String tenantId) {
-		return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN,TENANTADMINFILTERSTR);
-	}
+    @Override
+    public int countTenantAdmin(String tenantId) {
+        return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN, TENANTADMINFILTERSTR);
+    }
 
-	@Override
-	public int countTenantUser(String tenantId) {
-		return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN,TENANTUSERFILTERSTR);
-	}
+    @Override
+    public int countTenantUser(String tenantId) {
+        return userRepository.countByTenantIdAndAuthorityAndAdditionalInfoLike(tenantId, Authority.TENANT_ADMIN, TENANTUSERFILTERSTR);
+    }
 
-	@Override
-	public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
-		return DaoUtil.convertDataList(userRepository.findAllByFirstNameLikeAndLastNameLike(firstName,lastName));
-	}
+    @Override
+    public List<User> findUsersByFirstNameLikeAndLastNameLike(String firstName, String lastName) {
+        return DaoUtil.convertDataList(userRepository.findAllByFirstNameLikeAndLastNameLike(firstName, lastName));
+    }
 
-	@Override
-	public List<User> findUsersByFirstNameLike(String firstname) {
-		return DaoUtil.convertDataList(userRepository.findAllByFirstNameLike(firstname));
-	}
+    @Override
+    public List<User> findUsersByFirstNameLike(String firstname) {
+        return DaoUtil.convertDataList(userRepository.findAllByFirstNameLike(firstname));
+    }
 
-	@Override
-	public List<User> findUsersByTenantId(UUID tenantId,TextPageLink pageLink) {
-		return DaoUtil.convertDataList(userRepository.findUsersByTenantId(
-				fromTimeUUID(tenantId),
-				pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-				Objects.toString(pageLink.getTextSearch(), ""),
-				new PageRequest(0, pageLink.getLimit())));
-	}
+    @Override
+    public User findUserByFirstName(String firstName) {
+        return DaoUtil.getData(userRepository.findByFirstName(firstName));
+    }
 
-	@Override
-	public List<User> findUsersByTenantIdAndCustomerId(UUID tenantId,UUID customerId,TextPageLink pageLink) {
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByTenantAndCustomerId(
-								fromTimeUUID(tenantId),
-								fromTimeUUID(customerId),
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								new PageRequest(0, pageLink.getLimit())));
-	}
+    @Override
+    public List<User> findUsersByTenantId(UUID tenantId, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(userRepository.findUsersByTenantId(
+                fromTimeUUID(tenantId),
+                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                Objects.toString(pageLink.getTextSearch(), ""),
+                new PageRequest(0, pageLink.getLimit())));
+    }
 
-	@Override
-	public User findFirstUserByCustomerId(UUID customerId) {
-		return userRepository.findFirstByCustomerId(fromTimeUUID(customerId)).toData();
-	}
+    @Override
+    public List<User> findUsersByTenantIdAndCustomerId(UUID tenantId, UUID customerId, TextPageLink pageLink) {
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsersByTenantAndCustomerId(
+                                fromTimeUUID(tenantId),
+                                fromTimeUUID(customerId),
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                new PageRequest(0, pageLink.getLimit())));
+    }
 
-	@Override
-	public List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority, TextPageLink pageLink) {
-		String tenantIdStr;
-		String customerIdStr;
-		if(tenantId != null){
-			tenantIdStr = fromTimeUUID(tenantId);
-		} else {
-			tenantIdStr = null;
-		}
-		if(customerId != null){
-			customerIdStr = fromTimeUUID(customerId);
-		} else {
-			customerIdStr = null;
-		}
-		return DaoUtil.convertDataList(
-				userRepository
-						.findUsersByAuthority(
-								tenantIdStr,
-								customerIdStr,
-								pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
-								Objects.toString(pageLink.getTextSearch(), ""),
-								authority,
-								new PageRequest(0, pageLink.getLimit())));
-	}
+    @Override
+    public User findFirstUserByCustomerId(UUID customerId) {
+        return userRepository.findFirstByCustomerId(fromTimeUUID(customerId)).toData();
+    }
+
+    @Override
+    public List<User> findUsersByAuthority(UUID tenantId, UUID customerId, Authority authority, TextPageLink pageLink) {
+        String tenantIdStr;
+        String customerIdStr;
+        if (tenantId != null) {
+            tenantIdStr = fromTimeUUID(tenantId);
+        } else {
+            tenantIdStr = null;
+        }
+        if (customerId != null) {
+            customerIdStr = fromTimeUUID(customerId);
+        } else {
+            customerIdStr = null;
+        }
+        return DaoUtil.convertDataList(
+                userRepository
+                        .findUsersByAuthority(
+                                tenantIdStr,
+                                customerIdStr,
+                                pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
+                                Objects.toString(pageLink.getTextSearch(), ""),
+                                authority,
+                                new PageRequest(0, pageLink.getLimit())));
+    }
 }

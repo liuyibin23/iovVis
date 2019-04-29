@@ -16,6 +16,7 @@
 package org.thingsboard.server.dao.user;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.thingsboard.server.common.data.Tenant;
 import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.id.CustomerId;
 import org.thingsboard.server.common.data.id.TenantId;
@@ -38,6 +39,8 @@ public interface UserService {
 	ListenableFuture<User> findUserByIdAsync(TenantId tenantId, UserId userId);
 
 	User findUserByEmail(TenantId tenantId, String email);
+
+	User findUserByFirstName(TenantId tenantId, String firstName);
 
 	User saveUser(User user);
 
