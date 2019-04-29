@@ -10,6 +10,7 @@ public class CustomerExInfo extends Customer {
 
     private List<String> adminUserNameList = new ArrayList<>();
     private List<String> userNameList = new ArrayList<>();
+    private String TenantName = "";
 
     public CustomerExInfo(){}
     public CustomerExInfo(Customer customer){

@@ -90,7 +90,11 @@ function responErrorMsg(err, res) {
         }
         else {
             resMsg.code = 500;
-            resMsg.message = '服务器内部错误。';
+            if (err.response.data.message) {
+                resMsg.message = `服务器内部错误。 ${err.response.data.message}`;
+            } else {
+                resMsg.message = '服务器内部错误。';
+            }            
         }
     } else {
         resMsg.message = err.message;

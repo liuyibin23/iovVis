@@ -1,7 +1,7 @@
 version: '3'
 services:
   tracker:
-    build: .
+    build: ./fastdfs_distributed_deployment
     image: lyb/fastdfs
     container_name: tracker
     restart: always

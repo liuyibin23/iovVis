@@ -195,35 +195,62 @@
           "报表"
         ],
         "summary": "获取资产关联的报表",
-        "description": "返回与资产关联的报表的URL列表。实际返回的是资产的共享属性REPORTS的值。该值为一个JSON对象，value中包含所有报表的url列表。",
+        "description": "返回与资产关联的报表的信息，支持分页查询。",
         "parameters": [
           {
-            "$ref": "#/parameters/assetId"
+            "name": "assetId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "关联报表的资产编号（assetId）注意:如果需要查询所有的报表，ID写成 ALL。"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "分页大小"
+          },
+          {
+            "name": "idOffset",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "分页偏移量，第一页不需要填，后面的页由前一页的返回结果给出。"
+          },
+          {
+            "name": "startTs",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "开始时间，毫秒数"
+          },
+          {
+            "name": "endTs",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "description": "结束时间，毫秒数"
+          },
+          {
+            "name": "typeFilter",
+            "in": "query",
+            "type": "string",
+            "required": false,
+            "enum": [
+              "ALL",
+              "DAY",
+              "WEEK",
+              "MONTH",
+              "QUARTER",
+              "YEAR"
+            ],
+            "description": "报表类型"
           }
         ],
         "responses": {
           "200": {
-            "description": "返回报表名称、URL、最近更新时间。最近更新时间是为解决多人操作，更新冲突问题，对复杂属性数据更新时，提示用户需要解决类似版本冲突的问题（前端利用实现）。",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "key": {
-                  "type": "string",
-                  "enum": [
-                    "REPORTS"
-                  ]
-                },
-                "value": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Report"
-                  }
-                },
-                "lastUpdateTs": {
-                  "type": "integer"
-                }
-              }
-            }
+            "description": "返回报表信息。"
           },
           "401": {
             "$ref": "#/responses/Standard401ErrorResponse"
@@ -240,11 +267,8 @@
         "tags": [
           "报表"
         ],
-        "summary": "创建资产关联的报表",
-        "description": "添加报表文件到指定资产。只会影响到资产的REPORTS属性的value值中的kv项的一项。如果资产的REPORTS属性不存在，增加该属性，并增加value中的kv项；如果REPORTS属性存在，而value的report_name不存在，则添加一个新的kv项；否则说明报表已经存在，不能添加（需要先删除再添加）。",
-        "consumes": [
-          "multipart/form-data"
-        ],
+        "summary": "生成报表文件",
+        "description": "根据指定的报表模板生成报表，调用此接口，报表会在后台创建，一段时间后，通过查询接口查询，如果未查询到记录，就是生成失败。。",
         "parameters": [
           {
             "name": "assetId",
@@ -254,68 +278,60 @@
             "description": "关联报表的资产编号（assetId）。"
           },
           {
+            "name": "fileId",
+            "in": "query",
+            "required": true,
+            "description": "报表模板文件ID。",
+            "type": "string"
+          },
+          {
             "name": "report_name",
-            "in": "formData",
+            "in": "query",
             "type": "string",
             "required": true,
             "description": "报表文件名称。"
           },
           {
-            "name": "report_file",
-            "in": "formData",
-            "type": "file",
-            "required": true,
-            "description": "报表文件。"
-          },
-          {
             "name": "report_type",
-            "in": "formData",
+            "in": "query",
             "type": "string",
             "required": true,
             "enum": [
-              "日报",
-              "周报",
-              "月报",
-              "季报"
+              "DAY",
+              "WEEK",
+              "MONTH",
+              "QUARTER",
+              "YEAR"
             ],
-            "description": "报表类型。"
+            "description": "报表类型 [DAY-日报 WEEK-周报 MONTH-月报 QUARTER-季报 YEAR-年报]。"
           },
           {
             "name": "operator",
-            "in": "formData",
+            "in": "query",
             "type": "string",
             "required": true,
             "description": "操作者名字。"
           },
           {
-            "name": "report_date",
-            "in": "formData",
-            "type": "string",
+            "name": "startTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
             "required": true,
-            "description": "报表日期"
+            "description": "开始时间。"
+          },
+          {
+            "name": "endTime",
+            "type": "integer",
+            "format": "int64",
+            "in": "query",
+            "required": true,
+            "description": "结束时间。"
           }
         ],
         "responses": {
           "200": {
-            "description": "成功创建报表并关联到资产。"
-          },
-          "401": {
-            "$ref": "#/responses/Standard401ErrorResponse"
-          },
-          "404": {
-            "$ref": "#/responses/Standard404ErrorResponse"
-          },
-          "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
-          },
-          "501": {
-            "description": "报表上传失败。"
-          },
-          "502": {
-            "description": "报表更新冲突。"
-          },
-          "503": {
-            "description": "报表名称已经存在。"
+            "description": "返回后台处理的信息。"
           }
         }
       },
@@ -330,7 +346,18 @@
             "$ref": "#/parameters/assetId"
           },
           {
-            "$ref": "#/parameters/reportName"
+            "name": "reportId",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "报告报表ID。"
+          },
+          {
+            "name": "fileId",
+            "in": "query",
+            "type": "string",
+            "required": true,
+            "description": "报告报表对应的fileId。"
           }
         ],
         "responses": {
@@ -348,43 +375,6 @@
           },
           "502": {
             "description": "报表更新冲突。"
-          }
-        }
-      }
-    },
-    "/reports/stat": {
-      "get": {
-        "tags": [
-          "报表"
-        ],
-        "summary": "统计当前登录业主的所有资产的报表",
-        "description": "返回所有资产的报表的全部数据用于统计。",
-        "parameters": [
-          {
-            "name": "limit",
-            "type": "integer",
-            "in": "query",
-            "description": "限制返回记录的数量。"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "返回资产关联的所有报表的名称、URL、类型、创建时间。",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Report"
-              }
-            }
-          },
-          "401": {
-            "$ref": "#/responses/Standard401ErrorResponse"
-          },
-          "404": {
-            "$ref": "#/responses/Standard404ErrorResponse"
-          },
-          "500": {
-            "$ref": "#/responses/Standard500ErrorResponse"
           }
         }
       }
@@ -568,45 +558,6 @@
           },
           "500": {
             "$ref": "#/responses/Standard500ErrorResponse"
-          }
-        }
-      }
-    },
-    "/generate/reports/{fileId}": {
-      "get": {
-        "tags": [
-          "文件内容"
-        ],
-        "summary": "生成报表文件",
-        "description": "根据指定的报表模板生成报表。",
-        "parameters": [
-          {
-            "name": "fileId",
-            "in": "path",
-            "required": true,
-            "description": "文件ID。",
-            "type": "string"
-          },
-          {
-            "name": "startTime",
-            "type": "integer",
-            "format": "int64",
-            "in": "query",
-            "required": true,
-            "description": "开始时间。"
-          },
-          {
-            "name": "endTime",
-            "type": "integer",
-            "format": "int64",
-            "in": "query",
-            "required": true,
-            "description": "结束时间。"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "返回文件。"
           }
         }
       }

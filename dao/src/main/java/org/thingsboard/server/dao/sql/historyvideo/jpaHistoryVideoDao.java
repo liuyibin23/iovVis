@@ -101,11 +101,11 @@ public class jpaHistoryVideoDao extends JpaAbstractDao<HistoryVideoEntity,Histor
 				predicates.add(fileUrlPredicate);
 			}
 			if (query.getPageLink().getStartTime() != null) {
-				Predicate startTsPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get("createTs"), query.getPageLink().getStartTime());
+				Predicate startTsPredicate = criteriaBuilder.greaterThanOrEqualTo(root.get("startTs"), query.getPageLink().getStartTime());
 				predicates.add(startTsPredicate);
 			}
 			if (query.getPageLink().getEndTime() != null) {
-				Predicate endTsPredicate = criteriaBuilder.lessThanOrEqualTo(root.get("createTs"), query.getPageLink().getEndTime());
+				Predicate endTsPredicate = criteriaBuilder.lessThanOrEqualTo(root.get("endTs"), query.getPageLink().getEndTime());
 				predicates.add(endTsPredicate);
 			}
 

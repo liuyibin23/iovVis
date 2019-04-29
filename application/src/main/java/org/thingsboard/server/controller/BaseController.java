@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
-import com.sun.istack.internal.Nullable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -330,7 +329,7 @@ public abstract class BaseController {
      * @param tenantIdStr   筛选指定的tenantId，可以为null
      * @param customerIdStr 筛选指定的customerId，可以为null
      */
-    protected Map<String, EntityId> checkTenantIdAndCustomerIdParams(@Nullable String tenantIdStr, @Nullable String customerIdStr) throws ThingsboardException {
+    protected Map<String, EntityId> checkTenantIdAndCustomerIdParams(String tenantIdStr, String customerIdStr) throws ThingsboardException {
         TenantId tenantId = null;  //Do not filter tenant if null
         CustomerId customerId = null;
 
