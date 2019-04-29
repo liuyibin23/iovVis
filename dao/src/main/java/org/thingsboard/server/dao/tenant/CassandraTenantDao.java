@@ -58,4 +58,9 @@ public class CassandraTenantDao extends CassandraAbstractSearchTextDao<TenantEnt
         return DaoUtil.convertDataList(tenantEntities);
     }
 
+    @Override
+    public Tenant findTenantByTitle(TenantId tenantId, String title) {
+        //todo
+        return null;
+    }
 }

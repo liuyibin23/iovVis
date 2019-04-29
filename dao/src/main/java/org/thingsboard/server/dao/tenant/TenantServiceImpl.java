@@ -52,157 +52,162 @@ import static org.thingsboard.server.dao.service.Validator.validateId;
 @Slf4j
 public class TenantServiceImpl extends AbstractEntityService implements TenantService {
 
-	private static final String DEFAULT_TENANT_REGION = "Global";
-	public static final String INCORRECT_TENANT_ID = "Incorrect tenantId ";
+    private static final String DEFAULT_TENANT_REGION = "Global";
+    public static final String INCORRECT_TENANT_ID = "Incorrect tenantId ";
 
-	@Autowired
-	private TenantDao tenantDao;
+    @Autowired
+    private TenantDao tenantDao;
 
-	@Autowired
-	private UserService userService;
+    @Autowired
+    private UserService userService;
 
-	@Autowired
-	private CustomerService customerService;
+    @Autowired
+    private CustomerService customerService;
 
-	@Autowired
-	private AssetService assetService;
+    @Autowired
+    private AssetService assetService;
 
-	@Autowired
-	private DeviceService deviceService;
+    @Autowired
+    private DeviceService deviceService;
 
-	@Autowired
-	private EntityViewService entityViewService;
+    @Autowired
+    private EntityViewService entityViewService;
 
-	@Autowired
-	private WidgetsBundleService widgetsBundleService;
+    @Autowired
+    private WidgetsBundleService widgetsBundleService;
 
-	@Autowired
-	private DashboardService dashboardService;
+    @Autowired
+    private DashboardService dashboardService;
 
-	@Autowired
-	private RuleChainService ruleChainService;
+    @Autowired
+    private RuleChainService ruleChainService;
 
-	@Override
-	public Tenant findTenantById(TenantId tenantId) {
-		log.trace("Executing findTenantById [{}]", tenantId);
-		Validator.validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-		return tenantDao.findById(tenantId, tenantId.getId());
-	}
+    @Override
+    public Tenant findTenantById(TenantId tenantId) {
+        log.trace("Executing findTenantById [{}]", tenantId);
+        Validator.validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+        return tenantDao.findById(tenantId, tenantId.getId());
+    }
 
-	@Override
-	public ListenableFuture<Tenant> findTenantByIdAsync(TenantId callerId, TenantId tenantId) {
-		log.trace("Executing TenantIdAsync [{}]", tenantId);
-		validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-		return tenantDao.findByIdAsync(callerId, tenantId.getId());
-	}
+    @Override
+    public ListenableFuture<Tenant> findTenantByIdAsync(TenantId callerId, TenantId tenantId) {
+        log.trace("Executing TenantIdAsync [{}]", tenantId);
+        validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+        return tenantDao.findByIdAsync(callerId, tenantId.getId());
+    }
 
-	@Override
-	public Tenant saveTenant(Tenant tenant) {
-		log.trace("Executing saveTenant [{}]", tenant);
-		tenant.setRegion(DEFAULT_TENANT_REGION);
-		tenantValidator.validate(tenant, Tenant::getId);
-		return tenantDao.save(tenant.getId(), tenant);
-	}
+    @Override
+    public Tenant saveTenant(Tenant tenant) {
+        log.trace("Executing saveTenant [{}]", tenant);
+        tenant.setRegion(DEFAULT_TENANT_REGION);
+        tenantValidator.validate(tenant, Tenant::getId);
+        return tenantDao.save(tenant.getId(), tenant);
+    }
 
-	@Override
-	public void deleteTenant(TenantId tenantId) {
-		log.trace("Executing deleteTenant [{}]", tenantId);
-		Validator.validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
-		customerService.deleteCustomersByTenantId(tenantId);
-		widgetsBundleService.deleteWidgetsBundlesByTenantId(tenantId);
-		dashboardService.deleteDashboardsByTenantId(tenantId);
-		entityViewService.deleteEntityViewsByTenantId(tenantId);
-		assetService.deleteAssetsByTenantId(tenantId);
-		deviceService.deleteDevicesByTenantId(tenantId);
-		userService.deleteTenantAdmins(tenantId);
-		ruleChainService.deleteRuleChainsByTenantId(tenantId);
-		tenantDao.removeById(tenantId, tenantId.getId());
-		deleteEntityRelations(tenantId, tenantId);
-	}
+    @Override
+    public void deleteTenant(TenantId tenantId) {
+        log.trace("Executing deleteTenant [{}]", tenantId);
+        Validator.validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+        customerService.deleteCustomersByTenantId(tenantId);
+        widgetsBundleService.deleteWidgetsBundlesByTenantId(tenantId);
+        dashboardService.deleteDashboardsByTenantId(tenantId);
+        entityViewService.deleteEntityViewsByTenantId(tenantId);
+        assetService.deleteAssetsByTenantId(tenantId);
+        deviceService.deleteDevicesByTenantId(tenantId);
+        userService.deleteTenantAdmins(tenantId);
+        ruleChainService.deleteRuleChainsByTenantId(tenantId);
+        tenantDao.removeById(tenantId, tenantId.getId());
+        deleteEntityRelations(tenantId, tenantId);
+    }
 
-	@Override
-	public TextPageData<Tenant> findTenants(TextPageLink pageLink) {
-		log.trace("Executing findTenants pageLink [{}]", pageLink);
-		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
-		List<Tenant> tenants = tenantDao.findTenantsByRegion(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION, pageLink);
+    @Override
+    public TextPageData<Tenant> findTenants(TextPageLink pageLink) {
+        log.trace("Executing findTenants pageLink [{}]", pageLink);
+        Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+        List<Tenant> tenants = tenantDao.findTenantsByRegion(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION, pageLink);
 
-		tenants.stream().forEach(
-				tenant -> {
+        tenants.stream().forEach(
+                tenant -> {
 //					tenant.setAdminCount(userService.countByTenantId(fromTimeUUID(tenant.getUuidId())));
 //					tenant.setUserCount(0);
-					tenant.setAdminCount(userService.countTenantAdminByTenantId(fromTimeUUID(tenant.getUuidId())));
-					tenant.setUserCount(userService.countTenantUserByTenantId(fromTimeUUID(tenant.getUuidId())));
-					tenant.setCustomerCount(customerService.countCustomerByTenantId(tenant.getId()));
-				}
-		);
+                    tenant.setAdminCount(userService.countTenantAdminByTenantId(fromTimeUUID(tenant.getUuidId())));
+                    tenant.setUserCount(userService.countTenantUserByTenantId(fromTimeUUID(tenant.getUuidId())));
+                    tenant.setCustomerCount(customerService.countCustomerByTenantId(tenant.getId()));
+                }
+        );
 
-		return new TextPageData<>(tenants, pageLink);
-	}
+        return new TextPageData<>(tenants, pageLink);
+    }
 
-	@Override
-	public TextPageData<TenantExInfo> findTenantExInfos(TextPageLink pageLink) {
-		log.trace("Executing findTenants pageLink [{}]", pageLink);
-		Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
-		List<Tenant> tenants = tenantDao.findTenantsByRegion(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION, pageLink);
-		return new TextPageData<>(tenantsToTenantExInfos(tenants), pageLink);
-	}
+    @Override
+    public TextPageData<TenantExInfo> findTenantExInfos(TextPageLink pageLink) {
+        log.trace("Executing findTenants pageLink [{}]", pageLink);
+        Validator.validatePageLink(pageLink, "Incorrect page link " + pageLink);
+        List<Tenant> tenants = tenantDao.findTenantsByRegion(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION, pageLink);
+        return new TextPageData<>(tenantsToTenantExInfos(tenants), pageLink);
+    }
 
-	@Override
-	public void deleteTenants() {
-		log.trace("Executing deleteTenants");
-		tenantsRemover.removeEntities(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION);
-	}
+    @Override
+    public Tenant findTenantByTitle(TenantId tenantId, String title) {
+        return tenantDao.findTenantByTitle(tenantId, title);
+    }
 
-	private List<TenantExInfo> tenantsToTenantExInfos(List<Tenant> tenants){
-		List<TenantExInfo> tenantExInfos = tenants.stream().map(TenantExInfo::new).collect(Collectors.toList());
-		tenantExInfos.forEach(tenantExInfo -> {
-			List<User> adminUsers = new ArrayList<>();
-			List<User> commonUsers = new ArrayList<>();
+    @Override
+    public void deleteTenants() {
+        log.trace("Executing deleteTenants");
+        tenantsRemover.removeEntities(new TenantId(EntityId.NULL_UUID), DEFAULT_TENANT_REGION);
+    }
 
-			userService.findTenantAdmins(tenantExInfo.getId(),new TextPageLink(Integer.MAX_VALUE))
-					.getData().forEach(user -> {
-				if (user.getAdditionalInfo().has("power")) {
-					if (user.getAdditionalInfo().get("power").asText().equals("admin")) {
-						adminUsers.add(user);
-						tenantExInfo.getAdminUserNameList().add(user.getFirstName());
-					} else if (user.getAdditionalInfo().get("power").asText().equals("common")) {
-						commonUsers.add(user);
-						tenantExInfo.getUserNameList().add(user.getFirstName());
-					}
-				}
-			});
+    private List<TenantExInfo> tenantsToTenantExInfos(List<Tenant> tenants) {
+        List<TenantExInfo> tenantExInfos = tenants.stream().map(TenantExInfo::new).collect(Collectors.toList());
+        tenantExInfos.forEach(tenantExInfo -> {
+            List<User> adminUsers = new ArrayList<>();
+            List<User> commonUsers = new ArrayList<>();
 
-			tenantExInfo.setAdminCount(adminUsers.size());
-			tenantExInfo.setUserCount(commonUsers.size());
-			tenantExInfo.setCustomerCount(customerService.countCustomerByTenantId(tenantExInfo.getId()));
-		});
-		return tenantExInfos;
-	}
+            userService.findTenantAdmins(tenantExInfo.getId(), new TextPageLink(Integer.MAX_VALUE))
+                    .getData().forEach(user -> {
+                if (user.getAdditionalInfo().has("power")) {
+                    if (user.getAdditionalInfo().get("power").asText().equals("admin")) {
+                        adminUsers.add(user);
+                        tenantExInfo.getAdminUserNameList().add(user.getFirstName());
+                    } else if (user.getAdditionalInfo().get("power").asText().equals("common")) {
+                        commonUsers.add(user);
+                        tenantExInfo.getUserNameList().add(user.getFirstName());
+                    }
+                }
+            });
 
-	private DataValidator<Tenant> tenantValidator =
-			new DataValidator<Tenant>() {
-				@Override
-				protected void validateDataImpl(TenantId tenantId, Tenant tenant) {
-					if (StringUtils.isEmpty(tenant.getTitle())) {
-						throw new DataValidationException("Tenant title should be specified!");
-					}
-					if (!StringUtils.isEmpty(tenant.getEmail())) {
-						validateEmail(tenant.getEmail());
-					}
-				}
-			};
+            tenantExInfo.setAdminCount(adminUsers.size());
+            tenantExInfo.setUserCount(commonUsers.size());
+            tenantExInfo.setCustomerCount(customerService.countCustomerByTenantId(tenantExInfo.getId()));
+        });
+        return tenantExInfos;
+    }
 
-	private PaginatedRemover<String, Tenant> tenantsRemover =
-			new PaginatedRemover<String, Tenant>() {
+    private DataValidator<Tenant> tenantValidator =
+            new DataValidator<Tenant>() {
+                @Override
+                protected void validateDataImpl(TenantId tenantId, Tenant tenant) {
+                    if (StringUtils.isEmpty(tenant.getTitle())) {
+                        throw new DataValidationException("Tenant title should be specified!");
+                    }
+                    if (!StringUtils.isEmpty(tenant.getEmail())) {
+                        validateEmail(tenant.getEmail());
+                    }
+                }
+            };
 
-				@Override
-				protected List<Tenant> findEntities(TenantId tenantId, String region, TextPageLink pageLink) {
-					return tenantDao.findTenantsByRegion(tenantId, region, pageLink);
-				}
+    private PaginatedRemover<String, Tenant> tenantsRemover =
+            new PaginatedRemover<String, Tenant>() {
 
-				@Override
-				protected void removeEntity(TenantId tenantId, Tenant entity) {
-					deleteTenant(new TenantId(entity.getUuidId()));
-				}
-			};
+                @Override
+                protected List<Tenant> findEntities(TenantId tenantId, String region, TextPageLink pageLink) {
+                    return tenantDao.findTenantsByRegion(tenantId, region, pageLink);
+                }
+
+                @Override
+                protected void removeEntity(TenantId tenantId, Tenant entity) {
+                    deleteTenant(new TenantId(entity.getUuidId()));
+                }
+            };
 }

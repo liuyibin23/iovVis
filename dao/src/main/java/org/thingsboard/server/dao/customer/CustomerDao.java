@@ -77,4 +77,6 @@ public interface CustomerDao extends Dao<Customer> {
 
 	int countCustomersByTenantId(UUID tenantId);
 
+	Customer findCustomerByTitle(TenantId tenantId, String title);
+
 }

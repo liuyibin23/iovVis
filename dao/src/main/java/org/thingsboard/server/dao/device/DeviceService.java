@@ -36,6 +36,8 @@ public interface DeviceService {
 
     Device findDeviceById(TenantId tenantId, DeviceId deviceId);
 
+
+
     ListenableFuture<Device> findDeviceByIdAsync(TenantId tenantId, DeviceId deviceId);
 
     Device findDeviceByTenantIdAndName(TenantId tenantId, String name);
@@ -87,4 +89,7 @@ public interface DeviceService {
     List<Device> findDevicesByCustomerId(CustomerId customerId);
 
     ListenableFuture<List<Device>> findAllAssetDevicesByQuery(AssetDevicesQuery query, TextPageLink pageLink);
+
+    Device findByNameExactly(String name);
+
 }

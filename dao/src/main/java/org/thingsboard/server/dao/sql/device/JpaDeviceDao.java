@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -84,7 +84,7 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
 
     @Override
     public List<Device> findDevices(TextPageLink pageLink) {
-       return DaoUtil.convertDataList(
+        return DaoUtil.convertDataList(
                 deviceRepository.findAllPage(
                         Objects.toString(pageLink.getTextSearch(), ""),
                         pageLink.getIdOffset() == null ? NULL_UUID_STR : fromTimeUUID(pageLink.getIdOffset()),
@@ -191,14 +191,15 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
         return DaoUtil.convertDataList(deviceRepository.findAllByNameLike(deviceName));
     }
 
+
     @Override
     public List<Device> findDevicesByNameAndTenantId(String deviceName, UUID tenantId) {
-        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndTenantId(deviceName,fromTimeUUID(tenantId)));
+        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndTenantId(deviceName, fromTimeUUID(tenantId)));
     }
 
     @Override
     public List<Device> findDevicesByNameAndCustomerId(String deviceName, UUID customerId) {
-        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndCustomerId(deviceName,fromTimeUUID(customerId)));
+        return DaoUtil.convertDataList(deviceRepository.findAllByNameLikeAndCustomerId(deviceName, fromTimeUUID(customerId)));
     }
 
     @Override
@@ -214,6 +215,11 @@ public class JpaDeviceDao extends JpaAbstractSearchTextDao<DeviceEntity, Device>
     @Override
     public List<Device> findDevicesByCustomerId(UUID customerId) {
         return DaoUtil.convertDataList(deviceRepository.findAllByCustomerId(fromTimeUUID(customerId)));
+    }
+
+    @Override
+    public Device findByNameExactly(String name) {
+        return DaoUtil.getData(deviceRepository.findFirstByName(name));
     }
 
     @Override

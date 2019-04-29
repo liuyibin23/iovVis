@@ -153,7 +153,7 @@ public class JpaUserDao extends JpaAbstractSearchTextDao<UserEntity, User> imple
 
     @Override
     public User findUserByFirstName(String firstName) {
-        return DaoUtil.getData(userRepository.findByFirstName(firstName));
+        return DaoUtil.getData(userRepository.findFirstByFirstName(firstName));
     }
 
     @Override
