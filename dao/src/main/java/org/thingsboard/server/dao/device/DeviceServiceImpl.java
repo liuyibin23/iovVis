@@ -427,6 +427,11 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         return assetDevicesDao.findAllByQuery(query, pageLink);
     }
 
+    @Override
+    public Device findByNameExactly(String name) {
+        return deviceDao.findByNameExactly(name);
+    }
+
     private DataValidator<Device> deviceValidator =
             new DataValidator<Device>() {
 

@@ -44,6 +44,8 @@ public interface AssetService {
 
     Asset findAssetByTenantIdAndName(TenantId tenantId, String name);
 
+    Asset findAssetByName(String name);
+
     Asset saveAsset(Asset asset);
 
     Asset assignAssetToCustomer(TenantId tenantId, AssetId assetId, CustomerId customerId);

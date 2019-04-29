@@ -152,4 +152,6 @@ public interface DeviceDao extends Dao<Device> {
     List<Device> findDevices();
     List<Device> findDevicesByTenandId(UUID tenantId);
     List<Device> findDevicesByCustomerId(UUID customerId);
+
+    Device findByNameExactly(String name);
 }

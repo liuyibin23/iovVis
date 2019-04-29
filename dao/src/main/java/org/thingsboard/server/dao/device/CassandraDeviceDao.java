@@ -94,6 +94,11 @@ public class CassandraDeviceDao extends CassandraAbstractSearchTextDao<DeviceEnt
     }
 
     @Override
+    public Device findByNameExactly(String name) {
+        return null;
+    }
+
+    @Override
     public List<Device> findDevicesByType(String type, TextPageLink pageLink) {
         //todo add cassandra findDevicesByType
         return null;

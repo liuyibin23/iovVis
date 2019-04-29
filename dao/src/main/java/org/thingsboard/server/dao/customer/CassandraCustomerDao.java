@@ -1,12 +1,12 @@
 /**
  * Copyright © 2016-2018 The Thingsboard Authors
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,6 +56,12 @@ public class CassandraCustomerDao extends CassandraAbstractSearchTextDao<Custome
     @Override
     public List<Customer> findCustomers(TextPageLink pageLink) {
         //todo cassandra findCustomers
+        return null;
+    }
+
+    @Override
+    public Customer findCustomerByTitle(TenantId tenantId, String title) {
+        //todo
         return null;
     }
 

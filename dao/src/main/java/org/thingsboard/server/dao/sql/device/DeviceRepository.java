@@ -108,4 +108,6 @@ public interface DeviceRepository extends CrudRepository<DeviceEntity, String> {
     List<DeviceEntity> findAllBy();
     List<DeviceEntity> findAllByTenantId(String tenandId);
     List<DeviceEntity> findAllByCustomerId(String customerId);
+
+    DeviceEntity findFirstByName(String name);
 }

@@ -89,6 +89,11 @@ public class CassandraAssetDao extends CassandraAbstractSearchTextDao<AssetEntit
     }
 
     @Override
+    public Asset findAssetByName(String name) {
+        return null;
+    }
+
+    @Override
     public List<Asset> findAssets(TextPageLink pageLink) {
         return null;
     }
