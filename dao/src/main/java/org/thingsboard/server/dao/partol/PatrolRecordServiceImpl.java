@@ -94,7 +94,7 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
                         task.getTaskKind(), TaskKind.PATROL, TaskKind.MAINTENANCE));
             }
             task.setTaskStatus(TaskStatus.CLEARED_ACK);
-//            taskDao.save(null, task);
+            task.setClearTs(System.currentTimeMillis());
             taskService.createOrUpdateTask(task);
 
             result.setTaskId(task.getId());

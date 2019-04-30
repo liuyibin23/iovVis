@@ -14,19 +14,15 @@ let option = {
     xAxis: [
         {
             type: 'category',
-            data: ['201901', '201902', '201903', '201904', '201905', '201906', '201907', '201908', '201909', '201910'],
+            data: [],
         }
     ],
     yAxis: [
         {
-            type: 'value',
-            min: 0,
-            max: 200
+            type: 'value'
         },
         {
             type: 'value',
-            min: 0,
-            max: 100,
             axisLabel: {
                 formatter: '{value} %'
             }
@@ -42,6 +38,7 @@ let option = {
                     color: 'blue',
                     label: {
                         show: true,
+                        position: 'top',
                         textStyle: {
                             fontFamily: '微软雅黑',
                             fontWeight: 'bold'
@@ -49,7 +46,7 @@ let option = {
                     }
                 }
             },
-            data: [30, 20, 70, 60, 23, 38, 93, 36, 35, 37]
+            data: []
         },
         {
             name: '红色预警',
@@ -62,6 +59,7 @@ let option = {
                     color: 'red',
                     label: {
                         show: true,
+                        position: 'top',
                         textStyle: {
                             fontFamily: '微软雅黑',
                             fontWeight: 'bold'
@@ -69,18 +67,19 @@ let option = {
                     }
                 },
             },
-            data: [10, 20, 70, 69, 23, 88, 90, 56, 35, 87]
+            data: []
         },
         {
             name: '预警百分比',
             type: 'line',
             yAxisIndex: 1,
-            data: [40, 20, 40, 80, 88, 35, 22, 55, 36, 60],
+            data: [],
             itemStyle: {        // 系列级个性化样式，纵向渐变填充
                 normal: {
                     color: 'green',
                     label: {
                         show: true,
+                        formatter: '{c}' + '%',
                         textStyle: {
                             fontFamily: '微软雅黑',
                             //fontWeight : 'bold',
@@ -92,23 +91,81 @@ let option = {
     ]
 };
 
+
+function processData(ts, option, params, respCnt, idx, maxCnt, data, res, callback) {
+    let blueCnt = 0;
+    let redCnt = 0;
+    for (let i = 0; i < data.length; i++) {
+        let _dt = data[i];
+
+        if (_dt.severity === 'INDETERMINATE') {
+            blueCnt += _dt.alarmCount;
+        } else if (_dt.severity === 'WARNING') {
+            redCnt += _dt.alarmCount;
+        }
+    }
+    
+    if (data.length >  0) {
+        option.xAxis[0].data[idx] = ts;
+        option.series[0].data[idx] = blueCnt;
+        option.series[1].data[idx] = redCnt;
+        option.series[2].data[idx] = (redCnt + blueCnt) > 0 ? ((redCnt / (redCnt + blueCnt)) * 100).toFixed(2) : 0;
+    }
+    
+    if (respCnt == maxCnt) {
+        callback(option, params, res);
+    }    
+}
+
+
+
+async function getData(timeSeries, params, token, res, callback){
+    var respCnt = 0;
+    var validIdx = 0;
+    for (let i = 0; i < timeSeries.length; i++) {
+        let api = util.getAPI() + `currentUser/alarms/${params.devid}?limit=86400000&startTime=${timeSeries[i][0]}&endTime=${timeSeries[i][1]}`;
+        await axios.get(api, { headers: { "X-Authorization": token } })
+            .then((resp) => {
+                respCnt++;
+                let data = resp.data.data;
+                if (data) {
+                    var dat = new Date(timeSeries[i][0]);
+                    let ts = util.dateFormat(dat,'yyyyMMdd');
+                    processData(ts, option, params, respCnt, validIdx, timeSeries.length, data, res, callback);
+                    if (data.length > 0)
+                        validIdx++;
+                }
+            })
+            .catch((err) => {
+                //callback(option, params, res);
+            });
+    } 
+}
+
 var chart_area = {
     name: 'chart_data',
     version: '1.0.0',
     fillData: async function (params, token, res, callback) {
+        option.xAxis[0].data = [];
+        option.series[0].data = [];
+        option.series[1].data = [];
+        option.series[2].data = [];
 
-        let apiUrl = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?limit=100&agg=NONE&keys=crackWidth&startTs=${params.startTime}&endTs=${params.endTime}`;
-        axios.get(apiUrl, { headers: { "X-Authorization": token } })
-            .then((resp) => {
-                let data = resp.data.crackWidth;
-                if (data) {
+        // 计算时间边界
+        let timediff = params.endTime - params.startTime;
+        let interval = Number.parseFloat(params.interval) * 1000;
+        let loopCnt =  Math.ceil((params.endTime - params.startTime) / interval);
+        
+        let timeSeries = [];
+        // 按时间段拆分成多个组 多少个柱状
+        let startTimeFloat = Number.parseFloat(params.startTime);
+        for (let j = 0; j < loopCnt; j++) {        
+            let startTime = startTimeFloat + j * interval;
+            let endTime   = startTime + interval;
+            timeSeries.push([startTime, endTime]);
+        }
 
-                }
-                callback(option, params, res);
-            })
-            .catch((err) => {
-                callback(option, params, res);
-            });
+        getData(timeSeries, params, token, res, callback);
     }
 }
 module.exports = chart_area;
