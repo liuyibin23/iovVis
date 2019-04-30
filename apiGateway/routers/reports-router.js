@@ -9,6 +9,7 @@ const stream = require('stream');
 const router = express.Router();
 const multipartMiddleware = multipart();
 require('isomorphic-fetch');
+const logger = require('../util/logger');
 
 // middleware that is specific to this router
 // router.use(function timeLog(req, res, next) {
@@ -106,8 +107,10 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
 
     let msg = '开始在后台处理报表生成';
     console.log(msg);
+    logger.log('info',msg);
     util.responData(200, msg, res);
   }).catch((err) => {
+    logger.log('info','POST error.');
     util.responErrorMsg(err, res);
   });
 })
@@ -210,6 +213,7 @@ async function decodeFile(buffer, query_time, token, req, res) {
   });
 
   console.log('模板处理完成，生成报表中...');
+  logger.log('info','模板处理完成，生成报表中...');
   generateReport(doc, req, res);
 }
 
@@ -228,7 +232,9 @@ function uploadFileToServer(fileName, req, res) {
       try {
         if (JSON.parse(body).success) {
           console.log('文件上传成功, 保存报表信息到数据库...');
+          logger.log('info','文件上传成功, 保存报表信息到数据库...');
           console.log(`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
+          logger.log('info',`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
           let bodyData = JSON.parse(body)
           let urlPath = host + bodyData.fileId;
 
@@ -248,10 +254,12 @@ function uploadFileToServer(fileName, req, res) {
           saveToDB(data, token);
         }
         else {
-          console.log('报表文件上传失败。');
+          console.log('报表文件上传失败。' + body);
+          logger.log('info','报表文件上传失败。' + body);
         }
       } catch (err) {
-        console.log('报表文件上传失败。');
+        console.log('报表文件上传失败。' + err);
+        logger.log('info','报表文件上传失败。');
       }
     }
   });
@@ -269,10 +277,12 @@ function generateReport(doc, req, res) {
 
   writerStream.on('finish', function () {
     console.log("写入完成。开始上传报表文件。");
+    logger.log('info','写入完成。开始上传报表文件。');
     uploadFileToServer(tmpFileName, req, res);
   });
 
   writerStream.on('error', function (err) {
+    logger.log('info','writerStream error' + err);
     console.log(err.stack);
   });
 }
@@ -286,8 +296,12 @@ function saveToDB(data, token) {
     },
   }).then((resp) => {
     console.log('数据库记录更新完成...');
+    logger.log('info','写入完成。开始上传报表文件。');
   }).catch((err) => {
-    console.log('数据库记录更新出错' + err);
+    console.log('数据库记录更新出错' + err.response.data.message);
+    if (err.response.data.message) {
+      logger.log('info','数据库记录更新出错' + err.response.data.message);
+    }
   });
 }
 

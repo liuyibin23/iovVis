@@ -123,7 +123,7 @@ async function getData(timeSeries, params, token, res, callback){
     var respCnt = 0;
     var validIdx = 0;
     for (let i = 0; i < timeSeries.length; i++) {
-        let api = util.getAPI() + `currentUser/alarms/${params.devid}?limit=1000&startTime=${timeSeries[i][0]}&endTime=${timeSeries[i][1]}`;
+        let api = util.getAPI() + `currentUser/alarms/${params.devid}?limit=86400000&startTime=${timeSeries[i][0]}&endTime=${timeSeries[i][1]}`;
         await axios.get(api, { headers: { "X-Authorization": token } })
             .then((resp) => {
                 respCnt++;
