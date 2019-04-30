@@ -97,13 +97,13 @@
         "fromIndex": 0,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "09a54220-56b7-11e9-8c83-01278f27a825"
+          "id": "b32bc860-6b1f-11e9-a9ab-091bf750e379"
         },
         "additionalInfo": {
-          "layoutX": 457,
-          "layoutY": 335,
+          "layoutX": 633,
+          "layoutY": 319,
           "ruleChainNodeId": "rule-chain-node-6",
-		  "ruleChainName": "ALARM_RULE"
+          "ruleChainName": "ALARM_RULE"
         },
         "type": "Success"
       }
