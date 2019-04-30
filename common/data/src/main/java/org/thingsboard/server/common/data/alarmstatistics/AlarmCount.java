@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 以entity作为计数依据，统计的是entity的数量。
+ */
 @Data
 @Builder
 @NoArgsConstructor
@@ -43,6 +46,12 @@ public class AlarmCount {
      * 该类资产的所有报警数量
      */
     private int entityAlarmCount = 0;
+
+    /**
+     * 存在超期未处理告警的设施和测点数
+     */
+    private int alarmingEntityOverdueCount = 0;
+    private int alarmingEntityWithinDueCount = 0;
 
     public int ackPlus(int count) {
         acked += count;
@@ -82,5 +91,15 @@ public class AlarmCount {
     public int entityAlarmCountPlus(int count) {
         entityAlarmCount += count;
         return entityAlarmCount;
+    }
+
+    public int alarmingEntityOverdueCountPlus(int count) {
+        alarmingEntityOverdueCount += count;
+        return alarmingEntityOverdueCount;
+    }
+
+    public int alarmingEntityWithinDueCountPlus(int count) {
+        alarmingEntityWithinDueCount += count;
+        return alarmingEntityWithinDueCount;
     }
 }

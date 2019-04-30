@@ -49,12 +49,13 @@ public class AlarmStatisticsController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/alarm/statistics/summary", method = RequestMethod.GET)
     @ResponseBody
-    public AlarmCountInfo getAlarmStatisticsSummary() throws ThingsboardException {
-//        checkTimePeriod(startTime, endTime);
+    public AlarmCountInfo getAlarmStatisticsSummary(@RequestParam Long startTime,
+                                                    @RequestParam Long endTime) throws ThingsboardException {
+        checkTimestamps(startTime, endTime);
         try {
             TenantId tenantId = getCurrentUser().getTenantId();
             CustomerId customerId = getCurrentUser().getCustomerId();
-            TimePageLink pageLink = createPageLink(100, null, null, true, null);
+            TimePageLink pageLink = createPageLink(100, startTime, endTime, true, null);
             AlarmStatisticsQuery query = AlarmStatisticsQuery.builder()
                     .pageLink(pageLink)
                     .build();
@@ -161,7 +162,6 @@ public class AlarmStatisticsController extends BaseController {
                     null != monitorCountMap.get(entry.getKey()) ? monitorCountMap.get(entry.getKey()) : new Long(0));
             monitorItemAlarmList.add(monitorItemAlarm);
         }
-
 
         return retObj;
     }

@@ -132,11 +132,12 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
             /**
              * 未处理的告警在前
              */
-            if (query.isStatusAsc()) {
-                orders.add(criteriaBuilder.asc(root.get("status").as(String.class)));
-            } else {
-                orders.add(criteriaBuilder.desc(root.get("status").as(String.class)));
-            }
+            //现在只能用id排序
+//            if (query.isStatusAsc()) {
+//                orders.add(criteriaBuilder.asc(root.get("status").as(String.class)));
+//            } else {
+//                orders.add(criteriaBuilder.desc(root.get("status").as(String.class)));
+//            }
 
             if (pageLink != null) {
                 if (pageLink.isAscOrder()) {
@@ -150,5 +151,4 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
             return criteriaQuery.getRestriction();
         };
     }
-
 }
