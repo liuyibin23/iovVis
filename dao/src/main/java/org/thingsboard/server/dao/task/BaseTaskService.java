@@ -1,6 +1,5 @@
 package org.thingsboard.server.dao.task;
 
-import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,6 @@ import org.thingsboard.server.dao.service.DataValidator;
 import org.thingsboard.server.dao.tenant.TenantDao;
 import org.thingsboard.server.dao.user.UserDao;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.UUID;
 
@@ -143,7 +141,7 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
         if (old == null) {
             throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
         }
-        return taskDao.save(update.getTenantId(), merage(old, update));
+        return taskDao.save(update.getTenantId(), merge(old, update));
     }
 
     private Task createTask(Task task) {
@@ -153,11 +151,18 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
         return saved;
     }
 
-    private Task merage(Task old, Task newTask) {
+    private Task merge(Task old, Task newTask) {
         old.setTaskStatus(newTask.getTaskStatus());
         old.setAdditionalInfo(newTask.getAdditionalInfo());
 
-        return old;
+        old.setUserId(newTask.getUserId());
+        old.setUserFirstName(newTask.getUserFirstName());
+        old.setClearTs(newTask.getClearTs());
+        old.setTaskName(newTask.getTaskName());
+        old.setTaskKind(newTask.getTaskKind());
+
+//        old.setAlarmId(newTask.getAlarmId());
+        return newTask;
     }
 
     /**
