@@ -89,6 +89,12 @@ router.get('/:assetId', async function (req, res) {
 // POST
 router.post('/:id', multipartMiddleware, async function (req, res) {
   let assetID = req.params.id;
+  
+  if (!req.query.fileIddd){
+    util.responData(util.CST.ERR400, util.CST.MSG400, res);
+    return;
+  }
+
   // 下载文件到本地
   let token = req.headers['x-authorization'];
   // download file
