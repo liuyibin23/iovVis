@@ -184,11 +184,11 @@
         "fromIndex": 4,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "551320b0-695e-11e9-a8f1-018c4cf00fce"
+          "id": "9d86b4c0-6b1f-11e9-a9ab-091bf750e379"
         },
         "additionalInfo": {
-          "layoutX": 1142,
-          "layoutY": 368,
+          "layoutX": 1154,
+          "layoutY": 432,
           "ruleChainNodeId": "rule-chain-node-10",
           "ruleChainName": "WARNING_JUDGE_RULE"
         },

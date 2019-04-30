@@ -103,7 +103,19 @@
         "name": "saveWarningRecord",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var newMsg = {}\nvar newMetaData = metadata;\nnewMetaData.recordType = '系统设置预警状态'\nif(msg.hasOwnProperty('asset_warning_level')){\n    newMsg.asset_warning_level = msg.asset_warning_level\n}else if (metadata.hasOwnProperty('ss_asset_warning_level')){\n    newMsg.asset_warning_level = metadata.ss_asset_warning_level\n}else{\n    newMsg.asset_warning_level = \"\"\n}\n\nreturn {msg: newMsg, metadata: newMetaData, msgType: msgType};"
+          "jsScript": "var newMsg = {}\nvar newMetaData = metadata;\nnewMetaData.recordType = '系统设置预警状态'\nif(msg.hasOwnProperty('asset_warning_level') && msg.hasOwnProperty('ss_asset_warning_level')){\n    newMsg.asset_warning_level = msg.asset_warning_level\n}else{\n    metadata.ss_asset_warning_level = ''\n    newMsg.asset_warning_level = ''\n}\n\nreturn {msg: newMsg, metadata: newMetaData, msgType: msgType};"
+        }
+      },
+      {
+        "additionalInfo": {
+          "layoutX": 828,
+          "layoutY": 325
+        },
+        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
+        "name": "filterCreateWarnings",
+        "debugMode": false,
+        "configuration": {
+          "jsScript": "return msg.asset_warning_level !== metadata.ss_asset_warning_level;"
         }
       }
     ],
@@ -135,8 +147,13 @@
       },
       {
         "fromIndex": 6,
-        "toIndex": 5,
+        "toIndex": 7,
         "type": "Success"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 5,
+        "type": "True"
       }
     ],
     "ruleChainConnections": null

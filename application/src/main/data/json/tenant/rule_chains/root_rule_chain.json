@@ -3,7 +3,7 @@
     "additionalInfo": null,
     "name": "Root Rule Chain",
     "firstRuleNodeId": null,
-    "root": true,
+    "root": false,
     "debugMode": false,
     "configuration": null
   },
@@ -188,12 +188,12 @@
         "fromIndex": 2,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "fdf2b890-56b6-11e9-8c83-01278f27a825"
+          "id": "83e32350-6b1f-11e9-a9ab-091bf750e379"
         },
         "additionalInfo": {
-          "layoutX": 1056,
-          "layoutY": 782,
-          "ruleChainNodeId": "rule-chain-node-12",
+          "layoutX": 1063,
+          "layoutY": 786,
+          "ruleChainNodeId": "rule-chain-node-13",
           "ruleChainName": "WARNING_CLEAR"
         },
         "type": "Alarm Cleared"
@@ -207,7 +207,7 @@
         "additionalInfo": {
           "layoutX": 1056,
           "layoutY": 710,
-          "ruleChainNodeId": "rule-chain-node-13",
+          "ruleChainNodeId": "rule-chain-node-12",
           "ruleChainName": "MQTT_ENGINE_BUS"
         },
         "type": "Post telemetry"
@@ -216,11 +216,11 @@
         "fromIndex": 6,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "f246beb0-56b6-11e9-8c83-01278f27a825"
+          "id": "9d86b4c0-6b1f-11e9-a9ab-091bf750e379"
         },
         "additionalInfo": {
-          "layoutX": 1046,
-          "layoutY": 851,
+          "layoutX": 1071,
+          "layoutY": 855,
           "ruleChainNodeId": "rule-chain-node-14",
           "ruleChainName": "WARNING_JUDGE_RULE"
         },
