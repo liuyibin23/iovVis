@@ -126,8 +126,6 @@ public class PatrolRecordController extends BaseController {
     }
 
 
-
-
     /**
      * 1.2.15.4 查询所有巡检养护信息（支持分页）
      *
@@ -200,8 +198,12 @@ public class PatrolRecordController extends BaseController {
         try {
             ListenableFuture<List<PatrolRecord>> patrolRecordFuture = patrolRecordService.findAllByOriginatorAndType(tenantId, customerId, entityId, recordType, pageLink);
             List<PatrolRecordEx> patrolRecordExList = Futures.transform(patrolRecordFuture, patrolRecords -> patrolRecords.stream().map(patrolRecord -> {
-                Asset asset = assetService.findAssetById(null, patrolRecord.getAssetId());
                 PatrolRecordEx patrolRecordEx = new PatrolRecordEx(patrolRecord);
+                AssetId assetId = patrolRecord.getAssetId();
+                Asset asset = null;
+                if (assetId != null && assetId.getId() != null) {
+                    asset = assetService.findAssetById(null, assetId);
+                }
                 patrolRecordEx.setAssetName(asset != null ? asset.getName() : "asset deleted");
                 return patrolRecordEx;
             }).collect(Collectors.toList())).get();
