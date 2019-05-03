@@ -90,7 +90,7 @@ router.get('/:assetId', async function (req, res) {
 router.post('/:id', multipartMiddleware, async function (req, res) {
   let assetID = req.params.id;
   
-  if (!req.query.fileIddd){
+  if (!req.query.fileId){
     util.responData(util.CST.ERR400, util.CST.MSG400, res);
     return;
   }
