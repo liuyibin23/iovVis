@@ -216,7 +216,7 @@ async function postWarningRules(req, res) {
     }
   }).then(resp => {
     let tenantId = resp.data.tenantId.id;
-    let api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/attributes/SERVER_SCOPE`;
+    let api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
     axios.post(api,
       {
       "warning_rule_cfg":JSON.stringify(WarningRule)
