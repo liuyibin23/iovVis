@@ -8,7 +8,7 @@ function tokenVerify() {
         let tok = req.headers['x-authorization'];
         try {
             let remoteIp = req.connection.remoteAddress.split(':');
-            logger.log('info', `[${Date.now()}] from ip ${remoteIp[remoteIp.length - 1]}  ->`);
+            //logger.log('info', `[${Date.now()}] from ip ${remoteIp[remoteIp.length - 1]}  ->`);
         } catch (err) {
             logger.log('error', `[${Date.now()}] ${err.message}`);
         };

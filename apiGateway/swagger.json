@@ -189,6 +189,75 @@
         }
       }
     },
+    "/reports/upload/{assetId}": {
+      "post": {
+        "tags": [
+          "报表"
+        ],
+        "summary": "上传报表文件",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "type": "string",
+            "required": true,
+            "description": "关联报表的资产编号（assetId）"
+          },
+          {
+            "name": "report_file",
+            "in": "formData",
+            "type": "file",
+            "required": true,
+            "description": "报表文件。"
+          },
+          {
+            "name": "report_name",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "报表文件名称。"
+          },
+          {
+            "name": "report_type",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "enum": [
+              "DAY",
+              "WEEK",
+              "MONTH",
+              "QUARTER",
+              "YEAR"
+            ],
+            "description": "报表类型 [DAY-日报 WEEK-周报 MONTH-月报 QUARTER-季报 YEAR-年报]。"
+          },
+          {
+            "name": "operator",
+            "in": "formData",
+            "type": "string",
+            "required": true,
+            "description": "操作者名字。"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回报表信息。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
     "/reports/{assetId}": {
       "get": {
         "tags": [
@@ -279,21 +348,21 @@
           },
           {
             "name": "fileId",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "报表模板文件ID。",
             "type": "string"
           },
           {
             "name": "report_name",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "报表文件名称。"
           },
           {
             "name": "report_type",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "enum": [
@@ -307,7 +376,7 @@
           },
           {
             "name": "operator",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "操作者名字。"
@@ -316,7 +385,7 @@
             "name": "startTime",
             "type": "integer",
             "format": "int64",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "开始时间。"
           },
@@ -324,7 +393,7 @@
             "name": "endTime",
             "type": "integer",
             "format": "int64",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "结束时间。"
           }

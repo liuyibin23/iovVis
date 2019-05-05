@@ -46,6 +46,7 @@ if (ret) {
 
     app.use('/api/v1/templates', templatesRouter);
     app.use('/api/v1/reports', reportsRouter);
+    app.use('/api/v1/reports/upload', reportsRouter);
     app.use('/api/v1/rules/alarms', alarmsRouter);
     app.use('/api/v1/echarts', echartsRouter);
     app.use('/api/v1/tables', contentRouter);

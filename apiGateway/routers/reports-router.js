@@ -86,33 +86,57 @@ router.get('/:assetId', async function (req, res) {
     util.responErrorMsg(err, res);
   });
 })
+
+function processFileUpload(assetID, req, res){
+  let token = req.headers['x-authorization'];
+  let fileName = req.files.report_file.path;
+  let params = req.body;
+
+  if (fileName && params) {
+    uploadFileToServer(fileName, assetID, params, token, res);
+  } else {
+    res.responData(util.CST.ERR400, util.CST.MSG400, res);
+  }
+}
+
 // POST
 router.post('/:id', multipartMiddleware, async function (req, res) {
   let assetID = req.params.id;
-  // 下载文件到本地
-  let token = req.headers['x-authorization'];
-  // download file
-  let downloadFileHost = util.getFSVR() + req.query.fileId;
-  axios.get(downloadFileHost, {
-    headers: {
-      "X-Authorization": token
-    },
-    responseType: 'arraybuffer'
-  }).then((resp) => {
-    let query_time = {
-      'startTs': req.query.startTime,
-      'endTs': req.query.endTime
-    };
-    decodeFile(resp.data, query_time, token, req, res);
 
-    let msg = '开始在后台处理报表生成';
-    console.log(msg);
-    logger.log('info',msg);
-    util.responData(200, msg, res);
-  }).catch((err) => {
-    logger.log('info','POST error.');
-    util.responErrorMsg(err, res);
-  });
+  if (req.baseUrl == '/api/v1/reports/upload') {
+    // 单独处理文件上传
+    processFileUpload(assetID, req, res);
+  } else {
+    let token = req.headers['x-authorization'];
+    let params = req.body;
+    if (!params.fileId){
+      util.responData(util.CST.ERR400, util.CST.MSG400, res);
+      return;
+    }
+  
+    // 下载文件到本地
+    let downloadFileHost = util.getFSVR() + params.fileId;
+    axios.get(downloadFileHost, {
+      headers: {
+        "X-Authorization": token
+      },
+      responseType: 'arraybuffer'
+    }).then((resp) => {
+      let query_time = {
+        'startTs': params.startTime,
+        'endTs': params.endTime
+      };
+      decodeFile(resp.data, query_time, token, req, res);
+  
+      let msg = '开始在后台处理报表生成';
+      console.log(msg);
+      logger.log('info',msg);
+      util.responData(200, msg, res);
+    }).catch((err) => {
+      logger.log('info','POST error.');
+      util.responErrorMsg(err, res);
+    });
+  }
 })
 
 function deleteFile(fileId) {
@@ -218,7 +242,7 @@ async function decodeFile(buffer, query_time, token, req, res) {
 }
 
 // 上传文件到文件服务器
-function uploadFileToServer(fileName, req, res) {
+function uploadFileToServer(fileName, assetID, params, token, res) {
   var formData = {
     file: fs.createReadStream(fileName),
   };
@@ -227,39 +251,47 @@ function uploadFileToServer(fileName, req, res) {
   request.post({ url: uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
       console.log('文件上传失败！');
+      if (res) {
+        util.responData(util.CST.MSG400, '文件上传失败', res);
+      }
     }
     else {
       try {
         if (JSON.parse(body).success) {
           console.log('文件上传成功, 保存报表信息到数据库...');
           logger.log('info','文件上传成功, 保存报表信息到数据库...');
-          console.log(`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
-          logger.log('info',`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
+          console.log(`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
+          logger.log('info',`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
           let bodyData = JSON.parse(body)
           let urlPath = host + bodyData.fileId;
 
           let data = {
-            "userName": req.query.operator,
+            "userName": params.operator,
             "assetId": {
               "entityType": "ASSET",
-              "id": req.params.id
+              "id": assetID
             },
-            "name": req.query.report_name,
-            "type": req.query.report_type,
+            "name": params.report_name,
+            "type": params.report_type,
             "fileId": bodyData.fileId,
             "fileUrl": urlPath,
             "additionalInfo": null
           };
-          let token = req.headers['x-authorization'];
-          saveToDB(data, token);
+          saveToDB(data, token, res);
         }
         else {
           console.log('报表文件上传失败。' + body);
           logger.log('info','报表文件上传失败。' + body);
+          if (res) {
+            util.responData(util.CST.ERR400, '报表文件上传失败' + body, res);
+          }
         }
       } catch (err) {
         console.log('报表文件上传失败。' + err);
         logger.log('info','报表文件上传失败。');
+        if (res) {
+          util.responData(util.CST.ERR400, '报表文件上传失败。' + err, res);
+        }
       }
     }
   });
@@ -278,7 +310,10 @@ function generateReport(doc, req, res) {
   writerStream.on('finish', function () {
     console.log("写入完成。开始上传报表文件。");
     logger.log('info','写入完成。开始上传报表文件。');
-    uploadFileToServer(tmpFileName, req, res);
+    let assetID = req.params.id;
+    let params = req.body;
+    let token = req.headers['x-authorization'];
+    uploadFileToServer(tmpFileName, assetID, params, token, null);
   });
 
   writerStream.on('error', function (err) {
@@ -288,19 +323,35 @@ function generateReport(doc, req, res) {
 }
 
 // 保存到数据库
-function saveToDB(data, token) {
+function saveToDB(data, token, res) {
   let api = util.getAPI() + 'currentUser/report';
   axios.post(api, data, {
     headers: {
       "X-Authorization": token
     },
   }).then((resp) => {
-    console.log('数据库记录更新完成...');
-    logger.log('info','写入完成。开始上传报表文件。');
+    let msg = '数据库记录更新成功';
+    console.log(msg);
+    logger.log('info', msg);
+    if (res) {
+      util.responData(util.CST.OK200, msg, res);
+    }
   }).catch((err) => {
-    console.log('数据库记录更新出错' + err.response.data.message);
-    if (err.response.data.message) {
-      logger.log('info','数据库记录更新出错' + err.response.data.message);
+    if (err.response && err.response.message) {
+      let errMsg = err.response.message;
+      if (errMsg) {
+        let msg = '数据库记录更新出错 ';
+        logger.log('info', msg + errMsg);
+        console.log(msg + errMsg);
+              
+        if (res) {
+          res.responData(util.CST.OK200, errMsg);
+        }
+      }
+    } else {
+      if (res) {
+        res.responData(util.CST.OK200, errMsg);
+      }
     }
   });
 }
