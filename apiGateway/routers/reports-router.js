@@ -90,8 +90,10 @@ router.get('/:assetId', async function (req, res) {
 function processFileUpload(assetID, req, res){
   let token = req.headers['x-authorization'];
   let fileName = req.files.report_file.path;
-  if (fileName) {
-    uploadFileToServer(fileName, req, res);
+  let params = req.body;
+
+  if (fileName && params) {
+    uploadFileToServer(fileName, assetID, params, token, res);
   } else {
     res.responData(util.CST.ERR400, util.CST.MSG400, res);
   }
@@ -105,15 +107,15 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
     // 单独处理文件上传
     processFileUpload(assetID, req, res);
   } else {
-    if (!req.query.fileId){
+    let token = req.headers['x-authorization'];
+    let params = req.body;
+    if (!params.fileId){
       util.responData(util.CST.ERR400, util.CST.MSG400, res);
       return;
     }
   
     // 下载文件到本地
-    let token = req.headers['x-authorization'];
-    // download file
-    let downloadFileHost = util.getFSVR() + req.query.fileId;
+    let downloadFileHost = util.getFSVR() + params.fileId;
     axios.get(downloadFileHost, {
       headers: {
         "X-Authorization": token
@@ -121,8 +123,8 @@ router.post('/:id', multipartMiddleware, async function (req, res) {
       responseType: 'arraybuffer'
     }).then((resp) => {
       let query_time = {
-        'startTs': req.query.startTime,
-        'endTs': req.query.endTime
+        'startTs': params.startTime,
+        'endTs': params.endTime
       };
       decodeFile(resp.data, query_time, token, req, res);
   
@@ -240,7 +242,7 @@ async function decodeFile(buffer, query_time, token, req, res) {
 }
 
 // 上传文件到文件服务器
-function uploadFileToServer(fileName, req, res) {
+function uploadFileToServer(fileName, assetID, params, token, res) {
   var formData = {
     file: fs.createReadStream(fileName),
   };
@@ -258,24 +260,23 @@ function uploadFileToServer(fileName, req, res) {
         if (JSON.parse(body).success) {
           console.log('文件上传成功, 保存报表信息到数据库...');
           logger.log('info','文件上传成功, 保存报表信息到数据库...');
-          console.log(`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
-          logger.log('info',`类型:${req.query.report_type} 报表名字:${req.query.report_name} 操作者:${req.query.operator}`);
+          console.log(`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
+          logger.log('info',`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
           let bodyData = JSON.parse(body)
           let urlPath = host + bodyData.fileId;
 
           let data = {
-            "userName": req.query.operator,
+            "userName": params.operator,
             "assetId": {
               "entityType": "ASSET",
-              "id": req.params.id
+              "id": assetID
             },
-            "name": req.query.report_name,
-            "type": req.query.report_type,
+            "name": params.report_name,
+            "type": params.report_type,
             "fileId": bodyData.fileId,
             "fileUrl": urlPath,
             "additionalInfo": null
           };
-          let token = req.headers['x-authorization'];
           saveToDB(data, token, res);
         }
         else {
@@ -309,7 +310,10 @@ function generateReport(doc, req, res) {
   writerStream.on('finish', function () {
     console.log("写入完成。开始上传报表文件。");
     logger.log('info','写入完成。开始上传报表文件。');
-    uploadFileToServer(tmpFileName, req, null);
+    let assetID = req.params.id;
+    let params = req.body;
+    let token = req.headers['x-authorization'];
+    uploadFileToServer(tmpFileName, assetID, params, token, null);
   });
 
   writerStream.on('error', function (err) {

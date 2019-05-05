@@ -215,14 +215,14 @@
           },
           {
             "name": "report_name",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "报表文件名称。"
           },
           {
             "name": "report_type",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "enum": [
@@ -236,7 +236,7 @@
           },
           {
             "name": "operator",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "操作者名字。"
@@ -348,21 +348,21 @@
           },
           {
             "name": "fileId",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "报表模板文件ID。",
             "type": "string"
           },
           {
             "name": "report_name",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "报表文件名称。"
           },
           {
             "name": "report_type",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "enum": [
@@ -376,7 +376,7 @@
           },
           {
             "name": "operator",
-            "in": "query",
+            "in": "formData",
             "type": "string",
             "required": true,
             "description": "操作者名字。"
@@ -385,7 +385,7 @@
             "name": "startTime",
             "type": "integer",
             "format": "int64",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "开始时间。"
           },
@@ -393,7 +393,7 @@
             "name": "endTime",
             "type": "integer",
             "format": "int64",
-            "in": "query",
+            "in": "formData",
             "required": true,
             "description": "结束时间。"
           }
