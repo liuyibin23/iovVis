@@ -13,12 +13,10 @@ import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.DeviceId;
-import org.thingsboard.server.common.data.id.TenantId;
-import org.thingsboard.server.common.data.id.UserId;
+import org.thingsboard.server.common.data.id.*;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
+import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
@@ -459,6 +457,22 @@ public class TaskController extends BaseController {
 
                 }
             }
+
+            List<EntityRelation> relations = relationService.findByTo(null,task.getId(),RelationTypeGroup.COMMON);
+            relations.forEach(relation->{
+                if(relation.getType().equals(EntityRelation.CONTAINS_TYPE)
+                        && relation.getTo().getEntityType() == task.getId().getEntityType()){
+                    try {
+                        //将PatrolRecord中的info字段添加到task对象中，目前主要用于前端在处理任务后添加处理人，然后需要在tasks中获取
+                        PatrolRecord patrolRecord = patrolRecordService.findAllById(new PatrolId(relation.getFrom().getId()));
+                        task.setPatrolRecordInfo(patrolRecord.getInfo());
+                    } catch (ExecutionException e) {
+                        log.error("set task PatrolRecordInfo error",e);
+                    } catch (InterruptedException e) {
+                        log.error("set task PatrolRecordInfo error",e);
+                    }
+                }
+            });
         });
         return taskList;
     }
