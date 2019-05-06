@@ -112,6 +112,11 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     }
 
     @Override
+    public ListenableFuture<Task> findTaskByIdAsync(UUID taskId){
+        return taskDao.findTaskByIdAsync(taskId);
+    }
+
+    @Override
     public List<Task> findTasksByUserId(UserId userId) {
         return taskDao.findTasksByUserId(userId);
     }

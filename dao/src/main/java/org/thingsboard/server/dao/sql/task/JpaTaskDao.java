@@ -98,6 +98,12 @@ public class JpaTaskDao extends JpaAbstractDao<TaskEntity, Task> implements Task
     }
 
     @Override
+    public ListenableFuture<Task> findTaskByIdAsync(UUID id){
+//        return service.submit(()->taskRepository.findOne(UUIDConverter.fromTimeUUID(id)).toData());
+        return service.submit(()->DaoUtil.getData(taskRepository.findOne(UUIDConverter.fromTimeUUID(id))));
+    }
+
+    @Override
     public ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink) {
         Specification<TaskEntity> timeSearchSpec = JpaAbstractSearchTimeDao.getTimeSearchPageSpec(pageLink, "id");
         Specification<TaskEntity> fieldsSpec = getEntityFieldsSpec(query);

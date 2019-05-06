@@ -41,6 +41,7 @@ import org.thingsboard.server.common.data.id.RuleNodeId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.rule.RuleChain;
 import org.thingsboard.server.common.data.rule.RuleNode;
+import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.controller.HttpValidationCallback;
 import org.thingsboard.server.dao.alarm.AlarmService;
 import org.thingsboard.server.dao.asset.AssetService;
@@ -48,6 +49,7 @@ import org.thingsboard.server.dao.customer.CustomerService;
 import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.rule.RuleChainService;
+import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.user.UserService;
 import org.thingsboard.server.service.security.model.SecurityUser;
@@ -94,6 +96,9 @@ public class AccessValidator {
 
     @Autowired
     protected EntityViewService entityViewService;
+
+    @Autowired
+    protected TaskService taskService;
 
     private ExecutorService executor;
 
@@ -167,6 +172,9 @@ public class AccessValidator {
                 return;
             case ENTITY_VIEW:
                 validateEntityView(currentUser, entityId, callback);
+                return;
+            case TASK:
+                validateTask(currentUser,entityId,callback);
                 return;
             default:
                 //TODO: add support of other entities
@@ -328,6 +336,28 @@ public class AccessValidator {
                 }
             }), executor);
 //        }
+    }
+
+
+    private void validateTask(final SecurityUser currentUser, EntityId entityId, FutureCallback<ValidationResult> callback) {
+
+        ListenableFuture<Task> taskFuture = taskService.findTaskByIdAsync(entityId.getId());
+        Futures.addCallback(taskFuture, getCallback(callback, task -> {
+            if (task == null) {
+                return ValidationResult.entityNotFound("Task with requested id wasn't found!");
+            } else {
+                if (currentUser.isSystemAdmin()) {
+                    return ValidationResult.ok(task);
+                }
+                if (!task.getTenantId().equals(currentUser.getTenantId())) {
+                    return ValidationResult.accessDenied("Task doesn't belong to the current Tenant!");
+                } else if (currentUser.isCustomerUser() && !task.getCustomerId().equals(currentUser.getCustomerId())) {
+                    return ValidationResult.accessDenied("Task doesn't belong to the current Customer!");
+                } else {
+                    return ValidationResult.ok(task);
+                }
+            }
+        }), executor);
     }
 
     private <T, V> FutureCallback<T> getCallback(FutureCallback<ValidationResult> callback, Function<T, ValidationResult<V>> transformer) {

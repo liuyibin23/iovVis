@@ -25,6 +25,8 @@ public interface TaskService {
 
     Task findTaskById(UUID taskId);
 
+    ListenableFuture<Task> findTaskByIdAsync(UUID taskId);
+
     List<Task> findTasksByUserId(UserId userId);
 
     Task findTaskByOriginator(EntityId entityId);

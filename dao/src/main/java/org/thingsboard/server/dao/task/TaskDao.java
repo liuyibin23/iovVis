@@ -29,6 +29,8 @@ public interface TaskDao extends Dao<Task> {
 
     Task findTaskById(UUID Id);
 
+    ListenableFuture<Task> findTaskByIdAsync(UUID id);
+
     ListenableFuture<List<Task>> findTasks(TaskQuery query, TimePageLink pageLink);
     ListenableFuture<Long> getTasksCount(TaskQuery query, TimePageLink pageLink);
 }
