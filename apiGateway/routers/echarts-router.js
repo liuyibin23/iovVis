@@ -109,7 +109,7 @@ function processData(option, params, res){
 function generateChart(req, res){
     let type   = req.params.id;
     let params = req.query;
-    logger.log('info', 'type:', type, 'namme:', params);
+    logger.log('info', 'type:', type, 'name:', params);
     let token = req.headers['x-authorization'];
 
     let funcInfo = mapFunc[type];
