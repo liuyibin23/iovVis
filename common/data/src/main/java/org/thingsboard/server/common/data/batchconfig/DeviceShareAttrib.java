@@ -40,6 +40,7 @@ public class DeviceShareAttrib implements Serializable {
 	private String dynamicStaticState;
 	private String deviceGroup;
 	private String typeParams;
+	private String pic;
 //	@JsonProperty("IMEI")
 //	private String imei;
 //	@JsonProperty("IMSI")

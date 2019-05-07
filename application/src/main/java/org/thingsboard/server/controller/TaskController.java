@@ -6,6 +6,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.AlarmId;
@@ -14,21 +15,20 @@ import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.kv.AttributeKvData;
+import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
-import org.thingsboard.server.common.data.patrol.PatrolRecord;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskExInfo;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.common.data.task.TaskQuery;
 import org.thingsboard.server.service.security.model.SecurityUser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -60,14 +60,14 @@ public class TaskController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public List<Task> checkTasks() throws ThingsboardException {
+    public List<TaskExInfo> checkTasks() throws ThingsboardException {
         try {
             if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
-                return getTasksNameInfo(checkNotNull(taskService.checkTasks()));
+                return setTasksExInfo(checkNotNull(taskService.checkTasks()),null,null);
             } else if (getCurrentUser().getAuthority().equals(Authority.TENANT_ADMIN)) {
-                return getTasksNameInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId())));
+                return setTasksExInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId())),null,null);
             } else
-                return getTasksNameInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId(), getCurrentUser().getCustomerId())));
+                return setTasksExInfo(checkNotNull(taskService.checkTasks(getCurrentUser().getTenantId(), getCurrentUser().getCustomerId())),null,null);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -81,17 +81,21 @@ public class TaskController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/page/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public TimePageData<Task> getTasks(@RequestParam(required = false) String tenantIdStr,
-                                       @RequestParam(required = false) String customerIdStr,
-                                       @RequestParam(required = false) String userIdStr,
-                                       @RequestParam(required = false) String userName,
-                                       @RequestParam(required = false) TaskKind taskKind,
-                                       @RequestParam(required = false,defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
-                                       @RequestParam int limit,
-                                       @RequestParam(required = false) Long startTime,
-                                       @RequestParam(required = false) Long endTime,
-                                       @RequestParam(required = false) String idOffset,
-                                       @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+    public TimePageData<TaskExInfo> getTasks(@RequestParam(required = false) String tenantIdStr,
+                                             @RequestParam(required = false) String customerIdStr,
+                                             @RequestParam(required = false) String userIdStr,
+                                             @RequestParam(required = false) String userName,
+                                             @RequestParam(required = false) TaskKind taskKind,
+                                             @RequestParam(required = false, defaultValue = "ALL") TaskQuery.StatusFilter statusFilter,
+                                             @RequestParam int limit,
+                                             @RequestParam(required = false) Long startTime,
+                                             @RequestParam(required = false) Long endTime,
+                                             @RequestParam(required = false) String idOffset,
+                                             @RequestParam(required = false, defaultValue = "false") boolean ascOrder,
+                                             @ApiParam(value = "查询时附带该task的指定key的属性在查询结果中返回，多个key用逗号分隔")
+                                             @RequestParam(required = false) String keys,
+                                             @ApiParam(value = "要获取属性的scope，空值表示获取所有scope")
+                                             @RequestParam(required = false) String scope) throws ThingsboardException {
 
 //        TaskKind taskKind = null;
 //        if (!Strings.isNullOrEmpty(taskKindStr)) {
@@ -179,7 +183,7 @@ public class TaskController extends BaseController {
 
         try {
             List<Task> tasks = taskService.findTasks(query, pageLink).get();
-            return new TimePageData<>(getTasksNameInfo(tasks), pageLink);
+            return new TimePageData<>(setTasksExInfo(tasks,keys,scope), pageLink);
         } catch (InterruptedException | ExecutionException e) {
             throw handleException(e);
         }
@@ -293,7 +297,7 @@ public class TaskController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/tasks", method = RequestMethod.GET)
     @ResponseBody
-    public List<Task> findTasks(@RequestParam TaskKind taskKind) throws ThingsboardException {
+    public List<TaskExInfo> findTasks(@RequestParam TaskKind taskKind) throws ThingsboardException {
         List<Task> taskList = null;
         try {
             if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN)) {
@@ -305,7 +309,7 @@ public class TaskController extends BaseController {
 
             taskList = taskList.stream().filter(task -> taskKind.equals(task.getTaskKind())).collect(Collectors.toList());
 
-            return getTasksNameInfo(taskList);
+            return setTasksExInfo(taskList,null,null);
         } catch (Exception e) {
             throw handleException(e);
         }
@@ -348,7 +352,7 @@ public class TaskController extends BaseController {
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/currentUser/findTasksByUserName", method = RequestMethod.GET)
     @ResponseBody
-    public List<Task> findTasksByUserName(@RequestParam String firstName,
+    public List<TaskExInfo> findTasksByUserName(@RequestParam String firstName,
                                           @RequestParam(required = false) String lastName,
                                           @RequestParam(required = false) TaskKind taskKind
                                           ) throws ThingsboardException {
@@ -370,7 +374,7 @@ public class TaskController extends BaseController {
         List<Task> tempTaskList = taskList.stream().filter(task -> {
             return taskKind == null || taskKind == task.getTaskKind();
         }).collect(Collectors.toList());
-        return getTasksNameInfo(tempTaskList);
+        return setTasksExInfo(tempTaskList,null,null);
     }
 
     /**
@@ -384,7 +388,7 @@ public class TaskController extends BaseController {
     @RequestMapping(value = "/currentUser/getTasks", method = RequestMethod.GET)
     @ResponseBody
     //todo
-    public List<Task> getTaskByAlarmId(@RequestParam String strAlarmId) throws ThingsboardException {
+    public List<TaskExInfo> getTaskByAlarmId(@RequestParam String strAlarmId) throws ThingsboardException {
         checkParameter(ALARM_ID, strAlarmId);
         try {
 
@@ -412,14 +416,15 @@ public class TaskController extends BaseController {
 
             }
 
-            return getTasksNameInfo(retTask);
+            return setTasksExInfo(retTask,null,null);
         } catch (Exception e) {
             throw handleException(e);
         }
     }
 
-    private List<Task> getTasksNameInfo(List<Task> taskList) throws ThingsboardException {
+    private List<TaskExInfo> setTasksExInfo(List<Task> taskList, String attrKeys,String attrScope) throws ThingsboardException {
         checkNotNull(taskList);
+        List<TaskExInfo> taskExInfos = new ArrayList<>();
         taskList.stream().forEach(task -> {
             if (null != task.getAssetId()) {
                 Optional<Asset> optionalAsset = Optional.ofNullable(assetService.findAssetById(null, task.getAssetId()));
@@ -457,27 +462,47 @@ public class TaskController extends BaseController {
 
                 }
             }
-
-            List<EntityRelation> relations = relationService.findByTo(null,task.getId(),RelationTypeGroup.COMMON);
-            relations.forEach(relation->{
-                if(relation.getType().equals(EntityRelation.CONTAINS_TYPE)
-                        && relation.getTo().getEntityType() == task.getId().getEntityType()){
-                    try {
-                        //将PatrolRecord中的info字段添加到task对象中，目前主要用于前端在处理任务后添加处理人，然后需要在tasks中获取
-                        PatrolRecord patrolRecord = patrolRecordService.findAllById(new PatrolId(relation.getFrom().getId()));
-                        task.setPatrolRecordInfo(patrolRecord.getInfo());
-                    } catch (ExecutionException e) {
-                        log.error("set task PatrolRecordInfo error",e);
-                    } catch (InterruptedException e) {
-                        log.error("set task PatrolRecordInfo error",e);
-                    }
-                }
-            });
+            try {
+                taskExInfos.add(setTaskAttrKvDatas(task,attrKeys,attrScope));
+            } catch (Exception e) {
+                throw handleException(e);
+            }
         });
-        return taskList;
+        return taskExInfos;
     }
 
-    private Task getTasksNameInfo(Task task) throws ThingsboardException {
+    private TaskExInfo setTaskAttrKvDatas(Task task,String keys,String scope) throws ExecutionException, InterruptedException {
+        TaskExInfo taskExInfo = new TaskExInfo(task);
+        List<String> keyList = toKeysList(keys);
+
+        if (!StringUtils.isEmpty(scope)){
+            if (keyList != null && !keyList.isEmpty()){
+                List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), scope, keyList).get();
+                List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+                        attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+                taskExInfo.getTaskAttrKv().addAll(values);
+            }
+        } else {
+            for (String tmpScope : DataConstants.allScopes()){
+                if (keyList != null && !keyList.isEmpty()){
+                    List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), tmpScope, keyList).get();
+                    List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+                            attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+                    taskExInfo.getTaskAttrKv().addAll(values);
+                }
+            }
+        }
+        return taskExInfo;
+    }
+
+    private List<String> toKeysList(String keys) {
+        List<String> keyList = null;
+        if (!StringUtils.isEmpty(keys)) {
+            keyList = Arrays.asList(keys.split(","));
+        }
+        return keyList;
+    }
+    private Task setTasksExInfo(Task task) throws ThingsboardException {
         checkNotNull(task);
 
         if (null != task.getAssetId()) {

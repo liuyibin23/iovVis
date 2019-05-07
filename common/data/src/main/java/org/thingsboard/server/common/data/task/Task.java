@@ -27,7 +27,6 @@ public class Task extends BaseData<TaskId> implements HasName, HasTenantId, HasC
 	private TaskKind taskKind;
 	private TaskStatus taskStatus;
 	private String taskName;
-	private String patrolRecordInfo;
 
 //	private String name;
 	private JsonNode additionalInfo;
