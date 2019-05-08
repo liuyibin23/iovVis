@@ -260,8 +260,6 @@ function uploadFileToServer(fileName, assetID, params, maxRetryCnt, tryCnt, toke
   };
   let host = util.getFSVR();
   let uploadFileHost = host + 'api/file/upload/';
-  if (tryCnt != maxRetryCnt)
-    uploadFileHost =  host + 'api/file/uploadd/';
   
   request.post({ url: uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
