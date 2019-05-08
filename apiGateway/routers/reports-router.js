@@ -11,6 +11,8 @@ const multipartMiddleware = multipart();
 require('isomorphic-fetch');
 const logger = require('../util/logger');
 
+const MAX_RETRY_CNT = 3;   // 失败重传次数
+
 // middleware that is specific to this router
 // router.use(function timeLog(req, res, next) {
 //   console.log('Reports Time: ', Date.now());
@@ -93,7 +95,7 @@ function processFileUpload(assetID, req, res){
   let params = req.body;
 
   if (fileName && params) {
-    uploadFileToServer(fileName, assetID, params, token, res);
+    uploadFileToServer(fileName, assetID, params, MAX_RETRY_CNT, 1, token, res);
   } else {
     res.responData(util.CST.ERR400, util.CST.MSG400, res);
   }
@@ -241,16 +243,30 @@ async function decodeFile(buffer, query_time, token, req, res) {
   generateReport(doc, req, res);
 }
 
+function deleteFile(fileName){
+  fs.unlink(fileName, function(err){
+    if (err) {
+      console.log(`${fileName} delete Failed,` + err.message);
+    } else {
+      console.log(`${fileName} delete OK.`);
+    }
+  });
+}
+
 // 上传文件到文件服务器
-function uploadFileToServer(fileName, assetID, params, token, res) {
+function uploadFileToServer(fileName, assetID, params, maxRetryCnt, tryCnt, token, res) {
   var formData = {
     file: fs.createReadStream(fileName),
   };
   let host = util.getFSVR();
   let uploadFileHost = host + 'api/file/upload/';
+  if (tryCnt != maxRetryCnt)
+    uploadFileHost =  host + 'api/file/uploadd/';
+  
   request.post({ url: uploadFileHost, formData: formData }, function (err, httpResponse, body) {
     if (err) {
       console.log('文件上传失败！');
+      deleteFile(fileName);
       if (res) {
         util.responData(util.CST.MSG400, '文件上传失败', res);
       }
@@ -258,10 +274,14 @@ function uploadFileToServer(fileName, assetID, params, token, res) {
     else {
       try {
         if (JSON.parse(body).success) {
-          console.log('文件上传成功, 保存报表信息到数据库...');
-          logger.log('info','文件上传成功, 保存报表信息到数据库...');
-          console.log(`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
-          logger.log('info',`类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`);
+          let msg = `第${tryCnt}次文件[${fileName}]上传成功, 保存报表信息到数据库...`;
+          console.log(msg);
+          logger.log('info', msg);
+          deleteFile(fileName);
+
+          let debugInfo = `类型:${params.report_type} 报表名字:${params.report_name} 操作者:${params.operator}`;
+          console.log(debugInfo);
+          logger.log('info', debugInfo);
           let bodyData = JSON.parse(body)
           let urlPath = host + bodyData.fileId;
 
@@ -280,17 +300,29 @@ function uploadFileToServer(fileName, assetID, params, token, res) {
           saveToDB(data, token, res);
         }
         else {
-          console.log('报表文件上传失败。' + body);
-          logger.log('info','报表文件上传失败。' + body);
-          if (res) {
-            util.responData(util.CST.ERR400, '报表文件上传失败' + body, res);
+          let msg = `第${tryCnt}次上传报表文件[${fileName}]失败。${body}`;
+          console.log(msg);
+          logger.log('info', msg);
+
+          // 重试几次都失败，报错
+          if (tryCnt == maxRetryCnt) {
+            if (res) {
+              deleteFile(fileName);
+              util.responData(util.CST.ERR400, msg, res); 
+            }              
+          } else {
+            // 重试
+            tryCnt += 1;
+            uploadFileToServer(fileName, assetID, params, maxRetryCnt, tryCnt, token, res);
           }
         }
       } catch (err) {
-        console.log('报表文件上传失败。' + err);
-        logger.log('info','报表文件上传失败。');
+        let msg = `报表文件[${fileName}]上传失败。${err.message}`;
+        console.log(msg);
+        logger.log('info', msg);
+        deleteFile(fileName);
         if (res) {
-          util.responData(util.CST.ERR400, '报表文件上传失败。' + err, res);
+          util.responData(util.CST.ERR400, msg, res);
         }
       }
     }
@@ -298,7 +330,12 @@ function uploadFileToServer(fileName, assetID, params, token, res) {
 }
 
 function generateReport(doc, req, res) {
+  var fileId = req.body.fileId.split('/');
   var tmpFileName = 'tmp.docx';
+  if (fileId[4]) {
+    tmpFileName = `${req.body.report_type}_${req.body.report_name}_${fileId[4]}`;
+  }
+  
   // 创建一个bufferstream
   var bufferStream = new stream.PassThrough();
   bufferStream.end(doc);
@@ -308,12 +345,13 @@ function generateReport(doc, req, res) {
   writerStream.end();
 
   writerStream.on('finish', function () {
-    console.log("写入完成。开始上传报表文件。");
-    logger.log('info','写入完成。开始上传报表文件。');
+    let msg = `写入完成。开始上传报表文件。[${tmpFileName}]`;
+    console.log(msg);
+    logger.log('info', msg);
     let assetID = req.params.id;
     let params = req.body;
     let token = req.headers['x-authorization'];
-    uploadFileToServer(tmpFileName, assetID, params, token, null);
+    uploadFileToServer(tmpFileName, assetID, params, MAX_RETRY_CNT, 1, token, null);
   });
 
   writerStream.on('error', function (err) {
@@ -337,20 +375,19 @@ function saveToDB(data, token, res) {
       util.responData(util.CST.OK200, msg, res);
     }
   }).catch((err) => {
-    if (err.response && err.response.message) {
-      let errMsg = err.response.message;
-      if (errMsg) {
-        let msg = '数据库记录更新出错 ';
+    let msg = '数据库记录更新出错 ';
+    if (err.response && err.response.data.message) {
+      let errMsg = err.response.data.message;
+      if (errMsg) {        
         logger.log('info', msg + errMsg);
-        console.log(msg + errMsg);
-              
+        console.log(msg + errMsg);              
         if (res) {
-          res.responData(util.CST.OK200, errMsg);
+          util.responData(util.CST.ERR400, errMsg, res);
         }
       }
     } else {
       if (res) {
-        res.responData(util.CST.OK200, errMsg);
+        util.responData(util.CST.ERR400, msg, res);
       }
     }
   });
