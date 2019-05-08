@@ -15,6 +15,7 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.relation.EntityRelation;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.common.data.task.TaskQuery;
 import org.thingsboard.server.dao.alarm.AlarmDao;
 import org.thingsboard.server.dao.asset.AssetService;
@@ -124,6 +125,11 @@ public class BaseTaskService extends AbstractEntityService implements TaskServic
     @Override
     public Task findTaskByOriginator(EntityId entityId) {
         return null;
+    }
+
+    @Override
+    public ListenableFuture<Task> findLatestByOriginatorAndTaskKind(TenantId tenantId, EntityId entityId, TaskKind taskKind){
+        return taskDao.findLatestByOriginatorAndType(tenantId,entityId,taskKind);
     }
 
     /**
