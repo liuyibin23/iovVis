@@ -16,6 +16,8 @@
 package org.thingsboard.rule.engine.action;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.thingsboard.rule.engine.api.RuleNode;
@@ -35,6 +37,8 @@ import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.common.msg.TbMsg;
+
+import javax.annotation.Nullable;
 
 @Slf4j
 @RuleNode(
@@ -61,12 +65,21 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
 
     @Override
     protected ListenableFuture<TaskResult> processTask(TbContext ctx, TbMsg msg) {
-        Task task = ctx.getTaskService().findTaskByOriginator(msg.getOriginator());
-        if (task == null || task.getTaskStatus().isCleared()) {
-            return createNewTask(ctx, msg);
-        } else {
-            return updateTask(ctx, msg, task);
-        }
+//        Task task = ctx.getTaskService().findTaskByOriginator(msg.getOriginator());
+//        if (task == null || task.getTaskStatus().isCleared()) {
+//            return createNewTask(ctx, msg);
+//        } else {
+//            return updateTask(ctx, msg, task);
+//        }
+        ListenableFuture<Task> latest = ctx.getTaskService().findLatestByOriginatorAndTaskKind(ctx.getTenantId(),msg.getOriginator(),config.getTaskKind());
+
+        return Futures.transformAsync(latest,task ->{
+            if(task == null || task.getTaskStatus().isCleared()){
+                return createNewTask(ctx, msg);
+            } else{
+                return updateTask(ctx, msg, task);
+            }
+        }, ctx.getDbCallbackExecutor());
     }
 
     private ListenableFuture<TaskResult> createNewTask(TbContext ctx, TbMsg msg) {
