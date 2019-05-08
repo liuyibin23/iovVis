@@ -92,13 +92,30 @@ function getData(plotCfg, option, params, token, res){
         let data = resp.data;       
         // 计算百分比
         if (plotCfg.groupType == "PERCENT"){
-            loopCnt = loopCnt > 7 ? 7 : loopCnt;
+            //loopCnt = loopCnt > 7 ? 7 : loopCnt;
 
+            loopCnt = resp.data.length > loopCnt ? loopCnt : resp.data.length;
+
+            let idx = 0;
             // 分组处理
             for (let i = 0; i < loopCnt; i++) {
+                // 跳过全为0的数据
+                if (resp.data[i][0] == 0 && resp.data[i][1] == 0){
+                    continue;
+                }
+
                 var dat = new Date(sTime[i][0]);
-                dat = util.dateFormat(dat,'yyyyMMdd');
-                option.xAxis[0].data.push(dat);
+                // 天
+                if (Number.parseInt(params.interval) >= 86400) {
+                    dat = util.dateFormat(dat,'yyyyMMdd');
+                    option.xAxis[0].data.push(dat);
+                } else if (Number.parseInt(params.interval) >= 86400/2) {
+                    dat = util.dateFormat(dat,'MMddhhmm');
+                    option.xAxis[0].data.push(dat);
+                }  else {
+                    dat = util.dateFormat(dat,'hhmmss');
+                    option.xAxis[0].data.push(dat);
+                }          
 
                 let cnt_over = 0;
                 let cnt_sum = 0;
@@ -112,7 +129,7 @@ function getData(plotCfg, option, params, token, res){
 
                 // 计算百分比  超重车占一天车总数的百分比
                 let percent = cnt_over / cnt_sum * 100;
-                option.series[0].data[i] = percent;
+                option.series[0].data[idx++] = percent.toFixed(2);
             }
         }
         else {
@@ -134,17 +151,6 @@ function getData(plotCfg, option, params, token, res){
                 }
             }
         }
-
-        
-        
-
-        // for (let i = 0; i < data.length; i++){
-        //     let col_data = data[i];
-
-        //     for (let j = 0; j < col_data.length; j++){
-        //         option.series[j].data[i] = col_data[j];
-        //     }
-        // }
         
         SendPngResponse(option, params, res);
     }).catch(err =>{

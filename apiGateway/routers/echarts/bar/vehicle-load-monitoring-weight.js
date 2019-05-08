@@ -20,8 +20,12 @@ let option = {
     xAxis: [
         {
             type: 'category',
-            data: []
-        }
+            data: [],
+            axisLabel: {
+                //interval:0,//横轴信息全部显示
+                rotate:30,//
+            }
+        }        
     ],
     yAxis: [
         {
@@ -36,6 +40,20 @@ let option = {
             name: '百分比',
             type: 'bar',
             barWidth:35,
+            itemStyle: {                // 系列级个性化
+                normal: {
+                    //color: 'red',
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: '{c}' + '%',
+                        textStyle: {
+                            fontFamily: '微软雅黑',
+                            fontWeight: 'bold'
+                        }
+                    }
+                },
+            },
             //stack: '总量',
             // itemStyle : { normal: {label : {show: true, position: 'insideRight'}}},
             data: []
