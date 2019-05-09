@@ -109,12 +109,8 @@ let option = {
        {
             name:'最低湿度',
             type:'line',
-             yAxisIndex: 1,
-             lineStyle:{
-            	normal:{
-                	color:"#90EE90"
-                }
-            },
+            yAxisIndex: 1,
+            symbol:'none',
             data:[
                 //5,6,8,9,1,2,3,6,7,5,6,8,9,1,2,3,6,7,5,6,8,9,1,2,3,6,7,5,6,8,9,1,2,3
             ]
