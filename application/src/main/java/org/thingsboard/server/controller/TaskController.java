@@ -388,7 +388,11 @@ public class TaskController extends BaseController {
     @RequestMapping(value = "/currentUser/getTasks", method = RequestMethod.GET)
     @ResponseBody
     //todo
-    public List<TaskExInfo> getTaskByAlarmId(@RequestParam String strAlarmId) throws ThingsboardException {
+    public List<TaskExInfo> getTaskByAlarmId(@RequestParam String strAlarmId,
+                                             @ApiParam(value = "查询时附带该task的指定key的属性在查询结果中返回，多个key用逗号分隔")
+                                             @RequestParam(required = false) String keys,
+                                             @ApiParam(value = "要获取属性的scope，空值表示获取所有scope")
+                                             @RequestParam(required = false) String scope) throws ThingsboardException {
         checkParameter(ALARM_ID, strAlarmId);
         try {
 
@@ -416,7 +420,7 @@ public class TaskController extends BaseController {
 
             }
 
-            return setTasksExInfo(retTask,null,null);
+            return setTasksExInfo(retTask,keys,scope);
         } catch (Exception e) {
             throw handleException(e);
         }
