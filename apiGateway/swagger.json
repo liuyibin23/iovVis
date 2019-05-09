@@ -1029,6 +1029,38 @@
           }
         }
       }
+    },
+    "/getConvertDeviceJson/{assetId}": {
+      "get": {
+        "tags": [
+          "获取转换后的device.json"
+        ],
+        "summary": "转换device.json配置文件",
+        "description": "转换device.json文件。",
+        "parameters": [
+          {
+            "name": "assetId",
+            "in": "path",
+            "required": true,
+            "description": "资产ID。",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功。"
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
     }
   },
   "securityDefinitions": {

@@ -17,6 +17,7 @@ const warningsRouter = require('./routers/warnings-router');
 const virtualDeviceRouter = require('./routers/virtual-device-router');
 const wallResultRouter = require('./routers/wall-result');
 const statisticsRouter = require('./routers/statistics-router');
+const getDeviceJsonRouter = require('./routers/get-convert-json-router');
 const defaultRouter = require('./routers/default-router');
 const logger = require('./util/logger');
 const util = require('./util/utils');
@@ -58,6 +59,7 @@ if (ret) {
     app.use('/api/v1/virtualDevice/config', virtualDeviceRouter);
     app.use('/api/v1/currentUser/wallResult', wallResultRouter);
     app.use('/api/v1/statistics', statisticsRouter);
+    app.use('/api/v1/getConvertDeviceJson', getDeviceJsonRouter);
     app.use(defaultRouter);
     app.use(errHandler);
 
