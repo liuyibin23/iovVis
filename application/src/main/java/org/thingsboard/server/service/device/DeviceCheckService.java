@@ -10,8 +10,14 @@ public interface DeviceCheckService {
 	void removeCache();
 	String getDeviceId(String deviceCodeHash);
 	void reflashDeviceCodeMap();
-	static String genDeviceCode(String assetId,String deviceIp,String deviceChannle){
-		return (assetId+"|"+deviceIp+"|"+deviceChannle).hashCode()+"";
+	static String genDeviceCode(String assetId,String deviceIp,String deviceChannle,String group,String addrNum){
+		if(group == null){
+			group = "";
+		}
+		if(addrNum == null){
+			addrNum = "";
+		}
+		return (assetId + "|" + deviceIp + "|" + deviceChannle + "|" + group +"|" + addrNum).hashCode()+"";
 	}
 
 }

@@ -83,7 +83,7 @@ public class BatchConfigController extends BaseController {
 			devicesSaveRequest.forEach((deviceInfo) -> {
 				Device device = null;
 				deviceCheckService.reflashDeviceCodeMap();
-				String deviceCode = DeviceCheckService.genDeviceCode(assetId,deviceInfo.getDeviceShareAttrib().getIp(),deviceInfo.getDeviceShareAttrib().getChannel());
+				String deviceCode = DeviceCheckService.genDeviceCode(assetId,deviceInfo.getDeviceShareAttrib().getIp(),deviceInfo.getDeviceShareAttrib().getChannel(),deviceInfo.getDeviceShareAttrib().getGroup(),deviceInfo.getDeviceShareAttrib().getAddrNum());
 				if(deviceCheckService.checkDeviceCode(deviceCode)){
 					device = deviceService.findDeviceById(null,new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
 				}

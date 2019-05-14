@@ -35,6 +35,10 @@ public class DeviceAttributesEntity {
 	private String dynamicStaticState;
 	@Column(name = "devicegroup")
 	private String deviceGroup;
+	@Column(name = "group")
+	private String group;
+	@Column(name = "addrnum")
+	private String addrNum;
 
 	public String getEntityId() {
 		return entityId;
@@ -130,5 +134,21 @@ public class DeviceAttributesEntity {
 
 	public void setDeviceGroup(String deviceGroup) {
 		this.deviceGroup = deviceGroup;
+	}
+
+	public String getGroup() {
+		return group;
+	}
+
+	public void setGroup(String group) {
+		this.group = group;
+	}
+
+	public String getAddrNum() {
+		return addrNum;
+	}
+
+	public void setAddrNum(String addrNum) {
+		this.addrNum = addrNum;
 	}
 }

@@ -125,9 +125,9 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 				continue;
 			}
 			deviceHashMap.put(calculateDeviceCode(
-					assetId.getId().toString(),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel()),
+					assetId.getId().toString(),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),optionalDeviceAttributesEntity.get().getGroup(),optionalDeviceAttributesEntity.get().getAddrNum()),
 					device.getId().getId().toString());
-			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel()));
+			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),optionalDeviceAttributesEntity.get().getGroup(),optionalDeviceAttributesEntity.get().getAddrNum()));
 		}
 	}
 
@@ -152,10 +152,18 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 	 * @Param: [assetId, deviceIp, deviceChannle]
 	 * @return: java.lang.String
 	 */
-	protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle){
-		return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode()+"";
+	protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle,String group,String addrNum){
+		if(group == null){
+			group = "";
+		}
+		if(addrNum == null){
+			addrNum = "";
+		}
+		return (assetId + "|" + deviceIp + "|" + deviceChannle + "|" + group +"|" + addrNum).hashCode()+"";
 	}
 	protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
-		return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),deviceAutoLogon.getDeviceShareAttrib().getChannel());
+		return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),
+				deviceAutoLogon.getDeviceShareAttrib().getChannel(),deviceAutoLogon.getDeviceShareAttrib().getGroup(),
+				deviceAutoLogon.getDeviceShareAttrib().getAddrNum());
 	}
 }

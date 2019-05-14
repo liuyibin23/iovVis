@@ -41,6 +41,10 @@ public class DeviceShareAttrib implements Serializable {
 	private String deviceGroup;
 	private String typeParams;
 	private String pic;
+
+	private String group;
+	@JsonProperty("addrnum")
+	private String addrNum;
 //	@JsonProperty("IMEI")
 //	private String imei;
 //	@JsonProperty("IMSI")

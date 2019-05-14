@@ -224,6 +224,8 @@ public class DeviceController extends BaseController {
 										@RequestParam String tenantIdStr,
 										@RequestParam String assetIdStr,
 										@RequestParam String deviceIpStr,
+										@RequestParam String group,
+										@RequestParam String addrNum,
 										@RequestParam String deviceChannelStr) throws ThingsboardException {
         try {
 
@@ -236,7 +238,7 @@ public class DeviceController extends BaseController {
 				throw new DatabaseException("Asset not exit!" + assetIdStr);
 			}
 
-			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr);
+			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr,group,addrNum);
 			if(deviceCheckService.checkDeviceCode(deviceCode)){
 				device.setId(new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
 			}
@@ -289,7 +291,7 @@ public class DeviceController extends BaseController {
     /**
      * 查询某设备是否存在
      * 查询规则为：
-     * AssetId,DeviceIp,DeviceChannel组合重复（其中AssetId为设备所属的设置AssetId）
+     * AssetId,DeviceIp,DeviceChannel,port,addrnum组合重复（其中AssetId为设备所属的设置AssetId）
      * 或者
      * AssetId,DeviceName组合重复（其中AssetId为设备所属的设置AssetId）
      * 则
@@ -309,11 +311,13 @@ public class DeviceController extends BaseController {
     public JsonNode checkDeviceIsExist(@RequestParam String assetIdStr,
                                        @RequestParam String deviceIpStr,
                                        @RequestParam String deviceChannelStr,
+                                       @RequestParam String group,
+                                       @RequestParam String addrNum,
                                        @RequestParam String deviceName) throws ThingsboardException{
         try {
             deviceCheckService.reflashDeviceCodeMap();
             AssetId assetId = AssetId.fromString(assetIdStr);
-            String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannelStr);
+            String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannelStr,group,addrNum);
             ObjectMapper mapper = new ObjectMapper();
             String isExistKey = "isExist";
             String isDevIpChannelExistKey = "isDevIpChannelExist";
