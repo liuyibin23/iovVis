@@ -39,6 +39,8 @@ public class DeviceAttributesEntity {
 	private String group;
 	@Column(name = "addrnum")
 	private String addrNum;
+    @Column(name = "port")
+	private Integer port;
 
 	public String getEntityId() {
 		return entityId;
@@ -151,4 +153,12 @@ public class DeviceAttributesEntity {
 	public void setAddrNum(String addrNum) {
 		this.addrNum = addrNum;
 	}
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 }

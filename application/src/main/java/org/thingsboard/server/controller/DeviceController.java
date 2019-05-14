@@ -225,6 +225,7 @@ public class DeviceController extends BaseController {
 										@RequestParam String assetIdStr,
 										@RequestParam String deviceIpStr,
 										@RequestParam String group,
+										@RequestParam String port,
 										@RequestParam String addrNum,
 										@RequestParam String deviceChannelStr) throws ThingsboardException {
         try {
@@ -238,7 +239,7 @@ public class DeviceController extends BaseController {
 				throw new DatabaseException("Asset not exit!" + assetIdStr);
 			}
 
-			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr,group,addrNum);
+			String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr, deviceChannelStr,port,addrNum);
 			if(deviceCheckService.checkDeviceCode(deviceCode)){
 				device.setId(new DeviceId(UUID.fromString(deviceCheckService.getDeviceId(deviceCode))));
 			}
@@ -259,6 +260,9 @@ public class DeviceController extends BaseController {
 			DeviceAutoLogon deviceAutoLogon = deviceBaseAttributeService.findDeviceAttribute(savedDevice);
 			deviceAutoLogon.getDeviceShareAttrib().setIp(deviceIpStr);
 			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannelStr);
+			deviceAutoLogon.getDeviceShareAttrib().setAddrNum(addrNum);
+			deviceAutoLogon.getDeviceShareAttrib().setGroup(group);
+
 			deviceBaseAttributeService.saveDeviceAttribute(savedDevice,deviceAutoLogon);
 
 			deviceCheckService.reflashDeviceCodeMap();
@@ -311,13 +315,13 @@ public class DeviceController extends BaseController {
     public JsonNode checkDeviceIsExist(@RequestParam String assetIdStr,
                                        @RequestParam String deviceIpStr,
                                        @RequestParam String deviceChannelStr,
-                                       @RequestParam String group,
+                                       @RequestParam String port,
                                        @RequestParam String addrNum,
                                        @RequestParam String deviceName) throws ThingsboardException{
         try {
             deviceCheckService.reflashDeviceCodeMap();
             AssetId assetId = AssetId.fromString(assetIdStr);
-            String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannelStr,group,addrNum);
+            String deviceCode = DeviceCheckService.genDeviceCode(assetIdStr,deviceIpStr,deviceChannelStr,port,addrNum);
             ObjectMapper mapper = new ObjectMapper();
             String isExistKey = "isExist";
             String isDevIpChannelExistKey = "isDevIpChannelExist";
