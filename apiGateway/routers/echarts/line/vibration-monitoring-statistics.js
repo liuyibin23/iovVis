@@ -7,6 +7,7 @@ let option = {
         x: 'center',
         y:'bottom'
     },
+    color:["#0000FF"],
     legend: {
         data:['加速度'],
         //orient: 'vertical',
@@ -42,6 +43,7 @@ let option = {
         {
             name:'加速度',
             type:'line',
+            symbol:'none',
           	data:[]
         }
     ]
