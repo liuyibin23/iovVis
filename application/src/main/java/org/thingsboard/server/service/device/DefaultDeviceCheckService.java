@@ -124,10 +124,14 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 				log.error("设备没有关联到设施，设备ID：" + device.getId());
 				continue;
 			}
+			String port = null;
+			if(optionalDeviceAttributesEntity.get().getPort() != null){
+                port = optionalDeviceAttributesEntity.get().getPort().toString();
+            }
 			deviceHashMap.put(calculateDeviceCode(
-					assetId.getId().toString(),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel()),
+					assetId.getId().toString(),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),port,optionalDeviceAttributesEntity.get().getAddrNum()),
 					device.getId().getId().toString());
-			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel()));
+			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),port,optionalDeviceAttributesEntity.get().getAddrNum()));
 		}
 	}
 
@@ -152,10 +156,18 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 	 * @Param: [assetId, deviceIp, deviceChannle]
 	 * @return: java.lang.String
 	 */
-	protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle){
-		return (assetId + "|" + deviceIp + "|" + deviceChannle).hashCode()+"";
+	protected String calculateDeviceCode(String assetId,String deviceIp,String deviceChannle,String port,String addrNum){
+		if(port == null){
+            port = "";
+		}
+		if(addrNum == null){
+			addrNum = "";
+		}
+		return (assetId + "|" + deviceIp + "|" + deviceChannle + "|" + port +"|" + addrNum).hashCode()+"";
 	}
 	protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
-		return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),deviceAutoLogon.getDeviceShareAttrib().getChannel());
+		return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),
+				deviceAutoLogon.getDeviceShareAttrib().getChannel(),deviceAutoLogon.getDeviceShareAttrib().getGroup(),
+				deviceAutoLogon.getDeviceShareAttrib().getAddrNum());
 	}
 }

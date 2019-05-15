@@ -405,7 +405,22 @@ CREATE OR REPLACE VIEW device_attributes AS
       CASE attribute_kv.attribute_key
           WHEN 'deviceGroup'::text THEN attribute_kv.str_v
           ELSE NULL::character varying
-      END) AS deviceGroup
+      END) AS deviceGroup,
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'group'::text THEN attribute_kv.str_v
+          ELSE NULL::character varying
+      END) AS "group",
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'addrnum'::text THEN attribute_kv.str_v
+          ELSE NULL::character varying
+      END) AS addrnum,
+  max(
+      CASE attribute_kv.attribute_key
+          WHEN 'port'::text THEN attribute_kv.long_v
+          ELSE NULL::character varying
+      END) AS port
    FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'DEVICE'::text
   GROUP BY attribute_kv.entity_id;
