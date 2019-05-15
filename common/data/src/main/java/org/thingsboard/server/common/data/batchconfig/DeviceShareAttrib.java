@@ -22,7 +22,7 @@ public class DeviceShareAttrib implements Serializable {
 	//设备类型	共享属性
 	private String type;
 	//端口	共享属性
-	private Integer port;
+	private String port;
 	//设备token
 	private String token;
 	//设备名称
