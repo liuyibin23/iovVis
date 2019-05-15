@@ -32,6 +32,9 @@ public class AssetDeviceAlarmsEntity implements BaseEntity<AssetDeviceAlarm> {
     @Column(name = "severity")
     private AlarmSeverity severity;
 
+    @Column(name = "clear_ts")
+    private Long clearTs;
+
     @Column(name = "start_ts")
     private Long startTs;
 
@@ -99,6 +102,7 @@ public class AssetDeviceAlarmsEntity implements BaseEntity<AssetDeviceAlarm> {
         alarm.setAlarmId(new AlarmId(UUIDConverter.fromString(alarmId)));
         alarm.setAdditional_info(info);
         alarm.setAlarmCount(alarmCount);
+        alarm.setAlarmClearTime(clearTs);
         alarm.setAlarmEndTime(endTs);
         alarm.setAlarmStartTime(startTs);
         alarm.setAlarmTime(startTs);

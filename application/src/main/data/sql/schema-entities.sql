@@ -488,6 +488,7 @@ CREATE OR REPLACE VIEW asset_attributes AS
 CREATE OR REPLACE VIEW asset_device_alarms AS
  SELECT alarm.id AS alarm_id,
     alarm.severity,
+    alarm.clear_ts,
     alarm.start_ts,
     alarm.end_ts,
     alarm.ack_ts,

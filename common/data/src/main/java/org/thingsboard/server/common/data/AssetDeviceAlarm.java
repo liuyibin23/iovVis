@@ -26,6 +26,7 @@ public class AssetDeviceAlarm extends SearchTextBased<AssetDeviceAlarmId> {
     private DeviceId deviceId;
     private String deviceName;
     private String deviceType;
+    private Long alarmClearTime;
     private Long alarmStartTime;
     private Long alarmEndTime;
     private Long alarmTime;
