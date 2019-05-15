@@ -418,7 +418,7 @@ CREATE OR REPLACE VIEW device_attributes AS
       END) AS addrnum,
   max(
       CASE attribute_kv.attribute_key
-          WHEN 'port'::text THEN attribute_kv.str_v
+          WHEN 'port'::text THEN attribute_kv.long_v
           ELSE NULL::character varying
       END) AS port
    FROM attribute_kv
