@@ -261,7 +261,7 @@ public class DeviceController extends BaseController {
 			deviceAutoLogon.getDeviceShareAttrib().setIp(deviceIpStr);
 			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannelStr);
 			deviceAutoLogon.getDeviceShareAttrib().setAddrNum(addrNum);
-			deviceAutoLogon.getDeviceShareAttrib().setPort(port);
+			deviceAutoLogon.getDeviceShareAttrib().setPort(Integer.valueOf(port));
 			if(group != null && !group.equals("-1")){
                 deviceAutoLogon.getDeviceShareAttrib().setGroup(group);
             }
