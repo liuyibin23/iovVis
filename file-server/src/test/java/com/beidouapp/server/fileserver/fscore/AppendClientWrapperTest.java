@@ -22,7 +22,7 @@ import static org.junit.Assert.assertArrayEquals;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FsTestApplication.class)
 @Slf4j
-public class AppendClientWrapperText {
+public class AppendClientWrapperTest {
 
     @Autowired
     FastDFSAppendClientWrapper appendClientWrapper;
@@ -70,6 +70,7 @@ public class AppendClientWrapperText {
         StorePath storePath = StorePath.praseFromUrl(fileId);
         byte[] content = fileStorageClient.downloadFile(storePath.getGroup(),storePath.getPath(),callback); //上传组装后文件
         byte[] srcContent = FileUtils.readFileToByteArray(file); //原始文件
+        log.debug("##验证原始文件和下载的文件相同..##");
         // 验证文件相同
         assertArrayEquals(content, srcContent);
     }
