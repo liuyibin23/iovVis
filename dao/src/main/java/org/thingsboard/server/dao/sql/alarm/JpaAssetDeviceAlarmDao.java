@@ -82,7 +82,7 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
         ListenableFuture<Long> periodUnhandledCount = service.submit(()->repository.count(periodUnhandledCountSpec));
         Specification<AssetDeviceAlarmsEntity> periodHandledCountSpec = getPeriodHandledCountSpec(query);
         ListenableFuture<Long> periodHandledCount = service.submit(()->repository.count(where(periodHandledCountSpec)));
-        Specification<AssetDeviceAlarmsEntity> periodNewCountSpec = getPeriodHandledCountSpec(query);
+        Specification<AssetDeviceAlarmsEntity> periodNewCountSpec = getPeriodNewCountSpec(query);
         ListenableFuture<Long> periodNewCount = service.submit(()->repository.count(where(periodNewCountSpec)));
 
         List<ListenableFuture<Long>> alarmPeriodCountFutureList = new ArrayList<>();
