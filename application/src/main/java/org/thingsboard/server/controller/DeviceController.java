@@ -224,7 +224,7 @@ public class DeviceController extends BaseController {
 										@RequestParam String tenantIdStr,
 										@RequestParam String assetIdStr,
 										@RequestParam String deviceIpStr,
-										@RequestParam String group,
+										@RequestParam(required = false) String group,
 										@RequestParam String port,
 										@RequestParam String addrNum,
 										@RequestParam String deviceChannelStr) throws ThingsboardException {
@@ -261,7 +261,10 @@ public class DeviceController extends BaseController {
 			deviceAutoLogon.getDeviceShareAttrib().setIp(deviceIpStr);
 			deviceAutoLogon.getDeviceShareAttrib().setChannel(deviceChannelStr);
 			deviceAutoLogon.getDeviceShareAttrib().setAddrNum(addrNum);
-			deviceAutoLogon.getDeviceShareAttrib().setGroup(group);
+			deviceAutoLogon.getDeviceShareAttrib().setPort(port);
+			if(group != null && !group.equals("-1")){
+                deviceAutoLogon.getDeviceShareAttrib().setGroup(group);
+            }
 
 			deviceBaseAttributeService.saveDeviceAttribute(savedDevice,deviceAutoLogon);
 
