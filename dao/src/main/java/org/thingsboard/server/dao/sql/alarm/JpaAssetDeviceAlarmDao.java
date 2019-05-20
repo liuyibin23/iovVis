@@ -124,9 +124,9 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
     private Specifications<AssetDeviceAlarmsEntity> getPeriodUnhandledCountSpec(AssetDeviceAlarmInPeriodQuery query){
         Specification<AssetDeviceAlarmsEntity> clearTsSpec = (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> andPredicates = new ArrayList<>();
-            if(query.getPeriodEndTs() != null){
-                Predicate assetIdPredicate = criteriaBuilder.greaterThan(root.get("clearTs"),query.getPeriodEndTs());
-                Predicate assetIdPredicate1 = criteriaBuilder.lessThan(root.get("startTs"),query.getPeriodEndTs());
+            if(query.getPeriodStartTs() != null){
+                Predicate assetIdPredicate = criteriaBuilder.greaterThan(root.get("clearTs"),query.getPeriodStartTs());
+                Predicate assetIdPredicate1 = criteriaBuilder.lessThan(root.get("startTs"),query.getPeriodStartTs());
                 andPredicates.add(assetIdPredicate);
                 andPredicates.add(assetIdPredicate1);
             }
