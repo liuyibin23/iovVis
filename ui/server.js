@@ -28,11 +28,11 @@ const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
 // const forwardHost = 'cf.beidouapp.com';
-const forwardHost = '192.168.1.138';
+const forwardHost = 'localhost';//'192.168.1.138';
 const forwardPort = 8080;
 
 const ruleNodeUiforwardHost = 'localhost';
-const ruleNodeUiforwardPort = 5000;
+const ruleNodeUiforwardPort = 8080;//5000;
 
 const app = express();
 const server = http.createServer(app);

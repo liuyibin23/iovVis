@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.DeviceAlarm;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.UUIDConverter;
+import org.thingsboard.server.common.data.alarm.AssetDeviceAlarmInPeriodQuery;
 import org.thingsboard.server.common.data.alarmstatistics.*;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
@@ -23,6 +24,7 @@ import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -258,4 +260,39 @@ public class AlarmStatisticsController extends BaseController {
             throw handleException(e);
         }
     }
+
+    @ApiOperation(value = "查询指定时间区域内的告警统计", notes = "统计结果包括：1.指定时间区间，结束时间之前未处理的告警数量。2.指定时间区间内处理的告警数量。3.指定时间区间内新增的告警数量")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN','CUSTOMER_USER')")
+    @RequestMapping(path = "/alarm/statistics/alarmPeriodCount", method = RequestMethod.GET)
+    @ResponseBody
+    public AlarmPeriodCount getAlarmPeriodCount(@RequestParam Long startTime,@RequestParam Long endTime)throws ThingsboardException{
+        try {
+            switch (getCurrentUser().getAuthority()) {
+                case SYS_ADMIN:
+//                    AssetDeviceAlarmInPeriodQuery.builder()
+//                            .tenantId(getTenantId());
+                    break;
+                case TENANT_ADMIN:
+                    AssetDeviceAlarmInPeriodQuery.builder()
+                            .tenantId(getTenantId());
+                    break;
+                case CUSTOMER_USER:
+                    AssetDeviceAlarmInPeriodQuery.builder()
+                            .tenantId(getTenantId())
+                            .customerId(getCurrentUser().getCustomerId());
+                    break;
+                case REFRESH_TOKEN:
+                    throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+            }
+            AssetDeviceAlarmInPeriodQuery query = AssetDeviceAlarmInPeriodQuery.builder()
+                    .periodStartTs(startTime)
+                    .periodEndTs(endTime)
+                    .build();
+
+            return alarmService.getAlarmPeriodCount(query).get();
+        }  catch (Exception e) {
+            throw handleException(e);
+        }
+    }
+
 }

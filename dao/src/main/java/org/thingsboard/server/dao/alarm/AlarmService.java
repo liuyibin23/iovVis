@@ -134,5 +134,8 @@ public interface AlarmService {
     List<Alarm> findAlarmByOriginatorTypeAndStatus(EntityType entityType,AlarmStatus alarmStatus);
 
     ListenableFuture<TimePageData<AssetDeviceAlarm>> findAssetDeviceAlarms(AssetDeviceAlarmQuery query, TimePageLink pageLink);
+
     ListenableFuture<Long> getAssetDeviceAlarmsCount(AssetDeviceAlarmQuery query, TimePageLink pageLink);
+
+    ListenableFuture<AlarmPeriodCount> getAlarmPeriodCount(AssetDeviceAlarmInPeriodQuery query);
 }

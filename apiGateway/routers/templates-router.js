@@ -92,6 +92,37 @@ router.delete('/:id', async function (req, res) {
     });
 })
 
+function deleteOldTemplate(fileId){
+  let host = util.getFSVR();
+  let deleteFileHost = host + 'api/file/delete/';
+  try {
+    request.post({ url: deleteFileHost, form: { fileId: fileId } }, function (err, httpResponse, body) {
+      if (err) {
+        console.log('报表模板删除失败。');
+      }
+      else {
+        let result = JSON.parse(body);
+        if (result.success|| result.code ==='error.fastdfs.file_delete_failed'
+        || result.code === 'error.fastdfs.file_not_exist') {
+          console.log('报表模板删除成功。');
+        }
+      }
+    });
+  } catch (err) {
+    console.log('报表模板删除失败。');
+  }
+}
+
+function checkIfExist(template_name, data){
+  for (let i = 0; i < data.length; i++) {
+    if (template_name === data[i].template_name) {
+      return i;
+    }
+  }
+
+  return -1;
+}
+
 function postTemplates(assetID, resp, req, res) {
   let fileInfo = req.files.template_file;
   let info = {
@@ -118,21 +149,30 @@ function postTemplates(assetID, resp, req, res) {
       if (JSON.parse(body).success) {
         // 保存到属性表
         let url = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
-        let bodyData = JSON.parse(body)
+        let bodyData = JSON.parse(body);
         let str = [{
           "template_name": req.body.template_name,
           "template_url": host + bodyData.fileId,
           "fileId":bodyData.fileId
         }];
 
-          // 遍历，查找TEMPLATES属性
+        // 遍历，查找TEMPLATES属性
         for (var i = 0; i < resp.data.length; i++) {
           let info = resp.data[i];
           if (info.key === 'TEMPLATES') {
-            let data = JSON.parse(info.value);
-            data.forEach(_dt => {
-              str.push(_dt);
-            })
+            let data = JSON.parse(info.value);         
+
+            // 如果名字已经存在，删除文件服务器的内容，替换
+            let idx = checkIfExist(req.body.template_name, data);
+            if (idx != -1) {
+              deleteOldTemplate(data[idx].fileId);
+              data[idx] = str[0];
+              str = data;
+            } else {
+              data.forEach(_dt => {
+                str.push(_dt);
+              })
+            }
             break;
           }
         }
