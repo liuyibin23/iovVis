@@ -39,12 +39,17 @@ public class ReportController extends BaseController {
      * @param report
      */
     private void checkReport(Report report) throws ThingsboardException {
-        if (report.getAssetId() != null) {
-            checkAssetId(report.getAssetId());
+        if (report.getAssetId() == null) {
+            throw new IllegalArgumentException("assetId must not be null");
         }
         if (!getCurrentUser().getFirstName().equals(report.getUserName())) {
-            throw new IllegalArgumentException("userName not correct!");
+            throw new IllegalArgumentException("userName not correct, must be current user!");
         }
+        report.setUserId(getCurrentUser().getId());
+
+        Asset asset = checkAssetId(report.getAssetId());
+        report.setTenantId(asset.getTenantId());
+        report.setCustomerId(asset.getCustomerId());
     }
 
     @ApiOperation(value = "新增或者更新报表")
@@ -63,9 +68,9 @@ public class ReportController extends BaseController {
             }
 
             //设置当前用户
-            report.setTenantId(getCurrentUser().getTenantId());
-            report.setCustomerId(getCurrentUser().getCustomerId());
-            report.setUserId(getCurrentUser().getId());
+//            report.setTenantId(getCurrentUser().getTenantId());
+//            report.setCustomerId(getCurrentUser().getCustomerId());
+//            report.setUserId(getCurrentUser().getId());
 
             checkReport(report);
             return reportService.createOrUpdate(report);

@@ -25,7 +25,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.rule.engine.metadata.TbGetEntityAttrNodeConfiguration;
 import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.alarm.*;
 import org.thingsboard.server.common.data.asset.Asset;
@@ -642,7 +641,7 @@ public class AssetController extends BaseController {
                         }
                         break;
                     case CUSTOMER_USER:
-                        if (device.getCustomerId().equals(getCurrentUser())) {
+                        if (device.getCustomerId().equals(getCurrentUser().getCustomerId())) {
                             if (assetId != null) {
                                 if (checkDeviceBelongAsset(assetId, device.getId()))
                                     deviceList.add(device);
