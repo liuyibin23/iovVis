@@ -24,7 +24,6 @@ import org.thingsboard.server.dao.exception.DataValidationException;
 import org.thingsboard.server.dao.model.sql.DeviceAttributesEntity;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 @RestController
@@ -267,27 +266,38 @@ public class AlarmStatisticsController extends BaseController {
     @ResponseBody
     public AlarmPeriodCount getAlarmPeriodCount(@RequestParam Long startTime,@RequestParam Long endTime)throws ThingsboardException{
         try {
+            AssetDeviceAlarmInPeriodQuery query = null;
             switch (getCurrentUser().getAuthority()) {
                 case SYS_ADMIN:
 //                    AssetDeviceAlarmInPeriodQuery.builder()
 //                            .tenantId(getTenantId());
+                    query = AssetDeviceAlarmInPeriodQuery.builder()
+                            .periodStartTs(startTime)
+                            .periodEndTs(endTime)
+                            .build();
                     break;
                 case TENANT_ADMIN:
-                    AssetDeviceAlarmInPeriodQuery.builder()
-                            .tenantId(getTenantId());
+                    query = AssetDeviceAlarmInPeriodQuery.builder()
+                            .tenantId(getTenantId())
+                            .periodStartTs(startTime)
+                            .periodEndTs(endTime)
+                            .build();
                     break;
                 case CUSTOMER_USER:
-                    AssetDeviceAlarmInPeriodQuery.builder()
+                    query = AssetDeviceAlarmInPeriodQuery.builder()
                             .tenantId(getTenantId())
-                            .customerId(getCurrentUser().getCustomerId());
+                            .customerId(getCurrentUser().getCustomerId())
+                            .periodEndTs(endTime)
+                            .periodStartTs(startTime)
+                            .build();
                     break;
                 case REFRESH_TOKEN:
                     throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
+                default:
+                    throw new ThingsboardException(ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+
             }
-            AssetDeviceAlarmInPeriodQuery query = AssetDeviceAlarmInPeriodQuery.builder()
-                    .periodStartTs(startTime)
-                    .periodEndTs(endTime)
-                    .build();
+
 
             return alarmService.getAlarmPeriodCount(query).get();
         }  catch (Exception e) {
