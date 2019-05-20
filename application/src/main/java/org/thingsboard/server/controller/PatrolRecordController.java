@@ -189,9 +189,13 @@ public class PatrolRecordController extends BaseController {
             } else if (originatorType.equals(EntityType.ASSET.toString())) {
                 entityId = new AssetId(UUID.fromString(originatorId));
             } else {
-                throw handleException(new IllegalArgumentException(String.format("Originator Type must be [%s, %s]", EntityType.ASSET, EntityType.DEVICE)));
+                throw handleException(new IllegalArgumentException(String.format("Parameter originatorType must be [%s, %s]", EntityType.ASSET, EntityType.DEVICE)));
             }
             checkEntityId(entityId);
+        } else {
+            if (originatorId != null) {
+                throw handleException(new IllegalArgumentException(String.format("Parameter originatorType can't be null")));
+            }
         }
 
         TimePageLink pageLink = createPageLink(limit, startTime, entTime, ascOrder, offset);
