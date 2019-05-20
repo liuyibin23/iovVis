@@ -144,6 +144,10 @@ public class JpaAssetDeviceAlarmDao extends JpaAbstractDao<AssetDeviceAlarmsEnti
 
         Specification<AssetDeviceAlarmsEntity> statusSpec = (root, criteriaQuery, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if(query.getPeriodStartTs() != null){
+                Predicate predicate = criteriaBuilder.lessThan(root.get("startTs"),query.getPeriodStartTs());
+                predicates.add(predicate);
+            }
             Predicate statusPredicate = criteriaBuilder.equal(root.get("status").as(String.class),"ACTIVE_UNACK");
             predicates.add(statusPredicate);
             if (query.getCustomerId() != null) {
