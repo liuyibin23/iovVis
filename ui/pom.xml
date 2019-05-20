@@ -23,7 +23,7 @@
         <version>2.2.0</version>
         <artifactId>thingsboard</artifactId>
     </parent>
-    <groupId>org.thingsboard</groupId>
+    <groupId>org.BeiDouApp</groupId>
     <artifactId>ui</artifactId>
     <packaging>jar</packaging>
 

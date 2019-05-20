@@ -35,6 +35,7 @@
     "isomorphic-fetch": "^2.2.1",
     "mochawesome": "^3.1.2",
     "node-echarts": "^1.1.4",
+    "peer": "^0.2.10",
     "request": "^2.88.0",
     "supertest": "^4.0.2",
     "swagger-ui-express": "^4.0.2",

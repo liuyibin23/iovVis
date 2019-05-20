@@ -419,7 +419,7 @@ CREATE OR REPLACE VIEW device_attributes AS
   max(
       CASE attribute_kv.attribute_key
           WHEN 'port'::text THEN attribute_kv.long_v
-          ELSE NULL::character varying
+          ELSE null::bigint
       END) AS port
    FROM attribute_kv
   WHERE attribute_kv.entity_type::text = 'DEVICE'::text
@@ -488,6 +488,7 @@ CREATE OR REPLACE VIEW asset_attributes AS
 CREATE OR REPLACE VIEW asset_device_alarms AS
  SELECT alarm.id AS alarm_id,
     alarm.severity,
+    alarm.clear_ts,
     alarm.start_ts,
     alarm.end_ts,
     alarm.ack_ts,
