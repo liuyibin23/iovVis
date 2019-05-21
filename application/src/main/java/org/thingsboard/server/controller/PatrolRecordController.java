@@ -74,7 +74,7 @@ public class PatrolRecordController extends BaseController {
                 }
                 break;
             case CUSTOMER_USER:
-                if (!taskOptional.get().getCustomerId().equals(getCurrentUser())) {
+                if (!taskOptional.get().getCustomerId().equals(getCurrentUser().getCustomerId())) {
                     throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
                 }
                 break;
