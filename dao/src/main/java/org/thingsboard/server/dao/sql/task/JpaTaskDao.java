@@ -1,5 +1,6 @@
 package org.thingsboard.server.dao.sql.task;
 
+import com.google.common.base.Strings;
 import com.google.common.util.concurrent.ListenableFuture;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,10 @@ public class JpaTaskDao extends JpaAbstractDao<TaskEntity, Task> implements Task
             if (query.getCustomerId() != null) {
                 Predicate customIdPredicate = criteriaBuilder.equal(root.get("customerId"), UUIDConverter.fromTimeUUID(query.getCustomerId().getId()));
                 predicates.add(customIdPredicate);
+            }
+            if(query.getAssetId()!=null){
+                Predicate assetIdPredicate = criteriaBuilder.equal(root.get("assetId"), UUIDConverter.fromTimeUUID(query.getAssetId()));
+                predicates.add(assetIdPredicate);
             }
             if (query.getTaskKind() != null) {
                 Predicate taskKindPredicate = criteriaBuilder.equal(root.get("taskKind"), query.getTaskKind());
