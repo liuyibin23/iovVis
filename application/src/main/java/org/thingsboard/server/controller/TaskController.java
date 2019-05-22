@@ -83,6 +83,7 @@ public class TaskController extends BaseController {
     @ResponseBody
     public TimePageData<TaskExInfo> getTasks(@RequestParam(required = false) String tenantIdStr,
                                              @RequestParam(required = false) String customerIdStr,
+                                             @RequestParam(required = false) String assetIdStr,
                                              @RequestParam(required = false) String userIdStr,
                                              @RequestParam(required = false) String userName,
                                              @RequestParam(required = false) TaskKind taskKind,
@@ -96,44 +97,14 @@ public class TaskController extends BaseController {
                                              @RequestParam(required = false) String keys,
                                              @ApiParam(value = "要获取属性的scope，空值表示获取所有scope")
                                              @RequestParam(required = false) String scope) throws ThingsboardException {
+        Map<String,EntityId> tcIdMap = checkTenantIdAndCustomerIdParams(tenantIdStr,customerIdStr);
+        TenantId tenantId = (TenantId) tcIdMap.get(KEY_TENANT_ID);
+        CustomerId customerId = (CustomerId) tcIdMap.get(KEY_CUSTOMER_ID);
 
-//        TaskKind taskKind = null;
-//        if (!Strings.isNullOrEmpty(taskKindStr)) {
-//            taskKind = TaskKind.valueOf(taskKindStr);
-//        }
-
-        TenantId tenantId = null;
-        CustomerId customerId = null;
-
-        if (!Strings.isNullOrEmpty(tenantIdStr)) {
-            tenantId = new TenantId(UUID.fromString(tenantIdStr));
-            checkTenantId(tenantId);
-        }
-        if (!Strings.isNullOrEmpty(customerIdStr)) {
-            customerId = new CustomerId(UUID.fromString(customerIdStr));
-            if (tenantId != null) {
-                checkCustomerId(tenantId, customerId);
-            } else {
-                checkCustomerId(customerId);
-            }
-        }
-
-        /**
-         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
-         */
-        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-            //do nothing
-        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-        } else {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-            if (customerId == null) {
-                customerId = getCurrentUser().getCustomerId();
-            }
+        UUID assetId = null;
+        if(!Strings.isNullOrEmpty(assetIdStr)){
+            assetId = UUID.fromString(assetIdStr);
+            checkAssetId(tenantId,customerId,new AssetId(assetId));
         }
 
         List<UserId> userIds = null;
@@ -175,6 +146,7 @@ public class TaskController extends BaseController {
 
         TaskQuery query = TaskQuery.builder()
                 .customerId(customerId)
+                .assetId(assetId)
                 .tenantId(tenantId)
                 .taskKind(taskKind)
                 .statusFilter(statusFilter)

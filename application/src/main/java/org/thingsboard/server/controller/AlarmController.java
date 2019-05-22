@@ -218,17 +218,21 @@ public class AlarmController extends BaseController {
 				device = deviceService.findDeviceById(null, new DeviceId(toUUID(strDeviceId)));
 				break;
 			case CUSTOMER_USER:
-				List<DeviceId> tmpList = new ArrayList<DeviceId>();
-				tmpList.add(new DeviceId(toUUID(strDeviceId)));
-				try {
-					List<Device> devices = deviceService.findDevicesByTenantIdCustomerIdAndIdsAsync(getCurrentUser().getTenantId(),
-							getCurrentUser().getCustomerId(),
-							tmpList).get();
-					if (null != devices && devices.size() > 0)
-						device = devices.get(1);
-				} catch (Exception e) {
-					e.printStackTrace();
+				device = deviceService.findDeviceById(getCurrentUser().getTenantId(), new DeviceId(toUUID(strDeviceId)));
+				if(!device.getCustomerId().equals(getCurrentUser().getCustomerId())){
+					throw new ThingsboardException("this device do not belong to current user",ThingsboardErrorCode.PERMISSION_DENIED);
 				}
+//				List<DeviceId> tmpList = new ArrayList<DeviceId>();
+//				tmpList.add(new DeviceId(toUUID(strDeviceId)));
+//				try {
+//					List<Device> devices = deviceService.findDevicesByTenantIdCustomerIdAndIdsAsync(getCurrentUser().getTenantId(),
+//							getCurrentUser().getCustomerId(),
+//							tmpList).get();
+//					if (null != devices && devices.size() > 0)
+//						device = devices.get(1);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
 				break;
 			default:
 				throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);

@@ -10,11 +10,13 @@ import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.patrol.PatrolRecord;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by ztao at 2019/4/13 13:56.
  */
-public interface PatroRecordDao {
-    ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, EntityId originatorId, String type, TimePageLink pageLink);
+public interface PatrolRecordDao {
+    ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, UUID originatorId, String originatorType, String type, TimePageLink pageLink);
+
     void delete(PatrolId patrolId);
 }
