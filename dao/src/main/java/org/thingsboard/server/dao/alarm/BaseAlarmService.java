@@ -516,7 +516,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
                                 alarmHandledCount.indeterminateUnclearedWithinDuePlus(1);
                             }
                         }
-                    } else {
+                    }
+                    if(DateAndTimeUtils.isBefore(alarm.getStartTs(), startTime)){
                         if (alarm.getStatus().isCleared()) {
                             alarmHandledCount.clearedOverduePlus(1);
                         } else if (alarm.getStatus().isAck()) {
