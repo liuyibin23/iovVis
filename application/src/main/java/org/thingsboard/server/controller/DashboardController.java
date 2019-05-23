@@ -15,23 +15,11 @@
  */
 package org.thingsboard.server.controller;
 
-import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
-import org.thingsboard.server.common.data.Customer;
-import org.thingsboard.server.common.data.Dashboard;
-import org.thingsboard.server.common.data.DashboardInfo;
-import org.thingsboard.server.common.data.EntityType;
-import org.thingsboard.server.common.data.ShortCustomerInfo;
+import org.springframework.web.bind.annotation.*;
+import org.thingsboard.server.common.data.*;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -41,9 +29,11 @@ import org.thingsboard.server.common.data.page.TextPageData;
 import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
+import org.thingsboard.server.common.data.security.Authority;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -54,6 +44,41 @@ public class DashboardController extends BaseController {
     @Value("${dashboard.max_datapoints_limit}")
     private long maxDatapointsLimit;
 
+
+    /**
+    * @Description: 添加更新DashboardConfig
+    * @Author: ShenJi
+    * @Date: 2019/5/23
+    * @Param: [groupType, groupId, dashboardConfig]
+    * @return: org.thingsboard.server.common.data.DashboardConfig
+    */
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/dashboard/DashboardConfig", method = RequestMethod.POST)
+	@ResponseBody
+	public DashboardConfig setDashBoardConfig(@RequestParam Authority groupType,
+											  @RequestParam String groupId,
+											  @RequestBody DashboardConfig dashboardConfig){
+		checkAuthority(groupType,groupId);
+		dashboardConfig.setGroupId(UUID.fromString(groupId));
+
+		return dashboardService.saveDashboardConfig(dashboardConfig);
+	}
+    /**
+    * @Description: 获取DashBoardConfig
+    * @Author: ShenJi
+    * @Date: 2019/5/22
+    * @Param: [groupType, groupId, dashboardConfig]
+    * @return: org.thingsboard.server.common.data.DashboardConfig
+    */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/dashboard/DashboardConfig", method = RequestMethod.GET)
+    @ResponseBody
+    public DashboardConfig getDashBoardConfig(@RequestParam Authority groupType,
+											  @RequestParam String groupId){
+        checkAuthority(groupType,groupId);
+        return dashboardService.findDashboardConfigByGroupId(UUID.fromString(groupId));
+
+    }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
     @RequestMapping(value = "/dashboard/serverTime", method = RequestMethod.GET)

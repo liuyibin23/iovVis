@@ -3,15 +3,10 @@ package org.thingsboard.server.controller;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.thingsboard.server.common.data.Customer;
 import org.thingsboard.server.common.data.VideoInfo;
-import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
-import org.thingsboard.server.common.data.id.CustomerId;
-import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.security.Authority;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -63,35 +58,5 @@ public class VideoController extends BaseController{
 
 	}
 
-	private Boolean checkAuthority(Authority groupType,String groupId) throws ThingsboardException {
-		switch (groupType) {
-			case SYS_ADMIN:
-				if (!getCurrentUser().getAuthority().equals(groupType))
-					throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
-				break;
-			case TENANT_ADMIN:
-				if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN))
-					break;
-				if (getTenantId().equals(new TenantId(UUID.fromString(groupId))))
-					break;
-				throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
-			case CUSTOMER_USER:
-				switch (getCurrentUser().getAuthority()) {
-					case SYS_ADMIN:
-						break;
-					case TENANT_ADMIN:
-						Optional<Customer> optionalCustomer = Optional.ofNullable(customerService.findCustomerById(null,new CustomerId(UUID.fromString(groupId))));
-						if (!optionalCustomer.isPresent())
-							throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
-						if(optionalCustomer.get().getTenantId().equals(getTenantId()))
-							break;
-					case CUSTOMER_USER:
-						if (getCurrentUser().getCustomerId().equals(new CustomerId(UUID.fromString(groupId))))
-							break;
-						throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
-				}
-				break;
-		}
-		return Boolean.TRUE;
-	}
+
 }

@@ -16,6 +16,7 @@
 package org.thingsboard.server.dao.dashboard;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import org.thingsboard.server.common.data.DashboardConfig;
 import org.thingsboard.server.common.data.Dashboard;
 import org.thingsboard.server.common.data.DashboardInfo;
 import org.thingsboard.server.common.data.id.CustomerId;
@@ -26,7 +27,11 @@ import org.thingsboard.server.common.data.page.TextPageLink;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 
+import java.util.UUID;
+
 public interface DashboardService {
+    DashboardConfig findDashboardConfigByGroupId(UUID groupId);
+	DashboardConfig saveDashboardConfig(DashboardConfig config);
     
     Dashboard findDashboardById(TenantId tenantId, DashboardId dashboardId);
 

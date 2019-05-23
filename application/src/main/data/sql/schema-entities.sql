@@ -293,7 +293,10 @@ CREATE TABLE IF NOT EXISTS video_info (
 	video_info varchar,
 	ex_info varchar
 );
-
+CREATE TABLE IF NOT EXISTS dashboard_config (
+    id varchar(31) NOT NULL PRIMARY KEY,
+	dashboard_config varchar
+);
 CREATE TABLE IF NOT EXISTS report
 (
     id varchar(31) NOT NULL PRIMARY KEY,

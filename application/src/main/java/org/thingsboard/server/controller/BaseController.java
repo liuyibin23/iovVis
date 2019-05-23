@@ -818,6 +818,39 @@ public abstract class BaseController {
         return error != null ? (Exception.class.isInstance(error) ? (Exception) error : new Exception(error)) : null;
     }
 
+    public Boolean checkAuthority(Authority groupType,String groupId) throws ThingsboardException {
+        switch (groupType) {
+            case SYS_ADMIN:
+                if (!getCurrentUser().getAuthority().equals(groupType))
+                    throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+                break;
+            case TENANT_ADMIN:
+                if (getCurrentUser().getAuthority().equals(Authority.SYS_ADMIN))
+                    break;
+                if (getTenantId().equals(new TenantId(UUID.fromString(groupId))))
+                    break;
+                throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+            case CUSTOMER_USER:
+                switch (getCurrentUser().getAuthority()) {
+                    case SYS_ADMIN:
+                        break;
+                    case TENANT_ADMIN:
+                        Optional<Customer> optionalCustomer = Optional.ofNullable(customerService.findCustomerById(null,new CustomerId(UUID.fromString(groupId))));
+                        if (!optionalCustomer.isPresent())
+                            throw new ThingsboardException(ThingsboardErrorCode.INVALID_ARGUMENTS);
+                        if(optionalCustomer.get().getTenantId().equals(getTenantId()))
+                            break;
+                        else
+							throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+                    case CUSTOMER_USER:
+                        if (getCurrentUser().getCustomerId().equals(new CustomerId(UUID.fromString(groupId))))
+                            break;
+                        throw new ThingsboardException(ThingsboardErrorCode.PERMISSION_DENIED);
+                }
+                break;
+        }
+        return Boolean.TRUE;
+    }
     private <E extends HasName, I extends EntityId> void pushEntityActionToRuleEngine(I entityId, E entity, User user, CustomerId customerId,
                                                                                       ActionType actionType, Object... additionalInfo) {
         String msgType = null;
