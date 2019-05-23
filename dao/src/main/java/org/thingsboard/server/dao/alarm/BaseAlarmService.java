@@ -619,6 +619,7 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
         return alarmDao.findAlarmDevicesCount(startTs, endTs);
     }
 
+
     @Override
     public List<AlarmDevicesCount> findAlarmDevicesCountByTenantId(TenantId tenantId, long startTs, long endTs) {
         return alarmDao.findAlarmDevicesCountByTenantId(tenantId, startTs, endTs);
