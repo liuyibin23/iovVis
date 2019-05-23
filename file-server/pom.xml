@@ -21,6 +21,8 @@
         <!--<spring-cloud.version>Finchley.SR1</spring-cloud.version>-->
         <!--<spring-cloud.version>1.4.3.RELEASE</spring-cloud.version>-->
         <spring-cloud.version>Edgware.SR5</spring-cloud.version>
+        <swagger2.version>2.9.2</swagger2.version>
+        <guava.version>20.0</guava.version>
     </properties>
 
     <dependencies>
@@ -32,6 +34,12 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-openfeign</artifactId>
             <!--<version>${spring-cloud.version}</version>-->
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
@@ -43,10 +51,40 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!--fastdfs-->
         <dependency>
             <groupId>com.github.tobato</groupId>
             <artifactId>fastdfs-client</artifactId>
             <version>${fastdfs-client.version}</version>
+        </dependency>
+        <!--fastdfs end-->
+
+        <!--swagger-->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger2.version}</version>
+        </dependency>
+        <!--swagger end-->
+        <!--spring-cloud-starter-openfeign中和springfox-swagger2中引用了不同版本的guava,-->
+        <!--spring-cloud-starter-openfeign中为guava18.0,springfox-swagger2中为guava20.0，-->
+        <!--所以分别排出以上两个包对guava的引用，这里统一引用guava20.0-->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
     </dependencies>
 
