@@ -35,5 +35,6 @@ public class PatrolRecord extends BaseData<PatrolId> implements HasTenantId, Has
         this.originator = record.getOriginator();
         this.assetId = record.getAssetId();
         this.info = record.getInfo();
+        this.recordType = record.getRecordType();
     }
 }

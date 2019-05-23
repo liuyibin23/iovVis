@@ -8,6 +8,7 @@ import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.id.UserId;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by ztao at 2019/4/18 14:41.
@@ -21,6 +22,7 @@ public class TaskQuery {
 
     TenantId tenantId;
     CustomerId customerId;
+    UUID assetId;
     List<UserId> userIdList;
     TaskKind taskKind;
     StatusFilter statusFilter;

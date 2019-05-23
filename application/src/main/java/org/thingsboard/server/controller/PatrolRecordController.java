@@ -21,10 +21,7 @@ import org.thingsboard.server.common.data.security.Authority;
 import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
@@ -146,61 +143,24 @@ public class PatrolRecordController extends BaseController {
             @RequestParam(required = false) Long startTime,
             @RequestParam(required = false) Long entTime,
             @RequestParam(required = false, defaultValue = "false") boolean ascOrder) throws ThingsboardException {
+        Map<String, EntityId> tcIdMap = checkTenantIdAndCustomerIdParams(tenantIdStr, customerIdStr);
+        TenantId tenantId = (TenantId) tcIdMap.get(KEY_TENANT_ID);
+        CustomerId customerId = (CustomerId) tcIdMap.get(KEY_CUSTOMER_ID);
 
-        TenantId tenantId = null;
-        CustomerId customerId = null;
-
-        if (!Strings.isNullOrEmpty(tenantIdStr)) {
-            tenantId = new TenantId(UUID.fromString(tenantIdStr));
-            checkTenantId(tenantId);
+        UUID entityId = null;
+        if (!Strings.isNullOrEmpty(originatorId)) {
+            entityId = UUID.fromString(originatorId);
         }
-        if (!Strings.isNullOrEmpty(customerIdStr)) {
-            customerId = new CustomerId(UUID.fromString(customerIdStr));
-            if (tenantId != null) {
-                checkCustomerId(tenantId, customerId);
-            } else {
-                checkCustomerId(customerId);
-            }
-        }
-
-        /**
-         * if tenantId and customerId NOT specified, we use the tenantId and customerId of the current logined-user.
-         */
-        if (getCurrentUser().getAuthority() == Authority.SYS_ADMIN) {
-            //do nothing
-        } else if (getCurrentUser().getAuthority() == Authority.TENANT_ADMIN) {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-        } else {
-            if (tenantId == null) {
-                tenantId = getCurrentUser().getTenantId();
-            }
-            if (customerId == null) {
-                customerId = getCurrentUser().getCustomerId();
-            }
-        }
-
-        EntityId entityId = null;
-        if (originatorType != null) {
-            checkParameter("originatorId", originatorId);
-            if (originatorType.equals(EntityType.DEVICE.toString())) {
-                entityId = new DeviceId(UUID.fromString(originatorId));
-            } else if (originatorType.equals(EntityType.ASSET.toString())) {
-                entityId = new AssetId(UUID.fromString(originatorId));
-            } else {
+        if (!Strings.isNullOrEmpty(originatorType)) {
+            if (!originatorType.equals(EntityType.DEVICE.toString()) &&
+                    !originatorType.equals(EntityType.ASSET.toString())) {
                 throw handleException(new IllegalArgumentException(String.format("Parameter originatorType must be [%s, %s]", EntityType.ASSET, EntityType.DEVICE)));
-            }
-            checkEntityId(entityId);
-        } else {
-            if (originatorId != null) {
-                throw handleException(new IllegalArgumentException(String.format("Parameter originatorType can't be null")));
             }
         }
 
         TimePageLink pageLink = createPageLink(limit, startTime, entTime, ascOrder, offset);
         try {
-            ListenableFuture<List<PatrolRecord>> patrolRecordFuture = patrolRecordService.findAllByOriginatorAndType(tenantId, customerId, entityId, recordType, pageLink);
+            ListenableFuture<List<PatrolRecord>> patrolRecordFuture = patrolRecordService.findAllByOriginatorAndType(tenantId, customerId, entityId, originatorType, recordType, pageLink);
             List<PatrolRecordEx> patrolRecordExList = Futures.transform(patrolRecordFuture, patrolRecords -> patrolRecords.stream().map(patrolRecord -> {
                 PatrolRecordEx patrolRecordEx = new PatrolRecordEx(patrolRecord);
                 AssetId assetId = patrolRecord.getAssetId();

@@ -26,6 +26,7 @@ import org.thingsboard.server.dao.sql.patrol.PatrolRecordJpaRepository;
 import org.thingsboard.server.dao.task.TaskService;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
 import static org.thingsboard.server.common.data.UUIDConverter.fromTimeUUID;
@@ -186,27 +187,30 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     }
 
     private PatrolRecord setAssetIdToPatrolRecord(PatrolRecord patrolRecord) throws ExecutionException, InterruptedException {
-        if (patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)) {
-            patrolRecord.setAssetId((AssetId) patrolRecord.getOriginator());
-        } else if (patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
-            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) patrolRecord.getOriginator()).get();
-            if (assets.size() > 0) {
-                patrolRecord.setAssetId(assets.get(0).getId());
-            }
-        }
+        patrolRecord.setAssetId(new AssetId(patrolRecord.getOriginator().getId()));
+
+//        if (patrolRecord.getOriginator().getEntityType().equals(EntityType.ASSET)) {
+//            patrolRecord.setAssetId((AssetId) patrolRecord.getOriginator());
+//        } else if (patrolRecord.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
+//            List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) patrolRecord.getOriginator()).get();
+//            if (assets.size() > 0) {
+//                patrolRecord.setAssetId(assets.get(0).getId());
+//            }
+//        }
         return patrolRecord;
     }
 
     private List<PatrolRecord> setAssetIdToPatrolRecords(List<PatrolRecord> patrolRecords) throws ExecutionException, InterruptedException {
-        for (PatrolRecord item : patrolRecords) {
-            if (item.getOriginator().getEntityType().equals(EntityType.ASSET)) {
-                item.setAssetId((AssetId) item.getOriginator());
-            } else if (item.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
-                List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) item.getOriginator()).get();
-                if (assets.size() > 0) {
-                    item.setAssetId(assets.get(0).getId());
-                }
-            }
+        for (PatrolRecord patrolRecord : patrolRecords) {
+            patrolRecord.setAssetId(new AssetId(patrolRecord.getOriginator().getId()));
+//            if (item.getOriginator().getEntityType().equals(EntityType.ASSET)) {
+//                item.setAssetId((AssetId) item.getOriginator());
+//            } else if (item.getOriginator().getEntityType().equals(EntityType.DEVICE)) {
+//                List<Asset> assets = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID, (DeviceId) item.getOriginator()).get();
+//                if (assets.size() > 0) {
+//                    item.setAssetId(assets.get(0).getId());
+//                }
+//            }
         }
         return patrolRecords;
     }
@@ -283,8 +287,8 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     }
 
     @Override
-    public ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, EntityId originatorId, String recordType, TimePageLink pageLink) {
-        return Futures.transform(patrolRecordDao.findAllByOriginatorAndType(tenantId, customerId, originatorId, recordType, pageLink), patrolRecords -> {
+    public ListenableFuture<List<PatrolRecord>> findAllByOriginatorAndType(TenantId tenantId, CustomerId customerId, UUID originatorId, String originatorType, String recordType, TimePageLink pageLink) {
+        return Futures.transform(patrolRecordDao.findAllByOriginatorAndType(tenantId, customerId, originatorId, originatorType, recordType, pageLink), patrolRecords -> {
             List<PatrolRecord> withTasks = findPatrolTask(patrolRecords);
             try {
                 return setAssetIdToPatrolRecords(withTasks);
