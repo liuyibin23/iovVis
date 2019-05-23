@@ -779,7 +779,8 @@ public class BaseAlarmService extends AbstractEntityService implements AlarmServ
 
                         if (DateAndTimeUtils.isBetween(alarm.getStartTs(), statisticsQuery.getPageLink().getStartTime(), statisticsQuery.getPageLink().getEndTime())) {
                             alarmCount.alarmingEntityWithinDueCountPlus(1);
-                        } else {
+                        }
+                        if (DateAndTimeUtils.isBefore(alarm.getStartTs(), statisticsQuery.getPageLink().getStartTime())){
                             alarmCount.alarmingEntityOverdueCountPlus(1);
                         }
 
