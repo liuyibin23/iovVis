@@ -403,6 +403,7 @@ public class MqttTransportHandler extends ChannelInboundHandlerAdapter implement
             if (gatewaySessionHandler != null) {
                 gatewaySessionHandler.onGatewayDisconnect();
             }
+            log.info("[{}] Client disconnected!", sessionId);
         }
     }
 
