@@ -172,6 +172,7 @@ public class PatrolRecordController extends BaseController {
                 Task task = taskService.findTaskById(patrolRecord.getTaskId().getId());
                 if(task != null){
                     patrolRecordEx.setTaskName(task.getTaskName() != null ? task.getTaskName() : "");
+                    patrolRecordEx.setTaskStartTs(task.getStartTs());
                 } else {
                     patrolRecordEx.setTaskName("task deleted");
                 }
