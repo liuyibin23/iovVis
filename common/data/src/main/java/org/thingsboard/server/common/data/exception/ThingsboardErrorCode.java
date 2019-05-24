@@ -53,11 +53,13 @@ public enum ThingsboardErrorCode {
      * 基础设施管理 asset
      */
     ASSET_NAME_ALREADY_PRESENT(4001),
+    ASSET_ID_NOT_PRESENT(4002),
 
     /**
      * 设备管理 device
      */
     DEVICE_NAME_ALREADY_PRESENT(5001),
+    DEVICE_IP_CHENNEL_PORT_ADDR_ASSET_ALREAD_PRESENT(5002),
 
     THIS_ERROR_CODE_IS_PLACEHOLDER(99999);
 

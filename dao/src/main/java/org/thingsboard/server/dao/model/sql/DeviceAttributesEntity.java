@@ -40,7 +40,7 @@ public class DeviceAttributesEntity {
 	@Column(name = "addrnum")
 	private String addrNum;
     @Column(name = "port")
-	private Integer port;
+	private String port;
 
 	public String getEntityId() {
 		return entityId;
@@ -154,11 +154,11 @@ public class DeviceAttributesEntity {
 		this.addrNum = addrNum;
 	}
 
-    public Integer getPort() {
+    public String getPort() {
         return port;
     }
 
-    public void setPort(Integer port) {
+    public void setPort(String port) {
         this.port = port;
     }
 }
