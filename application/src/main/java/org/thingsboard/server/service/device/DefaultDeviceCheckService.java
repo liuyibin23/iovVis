@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 
 @Service
 @Log4j
@@ -131,7 +130,11 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 			deviceHashMap.put(calculateDeviceCode(
 					assetId.getId().toString(),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),port,optionalDeviceAttributesEntity.get().getAddrNum()),
 					device.getId().getId().toString());
-			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),optionalDeviceAttributesEntity.get().getIp(),optionalDeviceAttributesEntity.get().getChannel(),port,optionalDeviceAttributesEntity.get().getAddrNum()));
+			log.info("添加设备："+device.getId() + "hash code: "+calculateDeviceCode(UUIDConverter.fromTimeUUID(assetId.getId()),
+					optionalDeviceAttributesEntity.get().getIp(),
+					optionalDeviceAttributesEntity.get().getChannel(),
+					port,
+					optionalDeviceAttributesEntity.get().getAddrNum()));
 		}
 	}
 
@@ -167,7 +170,7 @@ public class DefaultDeviceCheckService implements DeviceCheckService {
 	}
 	protected String calculateDeviceCode(String assetId, DeviceAutoLogon deviceAutoLogon){
 		return calculateDeviceCode(assetId,deviceAutoLogon.getDeviceShareAttrib().getIp(),
-				deviceAutoLogon.getDeviceShareAttrib().getChannel(),deviceAutoLogon.getDeviceShareAttrib().getGroup(),
+				deviceAutoLogon.getDeviceShareAttrib().getChannel(),deviceAutoLogon.getDeviceShareAttrib().getPort().toString(),
 				deviceAutoLogon.getDeviceShareAttrib().getAddrNum());
 	}
 }
