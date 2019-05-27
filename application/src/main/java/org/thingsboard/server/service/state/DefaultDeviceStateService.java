@@ -18,11 +18,7 @@ package org.thingsboard.server.service.state;
 import com.datastax.driver.core.utils.UUIDs;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningScheduledExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.*;
 import com.google.protobuf.InvalidProtocolBufferException;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.thingsboard.rule.engine.api.RpcError;
 import org.thingsboard.server.actors.service.ActorService;
 import org.thingsboard.server.common.data.DataConstants;
 import org.thingsboard.server.common.data.Device;
@@ -39,7 +34,6 @@ import org.thingsboard.server.common.data.id.DeviceId;
 import org.thingsboard.server.common.data.id.TenantId;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.page.TextPageLink;
-import org.thingsboard.server.common.data.plugin.ComponentLifecycleState;
 import org.thingsboard.server.common.msg.TbMsg;
 import org.thingsboard.server.common.msg.TbMsgDataType;
 import org.thingsboard.server.common.msg.TbMsgMetaData;
@@ -52,29 +46,15 @@ import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.gen.cluster.ClusterAPIProtos;
 import org.thingsboard.server.service.cluster.routing.ClusterRoutingService;
 import org.thingsboard.server.service.cluster.rpc.ClusterRpcService;
-import org.thingsboard.server.service.rpc.FromDeviceRpcResponse;
 import org.thingsboard.server.service.telemetry.TelemetrySubscriptionService;
 
 import javax.annotation.Nullable;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 
-import static org.thingsboard.server.common.data.DataConstants.ACTIVITY_EVENT;
-import static org.thingsboard.server.common.data.DataConstants.CONNECT_EVENT;
-import static org.thingsboard.server.common.data.DataConstants.DISCONNECT_EVENT;
-import static org.thingsboard.server.common.data.DataConstants.INACTIVITY_EVENT;
+import static org.thingsboard.server.common.data.DataConstants.*;
 
 /**
  * Created by ashvayka on 01.05.18.
@@ -288,6 +268,7 @@ public class DefaultDeviceStateService implements DeviceStateService {
         if (stateData != null) {
             long ts = System.currentTimeMillis();
             stateData.getState().setLastConnectTime(ts);
+            log.info("Device "+deviceId+" setLastConnectTime " + ts);
             pushRuleEngineMessage(stateData, CONNECT_EVENT);
             saveAttribute(deviceId, LAST_CONNECT_TIME, ts);
         }
@@ -298,6 +279,7 @@ public class DefaultDeviceStateService implements DeviceStateService {
         if (stateData != null) {
             long ts = System.currentTimeMillis();
             stateData.getState().setLastDisconnectTime(ts);
+			log.info("Device "+deviceId+" setLastDisconnectTime " + ts);
             pushRuleEngineMessage(stateData, DISCONNECT_EVENT);
             saveAttribute(deviceId, LAST_DISCONNECT_TIME, ts);
         }

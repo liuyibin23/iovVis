@@ -126,8 +126,17 @@ public class AssetController extends BaseController {
                     checkCustomerId(asset.getCustomerId());
                 }
             }
-            Asset savedAsset = checkNotNull(assetService.saveAsset(asset));
 
+
+            Asset originalAsset = assetService.findAssetById(null,asset.getId());
+
+            if(!originalAsset.getCustomerId().equals(asset.getCustomerId())){
+                throw new ThingsboardException("can't modify Asset's CustomerId",ThingsboardErrorCode.INVALID_ARGUMENTS);
+            } else if(!originalAsset.getTenantId().equals(asset.getTenantId())){
+                throw new ThingsboardException("can't modify Asset's TenantId",ThingsboardErrorCode.INVALID_ARGUMENTS);
+            }
+
+            Asset savedAsset = checkNotNull(assetService.saveAsset(asset));
             logEntityAction(savedAsset.getId(), savedAsset,
                     savedAsset.getCustomerId(),
                     asset.getId() == null ? ActionType.ADDED : ActionType.UPDATED, null);
