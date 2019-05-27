@@ -279,6 +279,7 @@ public class DefaultDeviceStateService implements DeviceStateService {
         if (stateData != null) {
             long ts = System.currentTimeMillis();
             stateData.getState().setLastDisconnectTime(ts);
+			log.info("Device "+deviceId+" setLastDisconnectTime " + ts);
             pushRuleEngineMessage(stateData, DISCONNECT_EVENT);
             saveAttribute(deviceId, LAST_DISCONNECT_TIME, ts);
         }
