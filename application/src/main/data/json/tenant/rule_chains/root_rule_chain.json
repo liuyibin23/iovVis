@@ -84,18 +84,6 @@
       },
       {
         "additionalInfo": {
-          "layoutX": 819,
-          "layoutY": 840
-        },
-        "type": "org.thingsboard.rule.engine.filter.TbJsFilterNode",
-        "name": "judgeWarningLevel",
-        "debugMode": false,
-        "configuration": {
-          "jsScript": "if(metadata.hasOwnProperty('ss_asset_warning_level')){\n    return metadata.ss_asset_warning_level === 'YELLOW';\n}else{\n    return false;\n}"
-        }
-      },
-      {
-        "additionalInfo": {
           "layoutX": 725,
           "layoutY": 717
         },
@@ -139,7 +127,7 @@
     "connections": [
       {
         "fromIndex": 2,
-        "toIndex": 8,
+        "toIndex": 7,
         "type": "Attributes Updated"
       },
       {
@@ -154,7 +142,7 @@
       },
       {
         "fromIndex": 2,
-        "toIndex": 9,
+        "toIndex": 8,
         "type": "Post attributes"
       },
       {
@@ -175,11 +163,6 @@
       {
         "fromIndex": 7,
         "toIndex": 6,
-        "type": "Success"
-      },
-      {
-        "fromIndex": 8,
-        "toIndex": 7,
         "type": "Asset"
       }
     ],
@@ -188,12 +171,12 @@
         "fromIndex": 2,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "83e32350-6b1f-11e9-a9ab-091bf750e379"
+          "id": "8daa07b0-7c71-11e9-a058-2f3373c819b7"
         },
         "additionalInfo": {
           "layoutX": 1063,
           "layoutY": 786,
-          "ruleChainNodeId": "rule-chain-node-13",
+          "ruleChainNodeId": "rule-chain-node-12",
           "ruleChainName": "WARNING_CLEAR"
         },
         "type": "Alarm Cleared"
@@ -202,12 +185,12 @@
         "fromIndex": 2,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "14a3bdf0-56b7-11e9-8c83-01278f27a825"
+          "id": "8dcc0ea0-7c71-11e9-a058-2f3373c819b7"
         },
         "additionalInfo": {
           "layoutX": 1056,
           "layoutY": 710,
-          "ruleChainNodeId": "rule-chain-node-12",
+          "ruleChainNodeId": "rule-chain-node-13",
           "ruleChainName": "MQTT_ENGINE_BUS"
         },
         "type": "Post telemetry"
@@ -216,7 +199,7 @@
         "fromIndex": 6,
         "targetRuleChainId": {
           "entityType": "RULE_CHAIN",
-          "id": "9d86b4c0-6b1f-11e9-a9ab-091bf750e379"
+          "id": "8d25e390-7c71-11e9-a058-2f3373c819b7"
         },
         "additionalInfo": {
           "layoutX": 1071,
@@ -224,7 +207,7 @@
           "ruleChainNodeId": "rule-chain-node-14",
           "ruleChainName": "WARNING_JUDGE_RULE"
         },
-        "type": "True"
+        "type": "Success"
       }
     ]
   }
