@@ -945,7 +945,7 @@
             "name": "cfg",
             "in": "body",
             "required": true,
-            "description": "推流分辨率 1:576P  2:1080P",
+            "description": "推流分辨率type 1:576P  2:1080P 推流开关onoff  1:开   0:关",
             "schema": {
               "type": "object",
               "properties": {
