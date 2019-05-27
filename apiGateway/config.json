@@ -3,5 +3,6 @@
     "API":"http://sm.schdri.com/api/",
     "fileSVR":"http://sm.schdri.com/",
     "mqttBackendBUS":"sm.schdri.com:9009"
+    "SrsAPI":"http://ossrs.net:1985/api/"
   }
 }

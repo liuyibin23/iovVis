@@ -33,6 +33,10 @@ function getFSVR() {
     return gCfg.fileSVR;
 }
 
+function getSrsAPI(){
+    return gCfg.SrsAPI;
+}
+
 function getBackendBUS(){
     return gCfg.mqttBackendBUS;
 }
@@ -88,11 +92,13 @@ function responErrorMsg(err, res) {
         else if (code == 404) {
             resMsg.message = '访问资源不存在。';
         }
-        else {
-            resMsg.code = 500;
+        else {            
             if (err.response.data.message) {
                 resMsg.message = `服务器内部错误。 ${err.response.data.message}`;
+            } else if (err.message) {
+                resMsg.message = err.message;
             } else {
+                resMsg.code = 500;
                 resMsg.message = '服务器内部错误。';
             }            
         }
@@ -150,6 +156,7 @@ exports.postSync = postSync;
 exports.getBackendBUS = getBackendBUS;
 exports.getAPI = getAPI;
 exports.getFSVR = getFSVR;
+exports.getSrsAPI = getSrsAPI;
 exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
 exports.loadCfg = loadCfg;
