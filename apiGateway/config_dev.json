@@ -2,6 +2,7 @@
   "serverCfg":{
     "API":"http://cf.beidouapp.com:20002/api/",
     "fileSVR":"http://cf.beidouapp.com:20002/",
-    "mqttBackendBUS":"cf.beidouapp.com:20002"
+    "mqttBackendBUS":"cf.beidouapp.com:20002",
+    "SrsAPI":"http://ossrs.net:1985/api/"
   }
 }
