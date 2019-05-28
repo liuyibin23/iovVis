@@ -105,7 +105,10 @@ public class CustomerController extends BaseController {
 	@RequestMapping(value = "/customer", method = RequestMethod.POST)
 	@ResponseBody
 	public Customer saveCustomer(@RequestBody Customer customer,@RequestParam(required = false) String tenantIdStr) throws ThingsboardException {
-		Customer originalCustomer = customerService.findCustomerById(null,customer.getId());
+		Customer originalCustomer = null;
+		if(customer.getId() != null){
+			originalCustomer = customerService.findCustomerById(null,customer.getId());
+		}
 		try {
 			if(getCurrentUser().getAuthority() == Authority.SYS_ADMIN){
 				TenantId tenantIdTmp = new TenantId(toUUID(tenantIdStr));
@@ -114,7 +117,7 @@ public class CustomerController extends BaseController {
 
 				customer.setTenantId(tenantId);
 
-				if(!originalCustomer.getTenantId().equals(customer.getTenantId())){
+				if(originalCustomer != null && !originalCustomer.getTenantId().equals(customer.getTenantId())){
 					throw new ThingsboardException("can't modify Customer's TenantId",ThingsboardErrorCode.INVALID_ARGUMENTS);
 				}
 
@@ -127,7 +130,7 @@ public class CustomerController extends BaseController {
 				return savedCustomer;
 			} else {
 				customer.setTenantId(getTenantId());
-				if(!originalCustomer.getTenantId().equals(customer.getTenantId())){
+				if(originalCustomer != null && !originalCustomer.getTenantId().equals(customer.getTenantId())){
 					throw new ThingsboardException("can't modify Customer's TenantId",ThingsboardErrorCode.INVALID_ARGUMENTS);
 				}
 				Customer savedCustomer = checkNotNull(customerService.saveCustomer(customer));
