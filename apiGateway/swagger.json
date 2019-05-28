@@ -41,6 +41,10 @@
       "description": "创建虚拟设备"
     },
     {
+      "name": "视频流",
+      "description": "视频流接口"
+    },
+    {
       "name": "视频墙",
       "description": "视频墙接口"
     }
@@ -909,6 +913,58 @@
             "schema": {
               "type": "object"
             }
+          },
+          "401": {
+            "$ref": "#/responses/Standard401ErrorResponse"
+          },
+          "404": {
+            "$ref": "#/responses/Standard404ErrorResponse"
+          },
+          "500": {
+            "$ref": "#/responses/Standard500ErrorResponse"
+          }
+        }
+      }
+    },
+    "/videoStream/{deviceId}": {
+      "post": {
+        "tags": [
+          "视频流"
+        ],
+        "summary": "设置视频流",
+        "description": "设置视频流。",
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "description": "设备编号（deviceId）。",
+            "type": "string"
+          },
+          {
+            "name": "cfg",
+            "in": "body",
+            "required": true,
+            "description": "推流分辨率type 1:576P  2:1080P 推流开关onoff  1:开   0:关",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ip": {
+                  "type": "string"
+                },
+                "type": {
+                  "type": "string"
+                },
+                "onoff": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/responses/Standard200OkResponse"
           },
           "401": {
             "$ref": "#/responses/Standard401ErrorResponse"

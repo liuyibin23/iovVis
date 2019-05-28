@@ -49,6 +49,7 @@ function converDeviceJson(data, res){
     newDt.share_attrib.manufacturer = converValue(_dt.share_attrib.manufacturer);
     newDt.share_attrib.model = converValue(_dt.share_attrib.model);
     newDt.share_attrib.port = converValue(_dt.share_attrib.port);
+    newDt.share_attrib.port = (newDt.share_attrib.port === "") ? 0 : Number.parseInt(newDt.share_attrib.port);
     newDt.share_attrib.sn = converValue(_dt.share_attrib.sn);
     newDt.share_attrib.type = converValue(_dt.share_attrib.type);
     newDt.share_attrib.ip = converValue(_dt.share_attrib.ip);
