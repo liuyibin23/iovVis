@@ -84,7 +84,10 @@
         <profile>
             <id>npm-build</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <!--<activeByDefault>true</activeByDefault>-->
+                <property>
+                    <name>!skipUiBuild</name>
+                </property>
             </activation>
             <build>
                 <plugins>
