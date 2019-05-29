@@ -439,7 +439,10 @@ public class TaskController extends BaseController {
                 }
             }
             try {
-                taskExInfos.add(setTaskAttrKvDatas(task,attrKeys,attrScope));
+                TaskExInfo taskExInfo = new TaskExInfo(task);
+                taskExInfo.setTaskAttrKv(getEntityAttrKvDatas(task.getId(),attrKeys,attrScope).get());
+                taskExInfos.add(taskExInfo);
+//                taskExInfos.add(setTaskAttrKvDatas(task,attrKeys,attrScope));
             } catch (Exception e) {
                 throw handleException(e);
             }
@@ -447,29 +450,29 @@ public class TaskController extends BaseController {
         return taskExInfos;
     }
 
-    private TaskExInfo setTaskAttrKvDatas(Task task,String keys,String scope) throws ExecutionException, InterruptedException {
-        TaskExInfo taskExInfo = new TaskExInfo(task);
-        List<String> keyList = toKeysList(keys);
-
-        if (!StringUtils.isEmpty(scope)){
-            if (keyList != null && !keyList.isEmpty()){
-                List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), scope, keyList).get();
-                List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
-                        attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
-                taskExInfo.getTaskAttrKv().addAll(values);
-            }
-        } else {
-            for (String tmpScope : DataConstants.allScopes()){
-                if (keyList != null && !keyList.isEmpty()){
-                    List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), tmpScope, keyList).get();
-                    List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
-                            attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
-                    taskExInfo.getTaskAttrKv().addAll(values);
-                }
-            }
-        }
-        return taskExInfo;
-    }
+//    private TaskExInfo setTaskAttrKvDatas(Task task,String keys,String scope) throws ExecutionException, InterruptedException {
+//        TaskExInfo taskExInfo = new TaskExInfo(task);
+//        List<String> keyList = toKeysList(keys);
+//
+//        if (!StringUtils.isEmpty(scope)){
+//            if (keyList != null && !keyList.isEmpty()){
+//                List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), scope, keyList).get();
+//                List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+//                        attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+//                taskExInfo.getTaskAttrKv().addAll(values);
+//            }
+//        } else {
+//            for (String tmpScope : DataConstants.allScopes()){
+//                if (keyList != null && !keyList.isEmpty()){
+//                    List<AttributeKvEntry> attributeKvEntries = attributesService.find(getCurrentUser().getTenantId(), taskExInfo.getId(), tmpScope, keyList).get();
+//                    List<AttributeKvData> values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+//                            attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+//                    taskExInfo.getTaskAttrKv().addAll(values);
+//                }
+//            }
+//        }
+//        return taskExInfo;
+//    }
 
     private List<String> toKeysList(String keys) {
         List<String> keyList = null;

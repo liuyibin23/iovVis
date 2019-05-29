@@ -21,6 +21,8 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +43,7 @@ import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
 import org.thingsboard.server.common.data.exception.ThingsboardErrorCode;
 import org.thingsboard.server.common.data.exception.ThingsboardException;
 import org.thingsboard.server.common.data.id.*;
+import org.thingsboard.server.common.data.kv.AttributeKvData;
 import org.thingsboard.server.common.data.kv.AttributeKvEntry;
 import org.thingsboard.server.common.data.kv.DataType;
 import org.thingsboard.server.common.data.page.TextPageLink;
@@ -78,6 +81,7 @@ import org.thingsboard.server.dao.partol.PatrolRecordService;
 import org.thingsboard.server.dao.relation.RelationService;
 import org.thingsboard.server.dao.report.ReportService;
 import org.thingsboard.server.dao.rule.RuleChainService;
+import org.thingsboard.server.dao.service.Validator;
 import org.thingsboard.server.dao.task.TaskService;
 import org.thingsboard.server.dao.tenant.TenantService;
 import org.thingsboard.server.dao.tshourvaluestatistic.BaseTsHourValueStatisticService;
@@ -100,6 +104,7 @@ import javax.mail.MessagingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.thingsboard.server.dao.service.Validator.validateId;
 
@@ -1034,5 +1039,63 @@ public abstract class BaseController {
         return calculateDeviceCode(assetId, deviceAutoLogon.getDeviceShareAttrib().getIp(), deviceAutoLogon.getDeviceShareAttrib().getChannel());
     }
 
+    /**
+     * 获取指定entity的对应keys和scope的属性集合
+     * @param entityId
+     * @param keys
+     * @param scope
+     * @return
+     */
+    protected ListenableFuture<List<AttributeKvData>> getEntityAttrKvDatas(EntityId entityId, String keys, String scope){
+        Validator.validateId(entityId.getId(),"Incorrect id " + entityId);
+        final ListenableFuture<List<AttributeKvData>> attributeKvDatasFuture;
+        List<String> keyList = toKeysList(keys);
 
+        if (!StringUtils.isEmpty(scope)){
+            if (keyList != null && !keyList.isEmpty()){
+
+                ListenableFuture<List<AttributeKvEntry>> attributeKvEntriesFuture = attributesService.find(getCurrentUser().getTenantId(), entityId, scope, keyList);
+                attributeKvDatasFuture = Futures.transform(attributeKvEntriesFuture,attributeKvEntries -> {
+                    List<AttributeKvData> values;
+                    if(attributeKvEntries != null){
+                        values = attributeKvEntries.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+                                attribute.getKey(), attribute.getValue())).collect(Collectors.toList());
+                    } else {
+                        values = new ArrayList<>();
+                    }
+
+                    return values;
+                });
+            } else {
+                attributeKvDatasFuture = Futures.immediateFuture(new ArrayList<>());
+            }
+        } else {
+            List<ListenableFuture<List<AttributeKvEntry>>> futures = new ArrayList<>();
+            Arrays.stream(DataConstants.allScopes()).forEach(tmpScope->{
+                if (keyList != null && !keyList.isEmpty()){
+                    futures.add(attributesService.find(getCurrentUser().getTenantId(), entityId, tmpScope, keyList));
+                }
+            });
+            ListenableFuture<List<List<AttributeKvEntry>>> attrKvEntryListFuture =Futures.successfulAsList(futures);
+            attributeKvDatasFuture =  Futures.transform(attrKvEntryListFuture,attrKvEntryList->{
+                List<AttributeKvData> values = new ArrayList<>();
+                if(attrKvEntryList != null){
+                    attrKvEntryList.forEach(attrKvEntrys->{
+                        values.addAll(attrKvEntrys.stream().map(attribute -> new AttributeKvData(attribute.getLastUpdateTs(),
+                                attribute.getKey(), attribute.getValue())).collect(Collectors.toList()));
+                    });
+                }
+                return values;
+            });
+        }
+        return attributeKvDatasFuture;
+    }
+
+    private List<String> toKeysList(String keys) {
+        List<String> keyList = null;
+        if (!org.springframework.util.StringUtils.isEmpty(keys)) {
+            keyList = Arrays.asList(keys.split(","));
+        }
+        return keyList;
+    }
 }

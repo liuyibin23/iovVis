@@ -20,6 +20,7 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -852,7 +853,11 @@ public class AssetController extends BaseController {
                                                           @RequestParam(required = false) String customerIdStr,
                                                           @RequestParam(required = false) String textSearch,
                                                           @RequestParam(required = false) String idOffset,
-                                                          @RequestParam(required = false) String textOffset) throws ThingsboardException {
+                                                          @RequestParam(required = false) String textOffset,
+                                                          @ApiParam(value = "查询时附带该asset的指定key的属性在查询结果中返回，多个key用逗号分隔")
+                                                              @RequestParam(required = false) String keys,
+                                                          @ApiParam(value = "要获取属性的scope，空值表示获取所有scope")
+                                                              @RequestParam(required = false) String scope) throws ThingsboardException {
         try {
             SecurityUser user = getCurrentUser();
             TenantId tenantId;//= user.getTenantId();
@@ -873,14 +878,19 @@ public class AssetController extends BaseController {
                 customerId = user.getCustomerId();
             }
 
+            TextPageData<AssetExInfo> pagedAssetExInfo;
             if (!customerId.getId().equals(CustomerId.NULL_UUID)) {
-                return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId, customerId, pageLink));
+                pagedAssetExInfo = checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId, customerId, pageLink));
+//                return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId, customerId, pageLink));
             } else if (!tenantId.getId().equals(TenantId.NULL_UUID)) {
-                return checkNotNull(assetService.findAssetExInfoByTenant(tenantId, pageLink));
+                pagedAssetExInfo = checkNotNull(assetService.findAssetExInfoByTenant(tenantId, pageLink));
+//                return checkNotNull(assetService.findAssetExInfoByTenant(tenantId, pageLink));
             } else {
-                return checkNotNull(assetService.findAllAssetExInfo(pageLink));
+                pagedAssetExInfo =  checkNotNull(assetService.findAllAssetExInfo(pageLink));
+//                return checkNotNull(assetService.findAllAssetExInfo(pageLink));
             }
 
+            return new TextPageData<>(setKvList(pagedAssetExInfo.getData(),keys,scope),pageLink);
 //			if(customerId != null && !customerId.isNullUid()){ //customer
 //				return checkNotNull(assetService.findAssetExInfoByTenantAndCustomer(tenantId,customerId,pageLink));
 //			} else if(tenantId != null && !tenantId.isNullUid()){ //tenant
@@ -888,10 +898,17 @@ public class AssetController extends BaseController {
 //			} else { //admin
 //				return checkNotNull(assetService.findAllAssetExInfo(pageLink));
 //			}
-        } catch (ThingsboardException e) {
+        } catch (Exception e) {
             throw handleException(e);
         }
 
+    }
+
+    private List<AssetExInfo> setKvList(List<AssetExInfo> assetExInfos,String keys,String scope) throws ExecutionException, InterruptedException {
+        for (AssetExInfo assetExInfo : assetExInfos) {
+            assetExInfo.setAssetAttrKv(getEntityAttrKvDatas(assetExInfo.getId(), keys, scope).get());
+        }
+        return assetExInfos;
     }
 
     @PreAuthorize("hasAnyAuthority('TENANT_ADMIN', 'CUSTOMER_USER')")
