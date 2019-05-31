@@ -4,6 +4,10 @@ const axios = require('axios');
 const util = require('../util/utils');
 const logger = require('../util/logger');
 
+// 关流后台定时任务 配置参数
+const MaxRetryCount = 3;       // 重试多少次
+const TaskInterVal = 3600;     // 任务执行周期 s
+var   taskMap = new Map();
 
 // define the about route
 router.get('/about', function (req, res) {
@@ -32,19 +36,108 @@ function configureRPC(deviceId, rpcCfg, onoff, token, res) {
         }
       }).then(resp => {
         //util.responErrorMsg(err, res);
-        console.log(resp.data);
+        if (res) {
+            console.log(resp.data);
+            util.responData(resp.data, res);
+        }        
       }).catch(err => {
-        util.responErrorMsg(err, res);
+        if (res) {
+            util.responErrorMsg(err, res);
+        } 
       });
 }
 
+// 发送关流rpc指令
+function sendCloseVideoStreamRpcCmd(streamsInfo, taskInfo)
+{
+    let deviceId = taskInfo.deviceId;
+    let rpcCfg   = taskInfo.rpcCfg;
+    let token    = taskInfo.token;
 
-function rpcOperator(onoff, clientsCnt, toekn, res)
+    configureRPC(deviceId, rpcCfg, 0, token, null);
+}
+
+function closeVideoStreamTask(clientToken, deviceId)
+{
+    let taskInfo = taskMap[clientToken];
+    if (taskInfo) {
+        taskMap[clientToken].taskCnt++;
+
+        let msg = `task run clientToken:${clientToken}  deviceId:${deviceId} tryCnt=${taskInfo.taskCnt}`;
+        console.log(msg);
+        logger.log('info', msg);
+
+        // 获取服务器信息
+        let srsApiStreams = util.getSrsAPI() + 'v1/streams/';
+        axios.get(srsApiStreams, {
+            headers: {
+                Accept: 'application/json',
+                //"X-Authorization": token,
+                'Content-Type': 'application/json',
+            }
+          }).then(resp => {
+            let streamsInfo = resp.data;
+            console.log('GET: ' + streamsInfo.length);
+            if (streamsInfo) {
+                sendCloseVideoStreamRpcCmd(streamsInfo, taskInfo);
+            } else {
+                let msg = `no treams info`;
+                console.log(msg);
+                logger.log('info', msg);
+            }            
+          }).catch(err =>{
+            console.log(err);
+          });
+
+        // 调度多少次之后 退出定时器
+        if (taskMap[clientToken].taskCnt >= MaxRetryCount) {
+            let msg = `stop interval task: ${taskInfo.deviceId}`;
+            console.log(msg);
+            logger.log('info', msg);
+            
+            clearInterval(taskInfo.taskId);
+            taskMap[clientToken] = null;
+        }
+    }
+}
+
+// 启动一个定时任务去处理关流操作
+function startIntervalTask(clientToken, deviceId, rpcCfg, token)
+{
+    // 已经启动一个任务，不处理
+    if (taskMap[clientToken]) {
+        let msg = `task for clientToken: ${clientToken} already exist`;
+        console.log(msg);
+        logger.log('info', msg);
+        return;
+    }
+
+    let msg = `start one task -- TaskInterVal:${TaskInterVal} token=${clientToken} deviceId=${deviceId} MaxRetryCount=${MaxRetryCount}`;
+    console.log(msg);
+    logger.log('info', msg);
+    let intervalTask = setInterval(closeVideoStreamTask, TaskInterVal, clientToken, deviceId);
+
+    var taskInfo = {
+        "taskId":intervalTask,
+        "taskCnt":0,
+        "clientToken":clientToken,
+        "deviceId":deviceId,
+        "rpcCfg": rpcCfg,
+        "token": token
+    };
+    
+    taskMap[clientToken] = taskInfo;
+}
+
+function rpcOperator(deviceId, rpcCfg, clientToken, onoff, clientsCnt, token, res)
 {
     // 关流 
     if (onoff == 0) {
         if (clientsCnt >= 2) {
-            util.responData(util.CST.OK200, "还有其他用户在观看视频流,停流操作被拒绝", res);
+            util.responData(util.CST.OK200, "还有其他用户在观看视频流,已启动后台任务去做关流处理。", res);
+
+            // 启动定时器，通过设备ip 设备id 定时去关闭流
+            startIntervalTask(clientToken, deviceId, rpcCfg, token);
         } else {
             configureRPC(deviceId, rpcCfg, 0, token, res);            
         }     
@@ -53,7 +146,7 @@ function rpcOperator(onoff, clientsCnt, toekn, res)
         if (clientsCnt == 0) {
             configureRPC(deviceId, rpcCfg, 1, token, res);
         } else {
-            util.responData(util.CST.OK200, "视频流处于打开状态,无需重复打开", res);
+            util.responData(util.CST.OK200, "视频流处于打开状态,无需重复打开。", res);
         }     
     } else {
         // 参数错误
@@ -89,7 +182,7 @@ function process(deviceId, rpcCfg, clientsInfo, streamsInfo, token, res){
                         let onoff = Number.parseInt(rpcCfg.onoff);
                         let clientsCnt = Number.parseInt(streams[i].clients);
                          // 根据服务端的客户端数量，决定是否关流
-                        rpcOperator(onoff, clientsCnt, token, res);
+                        rpcOperator(deviceId, rpcCfg, clientToken, onoff, clientsCnt, token, res);
                         break;
                     }
                 }
@@ -129,6 +222,10 @@ router.post('/:id', async function (req, res) {
             }
           }).then(resp => {
             let streamsInfo = resp.data;
+            
+            // 测试代码
+            //  clientToken = rpcCfg.ip;
+            //startIntervalTask(clientToken, deviceId, rpcCfg, token);
 
             let testCode = 0; //1;
             if (testCode) {
