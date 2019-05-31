@@ -47,20 +47,8 @@ function processData(option, params, allData, maxCnt, res){
                 }
             }
 
-            // 天
-            if (Number.parseInt(params.interval) == 86400) {
-                var dat = new Date(allData[chooseIdx][i].ts);
-                dat = util.dateFormat(dat,'yyyyMMdd');
-                option.xAxis[0].data.push(dat);
-            } else if (Number.parseInt(params.interval) == 86400/2) {
-                var dat = new Date(allData[chooseIdx][i].ts);
-                dat = util.dateFormat(dat,'MMddhhmm');
-                option.xAxis[0].data.push(dat);
-            }  else {
-                var dat = new Date(allData[chooseIdx][i].ts);
-                dat = util.dateFormat(dat,'hhmmss');
-                option.xAxis[0].data.push(dat);
-            }          
+            var dat = util.getDateString(allData[chooseIdx][i].ts, params.interval);
+            option.xAxis[0].data.push(dat);        
         }
     }
 

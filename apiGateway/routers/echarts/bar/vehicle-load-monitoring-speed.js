@@ -22,7 +22,11 @@ let option = {
      xAxis : [
          {
              type : 'category',
-             data : []
+             axisLabel: {
+                //interval:0,//横轴信息全部显示
+                rotate:30,//
+            },
+            data : []
          }
      ],
      yAxis : [

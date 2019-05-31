@@ -102,20 +102,11 @@ function getData(plotCfg, option, params, token, res){
                 // 跳过全为0的数据
                 if (resp.data[i][0] == 0 && resp.data[i][1] == 0){
                     continue;
-                }
+                }        
 
-                var dat = new Date(sTime[i][0]);
-                // 天
-                if (Number.parseInt(params.interval) >= 86400) {
-                    dat = util.dateFormat(dat,'yyyyMMdd');
-                    option.xAxis[0].data.push(dat);
-                } else if (Number.parseInt(params.interval) >= 86400/2) {
-                    dat = util.dateFormat(dat,'MMddhhmm');
-                    option.xAxis[0].data.push(dat);
-                }  else {
-                    dat = util.dateFormat(dat,'hhmmss');
-                    option.xAxis[0].data.push(dat);
-                }          
+                // 时间轴
+                var dat = util.getDateString(sTime[i][0], params.interval);
+                option.xAxis[0].data.push(dat);  
 
                 let cnt_over = 0;
                 let cnt_sum = 0;
@@ -137,10 +128,9 @@ function getData(plotCfg, option, params, token, res){
 
             // 分组处理
             for (let i = 0; i < loopCnt; i++) {                
-                var dat = new Date(sTime[i][0]);
-                dat = util.dateFormat(dat,'yyyyMMdd');
-
-                option.xAxis[0].data.push(dat);
+                // 时间轴
+                var dat = util.getDateString(sTime[i][0], params.interval);
+                option.xAxis[0].data.push(dat);  
             }
             
             for (let i = 0; i < loopCnt; i++){

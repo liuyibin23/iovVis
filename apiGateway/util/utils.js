@@ -151,6 +151,23 @@ function dateFormat(date, fmt) {
     return fmt;
 }
 
+function getDateString(ts, interval) {
+    var dat = new Date(ts);
+    if (interval <= 60) {
+        dat = dateFormat(dat,'hh:mm:ss');
+    } else if (interval > 60 && interval < 3600) {
+        dat = dateFormat(dat, 'MM/dd hh:mm');
+    } else if (interval >= 3600 && interval < 86400) {
+        dat = dateFormat(dat, 'MM/dd hh');
+    }else if (interval >= 86400 && interval < 604800) {
+        dat = dateFormat(dat, 'yyyy/MM/dd');
+    } else if (interval >= 604800) {
+        dat = dateFormat(dat, 'yyyy/MM');
+    }
+   
+    return dat;
+}
+
 exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getBackendBUS = getBackendBUS;
@@ -161,3 +178,4 @@ exports.responErrorMsg = responErrorMsg;
 exports.responData = responData;
 exports.loadCfg = loadCfg;
 exports.dateFormat = dateFormat;
+exports.getDateString = getDateString;

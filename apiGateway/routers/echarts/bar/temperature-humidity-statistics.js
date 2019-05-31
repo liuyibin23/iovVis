@@ -14,6 +14,9 @@ let option = {
     xAxis: [
         {
             type: 'category',
+            axisLabel: {
+                rotate:30,
+            },
             data: [],
         }
     ],

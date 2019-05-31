@@ -24,6 +24,9 @@ let option = {
         {
             type : 'category',
             boundaryGap : false,
+            axisLabel: {
+                rotate:30,
+            },
             data : []
         }
     ],

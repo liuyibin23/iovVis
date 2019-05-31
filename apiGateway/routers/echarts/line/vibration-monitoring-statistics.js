@@ -27,7 +27,7 @@ let option = {
             boundaryGap : false,
             axisLabel:{
                 interval:30,    
-          },
+            },
             data : []
         }
     ],
