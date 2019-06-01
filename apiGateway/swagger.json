@@ -949,6 +949,9 @@
             "schema": {
               "type": "object",
               "properties": {
+                "token":{
+                  "type": "string"
+                },
                 "ip": {
                   "type": "string"
                 },
