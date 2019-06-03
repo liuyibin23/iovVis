@@ -45,7 +45,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.thingsboard</groupId>
+            <groupId>org.BeiDouApp</groupId>
             <artifactId>ui</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
@@ -104,7 +104,7 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.thingsboard</groupId>
+                                    <groupId>org.BeiDouApp</groupId>
                                     <artifactId>ui</artifactId>
                                     <type>jar</type>
                                     <overWrite>false</overWrite>
