@@ -75,6 +75,7 @@ function addWarningOperatorRecord(assetID, warningsInfo, warningsType, token, re
   });
 }
 
+/*
 // 添加additionalInfo 属性
 async function postAsset(assetID, token, args, res) {
   // GET
@@ -103,7 +104,7 @@ async function postAsset(assetID, token, args, res) {
       util.responErrorMsg(err, res);
     });
 }
-
+*/
 //设置预警状态
 async function postWarningStatus(req, res) {
   let assetID = req.params.assetId;
@@ -116,8 +117,7 @@ async function postWarningStatus(req, res) {
     }
   })
     .then((resp) => {
-      // post asset
-      postAsset(assetID, token, req.query, res);
+      addWarningOperatorRecord(assetID, req.query, '手动设置资产预警状态', token, res);
     })
     .catch((err) => {
       util.responErrorMsg(err, res);
@@ -175,6 +175,7 @@ async function getWarningRules(req, res) {
   });
 }
 
+/*
 function updateAssetInfo(assetID, WarningRule, tenantId, token, req, res){
   let url = util.getAPI() + `asset/${assetID}`;
   axios.get(url, {
@@ -200,7 +201,9 @@ function updateAssetInfo(assetID, WarningRule, tenantId, token, req, res){
     util.responErrorMsg(err, res);
   });
 }
+*/
 
+/*
 //POST更新规则引擎中指定资产的预警规则，并把该规则存入资产表的addtionalInfo
 async function postWarningRules(req, res) {
   let assetID = req.params.assetId;
@@ -244,6 +247,26 @@ async function postWarningRules(req, res) {
     //无法通过设备号devID获取tenantId
     util.responErrorMsg(err, res);
   });
+}
+*/
+async function postWarningRules(req, res) {
+  let assetID = req.params.assetId;
+  let token = req.headers['x-authorization'];
+  let WarningRule = req.body;
+  let TID = '';
+
+  //接口因权限问题修改，需要根据devID查询tenantId
+  let api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
+  axios.post(api, {
+    "warning_rule_cfg":JSON.stringify(WarningRule)
+  }, {
+  headers: {
+    "X-Authorization": token
+  }}).then(resp => {
+    addWarningOperatorRecord(assetID, req.body, '手动设置资产预警规则', token, res);
+  }).catch(err =>{
+    util.responErrorMsg(err, res);
+  })
 }
 
 module.exports = router
