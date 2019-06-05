@@ -74,9 +74,16 @@ function processData(res, params, callback){
 async function getData(params, token, res, callback){
     let keyValue = '加速度_avg';   // 震动
     let limit    =  Math.ceil((params.endTime - params.startTime) / 1000);
+    limit = limit > 700 ? 700 : limit;  //fixme
+    let interval = Number.parseFloat(params.interval) * 1000;
+    // let interval = params.interval;
+    let interval_min =  Math.ceil((params.endTime - params.startTime) / 700);
+    interval = interval > interval_min ? interval : interval_min;
 
-    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?keys=${keyValue}`
-     + `&startTs=${params.startTime}&endTs=${params.endTime}&limit=${limit}`;
+    // http://192.168.1.13:8090/api/plugins/telemetry/DEVICE/5cac4a10-6e43-11e9-a3fa-a98c0e718ec2/values/timeseries?interval=86400000&limit=100&agg=AVG&keys=%E5%8A%A0%E9%80%9F%E5%BA%A6_avg&startTs=1554048000000&endTs=1561910399999
+
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${params.devid}/values/timeseries?interval=${interval}&keys=${keyValue}`
+     + `&startTs=${params.startTime}&endTs=${params.endTime}&agg=AVG&limit=${limit}`;
     api = encodeURI(api);
     //console.log(api);
 
