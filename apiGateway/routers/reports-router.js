@@ -217,7 +217,7 @@ async function decodeFile(buffer, query_time, token, req, res) {
         .then(res => res.data),
     additionalJsContext: {
       genIMG: async (type, chart_name, devid, inerval, w_cm, h_cm) => {
-        logger.log('info','--- try to axios ---', type, chart_name, devid);
+        logger.log('info','--- try to axios ---', type, chart_name, devid,query_time.startTs,query_time.endTs,inerval);
         let data = [];
         let api = util.getAPI() + `v1/echarts/${type}?chart_name=${chart_name}&devid=${devid}&startTime=${query_time.startTs}&endTime=${query_time.endTs}&interval=${inerval}&chartWidth=${w_cm}&chartHeight=${h_cm}`;
         api = encodeURI(api);

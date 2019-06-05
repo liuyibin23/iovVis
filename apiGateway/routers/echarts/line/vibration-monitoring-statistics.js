@@ -78,7 +78,7 @@ async function getData(params, token, res, callback){
     let interval = Number.parseFloat(params.interval) * 1000;
     // let interval = params.interval;
     let interval_min =  Math.ceil((params.endTime - params.startTime) / 700);
-    interval = interval > interval_min ? interval : interval_min;
+    interval = interval < interval_min ? interval : interval_min;
 
     // http://192.168.1.13:8090/api/plugins/telemetry/DEVICE/5cac4a10-6e43-11e9-a3fa-a98c0e718ec2/values/timeseries?interval=86400000&limit=100&agg=AVG&keys=%E5%8A%A0%E9%80%9F%E5%BA%A6_avg&startTs=1554048000000&endTs=1561910399999
 

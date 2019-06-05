@@ -253,7 +253,7 @@ async function postWarningRules(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
   let WarningRule = req.body;
-  let TID = '';
+  //let TID = '';
 
   //接口因权限问题修改，需要根据devID查询tenantId
   let api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/SERVER_SCOPE`;
