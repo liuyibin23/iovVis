@@ -75,7 +75,8 @@ async function getData(params, token, res, callback){
     let keyValue = '加速度_avg';   // 震动
     let limit    =  Math.ceil((params.endTime - params.startTime) / 1000);
     limit = limit > 700 ? 700 : limit;  //fixme
-    let interval = params.interval;
+    let interval = Number.parseFloat(params.interval) * 1000;
+    // let interval = params.interval;
     let interval_min =  Math.ceil((params.endTime - params.startTime) / 700);
     interval = interval > interval_min ? interval : interval_min;
 
