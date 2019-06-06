@@ -169,8 +169,11 @@ public class PatrolRecordController extends BaseController {
                     asset = assetService.findAssetById(null, assetId);
                 }
                 patrolRecordEx.setAssetName(asset != null ? asset.getName() : "asset deleted");
-                Task task = taskService.findTaskById(patrolRecord.getTaskId().getId());
-                if(task != null){
+                Task task = null;
+                if (patrolRecord.getTaskId() != null) {
+                    task = taskService.findTaskById(patrolRecord.getTaskId().getId());
+                }
+                if (task != null) {
                     patrolRecordEx.setTaskName(task.getTaskName() != null ? task.getTaskName() : "");
                     patrolRecordEx.setTaskStartTs(task.getStartTs());
                 } else {
