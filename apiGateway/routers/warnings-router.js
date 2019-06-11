@@ -27,25 +27,15 @@ router.post('/:assetId', async function (req, res) {
 async function getWarningStatus(req, res) {
   let assetID = req.params.assetId;
   let token = req.headers['x-authorization'];
-  let get_attributes_api = util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE`;
-  axios.get(get_attributes_api, {
+  let get_warningStatus_api= util.getAPI() + `plugins/telemetry/ASSET/${assetID}/values/attributes/SERVER_SCOPE?keys=asset_warning_level`;
+  axios.get(get_warningStatus_api, {
     headers: {
       "X-Authorization": token
     }
   }).then((resp) => {
-    let resMsg = {
-      "code": `${resp.status}`
-    };
-    resp.data.forEach(info => {
-      if (info.key === 'asset_warning_level') {
-        // info.value = JSON.parse(info.value);
-        // res.status(200).json(info);
-        resMsg.info = info;
-      }
-    });
-    if (resMsg.info) {
-      let asset_warning_level = resMsg.info.value;
-      util.responData(resp.status, { asset_warning_level }, res);
+    if (resp.data.length >= 1) {
+      let asset_warning_level = resp.data[0].value;
+      util.responData(resp.status, { "asset_warning_level":asset_warning_level }, res);
     } else {
       let data = [];
       util.responData(util.CST.OK200, data, res);
