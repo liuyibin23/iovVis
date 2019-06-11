@@ -41,6 +41,7 @@ public class DeviceShareAttrib implements Serializable {
 	private String deviceGroup;
 	private String typeParams;
 	private String pic;
+	private String period;
 
 	private String group;
 	@JsonProperty("addrnum")
