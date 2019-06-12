@@ -93,7 +93,6 @@
     "v-accordion": "^1.6.0"
   },
   "devDependencies": {
-    "increase-memory-limit": "^1.0.6",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.14.0",
     "babel-eslint": "^6.1.2",
