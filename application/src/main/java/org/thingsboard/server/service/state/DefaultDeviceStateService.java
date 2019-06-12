@@ -277,11 +277,14 @@ public class DefaultDeviceStateService implements DeviceStateService {
     private void onDeviceDisconnectSync(DeviceId deviceId) {
         DeviceStateData stateData = getOrFetchDeviceStateData(deviceId);
         if (stateData != null) {
+            DeviceState state = stateData.getState();
+            state.setActive(false);
             long ts = System.currentTimeMillis();
             stateData.getState().setLastDisconnectTime(ts);
 			log.info("Device "+deviceId+" setLastDisconnectTime " + ts);
             pushRuleEngineMessage(stateData, DISCONNECT_EVENT);
             saveAttribute(deviceId, LAST_DISCONNECT_TIME, ts);
+            saveAttribute(deviceId, ACTIVITY_STATE, state.isActive());
         }
     }
 

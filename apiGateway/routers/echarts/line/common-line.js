@@ -1,6 +1,8 @@
 const axios = require('axios');
 const node_echarts = require('node-echarts');
 const util  = require('../../../util/utils');
+const logger = require('../../../util/logger');
+
 
 function SendPngResponse(option, params, res){
     if (!option)
@@ -76,12 +78,14 @@ function getData(plotCfg, option, params, token, res){
             for (let i = 0; i < plotCfg.maxCnt; i++){
                 allData[i] = (response.data[keys[i]]) ? response.data[keys[i]] : [];
             }
-
+            //logger.log('info',JSON.stringify(response.body));
             processData(option, params, allData, plotCfg.maxCnt, res);
         }).catch(err => {
-            console.log("err" + err);
+            logger.log('error',`err:`+err);
             processData(option, res, params, plotCfg.maxCnt, res);
         });   
+    }else{
+        logger.log('info','no plotcfg indicate!!');
     }
 }
 

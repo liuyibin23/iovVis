@@ -92,7 +92,11 @@ function getData(plotCfg, option, params, token, res){
             for (let i = 0; i < len; i++){
                 let sum = 0;
                 for (let j = 0; j < loopCnt; j++){
-                    sum += data[j][i];
+                    if(data[j]){
+                        sum += data[j][i];
+                    }else{
+                        sum += 0;
+                    }
                 }
 
                 if (sum != 0) {

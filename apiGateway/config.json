@@ -1,14 +1,8 @@
 {
-  "serverCfg_BK":{
-    "API":"http://cf.beidouapp.com:20002/api/",
-    "fileSVR":"http://cf.beidouapp.com:20002/",
-    "mqttBackendBUS":"cf.beidouapp.com:20002",
-    "SrsAPI":"http://ossrs.net:1985/api/"
-  },
   "serverCfg":{
-    "API":"http://sm.schdri.com/api/",
-    "fileSVR":"http://sm.schdri.com/",
-    "mqttBackendBUS":"sm.schdri.com:9009",
-    "SrsAPI":"http://ossrs.net:1985/api/"
+    "API":"http://localhost/api/",
+    "fileSVR":"http://localhost/",
+    "mqttBackendBUS":"localhost:9009",
+    "SrsAPI":"http://168.68.12.250:1985/api/"
   }
 }
