@@ -15,11 +15,11 @@
  */
 /* eslint-disable */
 import './integrated.scss';
-import Subscription from '../api/subscription';
+// import Subscription from '../api/subscription';
 
-import Cesium from 'cesium/Cesium';
-import "cesium/Widgets/widgets.css";
-import "cesium/Widgets/lighter.css";
+// import Cesium from 'cesium/Cesium';
+// import "cesium/Widgets/widgets.css";
+// import "cesium/Widgets/lighter.css";
 /*@ngInject*/
 export default function IntegratedController(
     $scope, $filter, $mdMedia, $q, $document, menu, $state, $timeout, 
