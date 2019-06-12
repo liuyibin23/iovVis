@@ -51,7 +51,7 @@
 
 <md-content flex tb-expand-fullscreen tb-confirm-on-exit is-dirty="vm.isConfirmOnExit" expand-tooltip-direction="bottom"
     layout="column" on-fullscreen-changed="vm.isFullscreen = expanded">
-    <drill-table class="table" headers="['No', 'Period', 'Profile']" source="profits" drill-down="drillDown(profit)">
-    </drill-table>
-    <div class="pie-chart" pie-chart source="profits" drill-down="drillDown(profit)"></div>
+    <div>
+        <echarts option="option"></echarts>
+    </div>
 </md-content>

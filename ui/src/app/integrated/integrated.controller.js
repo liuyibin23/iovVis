@@ -15,17 +15,34 @@
  */
 /* eslint-disable */
 import './integrated.scss';
-// import Subscription from '../api/subscription';
-import * as echarts from 'echarts';
 
-// import Cesium from 'cesium/Cesium';
-// import "cesium/Widgets/widgets.css";
-// import "cesium/Widgets/lighter.css";
 /*@ngInject*/
 export default function IntegratedController(
-    $scope, $filter, $mdMedia, $q, $document, menu, $state, $timeout, 
+    $scope, $filter, $mdMedia, $q, $document, menu, $state, $timeout,
     $log, tbRaf, types, utils, timeService,
-    datasourceService, alarmService,  dashboardService, deviceService
-    ) {
+    datasourceService, alarmService, dashboardService, deviceService
+) {
     var vm = this;
+    $scope.option = {
+        title: {
+            text: 'ECharts 入门示例'
+        },
+        tooltip: {},
+        legend: {
+            data: ['销量']
+        },
+        xAxis: {
+            data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
+        },
+        yAxis: {},
+        series: [{
+            name: '销量',
+            type: 'bar',
+            data: [5, 20, 36, 10, 10, 20]
+        }]
+    };
+
 }
+
+
+
