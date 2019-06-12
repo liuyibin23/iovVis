@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "start": "babel-node --max_old_space_size=4096 server.js",
-    "build": "cross-env --max_old_space_size=4096 NODE_ENV=production webpack -p"
+    "build": "cross-env LIMIT=8096 increase-memory-limit --max_old_space_size=4096 NODE_ENV=production webpack -p"
   },
   "dependencies": {
     "@flowjs/ng-flow": "^2.7.1",
@@ -92,6 +92,7 @@
     "v-accordion": "^1.6.0"
   },
   "devDependencies": {
+    "increase-memory-limit": "^1.0.6",
     "babel-cli": "^6.18.0",
     "babel-core": "^6.14.0",
     "babel-eslint": "^6.1.2",
