@@ -16,6 +16,7 @@
 /* eslint-disable */
 import './integrated.scss';
 // import Subscription from '../api/subscription';
+import * as echarts from 'echarts';
 
 // import Cesium from 'cesium/Cesium';
 // import "cesium/Widgets/widgets.css";
