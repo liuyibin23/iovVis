@@ -13,7 +13,10 @@
             // "program": "${workspaceFolder}\\test\\tsReport.js"
             // "program": "${workspaceFolder}\\test\\tsAlarmAndWarning.js"
             // "program": "${workspaceFolder}\\test\\warningRules.js"
-            "program": "${workspaceFolder}\\test\\testRestApi.js"
+            // "program": "${workspaceFolder}\\test\\testRestApi.js"
+            //"program": "${workspaceFolder}\\test\\mqtt_sub_test.js"
+            // "program": "${workspaceFolder}\\test\\socket.js"
+            "program": "${workspaceFolder}\\server.js"
         }
     ]
 }
