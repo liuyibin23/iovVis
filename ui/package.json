@@ -49,6 +49,7 @@
     "axios": "^0.18.0",
     "base64-js": "^1.2.1",
     "brace": "^0.10.0",
+    "bufferutil": "^4.0.1",
     "canvas-gauges": "^2.0.9",
     "clipboard": "^1.5.15",
     "compass-sass-mixins": "^0.12.7",
@@ -89,6 +90,7 @@
     "tinycolor2": "^1.4.1",
     "tooltipster": "^4.2.4",
     "typeface-roboto": "0.0.22",
+    "utf-8-validate": "^5.0.2",
     "v-accordion": "^1.6.0"
   },
   "devDependencies": {
