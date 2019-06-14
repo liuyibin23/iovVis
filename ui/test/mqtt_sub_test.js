@@ -23,18 +23,29 @@
 /* eslint-disable import/no-nodejs-modules */
 
 const mqtt = require('mqtt');
-const token = 'GbGuHQkbgeQcAoFd3GLF';   //A监测点
-// var client = mqtt.connect('mqtt://cf.beidouapp.com:9008');
-var client = mqtt.connect('mqtt://192.168.1.20');
+var options={
+    username:"22HVYAZzRuzqj6fwqNag"
+}
+
+// var client = mqtt.connect("mqtt://sgcc.beidouapp.com:1883",options);
+
+var client = mqtt.connect('mqtt://192.168.1.179');
 client.on('connect', function () {
 	console.log('connected');
-	client.subscribe('v1/devices/me/telemetry/+');
+	client.subscribe('paho');
+
+	// client.subscribe('v1/devices/me/telemetry/+');
 	// client.subscribe('v1/devices/me/telemetry/5074b200-e31a-11e8-be95-f3713e6700c3');
 	// client.subscribe('v1/devices/me/telemetry/056a2f60-e31a-11e8-be95-f3713e6700c3');
 });
-
+client.on('error', function (err) {
+	console.log('error',err);
+	// client.subscribe('v1/devices/me/telemetry/+');
+	// client.subscribe('v1/devices/me/telemetry/5074b200-e31a-11e8-be95-f3713e6700c3');
+	// client.subscribe('v1/devices/me/telemetry/056a2f60-e31a-11e8-be95-f3713e6700c3');
+});
 var cnt_ = 0;
 client.on('message', function (topic, message) {
 	console.log('request.topic: ' + topic);
-	console.log('request.body: ' + message.toString());
+	console.log('request.body: ' + message);
 });

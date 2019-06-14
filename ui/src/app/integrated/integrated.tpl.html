@@ -49,74 +49,9 @@
 
 -->
 
-<md-content flex tb-expand-fullscreen tb-confirm-on-exit is-dirty="vm.isConfirmOnExit"
-            expand-tooltip-direction="bottom" layout="column" on-fullscreen-changed="vm.isFullscreen = expanded">
-    <div id='cesiumContainer'></div>     
-    
-    <!-- <section flex layout="row"> -->
-
-        <!--展开侧边栏按钮-->
-        <!-- <div flex layout="row">
-           
-            <section layout="row" layout-wrap>
-                <md-button ng-show="!vm.isLibraryOpen"
-                           class="tb-btn-header tb-btn-open-library md-primary md-fab md-fab-top-left"
-                           aria-label="{{ 'rulenode.open-node-library' | translate }}"
-                           ng-click="vm.isLibraryOpen = true">
-                    <md-tooltip md-direction="{{vm.isFullscreen ? 'bottom' : 'top'}}">
-                        {{ 'rulenode.open-node-library' | translate }}
-                    </md-tooltip>
-                    <ng-md-icon icon="menu"></ng-md-icon>
-                </md-button>
-            </section>
-        </div> -->
-        <!--左侧表页展开栏-->
-        <!-- <md-sidenav class="et-sensors md-sidenav-left md-whiteframe-4dp"
-                    md-disable-backdrop
-                    md-is-locked-open="vm.isLibraryOpen"
-                    md-is-open="vm.isLibraryOpen"
-                    md-component-id="rulechain-library-sidenav" layout="column">
-            <md-toolbar>
-                <div class="md-toolbar-tools"> -->
-                    <!--搜索按钮-->
-                    <!-- <md-button class="md-icon-button tb-small" aria-label="{{ 'action.search' | translate }}">
-                        <md-icon aria-label="{{ 'action.search' | translate }}" class="material-icons">search</md-icon>
-                        <md-tooltip md-direction="'bottom'">
-                            {{'rulenode.search' | translate}}
-                        </md-tooltip>
-                    </md-button> -->
-                    <!--输入文本框-->
-                    <!-- <div layout="row" md-theme="bd-dark" flex>
-                        <md-input-container flex>
-                            <label>&nbsp;</label>
-                            <input ng-model="vm.ruleNodeSearch" placeholder="{{'rulenode.search' | translate}}"/>
-                        </md-input-container>
-                    </div> -->
-                    <!--清除查询按钮-->
-                    <!-- <md-button class="md-icon-button tb-small" aria-label="Close"
-                                ng-show="vm.ruleNodeSearch"
-                                ng-click="vm.ruleNodeSearch = ''">
-                        <md-icon aria-label="Close" class="material-icons">close</md-icon>
-                        <md-tooltip md-direction="{{vm.isFullscreen ? 'bottom' : 'top'}}">
-                            {{ 'action.clear-search' | translate }}
-                        </md-tooltip>
-                    </md-button> -->
-                    <!--左关闭按钮-->
-                    <!-- <md-button class="md-icon-button tb-small" aria-label="Close" ng-click="vm.isLibraryOpen = false">
-                        <md-icon aria-label="Close" class="material-icons">chevron_left</md-icon>
-                        <md-tooltip md-direction="{{vm.isFullscreen ? 'bottom' : 'top'}}">
-                            {{ 'action.close' | translate }}
-                        </md-tooltip>
-                    </md-button>
-                </div>
-            </md-toolbar>
-            <md-button ng-click="vm.openDashboard('68f9bd30-035d-11e9-bed7-fbd3b8868602')">实时数据</md-button>
-            <md-button ng-click="vm.openDashboard('d96c1d40-de3e-11e8-90b2-6708b10d2f5b')">告警情报</md-button>
-            <md-button ng-click="vm.openDashboard('af5dadb0-e5ba-11e8-be95-f3713e6700c3')">任务巡检</md-button>
-        </md-sidenav> -->
- 
-        <!-- <div flex layout="column" id="toast-parent" >
-            <md-content class="float-Chart " ng-cloak flex layout="column" ui-view name="contentDetails"></md-content>
-        </div> -->
-    <!-- </section> -->
+<md-content flex tb-expand-fullscreen tb-confirm-on-exit is-dirty="vm.isConfirmOnExit" expand-tooltip-direction="bottom"
+    layout="column" on-fullscreen-changed="vm.isFullscreen = expanded">
+    <div>
+        <echarts option="option"></echarts>
+    </div>
 </md-content>

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 import uiRouter from 'angular-ui-router';
-import DashboardController from '../dashboard/dashboard.controller';
 import IntegratedRoutes from './integrated.routes';
 import IntegratedController from './integrated.controller';
+import beidouappEcharts from '../components/echarts.directive'; 
 
 export default angular.module('beidouapp.integrated', [
-    uiRouter
+    uiRouter,
+    beidouappEcharts
 ])
     .config(IntegratedRoutes)
     .controller('IntegratedController', IntegratedController)
-    .controller('DashboardController', DashboardController)
     .name;
+
+
