@@ -5,8 +5,8 @@ const util = require('../util/utils');
 const logger = require('../util/logger');
 
 // 关流后台定时任务 配置参数
-const MaxRetryCount = 3;          // 重试多少次
-const TaskInterVal  = 3600000;    // 任务执行周期 ms
+const MaxRetryCount = 5;          // 重试多少次
+const TaskInterVal  = 30000;    // 任务执行周期 ms
 var   taskMap = new Map();
 
 // define the about route
@@ -20,15 +20,14 @@ function configureRPC(deviceId, rpcCfg, onoff, token, res) {
 
     let rpcCmd = { 
         "method": "214",
-        "param":{
+        "params":{
             "cmd":214,    
             "ignoreip":false,    
             "ip": rpcCfg.ip,    
-            "type":rpcCfg.type,    
+            "type":rpcCfg.type,
             "onoff":onoff
         }
     };    
-
     let rpcApi = util.getAPI() + `plugins/rpc/twoway/${deviceId}`;
     axios.post(rpcApi, rpcCmd, {
         headers: {
@@ -37,7 +36,7 @@ function configureRPC(deviceId, rpcCfg, onoff, token, res) {
       }).then(resp => {
         //util.responErrorMsg(err, res);
         if (res) {
-            util.responData(resp.data, res);
+            util.responData(resp.status, resp.data, res);
         }        
       }).catch(err => {
         if (res) {
@@ -145,12 +144,12 @@ router.post('/:id', async function (req, res) {
 
 
     //on
-    if (rpcCfg.onoff === "1") {
+    if (rpcCfg.onoff === 1) {
         //configure and response
         configureRPC(deviceId, rpcCfg, 1, token, res);
         return
     }
-    if(rpcCfg.onoff !== "0"){
+    if(rpcCfg.onoff !== 0){
         util.responData(util.CST.ERR400, util.CST.MSG400, res);
         return
     }
