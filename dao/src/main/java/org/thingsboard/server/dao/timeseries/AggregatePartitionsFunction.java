@@ -112,7 +112,8 @@ public class AggregatePartitionsFunction implements com.google.common.base.Funct
         }
 
         if (aggregation == Aggregation.COUNT) {
-            aggResult.count += curCount;
+//            aggResult.count += curCount;
+            aggResult.count += longCount + doubleCount + boolCount + strCount;
         } else if (aggregation == Aggregation.AVG || aggregation == Aggregation.SUM) {
             processAvgOrSumAggregation(aggResult, curCount, curLValue, curDValue);
         } else if (aggregation == Aggregation.MIN) {
