@@ -27,9 +27,10 @@ const config = require('./webpack.config');
 const express = require('express');
 const http = require('http');
 const httpProxy = require('http-proxy');
-// const forwardHost = 'cf.beidouapp.com';
-const forwardHost = 'cf.beidouapp.com';//'192.168.1.138';
+const forwardHost = 'cf.beidouapp.com';
 const forwardPort = 8085;
+// const forwardHost = '192.168.1.202'; //'cf.beidouapp.com';//'192.168.1.138';
+// const forwardPort = 8090;//8085;
 
 const ruleNodeUiforwardHost = 'cf.beidouapp.com';
 const ruleNodeUiforwardPort = 8085;//5000;
