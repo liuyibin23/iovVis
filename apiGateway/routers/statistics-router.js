@@ -117,7 +117,7 @@ router.get('/:id', function (req, res) {
     let keys = req.query.keys;
     if(userFlowControl(token,1))
     {
-      util.responData(403, "请求过于频繁，请您稍后再进行操作！！", res);
+      util.responData(403, {"message":"请求过于频繁，请您稍后再进行操作！！"}, res);
       return 
     }
     keyMapArr = keysConvert(keys)
