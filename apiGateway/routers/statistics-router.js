@@ -113,7 +113,7 @@ function userFlowControl(token, isInput){
 router.get('/:id', function (req, res) {
     let id = req.params.id;
     let token = req.headers['x-authorization'];
-    let interval = (req.query.endTime - req.query.startTime)/10;
+    let interval = Math.round((req.query.endTime - req.query.startTime)/10);
     let keys = req.query.keys;
     if(userFlowControl(token,1))
     {
