@@ -168,6 +168,24 @@ function getDateString(ts, interval) {
     return dat;
 }
 
+/**
+ * 解析token的payload，获取当前用户信息
+ *
+ * @param {String} token
+ * @returns {Object} {sub, scopes, userId, firstName, lastName, enabled, isPublic, tenantId, customerId, iss, iat, exp, }
+ */
+function parseToken(token){
+    let spStr = token.split('.');
+    //spStr[0] header ignore
+    if (spStr[1]) {
+        var token_decode = Buffer.alloc(Buffer.byteLength(spStr[1],'base64'), spStr[1], 'base64');
+        let jsObj = JSON.parse(token_decode.toString());
+        return jsObj;
+    }else{
+        return null;
+    }
+}
+
 exports.getSync = getSync;
 exports.postSync = postSync;
 exports.getBackendBUS = getBackendBUS;
@@ -179,3 +197,4 @@ exports.responData = responData;
 exports.loadCfg = loadCfg;
 exports.dateFormat = dateFormat;
 exports.getDateString = getDateString;
+exports.parseToken = parseToken;

@@ -16,8 +16,7 @@ router.get('/about', function (req, res) {
 
 
 function configureRPC(deviceId, rpcCfg, onoff, token, res) {
-    console.log(`CFG: ${deviceId} ${rpcCfg.ip} ${onoff}`);
-
+    logger.log('info', `CFG: ${deviceId} ${rpcCfg.ip} ${onoff}`);
     let rpcCmd = { 
         "method": "214",
         "params":{

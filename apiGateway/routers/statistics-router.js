@@ -1,9 +1,11 @@
 const express = require('express');
 const axios = require('axios');
-const fs = require('fs');
-const request = require('request');
+//const fs = require('fs');
+//const request = require('request');
 const util = require('../util/utils');
+const logger = require('../util/logger');
 var keyMapArr = new Array();
+var userArr = new Array();
 
 const router = express.Router();
 
@@ -58,19 +60,52 @@ function getKeyCounts(keyMapArr){
 }
 
 function saveKeyValue(keyMapArr, data){
-  //console.log(data)
   for (keyMap of keyMapArr){
     for(var item in data){
       if(item === keyMap.get('key')) {
-        let value = data[item][0].value
-        keyMap.set('value',Number.parseFloat(value))
+        let value = 0
+        if(data[item]){
+          for(dat of data[item]){
+            value += Number.parseFloat(dat.value)
+          }
+        }
+        keyMap.set('value',value)
       }else if (item === keyMap.get('key_count')) {
         let oldValue = keyMap.get('value')
-        let value = data[item][0].value
-        keyMap.set('value',Math.ceil(Number.parseFloat(oldValue)* Number.parseFloat(value)))
+        let value = 1
+        if(data[item]){
+          for(dat of data[item]){
+            value += Number.parseFloat(dat.value)
+          }
+          value = value / data[item].length
+        }
+        keyMap.set('value',Math.ceil(Number.parseFloat(oldValue)* value))
       }
     }
     //console.log(keyMap)
+  }
+}
+/*
+*/
+function userFlowControl(token, isInput){
+  let userObj = util.parseToken(token)    
+  if(isInput){
+    for (user of userArr) {
+      if(user === userObj.sub)
+      {
+          logger.log('info',`${userObj.sub} is contorled by user flow control!`)
+          return true
+      }
+    }
+    userArr.push(userObj.sub)
+    return false
+  }else{
+    for (user of userArr) {
+      if(user === userObj.sub)
+      {
+        userArr.splice(userArr.indexOf(user),1);
+      }
+    }
   }
 }
 
@@ -78,8 +113,13 @@ function saveKeyValue(keyMapArr, data){
 router.get('/:id', function (req, res) {
     let id = req.params.id;
     let token = req.headers['x-authorization'];
-    let interval = req.query.endTime - req.query.startTime;
+    let interval = (req.query.endTime - req.query.startTime)/10;
     let keys = req.query.keys;
+    if(userFlowControl(token,1))
+    {
+      util.responData(403, "请求过于频繁，请您稍后再进行操作！！", res);
+      return 
+    }
     keyMapArr = keysConvert(keys)
     let key_counts = getKeyCounts(keyMapArr)
     //console.log(key_counts)
@@ -92,7 +132,7 @@ router.get('/:id', function (req, res) {
         }
       }).then(resp => {
         saveKeyValue(keyMapArr, resp.data)
-        let api_sr = util.getAPI() + `plugins/telemetry/DEVICE/${id}/values/timeseries?&keys=${key_counts}&startTs=${req.query.startTime}&endTs=${req.query.endTime}&agg=AVG&limit=1&interval=${interval}`;
+        let api_sr = util.getAPI() + `plugins/telemetry/DEVICE/${id}/values/timeseries?&keys=${key_counts}&startTs=${req.query.startTime}&endTs=${req.query.endTime}&agg=AVG&interval=${interval}`;
         api_sr = encodeURI(api_sr)
         //console.log(api_sr)
         axios.get(api_sr, {
@@ -101,11 +141,14 @@ router.get('/:id', function (req, res) {
           }
         }).then(resp => {
           saveKeyValue(keyMapArr, resp.data)
+          userFlowControl(token,0)
           util.responData(util.CST.OK200, respKeyCounts(keyMapArr), res);
         }).catch(err =>{
+          userFlowControl(token,0)
           util.responErrorMsg(err, res);
         });
       }).catch(err =>{
+        userFlowControl(token,0)
         util.responErrorMsg(err, res);
       });
 })
