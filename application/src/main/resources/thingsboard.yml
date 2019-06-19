@@ -259,6 +259,7 @@ redis:
     port: "${REDIS_PORT:6379}"
     db: "${REDIS_DB:0}"
     password: "${REDIS_PASSWORD:}"
+    clusterNode: "${REDIS_CLUSTER_NODE:localhost:6379}"
 
 # Check new version updates parameters
 updates:
