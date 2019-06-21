@@ -58,6 +58,8 @@ public interface DeviceService {
 
     void deleteDevicesByTenantId(TenantId tenantId);
 
+    ListenableFuture<Void> deleteDevicesBelongToAsset(TenantId tenantId, AssetId assetId);
+
     TextPageData<Device> findDevicesByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, TextPageLink pageLink);
 
     TextPageData<Device> findDevicesByTenantIdAndCustomerIdAndType(TenantId tenantId, CustomerId customerId, String type, TextPageLink pageLink);

@@ -163,6 +163,7 @@ public class CustomerController extends BaseController {
 
 			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
 			Customer customer = checkCustomerIdAdmin(tenantId,customerId);
+			assetService.deleteAssetByCustomerId(tenantId,customerId);
 			customerService.deleteCustomer(tenantId, customer.getId());
 
 			logEntityAction(customerId, customer,
@@ -187,6 +188,8 @@ public class CustomerController extends BaseController {
 		try {
 			CustomerId customerId = new CustomerId(toUUID(strCustomerId));
 			Customer customer = checkCustomerId(customerId);
+			TenantId tenantId = customerService.findTenantIdByCustomerId(customerId,new TextPageLink(100));
+			assetService.deleteAssetByCustomerId(tenantId,customerId);
 			customerService.deleteCustomer(getTenantId(), customerId);
 
 			logEntityAction(customerId, customer,
@@ -236,6 +239,8 @@ public class CustomerController extends BaseController {
 							throw new IncorrectParameterException("customer isn't assign to any tenant!");
 						}
 						customer = checkCustomerIdAdmin(tenantId, customerId);
+					}else {
+						customer = checkCustomerIdAdmin(tenantId, customerId);
 					}
 					break;
 				case TENANT_ADMIN:
@@ -247,6 +252,7 @@ public class CustomerController extends BaseController {
 				default:
 					throw new ThingsboardException(ThingsboardErrorCode.AUTHENTICATION);
 			}
+			assetService.deleteAssetByCustomerId(tenantId,customerId);
 			customerService.deleteCustomer(tenantId, customerId);
 			logEntityAction(customerId, customer,
 					customer.getId(),

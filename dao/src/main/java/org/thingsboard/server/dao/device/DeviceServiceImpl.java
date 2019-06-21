@@ -18,6 +18,8 @@ package org.thingsboard.server.dao.device;
 import com.google.common.base.Function;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,7 @@ import org.thingsboard.server.dao.tenant.TenantDao;
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import static org.thingsboard.server.common.data.CacheConstants.DEVICE_CACHE;
@@ -66,6 +69,8 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
     public static final String INCORRECT_PAGE_LINK = "Incorrect page link ";
     public static final String INCORRECT_CUSTOMER_ID = "Incorrect customerId ";
     public static final String INCORRECT_DEVICE_ID = "Incorrect deviceId ";
+    private ListeningExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(10));
+
     @Autowired
     private DeviceDao deviceDao;
 
@@ -243,6 +248,25 @@ public class DeviceServiceImpl extends AbstractEntityService implements DeviceSe
         log.trace("Executing deleteDevicesByTenantId, tenantId [{}]", tenantId);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         tenantDevicesRemover.removeEntities(tenantId, tenantId);
+    }
+
+    /**
+     * 删除属于指定Asset的Devices
+     *
+     * @param tenantId
+     * @param assetId
+     */
+    @Override
+    public ListenableFuture<Void> deleteDevicesBelongToAsset(TenantId tenantId, AssetId assetId) {
+        DeviceSearchQuery query = new DeviceSearchQuery();
+        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId, EntitySearchDirection.FROM, 1);
+        query.setParameters(parameters);
+        query.setRelationType(EntityRelation.CONTAINS_TYPE);
+        ListenableFuture<List<Device>> deviceList = findDevicesByQueryWithOutTypeFilter(tenantId, query);
+        return Futures.transform(Futures.transformAsync(deviceList, devices -> executorService.submit(() -> {
+            assert devices != null;
+            devices.forEach(device -> deleteDevice(tenantId, device.getId()));
+        })), result -> null);
     }
 
     @Override

@@ -66,6 +66,8 @@ public interface AssetService {
 
     void deleteAssetsByTenantId(TenantId tenantId);
 
+    void deleteAssetByCustomerId(TenantId tenantId,CustomerId customerId);
+
     TextPageData<Asset> findAssetsByTenantIdAndCustomerId(TenantId tenantId, CustomerId customerId, TextPageLink pageLink);
 
     TextPageData<Asset> findAssetsByTenantIdAndCustomerIdAndType(TenantId tenantId, CustomerId customerId, String type, TextPageLink pageLink);

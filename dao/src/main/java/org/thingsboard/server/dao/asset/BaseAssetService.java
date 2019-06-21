@@ -38,6 +38,7 @@ import org.thingsboard.server.common.data.relation.EntitySearchDirection;
 import org.thingsboard.server.common.data.relation.RelationTypeGroup;
 import org.thingsboard.server.common.data.relation.RelationsSearchParameters;
 import org.thingsboard.server.dao.customer.CustomerDao;
+import org.thingsboard.server.dao.device.DeviceService;
 import org.thingsboard.server.dao.entity.AbstractEntityService;
 import org.thingsboard.server.dao.entityview.EntityViewService;
 import org.thingsboard.server.dao.exception.DataValidationException;
@@ -80,6 +81,9 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
 
     @Autowired
     PatrolRecordService patrolRecordService;
+
+    @Autowired
+    private DeviceService deviceService;
 
     @Override
     public Asset findAssetById(TenantId tenantId, AssetId assetId) {
@@ -270,6 +274,13 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
         log.trace("Executing deleteAssetsByTenantId, tenantId [{}]", tenantId);
         validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
         tenantAssetsRemover.removeEntities(tenantId, tenantId);
+    }
+
+    @Override
+    public void deleteAssetByCustomerId(TenantId tenantId,CustomerId customerId){
+        validateId(tenantId, INCORRECT_TENANT_ID + tenantId);
+        validateId(customerId, INCORRECT_CUSTOMER_ID + customerId);
+        customerAssetsRemover.removeEntities(tenantId,customerId);
     }
 
     @Override
@@ -503,6 +514,19 @@ public class BaseAssetService extends AbstractEntityService implements AssetServ
                     deleteAsset(tenantId, new AssetId(entity.getId().getId()));
                 }
             };
+
+    private PaginatedRemover<CustomerId, Asset> customerAssetsRemover = new PaginatedRemover<CustomerId, Asset>() {
+        @Override
+        protected List<Asset> findEntities(TenantId tenantId, CustomerId id, TextPageLink pageLink) {
+            return assetDao.findAssetsByTenantIdAndCustomerId(tenantId.getId(), id.getId(), pageLink);
+        }
+
+        @Override
+        protected void removeEntity(TenantId tenantId, Asset entity) {
+            deviceService.deleteDevicesBelongToAsset(tenantId,entity.getId());
+            deleteAsset(tenantId, new AssetId(entity.getId().getId()));
+        }
+    };
 
     private PaginatedRemover<CustomerId, Asset> customerAssetsUnasigner = new PaginatedRemover<CustomerId, Asset>() {
 

@@ -170,7 +170,8 @@ public class AssetController extends BaseController {
 
 
             Asset asset = checkAssetId(tenantId, assetId);
-            deleteDevicesBelongToAsset(tenantId, assetId).get();//级联删除此Asset下的devices
+//            deleteDevicesBelongToAsset(tenantId, assetId).get();//级联删除此Asset下的devices
+            deviceService.deleteDevicesBelongToAsset(tenantId, assetId).get();//级联删除此Asset下的devices
             assetService.deleteAsset(tenantId, assetId);
 
 
@@ -187,23 +188,23 @@ public class AssetController extends BaseController {
         }
     }
 
-    /**
-     * 删除属于指定Asset的Devices
-     *
-     * @param tenantId
-     * @param assetId
-     */
-    private ListenableFuture<Void> deleteDevicesBelongToAsset(TenantId tenantId, AssetId assetId) {
-        DeviceSearchQuery query = new DeviceSearchQuery();
-        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId, EntitySearchDirection.FROM, 1);
-        query.setParameters(parameters);
-        query.setRelationType(EntityRelation.CONTAINS_TYPE);
-        ListenableFuture<List<Device>> deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId, query);
-        return Futures.transform(Futures.transformAsync(deviceList, devices -> executorService.submit(() -> {
-            assert devices != null;
-            devices.forEach(device -> deviceService.deleteDevice(tenantId, device.getId()));
-        })), result -> null);
-    }
+//    /**
+//     * 删除属于指定Asset的Devices
+//     *
+//     * @param tenantId
+//     * @param assetId
+//     */
+//    private ListenableFuture<Void> deleteDevicesBelongToAsset(TenantId tenantId, AssetId assetId) {
+//        DeviceSearchQuery query = new DeviceSearchQuery();
+//        RelationsSearchParameters parameters = new RelationsSearchParameters(assetId, EntitySearchDirection.FROM, 1);
+//        query.setParameters(parameters);
+//        query.setRelationType(EntityRelation.CONTAINS_TYPE);
+//        ListenableFuture<List<Device>> deviceList = deviceService.findDevicesByQueryWithOutTypeFilter(tenantId, query);
+//        return Futures.transform(Futures.transformAsync(deviceList, devices -> executorService.submit(() -> {
+//            assert devices != null;
+//            devices.forEach(device -> deviceService.deleteDevice(tenantId, device.getId()));
+//        })), result -> null);
+//    }
 
     @PreAuthorize("hasAnyAuthority('SYS_ADMIN','TENANT_ADMIN')")
     @RequestMapping(value = "/customer/{customerId}/asset/{assetId}", method = RequestMethod.POST)
