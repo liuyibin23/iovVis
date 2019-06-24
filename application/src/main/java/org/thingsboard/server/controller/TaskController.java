@@ -407,7 +407,8 @@ public class TaskController extends BaseController {
                 if (optionalAsset.isPresent())
                     task.setAssetName(optionalAsset.get().getName());
                 else
-                    task.setAssetName(new String("Asset deleted"));
+//                    task.setAssetName(new String("Asset deleted"));
+                    task.setAssetName(new String("设施已删除"));
             }
 
             if (null != task.getUserId()) {
@@ -415,7 +416,8 @@ public class TaskController extends BaseController {
                 if (optionalUser.isPresent())
                     task.setUserFirstName(optionalUser.get().getFirstName());
                 else
-                    task.setUserFirstName(new String("User deleted"));
+//                    task.setUserFirstName(new String("User deleted"));
+                    task.setUserFirstName(new String("用户已删除"));
             }
 
             if (null != task.getCustomerId()) {
@@ -423,7 +425,8 @@ public class TaskController extends BaseController {
                 if (optionalCustomer.isPresent())
                     task.setCustomerName(optionalCustomer.get().getName());
                 else
-                    task.setCustomerName(new String("Customer deleted"));
+//                    task.setCustomerName(new String("Customer deleted"));
+                    task.setCustomerName(new String("项目已删除"));
             }
 
             if (null != task.getOriginator()) {
