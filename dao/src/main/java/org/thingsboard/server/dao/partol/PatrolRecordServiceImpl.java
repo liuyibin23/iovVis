@@ -18,6 +18,7 @@ import org.thingsboard.server.common.data.task.Task;
 import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.dao.DaoUtil;
+import org.thingsboard.server.dao.asset.AssetService;
 import org.thingsboard.server.dao.asset.BaseAssetService;
 import org.thingsboard.server.dao.model.sql.PatrolRecordEntity;
 import org.thingsboard.server.dao.relation.RelationService;
@@ -37,8 +38,10 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     @Autowired
     private PatrolRecordJpaRepository patrolRecordJpaRepository;
 
+//    @Autowired
+//    private JpaPatrolRecordDao patrolRecordDao;
     @Autowired
-    private JpaPatrolRecordDao patrolRecordDao;
+    private PatrolRecordDao patrolRecordDao;
 
     @Autowired
     private TaskService taskService;
@@ -46,8 +49,10 @@ public class PatrolRecordServiceImpl implements PatrolRecordService {
     @Autowired
     private RelationService relationService;
 
+//    @Autowired
+//    private BaseAssetService assetService;
     @Autowired
-    private BaseAssetService assetService;
+    private AssetService assetService;
 
     @Override
     public PatrolRecord save(PatrolRecord patrolRecord) {

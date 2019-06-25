@@ -27,6 +27,8 @@ import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.stomp.Reactor2StompCodec;
@@ -67,16 +69,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.transaction.xa.XAResource;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static java.util.Arrays.asList;
 
 /**
  * Created by ashvayka on 22.03.18.
@@ -91,6 +89,9 @@ public class TelemetryController extends BaseController {
 
     @Autowired
     private AccessValidator accessValidator;
+
+    @Autowired
+    private CacheManager cacheManager;
 
     @Value("${transport.json.max_string_value_length:0}")
     private int maxStringValueLength;
@@ -192,6 +193,45 @@ public class TelemetryController extends BaseController {
                             .collect(Collectors.toList());
 
                     Futures.addCallback(tsService.findAll(tenantId, entityId, queries), getTsKvListCallback(result));
+                });
+    }
+
+    /**
+     * 统计指定设备，指定key，时序数据的数量（带缓存）
+     * @param entityType
+     * @param entityIdStr
+     * @param key
+     * @param startTs
+     * @param endTs
+     * @return
+     * @throws ThingsboardException
+     */
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+    @RequestMapping(value = "/{entityType}/{entityId}/statistic/count/timeseries", method = RequestMethod.GET, params = {"key", "startTs", "endTs"})
+    @ResponseBody
+    public DeferredResult<ResponseEntity> getTimeseriesCount(
+            @PathVariable("entityType") String entityType,
+            @PathVariable("entityId") String entityIdStr,
+            @RequestParam(name = "key") String key,
+            @RequestParam(name = "startTs") Long startTs,
+            @RequestParam(name = "endTs") Long endTs
+    )throws ThingsboardException{
+        return accessValidator.validateEntityAndCallback(getCurrentUser(), entityType, entityIdStr,
+                (result, tenantId, entityId) -> {
+                    Long interval = (endTs - startTs)/10;
+                    List<ReadTsKvQuery> queries = new ArrayList<>();
+                    ReadTsKvQuery query = new BaseReadTsKvQuery(key,startTs,endTs,interval,100,Aggregation.COUNT);
+                    queries.add(query);
+                    String cacheKey = entityType+"_"+entityIdStr+"_"+key+"_"+startTs+"_"+endTs;
+                    Cache.ValueWrapper value = cacheManager.getCache("timeseriesCount").get(cacheKey);
+                    if(value == null) {
+                        Futures.addCallback(tsService.findAll(tenantId, entityId, queries), getTsCountCallback(result,cacheKey));
+                    }
+                    else{
+                        Futures.addCallback(Futures.immediateFuture((Long)value.get()), getTsCountCacheCallback(result,key,(startTs + endTs)/2));
+                    }
+//                    Futures.addCallback(tsService.findAll(tenantId, entityId, queries), getTsKvListCallback(result));
+
                 });
     }
 
@@ -768,6 +808,61 @@ public class TelemetryController extends BaseController {
         };
     }
 
+    private FutureCallback<List<TsKvEntry>> getTsCountCallback(final DeferredResult<ResponseEntity> response,final String cacheKey){
+        return new FutureCallback<List<TsKvEntry>>() {
+            @Override
+            public void onSuccess(List<TsKvEntry> data) {
+                Long totalCount = 0L;
+                Map<String, List<TsData>> result = new LinkedHashMap<>();
+
+                for (TsKvEntry entry : data) {
+                    totalCount += entry.getLongValue().orElse(0L);
+
+                    result.computeIfAbsent(entry.getKey(),k->new ArrayList<>());
+//                    result.computeIfAbsent(entry.getKey(), k -> new ArrayList<>())
+//                            .add(new TsData(entry.getTs(), entry.getValueAsString()));
+                }
+                Long ts;
+                if(data.size() != 0){
+                    ts = (data.get(0).getTs() + data.get(data.size() - 1).getTs())/2;
+                    if(result.get(data.get(0).getKey()).size() == 0){
+                        result.get(data.get(0).getKey()).add(new TsData(ts,totalCount.toString()));
+                    } else {
+                        result.get(data.get(0).getKey()).set(0,new TsData(ts,totalCount.toString()));
+                    }
+                }
+                if(totalCount > 50000){//大于50000才缓存，小于50000查询速度快
+                    cacheManager.getCache("timeseriesCount").put(cacheKey,totalCount);
+                }
+                response.setResult(new ResponseEntity<>(result, HttpStatus.OK));
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                log.error("Failed to fetch historical data", e);
+                AccessValidator.handleError(e, response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        };
+    }
+
+    private FutureCallback<Long> getTsCountCacheCallback(final DeferredResult<ResponseEntity> response,String key,Long ts){
+        return new FutureCallback<Long>() {
+            @Override
+            public void onSuccess(Long data) {
+
+                Map<String, List<TsData>> result = new LinkedHashMap<>();
+                result.computeIfAbsent(key,k->new ArrayList<>()).add(new TsData(ts,data.toString()));
+                response.setResult(new ResponseEntity<>(result, HttpStatus.OK));
+            }
+
+            @Override
+            public void onFailure(Throwable e) {
+                log.error("Failed to fetch historical data", e);
+                AccessValidator.handleError(e, response, HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        };
+    }
+
     private void logTimeseriesDeleted(SecurityUser user, EntityId entityId, List<String> keys, Throwable e) {
         try {
             logEntityAction(user, (UUIDBased & EntityId) entityId, null, null, ActionType.TIMESERIES_DELETED, toException(e),
@@ -819,7 +914,7 @@ public class TelemetryController extends BaseController {
     private List<String> toKeysList(String keys) {
         List<String> keyList = null;
         if (!StringUtils.isEmpty(keys)) {
-            keyList = Arrays.asList(keys.split(","));
+            keyList = asList(keys.split(","));
         }
         return keyList;
     }

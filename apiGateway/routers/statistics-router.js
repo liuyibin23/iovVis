@@ -123,7 +123,8 @@ router.get('/:id', function (req, res) {
     keyMapArr = keysConvert(keys)
     let key_counts = getKeyCounts(keyMapArr)
     //console.log(key_counts)
-    let api = util.getAPI() + `plugins/telemetry/DEVICE/${id}/values/timeseries?&keys=${keys}&startTs=${req.query.startTime}&endTs=${req.query.endTime}&agg=COUNT&interval=${interval}`;
+    // let api = util.getAPI() + `plugins/telemetry/DEVICE/${id}/values/timeseries?&keys=${keys}&startTs=${req.query.startTime}&endTs=${req.query.endTime}&agg=COUNT&interval=${interval}`;
+    let api = util.getAPI() + `plugins/telemetry/DEVICE/${id}/statistic/count/timeseries?key=${keys}&startTs=${req.query.startTime}&endTs=${req.query.endTime}`;
     api = encodeURI(api)
     //console.log(api)
     axios.get(api, {
