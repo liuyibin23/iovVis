@@ -52,7 +52,7 @@ public class TenantController extends BaseController {
     @Autowired
     private TenantService tenantService;
 
-    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN')")
+    @PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN','CUSTOMER_USER')")
     @RequestMapping(value = "/tenant/{tenantId}", method = RequestMethod.GET)
     @ResponseBody
     public Tenant getTenantById(@PathVariable("tenantId") String strTenantId) throws ThingsboardException {
