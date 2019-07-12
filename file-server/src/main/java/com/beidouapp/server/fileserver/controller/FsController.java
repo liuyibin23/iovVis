@@ -49,7 +49,7 @@ public class FsController {
         return fsService.uploadFile(file,fileExtension,request);
     }
 
-    @RequestMapping(value = "/auth/upload")
+    @RequestMapping(value = "/auth/upload",method = RequestMethod.POST)
     public FileResponseData uploadFile(@RequestHeader(("Token")) String deviceToken,MultipartFile file,
                                        HttpServletRequest request,HttpServletResponse response) throws IOException, FastDFSException {
         boolean authorized = authService.validateAuth(deviceToken);
@@ -63,6 +63,11 @@ public class FsController {
     @RequestMapping(value = "/delete",method = RequestMethod.POST)
     public FileResponseData deleteFile(@RequestParam(name="fileId") String fileId, HttpServletRequest request){
         return fsService.deleteFile(fileId,request);
+    }
+
+    @RequestMapping(value = "/batchDelete",method = RequestMethod.DELETE)
+    public FileResponseData deleteFiles(@RequestParam(name="fileIds") String fileIds, HttpServletRequest request){
+        return fsService.deleteFiles(fileIds,request);
     }
 
     /**

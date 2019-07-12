@@ -49,6 +49,14 @@ public interface IFsService {
     FileResponseData deleteFile(String fileId,HttpServletRequest request);
 
     /**
+     * 批量删除文件
+     * @param fileIds
+     * @param request
+     * @return
+     */
+    FileResponseData deleteFiles(String fileIds,HttpServletRequest request);
+
+    /**
      * 分片文件上传初始文件
      * @return
      */

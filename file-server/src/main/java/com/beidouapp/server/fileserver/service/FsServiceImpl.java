@@ -9,6 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Service
 @Slf4j
@@ -18,6 +20,7 @@ public class FsServiceImpl implements IFsService{
     private FastDFSClientWrapper dfsClient;
     @Autowired
     private FastDFSAppendClientWrapper dfsAppendClientWrapper;
+    private ExecutorService batchDeleteExecutor = Executors.newFixedThreadPool(4);
     /**
      * 文件服务器地址
      */
@@ -148,6 +151,7 @@ public class FsServiceImpl implements IFsService{
      * @param request
      * @return
      */
+    @Override
     public FileResponseData deleteFile(String fileId,HttpServletRequest request){
         FileResponseData responseData = new FileResponseData();
         try {
@@ -159,9 +163,32 @@ public class FsServiceImpl implements IFsService{
     }
 
     /**
+     * 批量删除文件
+     * @param fileIds
+     * @param request
+     * @return
+     */
+    @Override
+    public FileResponseData deleteFiles(String fileIds,HttpServletRequest request){
+        FileResponseData responseData = new FileResponseData();
+        String[] fileIdsArray = getFileIds(fileIds);
+        for (String fileId:fileIdsArray) {
+            batchDeleteExecutor.execute(()->{
+                try {
+                    dfsClient.deleteFile(fileId);
+                } catch (FastDFSException e) {
+                    handelException("批量删除文件错误:",e);
+                }
+            });
+        }
+        return responseData;
+    }
+
+    /**
      * 分片文件上传初始文件
      * @return
      */
+    @Override
     public FileResponseData initAppendFile(long initSize,String fileName){
         FileResponseData responseData = new FileResponseData();
         try {
@@ -181,6 +208,7 @@ public class FsServiceImpl implements IFsService{
      * 分片文件上传
      * @return
      */
+    @Override
     public FileResponseData chunkFileUpload(String fileId,long fileOffset,long length,byte[] fileContent){
         FileResponseData responseData = new FileResponseData();
         try {
@@ -189,6 +217,16 @@ public class FsServiceImpl implements IFsService{
             responseData = handelException("分片文件上传错误:",e);
         }
         return responseData;
+    }
+
+    private String[] getFileIds(String fileIdsStr){
+        String[] fileIds;
+        if(fileIdsStr == null){
+            fileIds = new String[0];
+            return fileIds;
+        }
+        fileIds = fileIdsStr.split(",");
+        return fileIds;
     }
 
     private FileResponseData handelException(String errorMsg,FastDFSException e){
