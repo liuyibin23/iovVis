@@ -168,7 +168,8 @@ public class PatrolRecordController extends BaseController {
                 if (assetId != null && assetId.getId() != null) {
                     asset = assetService.findAssetById(null, assetId);
                 }
-                patrolRecordEx.setAssetName(asset != null ? asset.getName() : "asset deleted");
+//                patrolRecordEx.setAssetName(asset != null ? asset.getName() : "asset deleted");
+                patrolRecordEx.setAssetName(asset != null ? asset.getName() : "设施已删除");
                 Task task = null;
                 if (patrolRecord.getTaskId() != null) {
                     task = taskService.findTaskById(patrolRecord.getTaskId().getId());
@@ -177,7 +178,8 @@ public class PatrolRecordController extends BaseController {
                     patrolRecordEx.setTaskName(task.getTaskName() != null ? task.getTaskName() : "");
                     patrolRecordEx.setTaskStartTs(task.getStartTs());
                 } else {
-                    patrolRecordEx.setTaskName("task deleted");
+//                    patrolRecordEx.setTaskName("task deleted");
+                    patrolRecordEx.setTaskName("任务已删除");
                 }
 
                 return patrolRecordEx;
