@@ -35,7 +35,7 @@ public class DeviceAttributesEntity {
 	private String dynamicStaticState;
 	@Column(name = "devicegroup")
 	private String deviceGroup;
-	@Column(name = "group")
+	@Column(name = "`group`")
 	private String group;
 	@Column(name = "addrnum")
 	private String addrNum;

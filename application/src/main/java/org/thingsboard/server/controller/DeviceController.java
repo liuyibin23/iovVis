@@ -26,7 +26,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.thingsboard.server.common.data.*;
+import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmDevicesCount;
+import org.thingsboard.server.common.data.alarm.AlarmStatus;
 import org.thingsboard.server.common.data.asset.Asset;
 import org.thingsboard.server.common.data.audit.ActionType;
 import org.thingsboard.server.common.data.batchconfig.DeviceAutoLogon;
@@ -361,6 +363,14 @@ public class DeviceController extends BaseController {
 			}
             DeviceId deviceId = new DeviceId(toUUID(strDeviceId));
             Device device = checkDeviceId(tenantId,deviceId);
+
+            List<Alarm> alarms = alarmService.findAlarmByOriginator(deviceId);
+            //该设备是否存在未清除的告警
+            boolean hasAlarms = alarms != null && alarms.stream().anyMatch(it -> it.getStatus() != AlarmStatus.CLEARED_ACK);
+            if(hasAlarms){
+                throw new ThingsboardException("this device has unhandled alarm",ThingsboardErrorCode.PERMISSION_DENIED);
+            }
+
             deviceService.deleteDevice(tenantId, deviceId);
 
             deviceCheckService.removeCache();
