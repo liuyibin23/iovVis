@@ -103,7 +103,7 @@
         "name": "saveWarningRecord",
         "debugMode": false,
         "configuration": {
-          "jsScript": "var newMsg = {}\nvar newMetaData = metadata;\nnewMetaData.recordType = '系统设置预警状态'\nif(msg.hasOwnProperty('asset_warning_level') && msg.hasOwnProperty('ss_asset_warning_level')){\n    newMsg.asset_warning_level = msg.asset_warning_level\n}else{\n    metadata.ss_asset_warning_level = ''\n    newMsg.asset_warning_level = ''\n}\n\nreturn {msg: newMsg, metadata: newMetaData, msgType: msgType};"
+          "jsScript": "var newMsg = {}\nvar newMetaData = metadata;\nnewMetaData.recordType = '系统设置预警状态'\nif(msg.hasOwnProperty('asset_warning_level') && metadata.hasOwnProperty('ss_asset_warning_level')){\n    newMsg.asset_warning_level = msg.asset_warning_level\n}else{\n    metadata.ss_asset_warning_level = ''\n    newMsg.asset_warning_level = ''\n}\n\nreturn {msg: newMsg, metadata: newMetaData, msgType: msgType};"
         }
       },
       {
