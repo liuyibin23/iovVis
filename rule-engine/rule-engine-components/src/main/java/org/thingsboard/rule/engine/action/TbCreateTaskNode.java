@@ -27,6 +27,7 @@ import org.thingsboard.rule.engine.api.TbNodeException;
 import org.thingsboard.rule.engine.api.util.TbNodeUtils;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
+import org.thingsboard.server.common.data.User;
 import org.thingsboard.server.common.data.alarm.Alarm;
 import org.thingsboard.server.common.data.alarm.AlarmId;
 import org.thingsboard.server.common.data.asset.Asset;
@@ -39,6 +40,7 @@ import org.thingsboard.server.common.data.task.TaskStatus;
 import org.thingsboard.server.common.msg.TbMsg;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 @Slf4j
 @RuleNode(
@@ -95,11 +97,11 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
             AssetId assetId = new AssetId(EntityId.NULL_UUID);
             String assetName = "";
             AlarmId alarmId = new AlarmId(EntityId.NULL_UUID);
-
+            Alarm alarm = new Alarm(alarmId);
             // 如果上一个Rule_Node是TbAbstractAlarmNode，解析Alarm内容
-            if (msg.getType() == "ALARM") {
+            if (msg.getType().equals("ALARM")) {
                 if (Boolean.parseBoolean(msg.getMetaData().getValue(TbAbstractAlarmNode.IS_NEW_ALARM))) {
-                    Alarm alarm = mapper.readValue(msg.getData(),Alarm.class);
+                    alarm = mapper.readValue(msg.getData(),Alarm.class);
                     alarmId = alarm.getId();
                 }
             }
@@ -127,8 +129,10 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
                         originatorId.getEntityType(), EntityType.ASSET, EntityType.DEVICE));
             }
 
+            User user = new User(userId);
             if (customerId != null && !customerId.isNullUid()) {
-                userId = ctx.getUserService().findFirstUserByCustomerId(customerId).getId();
+                user = ctx.getUserService().findFirstUserByCustomerId(customerId);
+                userId = user.getId();
             }
 
             Task task = Task.builder()
@@ -146,6 +150,40 @@ public class TbCreateTaskNode extends TbAbstractTaskNode<TbCreateTaskNodeConfigu
 //                    .additionalInfo(new ObjectMapper().readTree(msg.getData()))
                     .build();
             ctx.getTaskService().createOrUpdateTask(task);
+
+            if(!alarm.getId().getId().equals(AlarmId.NULL_UUID) && !user.getId().getId().equals(EntityId.NULL_UUID)){
+                Device device = ctx.getDeviceService().findDeviceById(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId()));
+                List<Asset> assetList = ctx.getAssetService().findAssetsByDeviceId(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId())).get();
+                Asset asset = assetList.get(0);
+                String alarmLevel = "未知告警等级";
+                switch (alarm.getSeverity()){
+
+                    case CRITICAL:
+                        alarmLevel = "未知告警等级";
+                        break;
+                    case MAJOR:
+                        alarmLevel = "未知告警等级";
+                        break;
+                    case MINOR:
+                        alarmLevel = "未知告警等级";
+                        break;
+                    case WARNING:
+                        alarmLevel = "严重告警";
+                        break;
+                    case INDETERMINATE:
+                        alarmLevel = "一般告警";
+                        break;
+                }
+                String subject = String.format("%s告警[系统自动告警邮件]",device.getName());
+                String message = String.format("%s的设备%s产生%s，请及时处理。",asset.getName(),device.getName(),alarmLevel);
+                String email = user.getEmail();
+                ctx.getMailExecutor().executeAsync(()->{
+                    ctx.getMailService().sendEmail(email,subject,message);
+                    return null;
+                });
+
+            }
+
             return new TaskResult(true, false, false, task);
         });
     }

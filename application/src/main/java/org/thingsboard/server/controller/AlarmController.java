@@ -22,9 +22,11 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.thingsboard.rule.engine.api.MailService;
 import org.thingsboard.server.common.data.Device;
 import org.thingsboard.server.common.data.EntityType;
 import org.thingsboard.server.common.data.User;
@@ -40,7 +42,10 @@ import org.thingsboard.server.common.data.kv.TsKvEntry;
 import org.thingsboard.server.common.data.page.TimePageData;
 import org.thingsboard.server.common.data.page.TimePageLink;
 import org.thingsboard.server.common.data.security.Authority;
+import org.thingsboard.server.common.data.task.Task;
+import org.thingsboard.server.common.data.task.TaskKind;
 import org.thingsboard.server.common.transport.adaptor.JsonConverter;
+import org.thingsboard.server.dao.user.UserService;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -49,6 +54,9 @@ import java.util.*;
 @RequestMapping("/api")
 @Slf4j
 public class AlarmController extends BaseController {
+
+	@Autowired
+	private MailService mailService;
 
 	public static final String ALARM_ID = "alarmId";
 
@@ -455,6 +463,47 @@ public class AlarmController extends BaseController {
 		} catch (Exception e) {
 			throw handleException(e);
 		}
+	}
+
+	@PreAuthorize("hasAnyAuthority('SYS_ADMIN', 'TENANT_ADMIN', 'CUSTOMER_USER')")
+	@RequestMapping(value = "/alarm/sendEmail/{alarmId}", method = RequestMethod.POST)
+	public void sendAlarmEmail(@PathVariable("alarmId") String alarmIdStr){
+		checkParameter("alarmId", alarmIdStr);
+		try{
+			AlarmId alarmId = new AlarmId(toUUID(alarmIdStr));
+			Alarm alarm = alarmService.findAlarmById(alarmId);
+			Task task = taskService.findLatestByOriginatorAndTaskKind(alarm.getTenantId(),alarm.getOriginator(),TaskKind.ANALYZE).get();
+			User user = userService.findUserById(alarm.getTenantId(),task.getUserId());
+
+			if(!alarm.getId().getId().equals(AlarmId.NULL_UUID) && !user.getId().getId().equals(EntityId.NULL_UUID)){
+				Device device = deviceService.findDeviceById(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId()));
+				List<Asset> assetList = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId())).get();
+				Asset asset = assetList.get(0);
+				String alarmLevel = "未知告警等级";
+				switch (alarm.getSeverity()){
+
+					case CRITICAL:
+						break;
+					case MAJOR:
+						break;
+					case MINOR:
+						break;
+					case WARNING:
+						alarmLevel = "严重告警";
+						break;
+					case INDETERMINATE:
+						alarmLevel = "一般告警";
+						break;
+				}
+				String subject = String.format("%s告警[手动告警邮件]",device.getName());
+				String message = String.format("%s的设备%s产生%s，请及时处理。",asset.getName(),device.getName(),alarmLevel);
+				mailService.sendEmail(user.getEmail(),subject,message);
+			}
+
+		} catch (Exception e){
+			throw handleException(e);
+		}
+
 	}
 
 }
