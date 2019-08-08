@@ -476,6 +476,9 @@ public class AlarmController extends BaseController {
 			User user = userService.findUserById(alarm.getTenantId(),task.getUserId());
 
 			if(!alarm.getId().getId().equals(AlarmId.NULL_UUID) && !user.getId().getId().equals(EntityId.NULL_UUID)){
+				if(alarm.getStatus() != AlarmStatus.ACTIVE_UNACK){
+					throw new ThingsboardException("此告警已经被处理",ThingsboardErrorCode.BAD_REQUEST_PARAMS);
+				}
 				Device device = deviceService.findDeviceById(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId()));
 				List<Asset> assetList = assetService.findAssetsByDeviceId(TenantId.SYS_TENANT_ID,new DeviceId(alarm.getOriginator().getId())).get();
 				Asset asset = assetList.get(0);
