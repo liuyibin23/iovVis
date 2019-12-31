@@ -1,4 +1,4 @@
-package org.thingsboard.server.service;
+package org.thingsboard.server.service.schedule;
 
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
