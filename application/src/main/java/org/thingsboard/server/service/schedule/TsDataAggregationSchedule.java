@@ -44,6 +44,7 @@ public class TsDataAggregationSchedule {
     public void Min5DataAggregation(){
 //        long nowTs = new Date().getTime();
 //        long nowTs = 1577439300000L;
+        log.info("5分钟聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.FIVE_MINUTE,nowTs);
     }
@@ -51,6 +52,7 @@ public class TsDataAggregationSchedule {
     //聚合每小时的数据
     @Scheduled(cron = "0 0 0/1 * * ?")
     public void HourDataAggregation(){
+        log.info("每小时聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.HOUR,nowTs);
     }
@@ -58,6 +60,7 @@ public class TsDataAggregationSchedule {
     //聚合每天的数据
     @Scheduled(cron = "0 0 0 * * ?")
     public void DayDataAggregation(){
+        log.info("每天聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.DAY,nowTs);
     }
@@ -65,6 +68,7 @@ public class TsDataAggregationSchedule {
     //聚合每周的数据
     @Scheduled(cron = "0 0 0 ? * MON")
     public void WeekDataAggregation(){
+        log.info("每周聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.WEEK,nowTs);
     }
@@ -72,6 +76,7 @@ public class TsDataAggregationSchedule {
     //聚合每月的数据
     @Scheduled(cron = "0 0 0 1 * ?")
     public void MonthDataAggregation(){
+        log.info("每月聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.MONTH,nowTs);
     }
@@ -79,6 +84,7 @@ public class TsDataAggregationSchedule {
     //聚合每季度的数据
     @Scheduled(cron = "0 0 0 1 1,4,7,10 ?")
     public void QuarterDataAggregation(){
+        log.info("每季度聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.QUARTER,nowTs);
     }
@@ -86,6 +92,7 @@ public class TsDataAggregationSchedule {
     //聚合每年的数据
     @Scheduled(cron = "0 0 0 1 1 ?")
     public void YearDataAggregation(){
+        log.info("每年聚合任务开始");
         long nowTs = new Date().getTime();
         aggregation(AggInterval.YEAR,nowTs);
     }
@@ -121,29 +128,29 @@ public class TsDataAggregationSchedule {
                                 switch (aggInterval){
 
                                     case FIVE_MINUTE:
-                                        tsInterval = 5 * 60 * 1000;
+                                        tsInterval = 5 * 60 * 1000L;
                                         break;
                                     case HOUR:
-                                        tsInterval = 60 * 60 * 1000;
+                                        tsInterval = 60 * 60 * 1000L;
                                         break;
                                     case DAY:
-                                        tsInterval = 24 * 60 * 60 * 1000;
+                                        tsInterval = 24 * 60 * 60 * 1000L;
                                         break;
                                     case WEEK:
-                                        tsInterval = 7 * 24 * 60 * 60 * 1000;
+                                        tsInterval = 7 * 24 * 60 * 60 * 1000L;
                                         break;
                                     case MONTH:
                                         Calendar calendar = Calendar.getInstance();
                                         calendar.roll(Calendar.MONTH,-1);//当前统计的是上一个月的数据
-                                        tsInterval = getCurrentMonthDay(calendar);
+                                        tsInterval = getCurrentMonthDay(calendar) * 24 * 60 * 60 * 1000L;
                                         break;
                                     case QUARTER:
-                                        tsInterval = 90 * 24 * 60 * 60 * 1000L;//25 * 24 * 60 * 60 * 1000;
+                                        tsInterval = 90 * 24 * 60 * 60 * 1000L;
                                         break;
                                     case YEAR:
                                         Calendar calendar1 = Calendar.getInstance();
                                         calendar1.roll(Calendar.YEAR,-1);//当前统计的是上一个年份的数据
-                                        tsInterval = getCurrentYearDay(calendar1);
+                                        tsInterval = getCurrentYearDay(calendar1) * 24 * 60 * 60 * 1000L;
                                         break;
                                     default:
                                         log.error("不支持的统计类型");
